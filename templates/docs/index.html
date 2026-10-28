@@ -43,7 +43,7 @@
       /* ---------- small helpers ---------- */
 
       function highlight(src) {
-        const re = /(<\/?[A-Z][\w.]*|\/?>)|(\b[a-zA-Z-]+)(?==)|("[^"]*"|'[^']*')|(\b(?:import|from|export|function|return|const|npx|npm)\b)/g;
+        const re = /(<\/?[A-Z][\w.]*|\/?>)|(\b[a-zA-Z-]+)(?==)|("[^"]*"|'[^']*')|(\b(?:import|from|export|function|return|const|pnpm|npx|npm)\b)/g;
         const out = [];
         let last = 0, m, k = 0;
         while ((m = re.exec(src))) {
@@ -259,10 +259,10 @@
                     <TabsTrigger value="cli">CLI</TabsTrigger>
                     <TabsTrigger value="manual">Manual</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="cli"><CodeBlock code="npx shadcn@latest add @coreloom/button" /></TabsContent>
+                  <TabsContent value="cli"><CodeBlock code="pnpm dlx shadcn@latest add @coreloom/button" /></TabsContent>
                   <TabsContent value="manual">
                     <P>Install the dependencies, then copy <code className="font-mono text-[13px] text-foreground">button.tsx</code> from the registry into <code className="font-mono text-[13px] text-foreground">components/ui</code>.</P>
-                    <CodeBlock code="npm install radix-ui class-variance-authority" />
+                    <CodeBlock code="pnpm add radix-ui class-variance-authority" />
                   </TabsContent>
                 </Tabs>
 

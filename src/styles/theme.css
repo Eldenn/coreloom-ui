@@ -69,7 +69,7 @@
    font-sans / font-mono and the text scale work the same way: Tailwind's defaults
    sit in @layer theme and the Coreloom tokens override them. */
 @theme {
-  --font-display: 'Space Grotesk', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Space Grotesk', 'Space Grotesk Variable', 'Geist', 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-display);
   --radius-pill: 999px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);

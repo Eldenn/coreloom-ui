@@ -7,11 +7,19 @@
       "name": "theme",
       "type": "registry:item",
       "title": "Coreloom theme",
-      "description": "Coreloom UI tokens (dark-first, light via data-theme) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto them. Import both files in your globals.css after tailwindcss.",
+      "description": "Coreloom UI tokens (dark-first, light via data-theme), the brand fonts (Fontsource) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto the tokens. Import fonts.css, tokens.css and theme.css in your globals.css after tailwindcss.",
       "dependencies": [
-        "tw-animate-css"
+        "tw-animate-css",
+        "@fontsource-variable/geist",
+        "@fontsource-variable/space-grotesk",
+        "@fontsource-variable/jetbrains-mono"
       ],
       "files": [
+        {
+          "path": "src/styles/fonts.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/fonts.css"
+        },
         {
           "path": "src/styles/tokens.css",
           "type": "registry:file",
