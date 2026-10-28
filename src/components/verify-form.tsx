@@ -22,7 +22,7 @@ function VerifyForm({
   title = "Check your inbox",
   className,
 }: {
-  onSubmit: (code: string) => void | Promise<void>
+  onSubmit: (code: string) => unknown
   onResend?: () => void
   /** Where the code went, masked: "m•••@coreloom.dev". */
   destination?: string

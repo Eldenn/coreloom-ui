@@ -26,7 +26,7 @@ function LoginForm({
   description = "Welcome back. Enter your email to continue.",
   className,
 }: {
-  onSubmit: (values: { email: string; password: string }) => void | Promise<void>
+  onSubmit: (values: { email: string; password: string }) => unknown
   onProvider?: (providerId: string) => void
   /** OAuth buttons shown above the form ("Continue with GitHub"). */
   providers?: OAuthProvider[]

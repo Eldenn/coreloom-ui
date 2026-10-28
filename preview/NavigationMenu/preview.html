@@ -1,0 +1,34 @@
+<!-- @dsCard group="Navigation" height=360 subtitle="Triggers · dropdown panel with links · plain link" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NavigationMenu || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink, navigationMenuTriggerStyle } = UI;
+      const link = (title, text) => h('li', null, h(NavigationMenuLink, { href: '#' }, h('div', { style: { color: 'var(--fg-1)', fontWeight: 500 } }, title), h('p', { style: { margin: 0, fontSize: 13, color: 'var(--fg-muted)', lineHeight: 1.45 } }, text)));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(NavigationMenu, { defaultValue: 'product', viewport: false },
+          h(NavigationMenuList, null,
+            h(NavigationMenuItem, { value: 'product' }, h(NavigationMenuTrigger, null, 'Product'),
+              h(NavigationMenuContent, null, h('ul', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, width: 460, listStyle: 'none', margin: 0, padding: 4 } },
+                link('Components', '53 shadcn components on the Coreloom tokens.'), link('Blocks', 'App shell, auth, settings, marketing, docs.'),
+                link('Theming', 'Re-tint the accent or add a theme.'), link('Registry', 'Install with the shadcn CLI.')))),
+            h(NavigationMenuItem, { value: 'docs' }, h(NavigationMenuTrigger, null, 'Docs'), h(NavigationMenuContent, null, h('ul', { style: { width: 220, listStyle: 'none', margin: 0, padding: 4 } }, link('Getting started', 'Install and wire the theme.')))),
+            h(NavigationMenuItem, null, h(NavigationMenuLink, { href: '#', className: navigationMenuTriggerStyle() }, 'Pricing')))));
+    }
+    render();
+  </script>
+</body>
+</html>

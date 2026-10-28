@@ -1,0 +1,34 @@
+<!-- @dsCard group="Utilities" height=300 subtitle="Horizontal + vertical panels · handle" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ResizablePanelGroup || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ResizablePanelGroup, ResizablePanel, ResizableHandle } = UI;
+      const pane = (label) => h('div', { style: { display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-muted)' } }, label);
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(ResizablePanelGroup, { orientation: 'horizontal', style: { height: 240, maxWidth: 640, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--surface-1)' } },
+          h(ResizablePanel, { defaultSize: '30%', minSize: '20%' }, pane('files')),
+          h(ResizableHandle, { withHandle: true }),
+          h(ResizablePanel, { defaultSize: '70%' },
+            h(ResizablePanelGroup, { orientation: 'vertical' },
+              h(ResizablePanel, { defaultSize: '65%' }, pane('editor')),
+              h(ResizableHandle, { withHandle: true }),
+              h(ResizablePanel, { defaultSize: '35%' }, pane('terminal'))))));
+    }
+    render();
+  </script>
+</body>
+</html>

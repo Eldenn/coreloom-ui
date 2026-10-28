@@ -1,0 +1,37 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+<Meta title="Introduction" />
+
+# Coreloom UI
+
+shadcn/ui components (Radix, Tailwind CSS v4) restyled with the Coreloom tokens, shipped as a
+shadcn registry. Every story here renders the same source files the registry installs.
+
+Switch **Theme** in the toolbar to check light and dark. The **Accessibility** panel runs axe on
+the current story.
+
+## Install in an app
+
+```bash
+pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
+pnpm dlx shadcn@latest add @coreloom/all            # theme, fonts, utils, every component
+pnpm dlx shadcn@latest add @coreloom/app-shell      # or auth, settings, marketing, docs
+```
+
+Then, in your global CSS after `@import "tailwindcss";`:
+
+```css
+@import "tw-animate-css";
+@import "./coreloom/fonts.css";
+@import "./coreloom/tokens.css";
+@import "./coreloom/theme.css";
+```
+
+Mount `TooltipProvider` and one `Toaster` at the root. The full guide, the theming guide and the
+brand rules live in the Coreloom UI design system and the repository README.
+
+## Conventions
+
+- Cyan (`bg-primary`) is for the one main action per view. `bg-accent` is the hover surface.
+- Layers use the `z-*` ladder: modal 1300, popover 1400, toast 1500, tooltip 1600.
+- Chart series take `--chart-1` … `--chart-5` in order.

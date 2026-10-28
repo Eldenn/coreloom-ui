@@ -961,6 +961,146 @@
       ]
     },
     {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "ContextMenu",
+      "description": "Right-click / long-press menu of actions on an element.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/context-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "title": "Menubar",
+      "description": "Desktop-app style menu bar (File, Edit, View…).",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/menubar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "title": "NavigationMenu",
+      "description": "Site navigation with dropdown panels of links.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/navigation-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "title": "Resizable",
+      "description": "Panel groups the user can resize by dragging or with the keyboard.",
+      "dependencies": [
+        "react-resizable-panels@^4",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/resizable.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "title": "Carousel",
+      "description": "Swipeable slides with previous / next buttons (Embla).",
+      "dependencies": [
+        "embla-carousel-react@^8",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/carousel.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "title": "Drawer",
+      "description": "Draggable bottom sheet for phones (vaul).",
+      "dependencies": [
+        "vaul@^1"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Chart",
+      "description": "Recharts wrapper: container, tooltip and legend on Coreloom tokens, series colors from --chart-1…5.",
+      "dependencies": [
+        "recharts@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -1011,7 +1151,14 @@
         "@coreloom/empty",
         "@coreloom/combobox",
         "@coreloom/date-picker",
-        "@coreloom/data-table"
+        "@coreloom/data-table",
+        "@coreloom/context-menu",
+        "@coreloom/menubar",
+        "@coreloom/navigation-menu",
+        "@coreloom/resizable",
+        "@coreloom/carousel",
+        "@coreloom/drawer",
+        "@coreloom/chart"
       ],
       "dependencies": []
     },
