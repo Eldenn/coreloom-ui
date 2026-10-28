@@ -1,0 +1,34 @@
+/* ============================================================
+   Coreloom UI — what tokens.json does not declare.
+   Loaded after tokens.css. Colors, type, spacing, radii, shadows,
+   z-index and the font faces live in tokens.json (compiled to
+   tokens.css). Below the Coreloom extras: the compiled Tailwind
+   layer for the shadcn-based components (generated, do not edit).
+   ============================================================ */
+
+:root {
+  /* Focus ring — built on the accent-ring color token */
+  --ring-focus:  0 0 0 3px var(--accent-ring);
+
+  /* MOTION */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    120ms;
+  --dur-base:    180ms;
+  --dur-slow:    320ms;
+}
+
+/* SEMANTIC TYPE CLASSES — the parts a type style does not carry. */
+.cl-display { color: var(--fg-1); }
+.cl-h1      { color: var(--fg-1); }
+.cl-h2      { color: var(--fg-1); }
+.cl-h3      { color: var(--fg-1); }
+.cl-h4      { color: var(--fg-1); }
+.cl-lead    { color: var(--fg-2); }
+.cl-body    { color: var(--fg-2); }
+.cl-small   { color: var(--fg-muted); }
+.cl-eyebrow { text-transform: uppercase; color: var(--accent-fg); }
+.cl-code    { color: var(--fg-1); }
+.cl-label   { color: var(--fg-2); }
+

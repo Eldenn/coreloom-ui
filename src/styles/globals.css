@@ -1,0 +1,6 @@
+/* Coreloom UI — import once at the root of an app (or in the shared ui package). */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./tokens.css";
+@import "./theme.css";
+@source "../components/**/*.{ts,tsx}";

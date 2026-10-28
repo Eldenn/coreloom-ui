@@ -1,0 +1,42 @@
+<!-- @dsCard group="Data display" height=350 subtitle="Mono headers · status badges · selected row · footer" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .num{text-align:right;font-family:var(--font-mono);font-size:12.5px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Table || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableCaption, Badge, BadgeDot } = UI;
+      const rows = [
+        ['@coreloom/ui', '2.5.0', 'success', 'Passing', '48.2 kB'],
+        ['@coreloom/theme', '1.3.1', 'success', 'Passing', '6.1 kB'],
+        ['@coreloom/cli', '0.9.0', 'warning', 'Beta', '112.4 kB'],
+        ['@coreloom/forms', '0.4.2', 'destructive', 'Failing', '21.7 kB'],
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Table, null,
+          h(TableCaption, null, 'Packages in the Coreloom monorepo.'),
+          h(TableHeader, null, h(TableRow, null, h(TableHead, null, 'Package'), h(TableHead, null, 'Version'), h(TableHead, null, 'Build'), h(TableHead, { className: 'num' }, 'Size'))),
+          h(TableBody, null, rows.map((r, i) => h(TableRow, { key: r[0], 'data-state': i === 1 ? 'selected' : undefined },
+            h(TableCell, { style: { color: 'var(--fg-1)', fontWeight: 500 } }, r[0]),
+            h(TableCell, { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5 } }, r[1]),
+            h(TableCell, null, h(Badge, { variant: r[2] }, h(BadgeDot), r[3])),
+            h(TableCell, { className: 'num' }, r[4])))),
+          h(TableFooter, null, h(TableRow, null, h(TableCell, { colSpan: 3 }, 'Total'), h(TableCell, { className: 'num' }, '188.4 kB'))))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

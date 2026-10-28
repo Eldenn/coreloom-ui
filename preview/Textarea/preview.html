@@ -1,0 +1,31 @@
+<!-- @dsCard group="Forms" height=170 subtitle="Default · placeholder · invalid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Textarea || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Textarea } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Textarea, { 'aria-label': 'Description', placeholder: 'What does this package do?' }),
+          h(Textarea, { 'aria-label': 'Commit message', defaultValue: 'feat(ui): rebuild the form controls on shadcn' }),
+          h(Textarea, { 'aria-label': 'Config', 'aria-invalid': true, defaultValue: '{ "strict": tru }' }),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

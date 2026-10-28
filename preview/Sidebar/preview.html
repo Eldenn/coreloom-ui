@@ -1,0 +1,60 @@
+<!-- @dsCard group="Navigation" height=420 subtitle="Expanded · icon rail · active, badge, footer menu" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0;height:100%}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:20px 24px;height:100%;box-sizing:border-box}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Sidebar || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
+        SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge, Avatar, AvatarFallback, Icon } = UI;
+      const NAV = [['Overview', 'home'], ['Projects', 'folder', 12], ['Deployments', 'rocket', 3], ['Analytics', 'barChart'], ['Settings', 'settings']];
+
+      function Panel({ rail }) {
+        const [active, setActive] = React.useState('Overview');
+        return h(SidebarProvider, {
+            className: 'min-h-0 h-full w-auto overflow-hidden rounded-lg border border-border-subtle',
+            style: rail ? { '--sidebar-width': '3rem' } : null,
+          },
+          h(Sidebar, { collapsible: 'none', className: rail ? 'w-12' : 'w-[232px]' },
+            h(SidebarHeader, null,
+              h(SidebarMenu, null, h(SidebarMenuItem, null,
+                h(SidebarMenuButton, { size: 'lg', className: rail ? 'size-8 p-0 justify-center' : '' },
+                  h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', className: 'size-8 shrink-0 rounded-[7px]' }),
+                  !rail && h('div', { className: 'grid flex-1 leading-tight' },
+                    h('span', { className: 'font-display text-[15px] font-semibold text-foreground' }, 'Coreloom'),
+                    h('span', { className: 'font-mono text-[11px] text-muted-foreground' }, 'Pro workspace')))))),
+            h(SidebarContent, null,
+              h(SidebarGroup, null,
+                !rail && h(SidebarGroupLabel, null, 'Platform'),
+                h(SidebarGroupContent, null, h(SidebarMenu, null, NAV.map(([label, icon, badge]) =>
+                  h(SidebarMenuItem, { key: label },
+                    h(SidebarMenuButton, { isActive: active === label, onClick: () => setActive(label), 'aria-label': rail ? label : undefined, className: rail ? 'size-8 justify-center p-2' : '' },
+                      h(Icon, { name: icon }), !rail && h('span', null, label)),
+                    badge && !rail && h(SidebarMenuBadge, null, badge))))))),
+            h(SidebarFooter, null,
+              h(SidebarMenu, null, h(SidebarMenuItem, null,
+                h(SidebarMenuButton, { size: 'lg', className: rail ? 'size-8 p-0 justify-center' : '' },
+                  h(Avatar, { size: rail ? 'sm' : 'default' }, h(AvatarFallback, null, 'MC')),
+                  !rail && h('div', { className: 'grid flex-1 leading-tight' },
+                    h('span', { className: 'text-[14px] font-medium text-foreground' }, 'Matthieu C.'),
+                    h('span', { className: 'text-[12px] text-muted-foreground' }, 'Owner')),
+                  !rail && h(Icon, { name: 'chevronsUpDown', size: 16, className: 'ml-auto text-muted-foreground' })))))));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'flex h-full gap-5' }, h(Panel), h(Panel, { rail: true })));
+    }
+    render();
+  </script>
+</body>
+</html>

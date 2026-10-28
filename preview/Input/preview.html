@@ -1,0 +1,31 @@
+<!-- @dsCard group="Components" height=150 subtitle="Default · focus · invalid · disabled" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Input || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Field, FieldLabel, FieldDescription, FieldError, Input } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Field, null, h(FieldLabel, { htmlFor: 'p' }, 'Project name'), h(Input, { id: 'p', defaultValue: 'coreloom-app' }), h(FieldDescription, null, 'Lowercase, hyphen-separated.')),
+          h(Field, null, h(FieldLabel, { htmlFor: 'a' }, 'API endpoint'), h(Input, { id: 'a', placeholder: 'https://api.example.com', autoFocus: true })),
+          h(Field, { 'data-invalid': true }, h(FieldLabel, { htmlFor: 'e' }, 'Email'), h(Input, { id: 'e', defaultValue: 'not-an-email', 'aria-invalid': true }), h(FieldError, null, 'Enter a valid email address.')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

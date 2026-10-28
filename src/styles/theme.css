@@ -1,0 +1,104 @@
+/* Coreloom UI — shadcn theme layer.
+   Maps Tailwind / shadcn color utilities onto the Coreloom tokens (tokens.css).
+   No shadcn variable names (--background, --primary…) are declared, so they never
+   collide with Coreloom's own --accent, --border or --radius-* tokens. */
+
+/* Dark is the brand default: `dark:` applies unless <html data-theme="light">. */
+@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+@theme inline {
+  /* shadcn semantic colors → Coreloom tokens */
+  --color-background: var(--bg-1);
+  --color-foreground: var(--fg-1);
+  --color-card: var(--surface-2);
+  --color-card-foreground: var(--fg-1);
+  --color-popover: var(--surface-1);
+  --color-popover-foreground: var(--fg-1);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--fg-on-accent);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--fg-1);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--fg-muted);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--fg-1);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--fg-1);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--accent-ring);
+
+  /* shadcn Sidebar → the page's deepest layer, so the content area reads as raised */
+  --color-sidebar: var(--bg-base);
+  --color-sidebar-foreground: var(--fg-2);
+  --color-sidebar-primary: var(--accent);
+  --color-sidebar-primary-foreground: var(--fg-on-accent);
+  --color-sidebar-accent: var(--surface-hover);
+  --color-sidebar-accent-foreground: var(--fg-1);
+  --color-sidebar-border: var(--border-subtle);
+  --color-sidebar-ring: var(--accent-ring);
+
+  /* Coreloom-only colors */
+  --color-base: var(--bg-base);
+  --color-surface: var(--surface-1);
+  --color-inset: var(--surface-inset);
+  --color-fg-secondary: var(--fg-2);
+  --color-faint-foreground: var(--fg-faint);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-press: var(--accent-press);
+  --color-primary-text: var(--accent-fg);
+  --color-primary-subtle: var(--accent-subtle);
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-destructive-subtle: var(--danger-subtle);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+  --color-scrim: var(--scrim);
+
+  --shadow-glow: var(--glow-accent);
+  --shadow-hairline: var(--hairline-top);
+}
+
+/* Theme keys Tailwind doesn't ship. Coreloom's tokens.css declares the same names
+   unlayered, so the brand values (and any edit to them) always win. Radii, shadows,
+   font-sans / font-mono and the text scale work the same way: Tailwind's defaults
+   sit in @layer theme and the Coreloom tokens override them. */
+@theme {
+  --font-display: 'Space Grotesk', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-display);
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Accordion open / close — height comes from Radix. */
+@theme {
+  --animate-accordion-down: accordion-down 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-accordion-up: accordion-up 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  ::selection {
+    @apply bg-primary-subtle;
+  }
+}

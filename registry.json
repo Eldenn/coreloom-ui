@@ -1,0 +1,753 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "coreloom",
+  "homepage": "https://github.com/Eldenn/coreloom-ui",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:item",
+      "title": "Coreloom theme",
+      "description": "Coreloom UI tokens (dark-first, light via data-theme) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto them. Import both files in your globals.css after tailwindcss.",
+      "dependencies": [
+        "tw-animate-css"
+      ],
+      "files": [
+        {
+          "path": "src/styles/tokens.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/tokens.css"
+        },
+        {
+          "path": "src/styles/theme.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/theme.css"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "cn()",
+      "description": "Class-name merging helper used by every component.",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Inline status banner for info, success, warning and danger messages.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/alert.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Compact mono-type status or metadata pill.",
+      "dependencies": [
+        "class-variance-authority",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Primary interactive control, cyan by default.",
+      "dependencies": [
+        "class-variance-authority",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Elevated surface panel with icon tile, accent glow and mono footer.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Square check control, with indeterminate state.",
+      "dependencies": [
+        "lucide-react",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Modal window over the Coreloom scrim.",
+      "dependencies": [
+        "lucide-react",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "title": "Field",
+      "description": "Label, control, description and error layout for forms.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/label",
+        "@coreloom/separator"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/field.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "icon",
+      "type": "registry:ui",
+      "title": "Icon",
+      "description": "Lucide icons under the Coreloom icon names.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/icon.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Single-line text field.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "title": "Kbd",
+      "description": "Keyboard key for shortcuts.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/kbd.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "title": "Label",
+      "description": "Accessible form label.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/label.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "title": "RadioGroup",
+      "description": "Single choice among a few visible options.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "Styled, keyboard-navigable listbox.",
+      "dependencies": [
+        "lucide-react",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "Hairline divider.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/separator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "Single value or range slider.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/slider.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "On/off toggle for settings that apply immediately.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/switch.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Pills or underline tabs.",
+      "dependencies": [
+        "class-variance-authority",
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tabs.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "Multi-line text field that grows with its content.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Inverted hint chip with 400 ms hover delay.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/kbd"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "Floating panel anchored to a trigger, for small forms and details.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "Panel that slides in from an edge of the screen (Drawer).",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sheet.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "title": "Toaster",
+      "description": "Toast notifications (Sonner) themed for Coreloom.",
+      "dependencies": [
+        "sonner",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sonner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Where the current page sits in the hierarchy.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/breadcrumb.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Page links for long lists and tables.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "DropdownMenu",
+      "description": "Menu of actions opened from a button.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/dropdown-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "title": "Command",
+      "description": "Searchable command list and ⌘K palette (cmdk).",
+      "dependencies": [
+        "cmdk",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/dialog",
+        "@coreloom/kbd"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/command.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "Stacked sections that expand one at a time.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/accordion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "User or project image with initials fallback.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/avatar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "item",
+      "type": "registry:ui",
+      "title": "Item",
+      "description": "List row with media, title, description and actions (List).",
+      "dependencies": [
+        "radix-ui",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/separator"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/item.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "title": "Progress",
+      "description": "Determinate progress bar.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/progress.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Placeholder shape while content loads.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "Indeterminate loading indicator.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/spinner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "Data table with mono headers and row states.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/table.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "title": "Sidebar",
+      "description": "Collapsible app navigation (offcanvas or icon rail) that turns into a Sheet below 768px; Ctrl/Cmd+B toggles it.",
+      "dependencies": [
+        "radix-ui",
+        "lucide-react",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/separator",
+        "@coreloom/sheet",
+        "@coreloom/skeleton",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sidebar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/hooks/use-mobile.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "all",
+      "type": "registry:item",
+      "title": "Coreloom UI — everything",
+      "description": "Theme, utils and every Coreloom UI component in one install.",
+      "registryDependencies": [
+        "@coreloom/alert",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/checkbox",
+        "@coreloom/dialog",
+        "@coreloom/field",
+        "@coreloom/icon",
+        "@coreloom/input",
+        "@coreloom/kbd",
+        "@coreloom/label",
+        "@coreloom/radio-group",
+        "@coreloom/select",
+        "@coreloom/separator",
+        "@coreloom/slider",
+        "@coreloom/switch",
+        "@coreloom/tabs",
+        "@coreloom/textarea",
+        "@coreloom/tooltip",
+        "@coreloom/popover",
+        "@coreloom/sheet",
+        "@coreloom/sonner",
+        "@coreloom/breadcrumb",
+        "@coreloom/pagination",
+        "@coreloom/dropdown-menu",
+        "@coreloom/command",
+        "@coreloom/accordion",
+        "@coreloom/avatar",
+        "@coreloom/item",
+        "@coreloom/progress",
+        "@coreloom/skeleton",
+        "@coreloom/spinner",
+        "@coreloom/table",
+        "@coreloom/sidebar"
+      ]
+    }
+  ]
+}

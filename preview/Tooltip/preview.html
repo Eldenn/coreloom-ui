@@ -1,0 +1,32 @@
+<!-- @dsCard group="Overlays" height=140 subtitle="Hover delay · focus · shortcut" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;gap:150px;justify-content:center;padding-top:40px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Tooltip || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent, Button, Icon, Kbd } = UI;
+      const Tip = (open, trigger, ...content) => h(Tooltip, open ? { open: true } : {}, h(TooltipTrigger, { asChild: true }, trigger), h(TooltipContent, null, ...content));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          Tip(true, h(Button, { variant: 'secondary', size: 'icon', 'aria-label': 'Copy' }, h(Icon, { name: 'copy' })), 'Copy install command'),
+          Tip(true, h(Button, { variant: 'ghost', size: 'icon', 'aria-label': 'Search' }, h(Icon, { name: 'search' })), 'Search docs', h(Kbd, null, '⌘K')),
+          Tip(false, h(Button, { variant: 'ghost' }, 'Hover or focus me'), 'Shown after 400 ms'),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

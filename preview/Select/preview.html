@@ -1,0 +1,38 @@
+<!-- @dsCard group="Forms" height=310 subtitle="Trigger · open list · groups · invalid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Select || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectSeparator } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Select, { defaultValue: 'pnpm', defaultOpen: true },
+            h(SelectTrigger, { 'aria-label': 'Package manager' }, h(SelectValue)),
+            h(SelectContent, null,
+              h(SelectGroup, null, h(SelectLabel, null, 'Node'), ['npm', 'pnpm', 'yarn'].map(v => h(SelectItem, { key: v, value: v }, v))),
+              h(SelectSeparator),
+              h(SelectGroup, null, h(SelectLabel, null, 'Other'), h(SelectItem, { value: 'bun' }, 'bun'), h(SelectItem, { value: 'deno', disabled: true }, 'deno')),
+            )),
+          h(Select, null,
+            h(SelectTrigger, { 'aria-label': 'Framework', 'aria-invalid': true }, h(SelectValue, { placeholder: 'Select a framework' })),
+            h(SelectContent, null, ['Next.js', 'Remix', 'Vite'].map(v => h(SelectItem, { key: v, value: v }, v)))),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

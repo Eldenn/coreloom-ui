@@ -1,0 +1,43 @@
+<!-- @dsCard group="Navigation" height=230 subtitle="default (pills) · line · icons · disabled" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+  pre{margin:0;font-family:var(--font-mono);font-size:12px;color:var(--fg-1)}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Tabs || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Tabs, TabsList, TabsTrigger, TabsContent, Icon, Badge } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Tabs, { defaultValue: 'preview' },
+            h(TabsList, { 'aria-label': 'Example' }, h(TabsTrigger, { value: 'preview' }, 'Preview'), h(TabsTrigger, { value: 'code' }, 'Code'), h(TabsTrigger, { value: 'props' }, 'Props')),
+            h(TabsContent, { value: 'preview' }, 'A live render of the component, on the page background.'),
+            h(TabsContent, { value: 'code' }, h('pre', null, '<Tabs defaultValue="preview" />')),
+            h(TabsContent, { value: 'props' }, 'Every prop with its type and default.')),
+          h(Tabs, { defaultValue: 'readme' },
+            h(TabsList, { variant: 'line', 'aria-label': 'Package' },
+              h(TabsTrigger, { value: 'readme' }, h(Icon, { name: 'bookOpen' }), 'Readme'),
+              h(TabsTrigger, { value: 'versions' }, h(Icon, { name: 'package' }), 'Versions'),
+              h(TabsTrigger, { value: 'deps' }, 'Dependencies'),
+              h(TabsTrigger, { value: 'settings', disabled: true }, 'Settings')),
+            h(TabsContent, { value: 'readme' }, 'Weave production UI from a core of accessible React primitives.'),
+            h(TabsContent, { value: 'versions' }, '24 published versions.'),
+            h(TabsContent, { value: 'deps' }, 'radix-ui, lucide-react, class-variance-authority')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

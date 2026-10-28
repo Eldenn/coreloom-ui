@@ -1,0 +1,35 @@
+<!-- @dsCard group="Overlays" height=380 subtitle="Header · body · footer · focus trap" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Dialog || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, Button, Field, FieldLabel, FieldDescription, Input, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Dialog, { defaultOpen: true },
+          h(DialogTrigger, { asChild: true }, h(Button, { variant: 'secondary' }, h(Icon, { name: 'package' }), 'Publish package')),
+          h(DialogContent, { style: { maxWidth: 520 } },
+            h(DialogHeader, null,
+              h(DialogTitle, null, 'Publish @coreloom/ui 2.5.0?'),
+              h(DialogDescription, null, 'This pushes the build to the npm registry. Tags can be moved, versions can’t be reused.')),
+            h(Field, null, h(FieldLabel, { htmlFor: 'tag' }, 'Dist tag'), h(Input, { id: 'tag', defaultValue: 'latest' }), h(FieldDescription, null, 'Use next for pre-releases.')),
+            h(DialogFooter, null, h(DialogClose, { asChild: true }, h(Button, { variant: 'ghost' }, 'Cancel')), h(DialogClose, { asChild: true }, h(Button, null, 'Publish'))),
+          ))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

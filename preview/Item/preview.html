@@ -1,0 +1,36 @@
+<!-- @dsCard group="Data display" height=260 subtitle="List rows · media · description · actions" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .stack{display:flex;flex-direction:column;gap:12px;max-width:560px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Item || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions, ItemGroup, ItemSeparator, Button, Badge, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'stack' },
+          h(Item, { variant: 'outline' },
+            h(ItemMedia, { variant: 'icon' }, h(Icon, { name: 'package' })),
+            h(ItemContent, null, h(ItemTitle, null, '@coreloom/ui', h(Badge, { variant: 'default' }, 'v2.5.0')), h(ItemDescription, null, 'shadcn/ui components themed with the Coreloom tokens.')),
+            h(ItemActions, null, h(Button, { variant: 'secondary', size: 'sm' }, 'Open'))),
+          h(ItemGroup, null,
+            h(Item, { size: 'sm' }, h(ItemMedia, { variant: 'icon' }, h(Icon, { name: 'terminal' })), h(ItemContent, null, h(ItemTitle, null, '@coreloom/cli'), h(ItemDescription, null, 'Scaffold and deploy Coreloom apps.'))),
+            h(ItemSeparator),
+            h(Item, { size: 'sm' }, h(ItemMedia, { variant: 'icon' }, h(Icon, { name: 'palette' })), h(ItemContent, null, h(ItemTitle, null, '@coreloom/theme'), h(ItemDescription, null, 'Tokens, fonts and the Tailwind theme layer.')))))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

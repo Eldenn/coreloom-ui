@@ -1,0 +1,440 @@
+<!-- @template name="App shell" description="Product app layout on shadcn/ui: collapsible Sidebar, header with breadcrumb and ⌘K, KPI cards, deployments table, create dialog and toasts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coreloom UI — App shell template</title>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./ds-base.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel" data-presets="react">
+    window.coreloomReady.then((UI) => {
+      const { useState, useEffect } = React;
+      const {
+        Button, Badge, BadgeDot, Icon, Kbd, Separator, Progress,
+        Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction,
+        Avatar, AvatarFallback,
+        Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+        Tabs, TabsList, TabsTrigger, TabsContent,
+        Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext,
+        Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator,
+        DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup,
+        Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
+        Field, FieldLabel, FieldDescription, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+        CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator,
+        SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel,
+        SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge, SidebarRail,
+        SidebarInset, SidebarTrigger, SidebarSeparator,
+        Tooltip, TooltipTrigger, TooltipContent, Toaster, toast,
+      } = UI;
+
+      const NAV = [
+        { label: 'Overview', icon: 'home', active: true },
+        { label: 'Projects', icon: 'folder', badge: 12 },
+        { label: 'Deployments', icon: 'rocket', badge: 3 },
+        { label: 'Analytics', icon: 'barChart' },
+        { label: 'Activity', icon: 'activity' },
+      ];
+      const NAV_SETTINGS = [
+        { label: 'Team', icon: 'users' },
+        { label: 'Billing', icon: 'creditCard' },
+        { label: 'API keys', icon: 'key' },
+        { label: 'Settings', icon: 'settings' },
+      ];
+      const KPIS = [
+        { label: 'Deployments', value: '1,284', delta: '+12.4%', up: true, note: 'last 30 days' },
+        { label: 'Success rate', value: '98.7%', delta: '+0.6 pt', up: true, note: 'last 30 days' },
+        { label: 'Median build', value: '42s', delta: '−8s', up: true, note: 'vs previous period' },
+        { label: 'Open incidents', value: '2', delta: '+1', up: false, note: 'since yesterday' },
+      ];
+      const STATUS = {
+        ready: { label: 'Ready', variant: 'success' },
+        building: { label: 'Building', variant: 'default' },
+        failed: { label: 'Failed', variant: 'destructive' },
+        queued: { label: 'Queued', variant: 'secondary' },
+      };
+      const ROWS = [
+        { id: 'dpl_8f2k', project: 'coreloom-web', branch: 'main', status: 'ready', author: 'MC', when: '2 min ago', dur: '38s' },
+        { id: 'dpl_7c1x', project: 'coreloom-api', branch: 'feat/registry', status: 'building', author: 'AL', when: '6 min ago', dur: '—' },
+        { id: 'dpl_6a9m', project: 'docs', branch: 'main', status: 'ready', author: 'JR', when: '1 h ago', dur: '51s' },
+        { id: 'dpl_5t3q', project: 'coreloom-api', branch: 'fix/auth-timeout', status: 'failed', author: 'AL', when: '3 h ago', dur: '1m 12s' },
+        { id: 'dpl_4n8w', project: 'marketing', branch: 'main', status: 'queued', author: 'MC', when: '3 h ago', dur: '—' },
+        { id: 'dpl_3h2e', project: 'coreloom-web', branch: 'chore/deps', status: 'ready', author: 'JR', when: 'Yesterday', dur: '44s' },
+      ];
+
+      function ThemeToggle() {
+        const [light, setLight] = useState(document.documentElement.dataset.theme === 'light');
+        const flip = () => {
+          const next = !light;
+          if (next) document.documentElement.dataset.theme = 'light';
+          else delete document.documentElement.dataset.theme;
+          setLight(next);
+        };
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={flip} aria-label="Toggle theme"><Icon name={light ? 'moon' : 'sun'} /></Button>
+            </TooltipTrigger>
+            <TooltipContent>{light ? 'Dark theme' : 'Light theme'}</TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      /* ---------- sidebar ---------- */
+
+      function AppSidebar() {
+        const [active, setActive] = useState('Overview');
+        const item = (n) => (
+          <SidebarMenuItem key={n.label}>
+            <SidebarMenuButton isActive={active === n.label} tooltip={n.label} onClick={() => setActive(n.label)}>
+              <Icon name={n.icon} />
+              <span>{n.label}</span>
+            </SidebarMenuButton>
+            {n.badge && <SidebarMenuBadge>{n.badge}</SidebarMenuBadge>}
+          </SidebarMenuItem>
+        );
+        return (
+          <Sidebar collapsible="icon">
+            <SidebarHeader>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+                        <img src="../../assets/Logos/coreloom-logomark.svg" alt="" className="size-8 shrink-0 rounded-[7px]" />
+                        <div className="grid flex-1 text-left leading-tight">
+                          <span className="truncate font-display text-[15px] font-semibold text-foreground">Coreloom</span>
+                          <span className="truncate font-mono text-[11px] text-muted-foreground">Pro workspace</span>
+                        </div>
+                        <Icon name="chevronsUpDown" size={16} className="ml-auto text-muted-foreground" />
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
+                      <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+                      <DropdownMenuItem><Icon name="blocks" />Coreloom<DropdownMenuShortcut>⌘1</DropdownMenuShortcut></DropdownMenuItem>
+                      <DropdownMenuItem><Icon name="globe" />Marketing<DropdownMenuShortcut>⌘2</DropdownMenuShortcut></DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem><Icon name="plus" />New workspace</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarHeader>
+
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>Platform</SidebarGroupLabel>
+                <SidebarGroupContent><SidebarMenu>{NAV.map(item)}</SidebarMenu></SidebarGroupContent>
+              </SidebarGroup>
+              <SidebarGroup>
+                <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+                <SidebarGroupContent><SidebarMenu>{NAV_SETTINGS.map(item)}</SidebarMenu></SidebarGroupContent>
+              </SidebarGroup>
+              <SidebarGroup className="mt-auto">
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton size="sm" tooltip="Support"><Icon name="lifeBuoy" /><span>Support</span></SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton size="sm" tooltip="Documentation"><Icon name="bookOpen" /><span>Documentation</span></SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+
+            <SidebarFooter>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
+                        <Avatar><AvatarFallback>MC</AvatarFallback></Avatar>
+                        <div className="grid flex-1 text-left leading-tight">
+                          <span className="truncate text-[14px] font-medium text-foreground">Matthieu C.</span>
+                          <span className="truncate text-[12px] text-muted-foreground">Owner</span>
+                        </div>
+                        <Icon name="chevronsUpDown" size={16} className="ml-auto text-muted-foreground" />
+                      </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="top" align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem><Icon name="user" />Account</DropdownMenuItem>
+                        <DropdownMenuItem><Icon name="creditCard" />Billing</DropdownMenuItem>
+                        <DropdownMenuItem><Icon name="bell" />Notifications</DropdownMenuItem>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive"><Icon name="logOut" />Log out</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarFooter>
+            <SidebarRail />
+          </Sidebar>
+        );
+      }
+
+      /* ---------- content ---------- */
+
+      function NewProjectDialog() {
+        const [open, setOpen] = useState(false);
+        const [name, setName] = useState('');
+        const submit = (e) => {
+          e.preventDefault();
+          setOpen(false);
+          toast.success('Project created', { description: (name || 'untitled') + ' is ready to deploy.' });
+          setName('');
+        };
+        return (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Icon name="plus" />New project</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[460px]">
+              <form onSubmit={submit} className="flex flex-col gap-5">
+                <DialogHeader>
+                  <DialogTitle>New project</DialogTitle>
+                  <DialogDescription>Connect a repository and pick where it deploys.</DialogDescription>
+                </DialogHeader>
+                <Field>
+                  <FieldLabel htmlFor="np-name">Project name</FieldLabel>
+                  <Input id="np-name" placeholder="coreloom-app" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+                  <FieldDescription>Lowercase, hyphen-separated.</FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="np-region">Region</FieldLabel>
+                  <Select defaultValue="cdg">
+                    <SelectTrigger id="np-region" className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cdg">Paris (cdg1)</SelectItem>
+                      <SelectItem value="fra">Frankfurt (fra1)</SelectItem>
+                      <SelectItem value="iad">Washington (iad1)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <DialogFooter>
+                  <DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose>
+                  <Button type="submit">Create project</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        );
+      }
+
+      function Kpis() {
+        return (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {KPIS.map((k) => (
+              <Card key={k.label} className="gap-2">
+                <CardHeader>
+                  <CardDescription>{k.label}</CardDescription>
+                  <CardTitle className="font-display text-[28px] tracking-[-0.02em] tabular-nums">{k.value}</CardTitle>
+                  <CardAction>
+                    <Badge variant={k.up ? 'success' : 'warning'}>
+                      <Icon name={k.up ? 'trendingUp' : 'trendingDown'} />{k.delta}
+                    </Badge>
+                  </CardAction>
+                </CardHeader>
+                <div className="text-[12px] text-faint-foreground">{k.note}</div>
+              </Card>
+            ))}
+          </div>
+        );
+      }
+
+      function DeploymentsTable({ rows = ROWS }) {
+        return (
+          <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Deployment</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Branch</TableHead>
+                  <TableHead className="hidden sm:table-cell">Author</TableHead>
+                  <TableHead className="text-right">Duration</TableHead>
+                  <TableHead className="w-10"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>
+                      <div className="font-medium text-foreground">{r.project}</div>
+                      <div className="font-mono text-[12px] text-muted-foreground">{r.id} · {r.when}</div>
+                    </TableCell>
+                    <TableCell><Badge variant={STATUS[r.status].variant}><BadgeDot />{STATUS[r.status].label}</Badge></TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <span className="inline-flex items-center gap-1.5 font-mono text-[12px] text-fg-secondary"><Icon name="gitBranch" size={14} />{r.branch}</span>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell"><Avatar size="sm"><AvatarFallback>{r.author}</AvatarFallback></Avatar></TableCell>
+                    <TableCell className="text-right font-mono text-[13px] tabular-nums">{r.dur}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon-sm" aria-label={'Actions for ' + r.id}><Icon name="moreHorizontal" size={16} /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem><Icon name="externalLink" />Visit</DropdownMenuItem>
+                          <DropdownMenuItem><Icon name="fileText" />View logs</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => toast('Redeploying ' + r.project + '…')}><Icon name="rocket" />Redeploy</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem variant="destructive">Cancel</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        );
+      }
+
+      function Usage() {
+        const rows = [['Build minutes', 1840, 2500], ['Bandwidth (GB)', 312, 1000], ['Seats', 7, 10]];
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Usage</CardTitle>
+              <CardDescription>Pro plan · resets Nov 30</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {rows.map(([label, used, max]) => (
+                <div key={label}>
+                  <div className="mb-2 flex justify-between text-[13px]">
+                    <span className="text-fg-secondary">{label}</span>
+                    <span className="font-mono text-foreground tabular-nums">{used.toLocaleString('en')} / {max.toLocaleString('en')}</span>
+                  </div>
+                  <Progress value={(used / max) * 100} aria-label={label} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        );
+      }
+
+      function App() {
+        const [searchOpen, setSearchOpen] = useState(false);
+        useEffect(() => {
+          const onKey = (e) => {
+            if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setSearchOpen((o) => !o); }
+          };
+          window.addEventListener('keydown', onKey);
+          return () => window.removeEventListener('keydown', onKey);
+        }, []);
+
+        return (
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              {/* ---- Header ---- */}
+              <header className="sticky top-0 z-(--z-dropdown) flex h-14 shrink-0 items-center gap-2 border-b border-border-subtle bg-background/85 px-4 backdrop-blur-md">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
+                <Breadcrumb className="hidden sm:block">
+                  <BreadcrumbList>
+                    <BreadcrumbItem><BreadcrumbLink href="#">Coreloom</BreadcrumbLink></BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem><BreadcrumbPage>Overview</BreadcrumbPage></BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <Button variant="outline" className="hidden h-8 w-[240px] justify-between px-3 font-normal text-muted-foreground md:inline-flex" onClick={() => setSearchOpen(true)}>
+                    <span className="flex items-center gap-2"><Icon name="search" size={15} />Search or jump to…</span>
+                    <Kbd>⌘K</Kbd>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSearchOpen(true)} aria-label="Search"><Icon name="search" /></Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+                        <Icon name="bell" />
+                        <span className="absolute top-2 right-2 size-2 rounded-full bg-primary ring-2 ring-background" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Notifications</TooltipContent>
+                  </Tooltip>
+                  <ThemeToggle />
+                </div>
+              </header>
+
+              <CommandDialog open={searchOpen} onOpenChange={setSearchOpen} title="Search or jump to">
+                <CommandInput placeholder="Type a command or search…" />
+                <CommandList>
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandGroup heading="Navigate">
+                    {NAV.concat(NAV_SETTINGS).map((n) => (
+                      <CommandItem key={n.label} onSelect={() => setSearchOpen(false)}><Icon name={n.icon} />{n.label}</CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup heading="Actions">
+                    <CommandItem onSelect={() => { setSearchOpen(false); toast('Redeploying coreloom-web…'); }}><Icon name="rocket" />Redeploy production<CommandShortcut>⌘D</CommandShortcut></CommandItem>
+                    <CommandItem onSelect={() => setSearchOpen(false)}><Icon name="plus" />New project<CommandShortcut>⌘N</CommandShortcut></CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </CommandDialog>
+
+              {/* ---- Page ---- */}
+              <main className="mx-auto flex w-full max-w-(--container-app) flex-col gap-6 px-4 py-8 md:px-8">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <h1 className="m-0 font-display text-[28px] font-semibold tracking-[-0.02em] text-foreground">Overview</h1>
+                    <p className="mt-1 mb-0 text-[14px] text-muted-foreground">Deployments and usage across the Coreloom workspace.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="secondary"><Icon name="download" />Export</Button>
+                    <NewProjectDialog />
+                  </div>
+                </div>
+
+                <Kpis />
+
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                  <Tabs defaultValue="all" className="min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="production">Production</TabsTrigger>
+                        <TabsTrigger value="preview">Preview</TabsTrigger>
+                      </TabsList>
+                      <Button variant="outline" size="sm"><Icon name="filter" />Filter</Button>
+                    </div>
+                    <TabsContent value="all" className="flex flex-col gap-4">
+                      <DeploymentsTable />
+                      <Pagination className="justify-end">
+                        <PaginationContent>
+                          <PaginationItem><PaginationPrevious href="#" /></PaginationItem>
+                          <PaginationItem><PaginationLink href="#" isActive>1</PaginationLink></PaginationItem>
+                          <PaginationItem><PaginationLink href="#">2</PaginationLink></PaginationItem>
+                          <PaginationItem><PaginationLink href="#">3</PaginationLink></PaginationItem>
+                          <PaginationItem><PaginationNext href="#" /></PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </TabsContent>
+                    <TabsContent value="production"><DeploymentsTable rows={ROWS.filter((r) => r.branch === 'main')} /></TabsContent>
+                    <TabsContent value="preview"><DeploymentsTable rows={ROWS.filter((r) => r.branch !== 'main')} /></TabsContent>
+                  </Tabs>
+                  <div className="flex flex-col gap-6">
+                    <Usage />
+                  </div>
+                </div>
+              </main>
+            </SidebarInset>
+            <Toaster />
+          </SidebarProvider>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    });
+  </script>
+</body>
+</html>

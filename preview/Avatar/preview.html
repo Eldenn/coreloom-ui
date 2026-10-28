@@ -1,0 +1,32 @@
+<!-- @dsCard group="Data display" height=120 subtitle="Image · initials · sizes · status · group" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .row{display:flex;gap:28px;align-items:center}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Avatar || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Avatar, AvatarImage, AvatarFallback, AvatarBadge, AvatarGroup, AvatarGroupCount } = UI;
+      const A = (initials, size, badge) => h(Avatar, { size }, h(AvatarImage, { src: '', alt: '' }), h(AvatarFallback, null, initials), badge && h(AvatarBadge));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'row' },
+          A('CL', 'sm'), A('CL'), A('CL', 'lg', true),
+          h(AvatarGroup, null, A('AR'), A('JD'), A('KT'), h(AvatarGroupCount, null, '+4')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>
