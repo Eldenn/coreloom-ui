@@ -1,0 +1,34 @@
+<!-- @dsCard group="Forms" height=380 subtitle="Single date · range · today · outside days" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Calendar || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Calendar } = UI;
+      const today = new Date(2026, 9, 28);
+      function Demo() {
+        const [date, setDate] = React.useState(new Date(2026, 9, 14));
+        const [range, setRange] = React.useState({ from: new Date(2026, 9, 6), to: new Date(2026, 9, 10) });
+        const box = { border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' };
+        return h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' } },
+          h(Calendar, { mode: 'single', selected: date, onSelect: setDate, defaultMonth: today, today, style: box }),
+          h(Calendar, { mode: 'range', selected: range, onSelect: setRange, defaultMonth: today, today, style: box }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

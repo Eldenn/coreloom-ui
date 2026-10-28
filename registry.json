@@ -716,6 +716,251 @@
       ]
     },
     {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "AlertDialog",
+      "description": "A confirmation that must be answered before anything else, for destructive or irreversible actions.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/alert-dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "Unstyled show / hide region with a trigger.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/collapsible.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "Two-state button for formatting and view options.",
+      "dependencies": [
+        "radix-ui",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/toggle.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "title": "ToggleGroup",
+      "description": "A row of toggles, single or multiple choice.",
+      "dependencies": [
+        "radix-ui",
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/toggle"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/toggle-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "title": "HoverCard",
+      "description": "Preview card shown when hovering a link or name.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/hover-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "ScrollArea",
+      "description": "Scroll container with a slim themed scrollbar.",
+      "dependencies": [
+        "radix-ui"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/scroll-area.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "Month grid for picking a date or a range (react-day-picker).",
+      "dependencies": [
+        "react-day-picker@^9",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/calendar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "title": "InputOTP",
+      "description": "One-time code input, one box per character.",
+      "dependencies": [
+        "input-otp@^1",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/input-otp.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "registry:ui",
+      "title": "Empty",
+      "description": "Empty state: icon, title, description and an action.",
+      "dependencies": [
+        "class-variance-authority"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/empty.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "Searchable select built from Popover and Command.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/popover",
+        "@coreloom/command"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/combobox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "DatePicker",
+      "description": "Date field: a trigger that opens a Calendar in a Popover.",
+      "dependencies": [
+        "date-fns@^4",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/popover",
+        "@coreloom/calendar"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/date-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "title": "DataTable",
+      "description": "Table with sorting, filtering, selection and pagination (TanStack Table).",
+      "dependencies": [
+        "@tanstack/react-table@^8",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/select",
+        "@coreloom/table"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/data-table.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -754,7 +999,327 @@
         "@coreloom/skeleton",
         "@coreloom/spinner",
         "@coreloom/table",
-        "@coreloom/sidebar"
+        "@coreloom/sidebar",
+        "@coreloom/alert-dialog",
+        "@coreloom/collapsible",
+        "@coreloom/toggle",
+        "@coreloom/toggle-group",
+        "@coreloom/hover-card",
+        "@coreloom/scroll-area",
+        "@coreloom/calendar",
+        "@coreloom/input-otp",
+        "@coreloom/empty",
+        "@coreloom/combobox",
+        "@coreloom/date-picker",
+        "@coreloom/data-table"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "theme-toggle",
+      "type": "registry:component",
+      "title": "ThemeToggle",
+      "description": "Dark / light switch with a useTheme() hook; persists the choice in localStorage.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/theme-toggle.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "command-menu",
+      "type": "registry:component",
+      "title": "CommandMenu",
+      "description": "The ⌘K palette: a header search button and a CommandDialog fed with plain data.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/kbd"
+      ],
+      "files": [
+        {
+          "path": "src/components/command-menu.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "copy-button",
+      "type": "registry:component",
+      "title": "CopyButton",
+      "description": "Copies a string, confirms with a check and a toast.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/sonner",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/copy-button.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "site-header",
+      "type": "registry:component",
+      "title": "SiteHeader",
+      "description": "Sticky site bar with brand, links and actions; links move into a Sheet on phones.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/sheet"
+      ],
+      "files": [
+        {
+          "path": "src/components/site-header.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "site-footer",
+      "type": "registry:component",
+      "title": "SiteFooter",
+      "description": "Footer with a note and links.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils"
+      ],
+      "files": [
+        {
+          "path": "src/components/site-footer.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "app-shell",
+      "type": "registry:block",
+      "title": "App shell",
+      "description": "Product layout: collapsible sidebar with workspace switcher and account menu, sticky header with breadcrumb, ⌘K palette and theme toggle, page header and stat cards.",
+      "categories": [
+        "application",
+        "sidebar",
+        "dashboard"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/sidebar",
+        "@coreloom/dropdown-menu",
+        "@coreloom/avatar",
+        "@coreloom/breadcrumb",
+        "@coreloom/separator",
+        "@coreloom/badge",
+        "@coreloom/card",
+        "@coreloom/theme-toggle",
+        "@coreloom/command-menu"
+      ],
+      "files": [
+        {
+          "path": "src/components/app-shell.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/app-sidebar.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/nav-user.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/app-header.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/stat-card.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "type": "registry:block",
+      "title": "Auth screens",
+      "description": "Sign-in, sign-up and code verification forms with a centered layout.",
+      "categories": [
+        "authentication",
+        "login"
+      ],
+      "dependencies": [
+        "input-otp@^1"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/alert",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/input-otp",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/auth-layout.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/login-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/signup-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/verify-form.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "type": "registry:block",
+      "title": "Settings page",
+      "description": "Settings layout with section nav, form sections with a save footer, switch rows and a danger zone with typed confirmation.",
+      "categories": [
+        "application",
+        "settings"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/alert-dialog",
+        "@coreloom/button",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/settings-layout.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/settings-section.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "marketing",
+      "type": "registry:block",
+      "title": "Marketing page",
+      "description": "Landing sections: site header, hero with install command, feature grid, FAQ, call to action and footer.",
+      "categories": [
+        "marketing",
+        "landing"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/badge",
+        "@coreloom/card",
+        "@coreloom/accordion",
+        "@coreloom/copy-button",
+        "@coreloom/site-header",
+        "@coreloom/site-footer"
+      ],
+      "files": [
+        {
+          "path": "src/components/hero.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/feature-grid.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/faq.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/cta-section.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "type": "registry:block",
+      "title": "Docs layout",
+      "description": "Documentation layout: nav column (Sheet on phones), article, scroll-spy table of contents, code blocks and Preview / Code tabs.",
+      "categories": [
+        "docs"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/button",
+        "@coreloom/sheet",
+        "@coreloom/tabs",
+        "@coreloom/copy-button",
+        "@coreloom/site-header",
+        "@coreloom/site-footer"
+      ],
+      "files": [
+        {
+          "path": "src/components/docs-layout.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/docs-toc.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-block.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/component-preview.tsx",
+          "type": "registry:component"
+        }
       ]
     }
   ]

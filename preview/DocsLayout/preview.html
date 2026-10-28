@@ -1,0 +1,49 @@
+<!-- @dsCard group="Blocks" width=1280 height=760 subtitle="docs block · nav · article · Preview / Code · TOC" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  h2.doc{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-0.015em;margin:40px 0 12px;scroll-margin-top:80px}
+  p.doc{font-size:15px;line-height:1.7;color:var(--fg-2);margin:12px 0}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DocsLayout || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { DocsLayout, DocsPageHeader, ComponentPreview, CodeBlock, SiteHeader, CommandMenu, ThemeToggle, Badge, BadgeDot, Button, TooltipProvider, Toaster } = UI;
+      const nav = [
+        { title: 'Getting started', items: [{ title: 'Installation', href: '#' }, { title: 'Theming', href: '#' }] },
+        { title: 'Components', items: ['Alert', 'Badge', 'Button', 'Card', 'Dialog', 'Field'].map((t) => ({ title: t, href: '#' + t, active: t === 'Button' })) },
+        { title: 'Blocks', items: [{ title: 'App shell', href: '#' }, { title: 'Auth', href: '#' }, { title: 'Settings', href: '#' }] },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(DocsLayout, { nav, toc: [{ id: 'installation', title: 'Installation' }, { id: 'usage', title: 'Usage' }, { id: 'variants', title: 'Variants' }],
+              header: h(SiteHeader, { brand: h(Brand), maxWidth: 'max-w-[1240px]', links: [{ label: 'Docs', href: '#', active: true }, { label: 'Components', href: '#' }, { label: 'Blocks', href: '#' }],
+                actions: h(React.Fragment, null, h(CommandMenu, { triggerLabel: 'Search docs…', groups: [{ heading: 'Components', items: [{ label: 'Button', icon: I.blocks, onSelect: () => {} }] }] }), h(ThemeToggle)) }) },
+            h(DocsPageHeader, { eyebrow: h(Badge, { variant: 'default' }, h(BadgeDot), 'shadcn/ui'), title: 'Button', lead: 'Triggers an action or event. Six variants, three sizes plus icon sizes.' }),
+            h('h2', { id: 'installation', className: 'doc' }, 'Installation'),
+            h(CodeBlock, { code: 'pnpm dlx shadcn@latest add @coreloom/button' }),
+            h('h2', { id: 'usage', className: 'doc' }, 'Usage'),
+            h('p', { className: 'doc' }, 'The default variant carries the brand cyan; keep it to one per view.'),
+            h(ComponentPreview, { code: '<Button>Get started</Button>\n<Button variant="secondary">Secondary</Button>' },
+              h(Button, null, h(I.zap), 'Get started'), h(Button, { variant: 'secondary' }, 'Secondary'), h(Button, { variant: 'ghost' }, 'Ghost')),
+            h('h2', { id: 'variants', className: 'doc' }, 'Variants'),
+            h(CodeBlock, { title: 'app/page.tsx', code: 'import { Button } from "@/components/ui/button"\n\nexport default function Page() {\n  return <Button variant="outline">Outline</Button>\n}' })),
+          h(Toaster)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!-- @dsCard group="Forms" height=400 subtitle="Searchable select · icons · check · open list" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Combobox || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Combobox, Field, FieldLabel, FieldDescription, Icon } = UI;
+      const options = [
+        { value: 'cdg1', label: 'Paris (cdg1)', icon: h(Icon, { name: 'globe', size: 16 }) },
+        { value: 'fra1', label: 'Frankfurt (fra1)', icon: h(Icon, { name: 'globe', size: 16 }) },
+        { value: 'lhr1', label: 'London (lhr1)', icon: h(Icon, { name: 'globe', size: 16 }) },
+        { value: 'iad1', label: 'Washington (iad1)', icon: h(Icon, { name: 'globe', size: 16 }), keywords: ['us', 'east'] },
+        { value: 'sfo1', label: 'San Francisco (sfo1)', icon: h(Icon, { name: 'globe', size: 16 }), keywords: ['us', 'west'] },
+        { value: 'hnd1', label: 'Tokyo (hnd1)', icon: h(Icon, { name: 'globe', size: 16 }), disabled: true },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Field, { style: { maxWidth: 320 } },
+          h(FieldLabel, { htmlFor: 'region' }, 'Region'),
+          h(Combobox, { id: 'region', options, defaultValue: 'cdg1', searchPlaceholder: 'Search regions…', emptyText: 'No region matches that search.' }),
+          h(FieldDescription, null, 'Where your functions run.'))
+      );
+      setTimeout(() => document.getElementById('region').click(), 300);
+    }
+    render();
+  </script>
+</body>
+</html>

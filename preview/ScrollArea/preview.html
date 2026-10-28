@@ -1,0 +1,31 @@
+<!-- @dsCard group="Utilities" height=280 subtitle="Vertical list · themed scrollbar" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ScrollArea || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ScrollArea, Separator } = UI;
+      const tags = Array.from({ length: 30 }, (_, i) => 'v2.' + (30 - i) + '.0');
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(ScrollArea, { style: { height: 210, width: 240, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--surface-1)' } },
+          h('div', { style: { padding: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 600, marginBottom: 10 } }, 'Releases'),
+            tags.map((t) => h(React.Fragment, { key: t }, h('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--fg-2)' } }, t), h(Separator, { style: { margin: '8px 0' } })))))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

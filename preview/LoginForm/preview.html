@@ -1,0 +1,37 @@
+<!-- @dsCard group="Blocks" width=1280 height=720 subtitle="auth block · sign in · sign up · verify code" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start;width:100%;max-width:1180px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.LoginForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { AuthLayout, LoginForm, SignupForm, VerifyForm, TooltipProvider } = UI;
+      const github = { id: 'github', label: 'Continue with GitHub', icon: h(I.github) };
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(AuthLayout, { brand: h(Brand), className: '[&>div:nth-child(3)]:max-w-[1180px]',
+              footer: h(React.Fragment, null, 'By continuing you agree to the ', h('a', { href: '#' }, 'Terms'), ' and ', h('a', { href: '#' }, 'Privacy policy'), '.') },
+            h('div', { className: 'cols' },
+              h(LoginForm, { providers: [github], onSubmit: () => {}, signUpHref: '#', error: 'Wrong email or password.' }),
+              h(SignupForm, { onSubmit: () => {}, signInHref: '#', terms: h(React.Fragment, null, 'By creating an account you agree to the ', h('a', { href: '#' }, 'Terms'), '.') }),
+              h(VerifyForm, { onSubmit: () => {}, onResend: () => {}, destination: 'm•••@coreloom.dev' })))));
+    }
+    render();
+  </script>
+</body>
+</html>

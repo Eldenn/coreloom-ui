@@ -1,0 +1,75 @@
+"use client"
+
+// Coreloom UI — AppShell (app-shell block). The whole product layout in one component:
+// sidebar, sticky header with breadcrumb, ⌘K palette and theme toggle, and your page
+// centered at --container-app. Pass data; edit this file when the layout itself must change.
+import * as React from "react"
+
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { AppHeader, type Crumb } from "@/components/app-header"
+import { AppSidebar } from "@/components/app-sidebar"
+import { CommandMenu, type CommandMenuGroup } from "@/components/command-menu"
+import { ThemeToggle } from "@/components/theme-toggle"
+
+function AppShell({
+  children,
+  breadcrumbs,
+  commands,
+  headerActions,
+  defaultSidebarOpen = true,
+  ...sidebar
+}: React.ComponentProps<typeof AppSidebar> & {
+  children: React.ReactNode
+  breadcrumbs?: Crumb[]
+  /** ⌘K palette content. Leave out to hide the search. */
+  commands?: CommandMenuGroup[]
+  /** Extra header buttons, placed before the theme toggle (notifications, help…). */
+  headerActions?: React.ReactNode
+  defaultSidebarOpen?: boolean
+}) {
+  return (
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+      <AppSidebar {...sidebar} />
+      <SidebarInset>
+        <AppHeader
+          breadcrumbs={breadcrumbs}
+          actions={
+            <>
+              {commands && <CommandMenu groups={commands} triggerLabel="Search or jump to…" />}
+              {headerActions}
+              <ThemeToggle />
+            </>
+          }
+        />
+        <main className="mx-auto flex w-full max-w-(--container-app) flex-1 flex-col gap-6 px-4 py-8 md:px-8">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
+
+/** Page title row: title, description and actions, as the first child of AppShell. */
+function PageHeader({
+  title,
+  description,
+  actions,
+}: {
+  title: React.ReactNode
+  description?: React.ReactNode
+  actions?: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="m-0 font-display text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] text-foreground">
+          {title}
+        </h1>
+        {description && <p className="mt-1 mb-0 text-[14px] text-muted-foreground">{description}</p>}
+      </div>
+      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+    </div>
+  )
+}
+
+export { AppShell, PageHeader }

@@ -1,0 +1,35 @@
+<!-- @dsCard group="Forms" height=440 subtitle="Field trigger · popover calendar · placeholder" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DatePicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DatePicker, Field, FieldLabel, FieldDescription } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } },
+          h(Field, { style: { width: 260 } },
+            h(FieldLabel, { htmlFor: 'release' }, 'Release date'),
+            h(DatePicker, { id: 'release', defaultValue: new Date(2026, 10, 3), calendarProps: { today: new Date(2026, 9, 28) } }),
+            h(FieldDescription, null, 'Shown on the changelog.')),
+          h(Field, { style: { width: 260 } },
+            h(FieldLabel, { htmlFor: 'expiry' }, 'Token expiry'),
+            h(DatePicker, { id: 'expiry', placeholder: 'Never expires' })))
+      );
+      setTimeout(() => document.getElementById('release').click(), 300);
+    }
+    render();
+  </script>
+</body>
+</html>
