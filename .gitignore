@@ -3,3 +3,4 @@ dist
 public/r
 .env*
 .DS_Store
+*:Zone.Identifier
