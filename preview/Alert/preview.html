@@ -1,0 +1,32 @@
+<!-- @dsCard group="Components" height=330 subtitle="default (info) · success · warning · destructive" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;flex-direction:column;gap:12px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Alert || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Alert, AlertTitle, AlertDescription, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Alert, null, h(Icon, { name: 'info' }), h(AlertTitle, null, 'New release available'), h(AlertDescription, null, 'Coreloom UI 2.4.0 ships variant-aware theming.')),
+          h(Alert, { variant: 'success' }, h(Icon, { name: 'checkCircle' }), h(AlertTitle, null, 'Build passing'), h(AlertDescription, null, 'All 312 tests green on main.')),
+          h(Alert, { variant: 'warning' }, h(Icon, { name: 'alertTriangle' }), h(AlertDescription, null, 'This component is in beta — the API may change.')),
+          h(Alert, { variant: 'destructive' }, h(Icon, { name: 'alertCircle' }), h(AlertTitle, null, 'Deploy failed'), h(AlertDescription, null, 'Type error in src/theme.ts — see logs.')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

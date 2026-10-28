@@ -1,0 +1,34 @@
+<!-- @dsCard group="Forms" height=170 subtitle="On · off · small · disabled" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;flex-direction:column;gap:14px}
+  .row{display:flex;gap:11px;align-items:center}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Switch || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Switch, Label } = UI;
+      const Row = (id, label, props) => h('div', { className: 'row' }, h(Switch, { id, ...props }), h(Label, { htmlFor: id, style: { fontSize: 14, fontWeight: 400 } }, label));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          Row('s1', 'Dark mode', { defaultChecked: true }),
+          Row('s2', 'Telemetry', {}),
+          Row('s3', 'Compact rows', { size: 'sm', defaultChecked: true }),
+          Row('s4', 'Locked by admin', { disabled: true, defaultChecked: true }),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

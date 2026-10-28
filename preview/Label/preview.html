@@ -1,0 +1,30 @@
+<!-- @dsCard group="Forms" height=90 subtitle="Form label · pairs with any control" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;gap:28px;align-items:center}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Label || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Label, Checkbox } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(Label, { htmlFor: 'x' }, 'Project name'),
+          h('div', { style: { display: 'flex', gap: 10, alignItems: 'center' } }, h(Checkbox, { id: 'terms' }), h(Label, { htmlFor: 'terms', style: { fontSize: 14, fontWeight: 400 } }, 'Accept the license')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

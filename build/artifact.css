@@ -1,0 +1,6 @@
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "../src/styles/theme.css";
+@source "../src/components";
+@source "../preview"; /* design-system previews (components/<Comp>/preview.html), when building the artifact */
+@source "../templates"; /* starting-point templates (templates/<name>/index.html; project/templates in the design system) */

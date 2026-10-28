@@ -1,0 +1,279 @@
+<!-- @template name="Landing page" description="Marketing page on shadcn/ui: sticky nav, hero with install command, live component showcase, feature grid, FAQ and CTA" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coreloom UI — Landing template</title>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./ds-base.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel" data-presets="react">
+    window.coreloomReady.then((UI) => {
+      const { useState } = React;
+      const {
+        Button, Badge, BadgeDot, Icon, Separator, Kbd,
+        Card, CardIcon, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
+        Field, FieldLabel, Input, Switch, Label, Progress,
+        Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount,
+        Accordion, AccordionItem, AccordionTrigger, AccordionContent,
+        Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle,
+        Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, Toaster, toast,
+      } = UI;
+
+      const FEATURES = [
+        { icon: 'blocks', title: 'shadcn/ui underneath', body: 'Every component is shadcn source you own, restyled with Coreloom tokens. Install with the shadcn CLI.', meta: '@coreloom registry' },
+        { icon: 'zap', title: 'Zero-config theming', body: 'One theme layer maps shadcn colors onto Coreloom tokens. Dark first, light with one attribute.', meta: 'data-theme' },
+        { icon: 'command', title: 'Keyboard-first', body: 'Radix primitives bring focus management, roving tabindex and a ⌘K command palette.', meta: 'Radix' },
+        { icon: 'palette', title: 'Token-driven', body: 'Color, type, spacing, radius, motion and layering all come from one CSS variable layer.', meta: 'tokens.css' },
+        { icon: 'package', title: 'Copy, don\'t import', body: 'Components land in your repo. Change anything — there is no package version to fight.', meta: 'registry:ui' },
+        { icon: 'sliders', title: 'Variant-aware', body: 'Typed variant and size props built with cva, merged safely with cn().', meta: 'TypeScript' },
+      ];
+
+      const FAQ = [
+        { q: 'Is Coreloom UI a fork of shadcn/ui?', a: 'No. It is a shadcn registry: the components are shadcn\'s new-york sources with Coreloom styling, and the theme layer maps shadcn\'s color names onto Coreloom tokens.' },
+        { q: 'Can I use it in an existing shadcn project?', a: 'Yes. Add the @coreloom registry to components.json, install the theme, then add components one by one or all at once.' },
+        { q: 'Does it support light mode?', a: 'Dark is the default. Set data-theme="light" on <html> and every component follows, toasts included.' },
+      ];
+
+      function Brand() {
+        return (
+          <a href="#" className="flex items-center gap-2.5">
+            <img src="../../assets/Logos/coreloom-logomark.svg" alt="" className="size-[30px] rounded-[7px]" />
+            <span className="font-display text-[19px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary">loom</span></span>
+          </a>
+        );
+      }
+
+      function ThemeToggle() {
+        const [light, setLight] = useState(document.documentElement.dataset.theme === 'light');
+        const flip = () => {
+          const next = !light;
+          if (next) document.documentElement.dataset.theme = 'light';
+          else delete document.documentElement.dataset.theme;
+          setLight(next);
+        };
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={flip} aria-label="Toggle theme"><Icon name={light ? 'moon' : 'sun'} /></Button>
+            </TooltipTrigger>
+            <TooltipContent>{light ? 'Dark theme' : 'Light theme'}</TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      function InstallCommand() {
+        const cmd = 'npx shadcn@latest add @coreloom/all';
+        const [copied, setCopied] = useState(false);
+        return (
+          <div className="mx-auto mt-8 flex max-w-[440px] items-center justify-between gap-4 rounded-md border border-border bg-inset py-2 pr-2 pl-4 font-mono text-[14px] text-foreground">
+            <span className="truncate"><span className="text-primary">$</span>&nbsp; {cmd}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="Copy command" onClick={() => {
+                  navigator.clipboard && navigator.clipboard.writeText(cmd).catch(() => {});
+                  setCopied(true); toast.success('Command copied'); setTimeout(() => setCopied(false), 1400);
+                }}>
+                  <Icon name={copied ? 'check' : 'copy'} size={15} className={copied ? 'text-success' : ''} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy</TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      }
+
+      /* Three small, real compositions — the same parts an app is built from. */
+      function Showcase() {
+        return (
+          <div className="grid gap-4 text-left md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create your account</CardTitle>
+                <CardDescription>Start a workspace in under a minute.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                <Field><FieldLabel htmlFor="lp-email">Email</FieldLabel><Input id="lp-email" placeholder="you@company.dev" /></Field>
+                <Field><FieldLabel htmlFor="lp-pass">Password</FieldLabel><Input id="lp-pass" type="password" defaultValue="hunter22" /></Field>
+              </CardContent>
+              <CardFooter><Button className="w-full" onClick={() => toast.success('Welcome aboard')}>Sign up</Button></CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Notifications</CardTitle>
+                <CardDescription>Choose what reaches your inbox.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                {[['Deploy finished', true], ['Failed builds', true], ['Weekly digest', false]].map(([label, on]) => (
+                  <div key={label} className="flex items-center justify-between gap-3">
+                    <Label htmlFor={'lp-' + label}>{label}</Label>
+                    <Switch id={'lp-' + label} defaultChecked={on} />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Team usage</CardTitle>
+                <CardDescription>Pro plan · renews Nov 30</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <AvatarGroup>
+                    <Avatar><AvatarFallback>MC</AvatarFallback></Avatar>
+                    <Avatar><AvatarFallback>AL</AvatarFallback></Avatar>
+                    <Avatar><AvatarFallback>JR</AvatarFallback></Avatar>
+                    <AvatarGroupCount>+4</AvatarGroupCount>
+                  </AvatarGroup>
+                  <Badge variant="success"><BadgeDot />Active</Badge>
+                </div>
+                <div>
+                  <div className="mb-2 flex justify-between text-[13px]"><span className="text-fg-secondary">Build minutes</span><span className="font-mono text-foreground">1,840 / 2,500</span></div>
+                  <Progress value={74} aria-label="Build minutes used" />
+                </div>
+                <div>
+                  <div className="mb-2 flex justify-between text-[13px]"><span className="text-fg-secondary">Seats</span><span className="font-mono text-foreground">7 / 10</span></div>
+                  <Progress value={70} aria-label="Seats used" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+
+      function App() {
+        const [menuOpen, setMenuOpen] = useState(false);
+        const links = ['Docs', 'Components', 'Templates', 'Pricing'];
+        return (
+          <div className="min-h-svh overflow-x-clip bg-background">
+            {/* ---- Nav ---- */}
+            <header className="sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md">
+              <div className="mx-auto flex h-16 max-w-[1120px] items-center gap-6 px-5 md:px-7">
+                <Brand />
+                <nav className="hidden items-center gap-6 text-[14px] text-fg-secondary md:flex">
+                  {links.map((l) => <a key={l} href="#" className="transition-colors hover:text-foreground">{l}</a>)}
+                </nav>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" asChild><a href="#" aria-label="GitHub"><Icon name="github" /></a></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>GitHub</TooltipContent>
+                  </Tooltip>
+                  <ThemeToggle />
+                  <Button variant="secondary" size="sm" className="ml-1.5 hidden sm:inline-flex">Sign in</Button>
+                  <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu"><Icon name="menu" /></Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[280px] px-5">
+                      <SheetHeader className="px-0"><SheetTitle><Brand /></SheetTitle></SheetHeader>
+                      <nav className="flex flex-col gap-1">
+                        {links.map((l) => (
+                          <a key={l} href="#" onClick={() => setMenuOpen(false)} className="rounded-sm px-2.5 py-2 text-[15px] text-fg-secondary hover:bg-accent hover:text-foreground">{l}</a>
+                        ))}
+                      </nav>
+                      <Button className="mt-2">Sign in</Button>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </div>
+            </header>
+
+            {/* ---- Hero ---- */}
+            <section className="relative px-5 pt-20 pb-16 text-center md:pt-24">
+              <div aria-hidden className="pointer-events-none absolute inset-x-[15%] -top-10 h-[420px] bg-[radial-gradient(ellipse_at_50%_0,var(--accent-subtle),transparent_70%)]" />
+              <div className="relative mx-auto max-w-[1120px]">
+                <Badge variant="default"><BadgeDot />v3.0 — now built on shadcn/ui</Badge>
+                <h1 className="mx-auto mt-6 mb-0 max-w-[16ch] font-display text-[clamp(40px,6vw,72px)] leading-[1.02] font-semibold tracking-[-0.035em] text-foreground">
+                  The component layer{' '}
+                  <span className="bg-[linear-gradient(120deg,var(--cyan-200),var(--accent))] bg-clip-text text-transparent">developers reach for.</span>
+                </h1>
+                <p className="mx-auto mt-5 max-w-[60ch] text-[19px] leading-[1.6] text-fg-secondary">
+                  Coreloom UI is a dark-first shadcn registry — Radix primitives, Tailwind v4 and one token
+                  layer, copied into your repo and styled for the Coreloom brand.
+                </p>
+                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                  <Button size="lg">Get started<Icon name="arrowRight" /></Button>
+                  <Button size="lg" variant="secondary"><Icon name="bookOpen" />Read the docs</Button>
+                </div>
+                <InstallCommand />
+              </div>
+            </section>
+
+            {/* ---- Showcase ---- */}
+            <section className="px-5 pb-20">
+              <div className="mx-auto max-w-[1120px]"><Showcase /></div>
+            </section>
+
+            {/* ---- Features ---- */}
+            <section className="border-t border-border-subtle px-5 py-20">
+              <div className="mx-auto max-w-[1120px]">
+                <div className="mb-10 text-center">
+                  <div className="font-mono text-[11px] tracking-[0.12em] text-primary-text uppercase">Why Coreloom</div>
+                  <h2 className="mt-2.5 mb-0 font-display text-[32px] font-semibold tracking-[-0.02em] text-foreground">Everything wired, nothing in your way</h2>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {FEATURES.map((f, i) => (
+                    <Card key={f.title} accent={i === 0}>
+                      <CardIcon><Icon name={f.icon} /></CardIcon>
+                      <CardHeader>
+                        <CardTitle>{f.title}</CardTitle>
+                        <CardDescription>{f.body}</CardDescription>
+                      </CardHeader>
+                      <div className="mt-auto font-mono text-[11px] tracking-[0.02em] text-faint-foreground">{f.meta}</div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* ---- FAQ ---- */}
+            <section className="border-t border-border-subtle px-5 py-20">
+              <div className="mx-auto max-w-[720px]">
+                <h2 className="mt-0 mb-6 text-center font-display text-[28px] font-semibold tracking-[-0.02em] text-foreground">Questions</h2>
+                <Accordion type="single" collapsible defaultValue="q0">
+                  {FAQ.map((f, i) => (
+                    <AccordionItem key={i} value={'q' + i}>
+                      <AccordionTrigger>{f.q}</AccordionTrigger>
+                      <AccordionContent>{f.a}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            </section>
+
+            {/* ---- CTA ---- */}
+            <section className="px-5 pb-24">
+              <Card accent className="mx-auto max-w-[1120px] items-center gap-5 px-8 py-12 text-center">
+                <h2 className="m-0 font-display text-[30px] font-semibold tracking-[-0.02em] text-foreground">Start your next app on Coreloom</h2>
+                <p className="m-0 max-w-[52ch] text-[16px] leading-[1.6] text-fg-secondary">Add the registry, install the theme, and every shadcn component you add arrives on-brand.</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button size="lg">Get started<Icon name="arrowRight" /></Button>
+                  <Button size="lg" variant="ghost"><Icon name="github" />Star on GitHub</Button>
+                </div>
+              </Card>
+            </section>
+
+            <footer className="border-t border-border-subtle px-5 py-8">
+              <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground">
+                <span>© 2026 Coreloom — MIT licensed</span>
+                <span className="font-mono text-[12px]">Built with Coreloom UI</span>
+              </div>
+            </footer>
+            <Toaster />
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('app')).render(<TooltipProvider><App /></TooltipProvider>);
+    });
+  </script>
+</body>
+</html>

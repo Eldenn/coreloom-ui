@@ -1,0 +1,41 @@
+<!-- @dsCard group="Navigation" height=330 subtitle="Label · icons · shortcuts · checkbox · submenu · destructive" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DropdownMenu || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuCheckboxItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuGroup, Button, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(DropdownMenu, { defaultOpen: true, modal: false },
+          h(DropdownMenuTrigger, { asChild: true }, h(Button, { variant: 'secondary' }, 'coreloom-app', h(Icon, { name: 'chevronDown' }))),
+          h(DropdownMenuContent, { align: 'start', style: { width: 240 } },
+            h(DropdownMenuLabel, null, 'Project'),
+            h(DropdownMenuGroup, null,
+              h(DropdownMenuItem, null, h(Icon, { name: 'terminal' }), 'Open in terminal', h(DropdownMenuShortcut, null, '⌘T')),
+              h(DropdownMenuItem, null, h(Icon, { name: 'copy' }), 'Copy project ID', h(DropdownMenuShortcut, null, '⌘C')),
+              h(DropdownMenuSub, null, h(DropdownMenuSubTrigger, null, h(Icon, { name: 'package' }), 'Deploy to'),
+                h(DropdownMenuSubContent, null, h(DropdownMenuItem, null, 'Preview'), h(DropdownMenuItem, null, 'Production')))),
+            h(DropdownMenuSeparator),
+            h(DropdownMenuCheckboxItem, { checked: true }, 'Auto-deploy main'),
+            h(DropdownMenuSeparator),
+            h(DropdownMenuItem, { variant: 'destructive' }, h(Icon, { name: 'x' }), 'Delete project'),
+          ))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!-- @template name="Documentation page" description="Docs layout on shadcn/ui: header with ⌘K search, sidebar nav, article with Preview / Code tabs and a props table, scroll-spy TOC" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coreloom UI — Docs template</title>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="./ds-base.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel" data-presets="react">
+    window.coreloomReady.then((UI) => {
+      const { useState, useEffect } = React;
+      const {
+        Button, Badge, BadgeDot, Alert, AlertTitle, AlertDescription, Icon, Kbd, Separator,
+        Tabs, TabsList, TabsTrigger, TabsContent,
+        Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+        Field, FieldLabel, FieldDescription, FieldError, Input,
+        Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator,
+        CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
+        Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle,
+        Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, Toaster, toast,
+      } = UI;
+
+      const NAV = [
+        { group: 'Getting started', items: ['Installation', 'Theming', 'Dark mode'] },
+        { group: 'Components', items: ['Accordion', 'Alert', 'Badge', 'Button', 'Card', 'Command', 'Dialog', 'Field', 'Input', 'Sidebar', 'Table', 'Tabs'] },
+        { group: 'Templates', items: ['Docs', 'Landing', 'App shell'] },
+      ];
+      const ACTIVE = 'Button';
+      const TOC = [
+        { id: 'installation', label: 'Installation' },
+        { id: 'usage', label: 'Usage' },
+        { id: 'variants', label: 'Variants' },
+        { id: 'sizes', label: 'Sizes' },
+        { id: 'api', label: 'API reference' },
+        { id: 'in-context', label: 'In context' },
+      ];
+
+      /* ---------- small helpers ---------- */
+
+      function highlight(src) {
+        const re = /(<\/?[A-Z][\w.]*|\/?>)|(\b[a-zA-Z-]+)(?==)|("[^"]*"|'[^']*')|(\b(?:import|from|export|function|return|const|npx|npm)\b)/g;
+        const out = [];
+        let last = 0, m, k = 0;
+        while ((m = re.exec(src))) {
+          if (m.index > last) out.push(src.slice(last, m.index));
+          const cls = m[1] ? 'text-primary-text' : m[2] ? 'text-warning' : m[3] ? 'text-success' : 'text-info';
+          out.push(<span key={k++} className={cls}>{m[0]}</span>);
+          last = re.lastIndex;
+        }
+        out.push(src.slice(last));
+        return out;
+      }
+
+      function CodeBlock({ code, className = '' }) {
+        const [copied, setCopied] = useState(false);
+        const copy = () => {
+          navigator.clipboard && navigator.clipboard.writeText(code).catch(() => {});
+          setCopied(true);
+          toast.success('Copied to clipboard');
+          setTimeout(() => setCopied(false), 1400);
+        };
+        return (
+          <div className={'group relative ' + className}>
+            <pre className="m-0 overflow-x-auto rounded-lg border border-border bg-inset px-4 py-3.5 pr-12 font-mono text-[13px] leading-[1.7] text-foreground">
+              <code>{highlight(code)}</code>
+            </pre>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="absolute top-2.5 right-2.5" onClick={copy} aria-label="Copy code">
+                  <Icon name={copied ? 'check' : 'copy'} size={15} className={copied ? 'text-success' : ''} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy</TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      }
+
+      function Example({ code, children }) {
+        return (
+          <Tabs defaultValue="preview" className="mt-4">
+            <TabsList variant="line">
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+              <TabsTrigger value="code">Code</TabsTrigger>
+            </TabsList>
+            <TabsContent value="preview">
+              <div className="flex min-h-[148px] flex-wrap items-center justify-center gap-3 rounded-lg border border-border bg-surface p-7">
+                {children}
+              </div>
+            </TabsContent>
+            <TabsContent value="code"><CodeBlock code={code} /></TabsContent>
+          </Tabs>
+        );
+      }
+
+      const H2 = ({ id, children }) => (
+        <h2 id={id} className="mt-12 mb-3 scroll-mt-20 font-display text-[24px] font-semibold tracking-[-0.015em] text-foreground">{children}</h2>
+      );
+      const P = ({ children }) => <p className="my-3 max-w-[68ch] text-[15px] leading-[1.7] text-fg-secondary">{children}</p>;
+
+      function Brand() {
+        return (
+          <a href="#" className="flex items-center gap-2.5">
+            <img src="../../assets/Logos/coreloom-logomark.svg" alt="" className="size-7 rounded-[7px]" />
+            <span className="font-display text-[18px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary">loom</span></span>
+          </a>
+        );
+      }
+
+      function ThemeToggle() {
+        const [light, setLight] = useState(document.documentElement.dataset.theme === 'light');
+        const flip = () => {
+          const next = !light;
+          if (next) document.documentElement.dataset.theme = 'light';
+          else delete document.documentElement.dataset.theme;
+          setLight(next);
+        };
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={flip} aria-label="Toggle theme">
+                <Icon name={light ? 'moon' : 'sun'} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{light ? 'Dark theme' : 'Light theme'}</TooltipContent>
+          </Tooltip>
+        );
+      }
+
+      function NavList({ onPick }) {
+        return NAV.map((g) => (
+          <div key={g.group} className="mb-5">
+            <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">{g.group}</div>
+            {g.items.map((item) => (
+              <a key={item} href="#" onClick={onPick}
+                aria-current={item === ACTIVE ? 'page' : undefined}
+                className={'block rounded-sm px-2.5 py-1.5 text-[14px] transition-colors ' +
+                  (item === ACTIVE ? 'bg-primary-subtle font-medium text-primary-text' : 'text-fg-secondary hover:bg-accent hover:text-foreground')}>
+                {item}
+              </a>
+            ))}
+          </div>
+        ));
+      }
+
+      function useScrollSpy(ids) {
+        const [active, setActive] = useState(ids[0]);
+        useEffect(() => {
+          const io = new IntersectionObserver((entries) => {
+            const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+            if (hit) setActive(hit.target.id);
+          }, { rootMargin: '-64px 0px -70% 0px' });
+          ids.forEach((id) => { const el = document.getElementById(id); el && io.observe(el); });
+          return () => io.disconnect();
+        }, []);
+        return active;
+      }
+
+      /* ---------- page ---------- */
+
+      function App() {
+        const [searchOpen, setSearchOpen] = useState(false);
+        const [menuOpen, setMenuOpen] = useState(false);
+        const activeId = useScrollSpy(TOC.map((t) => t.id));
+
+        useEffect(() => {
+          const onKey = (e) => {
+            if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setSearchOpen((o) => !o); }
+          };
+          window.addEventListener('keydown', onKey);
+          return () => window.removeEventListener('keydown', onKey);
+        }, []);
+
+        return (
+          <div className="min-h-svh bg-background">
+            {/* ---- Header ---- */}
+            <header className="sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md">
+              <div className="mx-auto flex h-14 max-w-[1240px] items-center gap-4 px-4 md:px-6">
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation"><Icon name="menu" /></Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[280px] overflow-y-auto px-4">
+                    <SheetHeader className="px-0"><SheetTitle><Brand /></SheetTitle></SheetHeader>
+                    <NavList onPick={() => setMenuOpen(false)} />
+                  </SheetContent>
+                </Sheet>
+                <Brand />
+                <nav className="ml-4 hidden items-center gap-5 text-[14px] text-fg-secondary lg:flex">
+                  <a href="#" className="font-medium text-foreground">Docs</a>
+                  <a href="#" className="hover:text-foreground">Components</a>
+                  <a href="#" className="hover:text-foreground">Templates</a>
+                </nav>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <Button variant="outline" className="hidden h-8 w-[220px] justify-between px-3 font-normal text-muted-foreground sm:inline-flex" onClick={() => setSearchOpen(true)}>
+                    <span className="flex items-center gap-2"><Icon name="search" size={15} />Search docs…</span>
+                    <Kbd>⌘K</Kbd>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => setSearchOpen(true)} aria-label="Search"><Icon name="search" /></Button>
+                  <Button variant="ghost" size="icon" asChild><a href="#" aria-label="GitHub"><Icon name="github" /></a></Button>
+                  <ThemeToggle />
+                </div>
+              </div>
+            </header>
+
+            <CommandDialog open={searchOpen} onOpenChange={setSearchOpen} title="Search documentation">
+              <CommandInput placeholder="Search components, guides…" />
+              <CommandList>
+                <CommandEmpty>No results found.</CommandEmpty>
+                {NAV.map((g) => (
+                  <CommandGroup key={g.group} heading={g.group}>
+                    {g.items.map((item) => (
+                      <CommandItem key={item} onSelect={() => { setSearchOpen(false); toast('Opening ' + item); }}>
+                        <Icon name={g.group === 'Components' ? 'blocks' : g.group === 'Templates' ? 'layoutGrid' : 'bookOpen'} />
+                        {item}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ))}
+              </CommandList>
+            </CommandDialog>
+
+            <div className="mx-auto grid max-w-[1240px] md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_200px]">
+              {/* ---- Sidebar ---- */}
+              <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] overflow-y-auto border-r border-border-subtle px-3 py-7 md:block">
+                <NavList />
+              </aside>
+
+              {/* ---- Article ---- */}
+              <main className="min-w-0 px-5 pt-8 pb-24 md:px-12">
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem><BreadcrumbLink href="#">Docs</BreadcrumbLink></BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem><BreadcrumbLink href="#">Components</BreadcrumbLink></BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem><BreadcrumbPage>Button</BreadcrumbPage></BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <h1 className="mt-4 mb-3 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.025em] text-foreground">Button</h1>
+                <p className="m-0 max-w-[62ch] text-[18px] leading-[1.6] text-fg-secondary">
+                  Triggers an action or event. Six variants, three sizes plus icon sizes, and the hover,
+                  focus and disabled states built in.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge variant="default"><BadgeDot />shadcn/ui</Badge>
+                  <Badge variant="secondary">Radix Slot</Badge>
+                  <Badge variant="outline">@coreloom/button</Badge>
+                </div>
+
+                <H2 id="installation">Installation</H2>
+                <Tabs defaultValue="cli">
+                  <TabsList>
+                    <TabsTrigger value="cli">CLI</TabsTrigger>
+                    <TabsTrigger value="manual">Manual</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="cli"><CodeBlock code="npx shadcn@latest add @coreloom/button" /></TabsContent>
+                  <TabsContent value="manual">
+                    <P>Install the dependencies, then copy <code className="font-mono text-[13px] text-foreground">button.tsx</code> from the registry into <code className="font-mono text-[13px] text-foreground">components/ui</code>.</P>
+                    <CodeBlock code="npm install radix-ui class-variance-authority" />
+                  </TabsContent>
+                </Tabs>
+
+                <H2 id="usage">Usage</H2>
+                <P>Import the component and render it. The default variant carries the brand cyan; keep it to one per view.</P>
+                <Example code={'import { Button } from "@/components/ui/button"\n\n<Button>Get started</Button>'}>
+                  <Button><Icon name="zap" />Get started</Button>
+                </Example>
+
+                <H2 id="variants">Variants</H2>
+                <P>Secondary and outline sit beside a primary action; ghost suits toolbars; destructive confirms something that can't be undone.</P>
+                <Example code={'<Button>Default</Button>\n<Button variant="secondary">Secondary</Button>\n<Button variant="outline">Outline</Button>\n<Button variant="ghost">Ghost</Button>\n<Button variant="destructive">Destructive</Button>\n<Button variant="link">Link</Button>'}>
+                  <Button>Default</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="outline">Outline</Button>
+                  <Button variant="ghost">Ghost</Button>
+                  <Button variant="destructive">Destructive</Button>
+                  <Button variant="link">Link</Button>
+                </Example>
+
+                <H2 id="sizes">Sizes</H2>
+                <Example code={'<Button size="sm">Small</Button>\n<Button>Default</Button>\n<Button size="lg">Large <ArrowRightIcon /></Button>\n<Button size="icon" aria-label="Search"><SearchIcon /></Button>'}>
+                  <Button size="sm">Small</Button>
+                  <Button>Default</Button>
+                  <Button size="lg">Large<Icon name="arrowRight" /></Button>
+                  <Button size="icon" variant="secondary" aria-label="Search"><Icon name="search" /></Button>
+                </Example>
+
+                <H2 id="api">API reference</H2>
+                <P>Every other prop goes to the underlying <code className="font-mono text-[13px] text-foreground">&lt;button&gt;</code>.</P>
+                <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow><TableHead>Prop</TableHead><TableHead>Type</TableHead><TableHead>Default</TableHead></TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow><TableCell className="font-mono text-[13px]">variant</TableCell><TableCell className="font-mono text-[12px] text-muted-foreground">"default" | "secondary" | "outline" | "ghost" | "destructive" | "link"</TableCell><TableCell className="font-mono text-[12px]">"default"</TableCell></TableRow>
+                      <TableRow><TableCell className="font-mono text-[13px]">size</TableCell><TableCell className="font-mono text-[12px] text-muted-foreground">"sm" | "default" | "lg" | "icon" | "icon-sm" | "icon-lg"</TableCell><TableCell className="font-mono text-[12px]">"default"</TableCell></TableRow>
+                      <TableRow><TableCell className="font-mono text-[13px]">asChild</TableCell><TableCell className="font-mono text-[12px] text-muted-foreground">boolean</TableCell><TableCell className="font-mono text-[12px]">false</TableCell></TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <H2 id="in-context">In context</H2>
+                <P>Components compose without extra configuration: a field pair, an alert and the form's actions.</P>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel htmlFor="proj">Project name</FieldLabel>
+                    <Input id="proj" defaultValue="coreloom-app" />
+                    <FieldDescription>Lowercase, hyphen-separated.</FieldDescription>
+                  </Field>
+                  <Field data-invalid="true">
+                    <FieldLabel htmlFor="mail">Email</FieldLabel>
+                    <Input id="mail" defaultValue="not-an-email" aria-invalid="true" />
+                    <FieldError>Enter a valid email address.</FieldError>
+                  </Field>
+                </div>
+                <Alert className="mt-4">
+                  <Icon name="info" />
+                  <AlertTitle>Heads up</AlertTitle>
+                  <AlertDescription>Theming comes from the Coreloom tokens — no per-component configuration needed.</AlertDescription>
+                </Alert>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="ghost">Cancel</Button>
+                  <Button onClick={() => toast.success('Project created')}>Create project</Button>
+                </div>
+
+                <Separator className="my-12" />
+                <div className="flex items-center justify-between gap-3">
+                  <Button variant="outline" asChild><a href="#"><Icon name="arrowLeft" />Badge</a></Button>
+                  <Button variant="outline" asChild><a href="#">Card<Icon name="arrowRight" /></a></Button>
+                </div>
+              </main>
+
+              {/* ---- TOC ---- */}
+              <nav className="sticky top-14 hidden h-[calc(100svh-3.5rem)] px-4 py-8 lg:block" aria-label="On this page">
+                <div className="mb-3 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">On this page</div>
+                {TOC.map((t) => (
+                  <a key={t.id} href={'#' + t.id}
+                    className={'block border-l-2 py-1.5 pl-3 text-[13px] transition-colors ' +
+                      (activeId === t.id ? 'border-primary text-foreground' : 'border-border-subtle text-muted-foreground hover:text-foreground')}>
+                    {t.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+            <Toaster />
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('app')).render(<TooltipProvider><App /></TooltipProvider>);
+    });
+  </script>
+</body>
+</html>

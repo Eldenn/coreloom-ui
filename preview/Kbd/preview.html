@@ -1,0 +1,31 @@
+<!-- @dsCard group="Utilities" height=90 subtitle="Keys and key groups" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;gap:24px;align-items:center;font-size:14px;color:var(--fg-2)}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Kbd || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Kbd, KbdGroup } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h('span', null, 'Search ', h(Kbd, null, '⌘K')),
+          h('span', null, 'Close ', h(Kbd, null, 'Esc')),
+          h('span', null, 'Next tab ', h(KbdGroup, null, h(Kbd, null, 'Ctrl'), h(Kbd, null, 'Tab'))),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

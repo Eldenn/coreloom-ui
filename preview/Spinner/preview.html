@@ -1,0 +1,33 @@
+<!-- @dsCard group="Data display" height=100 subtitle="Inline · in a button · sizes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .row{display:flex;gap:28px;align-items:center;font-size:14px;color:var(--fg-2)}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Spinner || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Spinner, Button } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'row' },
+          h(Spinner),
+          h(Spinner, { className: 'size-6' }),
+          h('span', { style: { display: 'inline-flex', gap: 8, alignItems: 'center' } }, h(Spinner), 'Installing dependencies…'),
+          h(Button, { disabled: true }, h(Spinner, { className: 'text-current' }), 'Publishing'),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

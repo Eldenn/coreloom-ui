@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" height=170 subtitle="default · secondary · outline · ghost · destructive · link · sizes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .tag{font-family:var(--font-mono);font-size:10px;color:var(--fg-muted);width:54px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Button || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Button, Icon } = UI;
+      const Row = (tag, ...kids) => h('div', { className: 'row' }, h('span', { className: 'tag' }, tag), ...kids);
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          Row('variants',
+            h(Button, null, h(Icon, { name: 'zap' }), 'Get started'),
+            h(Button, { variant: 'secondary' }, h(Icon, { name: 'bookOpen' }), 'Documentation'),
+            h(Button, { variant: 'outline' }, 'Outline'),
+            h(Button, { variant: 'ghost' }, 'Cancel'),
+            h(Button, { variant: 'destructive' }, 'Delete'),
+            h(Button, { variant: 'link' }, 'Read the docs'),
+          ),
+          Row('sizes',
+            h(Button, { size: 'sm' }, 'Small'),
+            h(Button, null, 'Medium', h(Icon, { name: 'arrowRight' })),
+            h(Button, { size: 'lg' }, 'Large'),
+            h(Button, { size: 'icon', variant: 'secondary', 'aria-label': 'Copy' }, h(Icon, { name: 'copy' })),
+            h(Button, { disabled: true }, 'Disabled'),
+          ),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

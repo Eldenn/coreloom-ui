@@ -1,0 +1,51 @@
+<!-- @dsCard group="Navigation" height=380 subtitle="⌘K palette · groups · shortcuts · empty state" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .frame{max-width:560px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-xl)}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Command || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, CommandDialog, Icon } = UI;
+      function Demo() {
+        const [open, setOpen] = React.useState(false);
+        React.useEffect(() => {
+          const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpen(o => !o); } };
+          document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey);
+        }, []);
+        const items = () => h(React.Fragment, null,
+          h(CommandInput, { placeholder: 'Search docs, components, commands…' }),
+          h(CommandList, null,
+            h(CommandEmpty, null, 'No components match that search.'),
+            h(CommandGroup, { heading: 'Docs' },
+              h(CommandItem, null, h(Icon, { name: 'bookOpen' }), 'Introduction'),
+              h(CommandItem, null, h(Icon, { name: 'zap' }), 'Quick start')),
+            h(CommandGroup, { heading: 'Components' },
+              h(CommandItem, null, h(Icon, { name: 'blocks' }), 'Button'),
+              h(CommandItem, null, h(Icon, { name: 'type' }), 'Field'),
+              h(CommandItem, null, h(Icon, { name: 'bell' }), 'Toaster')),
+            h(CommandSeparator),
+            h(CommandGroup, { heading: 'Actions' },
+              h(CommandItem, null, h(Icon, { name: 'moon' }), 'Toggle theme', h(CommandShortcut, null, '⌘J')),
+              h(CommandItem, null, h(Icon, { name: 'github' }), 'Open repository', h(CommandShortcut, null, '⌘G')))));
+        return h(React.Fragment, null,
+          h('div', { className: 'frame' }, h(Command, null, items())),
+          h(CommandDialog, { open, onOpenChange: setOpen }, items()));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

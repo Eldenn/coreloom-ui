@@ -1,0 +1,37 @@
+<!-- @dsCard group="Overlays" height=300 subtitle="Success · error · loading · action" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:flex;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Toaster || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Toaster, toast, Button } = UI;
+      function Demo() {
+        React.useEffect(() => {
+          toast.success('Published @coreloom/ui 2.5.0', { description: 'Available on the registry in a few seconds.', duration: Infinity });
+          toast.error('Deploy failed', { description: 'Type error in src/theme.ts — see logs.', duration: Infinity });
+          toast('Branch main updated', { description: '3 new commits since your last deploy.', action: { label: 'View', onClick: () => {} }, duration: Infinity });
+        }, []);
+        return h(React.Fragment, null,
+          h(Button, { variant: 'secondary', onClick: () => toast.success('Saved', { description: 'Project settings updated.' }) }, 'Success'),
+          h(Button, { variant: 'secondary', onClick: () => toast.error('Could not save', { description: 'Check your connection and try again.' }) }, 'Error'),
+          h(Button, { variant: 'secondary', onClick: () => toast.promise(new Promise(r => setTimeout(r, 1500)), { loading: 'Publishing…', success: 'Published', error: 'Failed' }) }, 'Promise'),
+          h(Toaster, { expand: true, position: 'bottom-right' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

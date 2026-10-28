@@ -1,0 +1,31 @@
+<!-- @dsCard group="Data display" height=260 subtitle="Single · collapsible · chevron turns cyan" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:0;font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Accordion || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Accordion, AccordionItem, AccordionTrigger, AccordionContent } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Accordion, { type: 'single', collapsible: true, defaultValue: 'a' },
+          h(AccordionItem, { value: 'a' }, h(AccordionTrigger, null, 'Does Coreloom UI work without Tailwind?'), h(AccordionContent, null, 'No. The components are shadcn/ui components and style themselves with Tailwind CSS v4 utilities mapped to the Coreloom tokens.')),
+          h(AccordionItem, { value: 'b' }, h(AccordionTrigger, null, 'Can I change a token after installing?'), h(AccordionContent, null, 'Yes. Edit tokens.css; every component reads the tokens at runtime.')),
+          h(AccordionItem, { value: 'c' }, h(AccordionTrigger, null, 'Which React versions are supported?'), h(AccordionContent, null, 'React 19, like current shadcn.')))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

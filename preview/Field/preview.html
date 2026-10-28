@@ -1,0 +1,38 @@
+<!-- @dsCard group="Forms" height=280 subtitle="Vertical · horizontal with description · fieldset · error" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Field || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Field, FieldLabel, FieldDescription, FieldError, FieldContent, FieldGroup, FieldSet, FieldLegend, Input, Checkbox, Switch } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(FieldGroup, null,
+            h(Field, null, h(FieldLabel, { htmlFor: 'pkg' }, 'Package name'), h(Input, { id: 'pkg', defaultValue: '@coreloom/ui' }), h(FieldDescription, null, 'Scoped names publish as public by default.')),
+            h(Field, { 'data-invalid': true }, h(FieldLabel, { htmlFor: 'ver' }, 'Version'), h(Input, { id: 'ver', defaultValue: '2.5', 'aria-invalid': true }), h(FieldError, null, 'Use a full semver version, like 2.5.0.')),
+          ),
+          h(FieldSet, null,
+            h(FieldLegend, { variant: 'label' }, 'Build output'),
+            h(Field, { orientation: 'horizontal' }, h(Checkbox, { id: 'dts', defaultChecked: true }),
+              h(FieldContent, null, h(FieldLabel, { htmlFor: 'dts' }, 'Emit type declarations'), h(FieldDescription, null, 'Writes a .d.ts next to every entry point.'))),
+            h(Field, { orientation: 'horizontal' }, h(Switch, { id: 'min' }), h(FieldLabel, { htmlFor: 'min' }, 'Minify')),
+          ),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

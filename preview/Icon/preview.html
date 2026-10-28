@@ -1,0 +1,30 @@
+<!-- @dsCard group="Components" height=210 subtitle="Lucide icons under Coreloom names · currentColor" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:10px}
+  .cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--fg-2)}
+  .cell.on{color:var(--accent);background:var(--accent-subtle);border-color:transparent}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Icon || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Icon, icons } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null, Object.keys(icons).map((n, i) =>
+          h('div', { key: n, className: 'cell' + (i % 7 === 0 ? ' on' : ''), title: n }, h(Icon, { name: n, size: 20 }))))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!-- @dsCard group="Components" height=220 subtitle="Surface · accent glow · icon + footer meta" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Card || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Card, CardIcon, CardHeader, CardTitle, CardDescription, CardFooter, Icon } = UI;
+      const Feature = (props, icon, title, desc, meta) => h(Card, props,
+        h(CardIcon, null, h(Icon, { name: icon })),
+        h(CardHeader, null, h(CardTitle, null, title), h(CardDescription, null, desc)),
+        h(CardFooter, null, meta));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          Feature({ accent: true }, 'zap', 'Zero-config theming', 'Drop in the provider and every component inherits your tokens, dark mode included.', '@coreloom/theme'),
+          Feature({}, 'blocks', 'Composable primitives', 'Unstyled logic + styled presets. Compose exactly the surface you need.', 'Radix under the hood'),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

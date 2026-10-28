@@ -1,0 +1,37 @@
+<!-- @dsCard group="Forms" height=160 subtitle="Vertical with descriptions · horizontal" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);padding:24px 28px;font-family:var(--font-sans);}
+  #root{display:flex;gap:56px}
+  .opt{display:flex;gap:11px;align-items:flex-start}
+  .d{font-size:13px;color:var(--fg-muted);margin-top:4px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.RadioGroup || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { RadioGroup, RadioGroupItem, Label } = UI;
+      const Opt = (v, label, desc) => h('div', { className: 'opt', key: v }, h(RadioGroupItem, { value: v, id: 'r-' + v }),
+        h('div', null, h(Label, { htmlFor: 'r-' + v, style: { fontSize: 14, fontWeight: 400 } }, label), desc && h('div', { className: 'd' }, desc)));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(RadioGroup, { defaultValue: 'esm', 'aria-label': 'Bundle format' },
+            Opt('esm', 'ES modules', 'Tree-shakable, for modern bundlers.'),
+            Opt('cjs', 'CommonJS', 'For older Node tooling.')),
+          h(RadioGroup, { defaultValue: 'pnpm', orientation: 'horizontal', 'aria-label': 'Package manager', style: { display: 'flex', gap: 20 } },
+            Opt('npm', 'npm'), Opt('pnpm', 'pnpm'), Opt('yarn', 'yarn')),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>
