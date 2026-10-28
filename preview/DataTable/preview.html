@@ -1,0 +1,46 @@
+<!-- @dsCard group="Data display" height=520 subtitle="Sort · filter · selection · pagination" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DataTable || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DataTable, DataTableColumnHeader, Checkbox, Badge, BadgeDot, Button, Icon } = UI;
+      const STATUS = { ready: 'success', building: 'default', failed: 'destructive', queued: 'secondary' };
+      const data = [
+        ['coreloom-web', 'ready', 'main', 38], ['coreloom-api', 'building', 'feat/registry', undefined], ['docs', 'ready', 'main', 51],
+        ['coreloom-api', 'failed', 'fix/auth-timeout', 72], ['marketing', 'queued', 'main', undefined], ['coreloom-web', 'ready', 'chore/deps', 44],
+        ['cli', 'ready', 'main', 29], ['docs', 'ready', 'feat/search', 63],
+      ].map(([project, status, branch, secs], i) => ({ id: 'dpl_' + (9100 - i * 37), project, status, branch, secs }));
+      const columns = [
+        { id: 'select', enableSorting: false,
+          header: ({ table }) => h(Checkbox, { checked: table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'), onCheckedChange: (v) => table.toggleAllPageRowsSelected(!!v), 'aria-label': 'Select all' }),
+          cell: ({ row }) => h(Checkbox, { checked: row.getIsSelected(), onCheckedChange: (v) => row.toggleSelected(!!v), 'aria-label': 'Select row' }) },
+        { accessorKey: 'project', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Project' }),
+          cell: ({ row }) => h('div', null, h('div', { style: { color: 'var(--fg-1)', fontWeight: 500 } }, row.original.project), h('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-muted)' } }, row.original.id)) },
+        { accessorKey: 'status', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Status' }),
+          cell: ({ getValue }) => h(Badge, { variant: STATUS[getValue()] }, h(BadgeDot), getValue()) },
+        { accessorKey: 'branch', header: 'Branch', enableSorting: false, cell: ({ getValue }) => h('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12 } }, getValue()) },
+        { accessorKey: 'secs', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Duration' }), sortUndefined: 'last',
+          cell: ({ getValue }) => h('span', { style: { fontFamily: 'var(--font-mono)' } }, getValue() == null ? '—' : getValue() + 's') },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(DataTable, { columns, data, filterColumn: 'project', filterPlaceholder: 'Filter projects…', pageSize: 5, pageSizeOptions: [5, 10, 20],
+          toolbar: () => h(Button, { size: 'sm' }, h(Icon, { name: 'plus' }), 'New deployment') })
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

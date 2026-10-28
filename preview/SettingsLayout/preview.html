@@ -1,0 +1,45 @@
+<!-- @dsCard group="Blocks" width=1280 height=860 subtitle="settings block · section nav · form · switch rows · danger zone" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{max-width:1040px;margin:0 auto;padding:36px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.SettingsLayout || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { SettingsLayout, SettingsSection, SettingsRow, DangerZone, Field, FieldLabel, FieldDescription, Input, Switch, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, TooltipProvider, Toaster, toast } = UI;
+      function Demo() {
+        const [active, setActive] = React.useState('general');
+        return h(SettingsLayout, { title: 'Project settings', description: 'coreloom-web · Production', active, onNavigate: setActive,
+            nav: [{ id: 'general', label: 'General', icon: I.settings }, { id: 'domains', label: 'Domains', icon: I.globe }, { id: 'env', label: 'Environment', icon: I.key }, { id: 'notifications', label: 'Notifications', icon: I.bell }, { id: 'members', label: 'Members', icon: I.users }] },
+          h(SettingsSection, { title: 'General', description: 'How the project appears across the dashboard.', footer: 'Changes apply to new deployments.', onSubmit: () => toast.success('Settings saved') },
+            h(Field, null, h(FieldLabel, { htmlFor: 'pname' }, 'Project name'), h(Input, { id: 'pname', name: 'name', defaultValue: 'coreloom-web' }), h(FieldDescription, null, 'Lowercase, hyphen-separated. Used in URLs.')),
+            h(Field, null, h(FieldLabel, { htmlFor: 'region' }, 'Region'),
+              h(Select, { defaultValue: 'cdg1' }, h(SelectTrigger, { id: 'region', className: 'w-full' }, h(SelectValue)),
+                h(SelectContent, null, h(SelectItem, { value: 'cdg1' }, 'Paris (cdg1)'), h(SelectItem, { value: 'fra1' }, 'Frankfurt (fra1)'))))),
+          h(SettingsSection, { title: 'Notifications', description: 'Applied as soon as you switch them.' },
+            h(SettingsRow, { label: 'Deploy finished', description: 'An email when production is live.', htmlFor: 'n1' }, h(Switch, { id: 'n1', defaultChecked: true })),
+            h(SettingsRow, { label: 'Failed builds', description: 'An email and a Slack message.', htmlFor: 'n2' }, h(Switch, { id: 'n2', defaultChecked: true })),
+            h(SettingsRow, { label: 'Weekly digest', htmlFor: 'n3' }, h(Switch, { id: 'n3' }))),
+          h(DangerZone, { description: 'Deleting coreloom-web removes its 214 deployments, domains and environment variables.', actionLabel: 'Delete project',
+            confirmTitle: 'Delete coreloom-web?', confirmDescription: 'Its deployments, domains and environment variables go with it.', resourceName: 'coreloom-web', onConfirm: () => {} }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo), h(Toaster)));
+    }
+    render();
+  </script>
+</body>
+</html>

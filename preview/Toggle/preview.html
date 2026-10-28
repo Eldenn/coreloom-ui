@@ -1,0 +1,33 @@
+<!-- @dsCard group="Forms" height=170 subtitle="Default · outline · on · sizes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Toggle || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Toggle, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' } },
+          h(Toggle, { 'aria-label': 'Wrap lines', defaultPressed: true }, h(Icon, { name: 'type' }), 'Wrap'),
+          h(Toggle, { 'aria-label': 'Show grid' }, h(Icon, { name: 'layoutGrid' }), 'Grid'),
+          h(Toggle, { variant: 'outline', defaultPressed: true, 'aria-label': 'Favorite' }, h(Icon, { name: 'star' })),
+          h(Toggle, { variant: 'outline', 'aria-label': 'Notifications' }, h(Icon, { name: 'bell' })),
+          h(Toggle, { size: 'sm', variant: 'outline', 'aria-label': 'Terminal' }, h(Icon, { name: 'terminal' })),
+          h(Toggle, { disabled: true, 'aria-label': 'Disabled' }, 'Disabled'))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

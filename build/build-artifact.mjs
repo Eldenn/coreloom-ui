@@ -5,7 +5,7 @@ import fs from "node:fs"
 const root = path.resolve(import.meta.dirname, "..")
 const out = process.argv[2]
 const NS = "CoreloomUIDesignSystem_ff5f32"
-const COMPONENTS = ["Accordion","Alert","Avatar","Badge","Breadcrumb","Button","Card","Checkbox","Command","Dialog","DropdownMenu","Field","Icon","Input","Item","Kbd","Label","Pagination","Popover","Progress","RadioGroup","Select","Separator","Sheet","Sidebar","Skeleton","Slider","Spinner","Switch","Table","Tabs","Textarea","Toaster","Tooltip"]
+const COMPONENTS = ["Accordion","Alert","AlertDialog","Avatar","Badge","Breadcrumb","Button","Calendar","Card","Checkbox","Collapsible","Combobox","Command","DataTable","DatePicker","Dialog","DropdownMenu","Empty","Field","HoverCard","Icon","Input","InputOTP","Item","Kbd","Label","Pagination","Popover","Progress","RadioGroup","ScrollArea","Select","Separator","Sheet","Sidebar","Skeleton","Slider","Spinner","Switch","Table","Tabs","Textarea","Toaster","Toggle","ToggleGroup","Tooltip","AppShell","LoginForm","SettingsLayout","Hero","DocsLayout"]
 
 const globals = {
   name: "globals",

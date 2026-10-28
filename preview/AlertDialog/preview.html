@@ -1,0 +1,36 @@
+<!-- @dsCard group="Overlays" height=380 subtitle="Destructive confirmation · media · cancel / action" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AlertDialog || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, Button, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(AlertDialog, { defaultOpen: true },
+          h(AlertDialogTrigger, { asChild: true }, h(Button, { variant: 'destructive' }, 'Delete project')),
+          h(AlertDialogContent, null,
+            h(AlertDialogHeader, null,
+              h(AlertDialogMedia, null, h(Icon, { name: 'alertTriangle' })),
+              h(AlertDialogTitle, null, 'Delete coreloom-web?'),
+              h(AlertDialogDescription, null, 'Its 214 deployments, domains and environment variables go with it. This can’t be undone.')),
+            h(AlertDialogFooter, null,
+              h(AlertDialogCancel, null, 'Cancel'),
+              h(AlertDialogAction, { variant: 'destructive' }, 'Delete project'))))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!-- @dsCard group="Blocks" width=1280 height=1060 subtitle="marketing block · header · hero · features · FAQ · CTA · footer" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Hero || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { SiteHeader, SiteFooter, Hero, FeatureGrid, Faq, CtaSection, Button, ThemeToggle, TooltipProvider, Toaster } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(SiteHeader, { brand: h(Brand), links: [{ label: 'Docs', href: '#' }, { label: 'Components', href: '#' }, { label: 'Templates', href: '#' }, { label: 'Pricing', href: '#' }],
+            actions: h(React.Fragment, null, h(ThemeToggle), h(Button, { variant: 'secondary', size: 'sm' }, 'Sign in')) }),
+          h(Hero, { announcement: 'v3.0 — now built on shadcn/ui', title: 'The component layer', highlight: 'developers reach for.',
+            description: 'Coreloom UI is a dark-first shadcn registry — Radix primitives, Tailwind v4 and one token layer, copied into your repo.',
+            actions: h(React.Fragment, null, h(Button, { size: 'lg' }, 'Get started', h(I.arrowRight)), h(Button, { size: 'lg', variant: 'secondary' }, h(I.bookOpen), 'Read the docs')),
+            command: 'pnpm dlx shadcn@latest add @coreloom/all' }),
+          h(FeatureGrid, { eyebrow: 'Why Coreloom', title: 'Everything wired, nothing in your way', features: [
+            { icon: I.blocks, title: 'shadcn/ui underneath', description: 'Every component is shadcn source you own, restyled with Coreloom tokens.', meta: '@coreloom registry' },
+            { icon: I.zap, title: 'Zero-config theming', description: 'One theme layer maps shadcn colors onto Coreloom tokens. Dark first.', meta: 'data-theme' },
+            { icon: I.command, title: 'Keyboard-first', description: 'Radix focus management, roving tabindex and a ⌘K palette.', meta: 'Radix' } ] }),
+          h(Faq, { items: [{ question: 'Is Coreloom UI a fork of shadcn/ui?', answer: 'No. It is a shadcn registry: shadcn’s sources with Coreloom styling.' }, { question: 'Does it support light mode?', answer: 'Yes — set data-theme="light" on <html>.' }] }),
+          h(CtaSection, { title: 'Start your next app on Coreloom', description: 'Add the registry, install the theme, and every component arrives on-brand.', actions: h(Button, { size: 'lg' }, 'Get started', h(I.arrowRight)) }),
+          h(SiteFooter, { note: '© 2026 Coreloom — MIT licensed', links: [{ label: 'GitHub', href: '#' }, { label: 'Changelog', href: '#' }] }),
+          h(Toaster)));
+    }
+    render();
+  </script>
+</body>
+</html>

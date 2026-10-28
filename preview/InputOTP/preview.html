@@ -1,0 +1,39 @@
+<!-- @dsCard group="Forms" height=220 subtitle="6 digits · groups · separator · invalid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.InputOTP || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator, Field, FieldLabel, FieldDescription, FieldError } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 40, flexWrap: 'wrap' } },
+          h(Field, { style: { width: 'auto' } },
+            h(FieldLabel, { htmlFor: 'otp' }, 'Verification code'),
+            h(InputOTP, { id: 'otp', maxLength: 6, defaultValue: '4821', autoFocus: true },
+              h(InputOTPGroup, null, h(InputOTPSlot, { index: 0 }), h(InputOTPSlot, { index: 1 }), h(InputOTPSlot, { index: 2 })),
+              h(InputOTPSeparator),
+              h(InputOTPGroup, null, h(InputOTPSlot, { index: 3 }), h(InputOTPSlot, { index: 4 }), h(InputOTPSlot, { index: 5 }))),
+            h(FieldDescription, null, 'Sent to m•••@coreloom.dev')),
+          h(Field, { 'data-invalid': 'true', style: { width: 'auto' } },
+            h(FieldLabel, { htmlFor: 'otp2' }, 'Recovery PIN'),
+            h(InputOTP, { id: 'otp2', maxLength: 4, defaultValue: '1234' },
+              h(InputOTPGroup, null, [0, 1, 2, 3].map((i) => h(InputOTPSlot, { key: i, index: i, 'aria-invalid': true })))),
+            h(FieldError, null, 'That PIN doesn’t match.')))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Overlays" height=300 subtitle="Profile preview on hover · avatar · meta" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.HoverCard || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { HoverCard, HoverCardTrigger, HoverCardContent, Avatar, AvatarFallback, Badge, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('p', { style: { fontSize: 14, color: 'var(--fg-2)', margin: 0 } }, 'Last deploy by ',
+          h(HoverCard, { open: true },
+            h(HoverCardTrigger, { asChild: true }, h('a', { href: '#', style: { color: 'var(--accent-fg)', fontWeight: 500 } }, '@matthieu')),
+            h(HoverCardContent, { align: 'start' },
+              h('div', { style: { display: 'flex', gap: 12 } },
+                h(Avatar, { size: 'lg' }, h(AvatarFallback, null, 'MC')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                  h('div', { style: { color: 'var(--fg-1)', fontWeight: 600 } }, 'Matthieu C.'),
+                  h('div', { style: { fontSize: 13 } }, 'Lead tech · maintains @coreloom/ui'),
+                  h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginTop: 4, fontSize: 12, color: 'var(--fg-muted)' } },
+                    h(Icon, { name: 'clock', size: 14 }), 'Joined March 2024', h(Badge, null, 'owner')))))),
+          ' · 2 min ago')
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

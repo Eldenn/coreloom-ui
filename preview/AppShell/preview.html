@@ -1,0 +1,70 @@
+<!-- @dsCard group="Blocks" width=1280 height=760 subtitle="app-shell block · sidebar · header · ⌘K · stat cards" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AppShell || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { AppShell, PageHeader, StatCard, DataTable, DataTableColumnHeader, Badge, BadgeDot, Button, TooltipProvider, Toaster, toast } = UI;
+      const groups = [
+        { label: 'Platform', items: [
+          { title: 'Overview', url: '#', icon: I.home, isActive: true },
+          { title: 'Projects', url: '#', icon: I.folder, badge: 12 },
+          { title: 'Deployments', url: '#', icon: I.rocket, badge: 3 },
+          { title: 'Analytics', url: '#', icon: I.barChart } ] },
+        { label: 'Workspace', items: [
+          { title: 'Team', url: '#', icon: I.users },
+          { title: 'Billing', url: '#', icon: I.creditCard },
+          { title: 'Settings', url: '#', icon: I.settings } ] },
+      ];
+      const STATUS = { ready: 'success', building: 'default', failed: 'destructive' };
+      const rows = [['coreloom-web', 'ready', '38s'], ['coreloom-api', 'building', '—'], ['docs', 'ready', '51s'], ['coreloom-api', 'failed', '1m 12s']]
+        .map(([project, status, dur], i) => ({ id: 'dpl_' + (812 - i * 7), project, status, dur }));
+      const columns = [
+        { accessorKey: 'project', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Project' }),
+          cell: ({ row }) => h('div', null, h('div', { style: { color: 'var(--fg-1)', fontWeight: 500 } }, row.original.project), h('div', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-muted)' } }, row.original.id)) },
+        { accessorKey: 'status', header: 'Status', cell: ({ getValue }) => h(Badge, { variant: STATUS[getValue()] }, h(BadgeDot), getValue()) },
+        { accessorKey: 'dur', header: 'Duration', cell: ({ getValue }) => h('span', { style: { fontFamily: 'var(--font-mono)' } }, getValue()) },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(AppShell, {
+              workspaces: [{ name: 'Coreloom', plan: 'Pro workspace', logo: h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: '100%', height: '100%' } }) }, { name: 'Marketing' }],
+              onWorkspaceCreate: () => {},
+              groups,
+              secondary: [{ title: 'Support', url: '#', icon: I.lifeBuoy }, { title: 'Documentation', url: '#', icon: I.bookOpen }],
+              user: { name: 'Matthieu C.', email: 'matthieu@coreloom.dev', role: 'Owner' },
+              menu: [{ label: 'Account', icon: I.user, onSelect: () => {} }, { label: 'Billing', icon: I.creditCard, onSelect: () => {} }],
+              onSignOut: () => {},
+              breadcrumbs: [{ label: 'Coreloom', href: '#' }, { label: 'Overview' }],
+              commands: [{ heading: 'Navigate', items: groups.flatMap((g) => g.items).map((it) => ({ label: it.title, icon: it.icon, onSelect: () => {} })) }],
+              headerActions: h(Button, { variant: 'ghost', size: 'icon', 'aria-label': 'Notifications' }, h(I.bell)),
+            },
+            h(PageHeader, { title: 'Overview', description: 'Deployments and usage across the Coreloom workspace.',
+              actions: h(Button, { onClick: () => toast.success('Project created') }, h(I.plus), 'New project') }),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 } },
+              h(StatCard, { label: 'Deployments', value: '1,284', delta: '+12.4%', note: 'last 30 days' }),
+              h(StatCard, { label: 'Success rate', value: '98.7%', delta: '+0.6 pt', note: 'last 30 days' }),
+              h(StatCard, { label: 'Median build', value: '42s', delta: '−8s', trend: 'down', good: true, note: 'vs previous period' }),
+              h(StatCard, { label: 'Open incidents', value: '2', delta: '+1', note: 'since yesterday', good: false })),
+            h(DataTable, { columns, data: rows, pageSize: 5 })),
+          h(Toaster)));
+    }
+    render();
+  </script>
+</body>
+</html>
