@@ -1,0 +1,31 @@
+<!-- @dsCard group="Data display" height=300 subtitle="Slides · previous / next · partial next slide" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  #root{padding:24px 64px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Carousel || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, Card, CardIcon, CardHeader, CardTitle, CardDescription, Icon } = UI;
+      const items = [['zap', 'Zero-config theming'], ['blocks', 'shadcn underneath'], ['command', 'Keyboard-first'], ['palette', 'Token-driven'], ['package', 'Copy, don’t import']];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Carousel, { opts: { align: 'start' }, style: { maxWidth: 640 } },
+          h(CarouselContent, null, items.map(([icon, title], i) => h(CarouselItem, { key: i, className: 'basis-1/2' },
+            h(Card, { accent: i === 0 }, h(CardIcon, null, h(Icon, { name: icon })), h(CardHeader, null, h(CardTitle, null, title), h(CardDescription, null, 'Slide ' + (i + 1) + ' of ' + items.length + '.')))))),
+          h(CarouselPrevious), h(CarouselNext)));
+    }
+    render();
+  </script>
+</body>
+</html>

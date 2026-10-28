@@ -39,7 +39,7 @@ function SettingsSection({
   /** Note at the left of the footer ("Changes apply to new deployments."). */
   footer?: React.ReactNode
   /** Makes the section a form with a Save button. Leave out for sections that apply instantly. */
-  onSubmit?: (data: FormData) => void | Promise<void>
+  onSubmit?: (data: FormData) => unknown
   pending?: boolean
   submitLabel?: string
   className?: string
@@ -127,7 +127,7 @@ function DangerZone({
   confirmDescription: React.ReactNode
   /** Typed to confirm. */
   resourceName: string
-  onConfirm: () => void | Promise<void>
+  onConfirm: () => unknown
   pending?: boolean
 }) {
   const [typed, setTyped] = React.useState("")

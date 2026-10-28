@@ -1,0 +1,41 @@
+<!-- @dsCard group="Data display" height=400 subtitle="Bar + line · tooltip · legend · chart-1…3" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ChartContainer || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, Recharts, Card, CardHeader, CardTitle, CardDescription, CardContent } = UI;
+      const { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } = Recharts;
+      const data = [['Jun', 186, 80, 42], ['Jul', 305, 200, 61], ['Aug', 237, 120, 55], ['Sep', 273, 190, 48], ['Oct', 209, 130, 70], ['Nov', 314, 240, 66]]
+        .map(([month, production, preview, rollback]) => ({ month, production, preview, rollback }));
+      const config = { production: { label: 'Production', color: 'var(--chart-1)' }, preview: { label: 'Preview', color: 'var(--chart-2)' }, rollback: { label: 'Rollbacks', color: 'var(--chart-3)' } };
+      const card = (title, desc, chart) => h(Card, { style: { flex: 1, minWidth: 300 } }, h(CardHeader, null, h(CardTitle, null, title), h(CardDescription, null, desc)), h(CardContent, null, chart));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap' } },
+          card('Deployments', 'June – November 2026', h(ChartContainer, { config, style: { height: 220, width: '100%' } },
+            h(BarChart, { data, accessibilityLayer: true },
+              h(CartesianGrid, { vertical: false }), h(XAxis, { dataKey: 'month', tickLine: false, axisLine: false, tickMargin: 8 }),
+              h(ChartTooltip, { content: h(ChartTooltipContent, { indicator: 'dashed' }) }), h(ChartLegend, { content: h(ChartLegendContent) }),
+              h(Bar, { dataKey: 'production', fill: 'var(--color-production)', radius: 4 }), h(Bar, { dataKey: 'preview', fill: 'var(--color-preview)', radius: 4 })))),
+          card('Rollbacks', 'Per month', h(ChartContainer, { config, style: { height: 220, width: '100%' } },
+            h(LineChart, { data, accessibilityLayer: true, margin: { left: 4, right: 12 } },
+              h(CartesianGrid, { vertical: false }), h(XAxis, { dataKey: 'month', tickLine: false, axisLine: false, tickMargin: 8 }),
+              h(ChartTooltip, { cursor: false, content: h(ChartTooltipContent) }),
+              h(Line, { dataKey: 'rollback', type: 'monotone', stroke: 'var(--color-rollback)', strokeWidth: 2, dot: { r: 4 } }))))));
+    }
+    render();
+  </script>
+</body>
+</html>

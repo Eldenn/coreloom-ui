@@ -1,0 +1,31 @@
+<!-- @dsCard group="Overlays" height=420 subtitle="Bottom sheet · handle · header · footer" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Drawer || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose, Button, Field, FieldLabel, Input } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Drawer, { defaultOpen: true },
+          h(DrawerTrigger, { asChild: true }, h(Button, { variant: 'secondary' }, 'Rename project')),
+          h(DrawerContent, null, h('div', { style: { margin: '0 auto', width: '100%', maxWidth: 420 } },
+            h(DrawerHeader, null, h(DrawerTitle, null, 'Rename project'), h(DrawerDescription, null, 'The new name shows in URLs and the dashboard.')),
+            h('div', { style: { padding: '0 22px' } }, h(Field, null, h(FieldLabel, { htmlFor: 'nm' }, 'Name'), h(Input, { id: 'nm', defaultValue: 'coreloom-web' }))),
+            h(DrawerFooter, null, h(Button, null, 'Save'), h(DrawerClose, { asChild: true }, h(Button, { variant: 'ghost' }, 'Cancel')))))));
+    }
+    render();
+  </script>
+</body>
+</html>

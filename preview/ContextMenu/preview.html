@@ -1,0 +1,39 @@
+<!-- @dsCard group="Overlays" height=360 subtitle="Right-click area · items · checkbox · submenu" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ContextMenu || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuLabel, Icon } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(ContextMenu, null,
+          h(ContextMenuTrigger, { id: 'area', style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: 290, width: 300, border: '1px dashed var(--border)', borderRadius: 'var(--radius-md)', fontSize: 13, color: 'var(--fg-muted)' } }, 'Right-click here'),
+          h(ContextMenuContent, { className: 'w-56' },
+            h(ContextMenuLabel, null, 'coreloom-web'),
+            h(ContextMenuItem, null, h(Icon, { name: 'externalLink' }), 'Open', h(ContextMenuShortcut, null, '⌘O')),
+            h(ContextMenuItem, null, h(Icon, { name: 'copy' }), 'Copy URL', h(ContextMenuShortcut, null, '⌘C')),
+            h(ContextMenuSub, null, h(ContextMenuSubTrigger, null, h(Icon, { name: 'rocket' }), 'Redeploy'),
+              h(ContextMenuSubContent, null, h(ContextMenuItem, null, 'Production'), h(ContextMenuItem, null, 'Preview'))),
+            h(ContextMenuSeparator),
+            h(ContextMenuCheckboxItem, { checked: true }, 'Show in sidebar'),
+            h(ContextMenuSeparator),
+            h(ContextMenuItem, { variant: 'destructive' }, 'Delete project'))));
+      setTimeout(() => { const el = document.getElementById('area'); const r = el.getBoundingClientRect();
+        el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: r.left + 40, clientY: r.top + 30 })); }, 300);
+    }
+    render();
+  </script>
+</body>
+</html>

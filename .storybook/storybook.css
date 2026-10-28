@@ -1,0 +1,9 @@
+/* Storybook styles: the app stylesheet, plus the stories folder as a Tailwind source. */
+@import "../src/styles/globals.css";
+@source "../stories";
+
+/* Story canvas follows the Coreloom page surface in both themes. */
+.sb-show-main,
+.docs-story {
+  background: var(--bg-1);
+}

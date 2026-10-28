@@ -1,6 +1,9 @@
 node_modules
 dist
 public/r
+public/storybook
 .env*
 .DS_Store
 *:Zone.Identifier
+*.log
+storybook-static

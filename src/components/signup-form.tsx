@@ -25,7 +25,7 @@ function SignupForm({
   description = "Start a workspace in under a minute.",
   className,
 }: {
-  onSubmit: (values: { name: string; email: string; password: string }) => void | Promise<void>
+  onSubmit: (values: { name: string; email: string; password: string }) => unknown
   onProvider?: (providerId: string) => void
   providers?: OAuthProvider[]
   pending?: boolean

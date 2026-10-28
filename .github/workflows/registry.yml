@@ -1,6 +1,7 @@
-# Builds the shadcn registry (public/r/*.json) and publishes it to GitHub Pages.
+# Builds the shadcn registry (public/r/*.json) and Storybook (public/storybook) and publishes
+# both to GitHub Pages: https://eldenn.github.io/coreloom-ui/ (Storybook) and …/r/ (registry).
 # Consumers: pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
-name: Registry
+name: Registry & Storybook
 
 on:
   push:
@@ -29,6 +30,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm registry:build
+      - run: pnpm storybook:build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
