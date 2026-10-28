@@ -1,0 +1,7 @@
+# Dependencies allowed to run install scripts (pnpm blocks them by default).
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+
+# Only install versions published at least 14 days ago (supply-chain safety).
+minimumReleaseAge: 20160

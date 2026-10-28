@@ -1,4 +1,7 @@
 /* Coreloom UI Design System — generated from tokens.json */
+/* Registry copy: the @font-face rules are left out. The fonts come from fonts.css
+   (Fontsource packages), registered as "Geist Variable", "Space Grotesk Variable" and
+   "JetBrains Mono Variable" — the font stacks below list those names after the brand names. */
 
 :root, [data-theme="dark"] {
   --cl-cyan: #1ce0d3;
@@ -152,9 +155,9 @@
   --breakpoint-2xl: 1536px;
   --container-prose: 720px;
   --container-app: 1200px;
-  --font-display: 'Space Grotesk', 'Geist', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: 'Space Grotesk', 'Space Grotesk Variable', 'Geist', 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 .cl-display { font-family: var(--font-display); font-size: 64px; line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; }
@@ -168,17 +171,3 @@
 .cl-label { font-family: var(--font-sans); font-size: 13px; line-height: 1.45; font-weight: 500; letter-spacing: 0.01em; }
 .cl-eyebrow { font-family: var(--font-mono); font-size: 12px; line-height: 1; font-weight: 500; letter-spacing: 0.12em; }
 .cl-code { font-family: var(--font-mono); font-size: 0.9em; line-height: 1.45; font-weight: 400; letter-spacing: -0.01em; }
-
-@font-face { font-family: 'Geist'; font-style: normal; font-weight: 300; font-display: swap; src: url('fonts/geist-300.woff2') format('woff2'); }
-@font-face { font-family: 'Geist'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/geist-400.woff2') format('woff2'); }
-@font-face { font-family: 'Geist'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/geist-500.woff2') format('woff2'); }
-@font-face { font-family: 'Geist'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/geist-600.woff2') format('woff2'); }
-@font-face { font-family: 'Geist'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/geist-700.woff2') format('woff2'); }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/space-grotesk-400.woff2') format('woff2'); }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/space-grotesk-500.woff2') format('woff2'); }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/space-grotesk-600.woff2') format('woff2'); }
-@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/space-grotesk-700.woff2') format('woff2'); }
-@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/jetbrains-mono-400.woff2') format('woff2'); }
-@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/jetbrains-mono-500.woff2') format('woff2'); }
-@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/jetbrains-mono-600.woff2') format('woff2'); }
-@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/jetbrains-mono-700.woff2') format('woff2'); }

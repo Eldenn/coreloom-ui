@@ -9,4 +9,4 @@ The app's main navigation: a collapsible column of grouped links, with a workspa
 - The sidebar container sits at `z-sticky`; keep the page header below it (`z-dropdown`).
 - Use it for apps with more than a handful of destinations. For docs or marketing pages, a plain nav column or the header is enough.
 
-_All parts are on `window.CoreloomUIDesignSystem_ff5f32`; in an app, `npx shadcn add @coreloom/sidebar` (installs the `use-mobile` hook too) and import from `@/components/ui/sidebar`. The App shell template shows a full layout._
+_All parts are on `window.CoreloomUIDesignSystem_ff5f32`; in an app, `pnpm dlx shadcn@latest add @coreloom/sidebar` (installs the `use-mobile` hook too) and import from `@/components/ui/sidebar`. The App shell template shows a full layout._

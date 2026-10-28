@@ -9,12 +9,13 @@ component.
 
 | Path | What |
 |---|---|
-| `src/styles/tokens.css` | The Coreloom tokens — colors per theme (dark default, light via `<html data-theme="light">`), type, spacing, radii, shadows, z-index, breakpoints, container widths, font faces. Generated from the design system's `tokens.json`. |
+| `src/styles/tokens.css` | The Coreloom tokens — colors per theme (dark default, light via `<html data-theme="light">`), type, spacing, radii, shadows, z-index, breakpoints, container widths. Copied from the design system's compiled `tokens.css` with `pnpm tokens:sync <path>` (drops the `@font-face` rules). |
+| `src/styles/fonts.css` | Geist, Space Grotesk and JetBrains Mono from Fontsource (variable files), bundled by the app. Part of `@coreloom/theme`. |
 | `src/styles/theme.css` | The shadcn layer: maps Tailwind / shadcn color utilities (`bg-background`, `bg-primary`, `text-muted-foreground`, `border-input`, `ring-ring`…) onto the Coreloom tokens, adds Coreloom-only utilities (`bg-inset`, `text-fg-secondary`, `bg-primary-subtle`, `shadow-glow`, `bg-scrim`…) and makes `dark:` follow `data-theme`. |
 | `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
 | `src/components/ui/*.tsx` | 34 components: accordion, alert, avatar, badge, breadcrumb, button, card, checkbox, command, dialog, dropdown-menu, field, icon, input, item, kbd, label, pagination, popover, progress, radio-group, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, switch, table, tabs, textarea, tooltip. shadcn's code and APIs, Coreloom's look. |
 | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
-| `registry.json` → `public/r/*.json` | The registry. `npm run registry:build` regenerates `public/r`. |
+| `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
 | `templates/` | The design system's starting points — docs page, landing page, app shell — as single HTML pages on the artifact bundle. Read them for layout patterns; in an app, rebuild them from the installed components. |
 | `build/`, `preview/` | Builds the design-system artifact's bundle (all components on one global, React 19 as browser scripts, compiled Tailwind) from the same sources. |
 
@@ -31,7 +32,7 @@ The registry is built and published to GitHub Pages on every push to `main`
 1. In the consuming project (or the monorepo's shared `ui` package), add the namespace once:
 
    ```bash
-   npx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
+   pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
    ```
 
    which writes this to `components.json`:
@@ -43,14 +44,15 @@ The registry is built and published to GitHub Pages on every push to `main`
 2. Install:
 
    ```bash
-   npx shadcn@latest add @coreloom/all        # theme, utils and every component
-   npx shadcn@latest add @coreloom/dialog     # or one at a time (pulls its dependencies)
+   pnpm dlx shadcn@latest add @coreloom/all        # theme, utils and every component
+   pnpm dlx shadcn@latest add @coreloom/dialog     # or one at a time (pulls its dependencies)
    ```
 
 3. In `globals.css`, after `@import "tailwindcss";`:
 
    ```css
    @import "tw-animate-css";
+   @import "./coreloom/fonts.css";
    @import "./coreloom/tokens.css";
    @import "./coreloom/theme.css";
    ```
@@ -78,15 +80,19 @@ Brand rules, token usage and per-component guidelines live in the Coreloom UI de
 
 ## Develop and release
 
+The repo uses pnpm (version pinned in `package.json` → `packageManager`; `corepack enable` picks it up).
+`pnpm-workspace.yaml` allows the two install scripts the build needs (esbuild, @parcel/watcher) and
+only installs versions published at least 14 days ago.
+
 ```bash
-npm ci
-npm run typecheck
-npm run registry:build      # → public/r/*.json (not committed; CI builds it)
+pnpm install
+pnpm typecheck
+pnpm registry:build      # → public/r/*.json (not committed; CI builds it)
 ```
 
 Push to `main` and the workflow republishes the registry. Tag releases (`git tag v0.1.0 && git push --tags`)
 so projects can tell which version they installed — shadcn copies code, so updating a project
-means running `npx shadcn@latest add @coreloom/<name> --overwrite` (or `--diff` first to review).
+means running `pnpm dlx shadcn@latest add @coreloom/<name> --overwrite` (or `--diff` first to review).
 
 ## License
 
