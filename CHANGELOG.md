@@ -18,6 +18,18 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ## [Unreleased]
 
+### Added
+
+- The starter runs as a live demo at https://eldenn.github.io/coreloom-ui/starter/, deployed with
+  Storybook. It honours Vite's `base` as the router's basepath, so it also works under a sub-path.
+- `CardTitle` takes `asChild` to render your own heading element with the card title's style.
+
+### Fixed
+
+- `LoginForm`, `SignupForm` and `VerifyForm` title the page with an `<h1>` (it was a `<div>`), so
+  screen-reader users can find it from the headings list.
+- Starter: the dashboard's demo activity follows the app's language.
+
 ## [0.6.0] - 2026-10-29
 
 ### Added

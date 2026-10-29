@@ -17,7 +17,11 @@ export const Route = createFileRoute("/_app/")({
   component: OverviewPage,
 })
 
-const icons = { success: <RocketIcon />, danger: <AlertTriangleIcon />, neutral: <UserIcon /> }
+const events = {
+  deployed: { icon: <RocketIcon />, status: "success" },
+  joined: { icon: <UserIcon />, status: "neutral" },
+  buildFailed: { icon: <AlertTriangleIcon />, status: "danger" },
+} as const
 
 function OverviewPage() {
   const t = useT()
@@ -64,7 +68,13 @@ function OverviewPage() {
         </ChartCard>
         <ActivityFeed
           title={t.overview.activity}
-          items={data.activity.map((item) => ({ ...item, icon: icons[item.status], time: formatRelative(item.at, locale) }))}
+          items={data.activity.map((item) => ({
+            id: item.id,
+            title: t.overview.events[item.event](item.subject),
+            description: item.event === "buildFailed" && item.detail ? t.overview.typeErrorIn(item.detail) : item.detail,
+            ...events[item.event],
+            time: formatRelative(item.at, locale),
+          }))}
         />
       </div>
     </>

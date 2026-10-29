@@ -19,7 +19,8 @@ export type Deployment = { id: string; commit: string; branch: string; status: P
 export type Overview = {
   stats: { deployments: number; successRate: number; medianBuild: number; incidents: number }
   daily: { day: string; production: number; preview: number }[]
-  activity: { id: string; title: string; description?: string; at: string; status: "success" | "danger" | "neutral" }[]
+  // Events, not sentences: the UI words them in the reader's language (src/messages.ts → overview.events).
+  activity: { id: string; event: "deployed" | "joined" | "buildFailed"; subject: string; detail?: string; at: string }[]
 }
 
 const wait = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -101,10 +102,10 @@ export async function getOverview(): Promise<Overview> {
       return { day: day.toISOString().slice(0, 10), production: 32 + ((i * 7) % 11) + (weekday ? 14 : 0), preview: 58 + ((i * 5) % 13) + (weekday ? 22 : 4) }
     }),
     activity: [
-      { id: "a1", title: "coreloom-web deployed to production", description: "main · 3f2a9c1", at: hoursAgo(0.05), status: "success" },
-      { id: "a2", title: "Ada joined the workspace", at: hoursAgo(1), status: "neutral" },
-      { id: "a3", title: "coreloom-api build failed", description: "Type error in src/billing.ts", at: hoursAgo(1.2), status: "danger" },
-      { id: "a4", title: "docs deployed to production", at: hoursAgo(3), status: "success" },
+      { id: "a1", event: "deployed", subject: "coreloom-web", detail: "main · 3f2a9c1", at: hoursAgo(0.05) },
+      { id: "a2", event: "joined", subject: "Ada", at: hoursAgo(1) },
+      { id: "a3", event: "buildFailed", subject: "coreloom-api", detail: "src/billing.ts", at: hoursAgo(1.2) },
+      { id: "a4", event: "deployed", subject: "docs", at: hoursAgo(3) },
     ],
   }
 }

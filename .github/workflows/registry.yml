@@ -1,6 +1,6 @@
-# Tests every push and pull request, then builds the shadcn registry (public/r/*.json) and Storybook
-# (public/storybook) and publishes both to GitHub Pages from main:
-# https://eldenn.github.io/coreloom-ui/ (Storybook) and …/r/ (registry).
+# Tests every push and pull request, then builds the shadcn registry (public/r/*.json), Storybook
+# (public/storybook) and the starter demo (public/starter) and publishes them to GitHub Pages from main:
+# https://eldenn.github.io/coreloom-ui/ (Storybook), …/r/ (registry), …/starter/ (demo app).
 # Consumers: pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
 name: Registry & Storybook
 
@@ -63,6 +63,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:build
       - run: pnpm storybook:build
+      # The starter as a live demo at /coreloom-ui/starter/. GitHub Pages serves 404.html for any
+      # unknown path, so deep links (/coreloom-ui/starter/projects) still boot the app.
+      - run: pnpm --dir starter install --frozen-lockfile
+      - run: pnpm --dir starter exec vite build --base /coreloom-ui/starter/ --outDir ../public/starter --emptyOutDir
+      - run: cp public/starter/index.html public/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
