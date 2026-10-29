@@ -2,6 +2,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 
 function SiteFooter({
   note,
@@ -22,9 +23,9 @@ function SiteFooter({
         {links.length > 0 && (
           <nav className="flex flex-wrap gap-5" aria-label="Footer">
             {links.map((link) => (
-              <a key={link.href} href={link.href} className="transition-colors hover:text-foreground">
+              <AppLink key={link.href} href={link.href} className="transition-colors hover:text-foreground">
                 {link.label}
-              </a>
+              </AppLink>
             ))}
           </nav>
         )}

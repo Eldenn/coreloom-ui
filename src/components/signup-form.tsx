@@ -5,6 +5,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -105,9 +106,9 @@ function SignupForm({
             {signInHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">
                 {l.haveAccount}{" "}
-                <a href={signInHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
+                <AppLink href={signInHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
                   {l.signIn}
-                </a>
+                </AppLink>
               </p>
             )}
           </FieldGroup>

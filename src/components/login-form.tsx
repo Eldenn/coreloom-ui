@@ -6,6 +6,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -105,9 +106,9 @@ function LoginForm({
                   type="password"
                   autoComplete="current-password"
                   labelAction={
-                    <a href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
+                    <AppLink href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
                       {l.forgotPassword}
-                    </a>
+                    </AppLink>
                   }
                 />
               )}
@@ -120,9 +121,9 @@ function LoginForm({
             {signUpHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">
                 {l.noAccount}{" "}
-                <a href={signUpHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
+                <AppLink href={signUpHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
                   {l.signUp}
-                </a>
+                </AppLink>
               </p>
             )}
           </FieldGroup>

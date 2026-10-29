@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
+import { AppLink } from "@/lib/link"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
 type Crumb = { label: string; href?: string }
@@ -33,7 +34,7 @@ function AppHeader({ breadcrumbs = [], actions }: { breadcrumbs?: Crumb[]; actio
                     {i === breadcrumbs.length - 1 || !crumb.href ? (
                       <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+                      <BreadcrumbLink asChild><AppLink href={crumb.href}>{crumb.label}</AppLink></BreadcrumbLink>
                     )}
                   </BreadcrumbItem>
                 </React.Fragment>

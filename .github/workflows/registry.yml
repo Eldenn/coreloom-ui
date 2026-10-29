@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   test:
-    name: Typecheck, a11y and visual tests
+    name: Typecheck, starter build, a11y, visual and interaction tests
     runs-on: ubuntu-latest
     # Same image as the "Visual baselines" workflow, so screenshots render identically.
     # Keep the tag in step with @playwright/test in package.json.
@@ -35,6 +35,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm registry:build
       - run: pnpm storybook:build
+      # The starter carries copies of the registry items: fail if they drifted, then build it.
+      - run: node build/sync-starter.mjs --check
+      - run: pnpm --dir starter install --frozen-lockfile
+      - run: pnpm --dir starter build
       - run: pnpm test
       - if: failure()
         uses: actions/upload-artifact@v4

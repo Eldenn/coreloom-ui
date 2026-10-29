@@ -6,6 +6,7 @@ import * as React from "react"
 import { MenuIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useCoreloomI18n } from "@/lib/i18n"
@@ -39,14 +40,14 @@ function SiteHeader({
         {links.length > 0 && (
           <nav className="hidden items-center gap-6 text-[14px] md:flex" aria-label="Main">
             {links.map((link) => (
-              <a
+              <AppLink
                 key={link.href}
                 href={link.href}
                 aria-current={link.active ? "page" : undefined}
                 className={cn("transition-colors hover:text-foreground", link.active ? "font-medium text-foreground" : "text-fg-secondary")}
               >
                 {link.label}
-              </a>
+              </AppLink>
             ))}
           </nav>
         )}
@@ -65,14 +66,14 @@ function SiteHeader({
                 </SheetHeader>
                 <nav className="flex flex-col gap-1" aria-label="Main">
                   {links.map((link) => (
-                    <a
+                    <AppLink
                       key={link.href}
                       href={link.href}
                       onClick={() => setOpen(false)}
                       className="rounded-sm px-2.5 py-2 text-[15px] text-fg-secondary hover:bg-accent hover:text-foreground"
                     >
                       {link.label}
-                    </a>
+                    </AppLink>
                   ))}
                 </nav>
                 {mobileActions}
