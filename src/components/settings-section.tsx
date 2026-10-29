@@ -2,6 +2,9 @@
 
 // Coreloom UI — SettingsSection, SettingsRow, DangerZone (settings block).
 // A section is a card with a title, its fields and a footer with the save action.
+// Pass a `form` from useAppForm (@coreloom/form) and put its fields inside: the section becomes the
+// <form>, and Save is the form's SubmitButton (busy while your onSubmit runs). `onSubmit(FormData)`
+// still works for plain, uncontrolled inputs.
 import * as React from "react"
 import { AlertTriangleIcon } from "lucide-react"
 
@@ -22,6 +25,14 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import type { SubmitButton } from "@/components/ui/form"
+
+/** What SettingsSection needs from a `useAppForm` instance. */
+type SectionForm = {
+  handleSubmit: () => unknown
+  AppForm: React.ComponentType<{ children?: React.ReactNode }>
+  SubmitButton: React.ComponentType<React.ComponentProps<typeof SubmitButton>>
+}
 
 function SettingsSection({
   title,
@@ -29,6 +40,7 @@ function SettingsSection({
   children,
   footer,
   onSubmit,
+  form,
   pending = false,
   submitLabel = "Save changes",
   className,
@@ -38,7 +50,9 @@ function SettingsSection({
   children: React.ReactNode
   /** Note at the left of the footer ("Changes apply to new deployments."). */
   footer?: React.ReactNode
-  /** Makes the section a form with a Save button. Leave out for sections that apply instantly. */
+  /** A useAppForm instance: the section becomes its <form>, with its SubmitButton as Save. */
+  form?: SectionForm
+  /** Plain-form alternative to `form`: receives the FormData. Leave both out for sections that apply instantly. */
   onSubmit?: (data: FormData) => unknown
   pending?: boolean
   submitLabel?: string
@@ -51,10 +65,16 @@ function SettingsSection({
         {description && <p className="m-0 text-[13px] leading-[1.55] text-muted-foreground">{description}</p>}
       </div>
       <div className="flex flex-col gap-4 px-5 pt-4 pb-5">{children}</div>
-      {(onSubmit || footer) && (
+      {(form || onSubmit || footer) && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-surface px-5 py-3">
           <span className="text-[13px] text-muted-foreground">{footer}</span>
-          {onSubmit && (
+          {form ? (
+            <form.AppForm>
+              <form.SubmitButton size="sm" pending={pending}>
+                {submitLabel}
+              </form.SubmitButton>
+            </form.AppForm>
+          ) : onSubmit && (
             <Button type="submit" size="sm" disabled={pending}>
               {pending && <Spinner className="text-current" />}
               {submitLabel}
@@ -65,6 +85,19 @@ function SettingsSection({
     </>
   )
   const frame = cn("overflow-hidden rounded-lg border border-border bg-card shadow-md", className)
+  if (form)
+    return (
+      <form
+        noValidate
+        className={frame}
+        onSubmit={(e) => {
+          e.preventDefault()
+          void form.handleSubmit()
+        }}
+      >
+        {body}
+      </form>
+    )
   return onSubmit ? (
     <form
       className={frame}

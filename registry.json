@@ -1104,9 +1104,10 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, radio, checkbox and switch fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
       "dependencies": [
-        "@tanstack/react-form@^1"
+        "@tanstack/react-form@^1",
+        "input-otp@^1"
       ],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1118,6 +1119,7 @@
         "@coreloom/combobox",
         "@coreloom/date-picker",
         "@coreloom/radio-group",
+        "@coreloom/input-otp",
         "@coreloom/checkbox",
         "@coreloom/switch",
         "@coreloom/button",
@@ -1350,7 +1352,7 @@
       "name": "auth",
       "type": "registry:block",
       "title": "Auth screens",
-      "description": "Sign-in, sign-up and code verification forms with a centered layout.",
+      "description": "Sign-in, sign-up and code verification forms on @coreloom/form (TanStack Form), with a centered layout.",
       "categories": [
         "authentication",
         "login"
@@ -1367,7 +1369,8 @@
         "@coreloom/field",
         "@coreloom/input",
         "@coreloom/input-otp",
-        "@coreloom/spinner"
+        "@coreloom/spinner",
+        "@coreloom/form"
       ],
       "files": [
         {
@@ -1392,7 +1395,7 @@
       "name": "settings",
       "type": "registry:block",
       "title": "Settings page",
-      "description": "Settings layout with section nav, form sections with a save footer, switch rows and a danger zone with typed confirmation.",
+      "description": "Settings layout with section nav, form sections (a TanStack form or plain inputs) with a save footer, switch rows and a danger zone with typed confirmation.",
       "categories": [
         "application",
         "settings"
@@ -1407,7 +1410,8 @@
         "@coreloom/button",
         "@coreloom/field",
         "@coreloom/input",
-        "@coreloom/spinner"
+        "@coreloom/spinner",
+        "@coreloom/form"
       ],
       "files": [
         {

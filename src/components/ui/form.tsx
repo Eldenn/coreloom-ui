@@ -21,6 +21,7 @@ import { Combobox } from "@/components/ui/combobox"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
@@ -58,6 +59,13 @@ type FieldShellProps = {
   className?: string
 }
 
+type VerticalShellProps = FieldShellProps & {
+  /** Shown at the right of the label, e.g. a "Forgot password?" link. */
+  labelAction?: React.ReactNode
+  /** Keeps the label for assistive tech only. */
+  hideLabel?: boolean
+}
+
 type Meta = ReturnType<typeof useFieldMeta>
 
 function describedBy(meta: Meta, description?: React.ReactNode) {
@@ -65,10 +73,18 @@ function describedBy(meta: Meta, description?: React.ReactNode) {
 }
 
 /** Label on top, control, then the description and the error. */
-function VerticalShell({ meta, label, description, className, children }: FieldShellProps & { meta: Meta; children: React.ReactNode }) {
+function VerticalShell({ meta, label, description, className, labelAction, hideLabel, children }: VerticalShellProps & { meta: Meta; children: React.ReactNode }) {
+  const labelEl = <FieldLabel htmlFor={meta.id} className={cn(hideLabel && "sr-only")}>{label}</FieldLabel>
   return (
     <Field data-invalid={meta.invalid || undefined} className={className}>
-      <FieldLabel htmlFor={meta.id}>{label}</FieldLabel>
+      {labelAction && !hideLabel ? (
+        <div className="flex items-center justify-between gap-3">
+          {labelEl}
+          {labelAction}
+        </div>
+      ) : (
+        labelEl
+      )}
       {children}
       {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
       {meta.invalid && <FieldError id={meta.errorId} errors={meta.issues} />}
@@ -80,13 +96,15 @@ function TextField({
   label,
   description,
   className,
+  labelAction,
+  hideLabel,
   ...props
-}: FieldShellProps & Omit<React.ComponentProps<typeof Input>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
+}: VerticalShellProps & Omit<React.ComponentProps<typeof Input>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value)
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className}>
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
       <Input
         id={meta.id}
         name={field.name}
@@ -105,13 +123,15 @@ function TextareaField({
   label,
   description,
   className,
+  labelAction,
+  hideLabel,
   ...props
-}: FieldShellProps & Omit<React.ComponentProps<typeof Textarea>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
+}: VerticalShellProps & Omit<React.ComponentProps<typeof Textarea>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value)
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className}>
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
       <Textarea
         id={meta.id}
         name={field.name}
@@ -126,21 +146,86 @@ function TextareaField({
   )
 }
 
+/** A one-time code in slots (InputOTP). `submitOnComplete` submits the form when the last slot is filled. */
+function OTPField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  length = 6,
+  groupSize = 3,
+  pattern,
+  submitOnComplete = false,
+  autoFocus,
+  disabled,
+}: VerticalShellProps & {
+  length?: number
+  /** Slots per group; groups are split by a separator. */
+  groupSize?: number
+  /** A RegExp source the characters must match, e.g. REGEXP_ONLY_DIGITS from "input-otp". */
+  pattern?: string
+  submitOnComplete?: boolean
+  autoFocus?: boolean
+  disabled?: boolean
+}) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const groups = Array.from({ length: Math.ceil(length / groupSize) }, (_, g) =>
+    Array.from({ length: Math.min(groupSize, length - g * groupSize) }, (_, i) => g * groupSize + i)
+  )
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <InputOTP
+        id={meta.id}
+        name={field.name}
+        maxLength={length}
+        pattern={pattern}
+        autoComplete="one-time-code"
+        autoFocus={autoFocus}
+        disabled={disabled}
+        value={value ?? ""}
+        onChange={(v: string) => field.handleChange(v)}
+        onBlur={field.handleBlur}
+        onComplete={() => {
+          if (submitOnComplete) void field.form.handleSubmit()
+        }}
+        aria-describedby={describedBy(meta, description)}
+        containerClassName="w-auto"
+      >
+        {groups.map((slots, g) => (
+          <React.Fragment key={g}>
+            {g > 0 && <InputOTPSeparator />}
+            <InputOTPGroup>
+              {slots.map((i) => (
+                <InputOTPSlot key={i} index={i} aria-invalid={meta.invalid || undefined} />
+              ))}
+            </InputOTPGroup>
+          </React.Fragment>
+        ))}
+      </InputOTP>
+    </VerticalShell>
+  )
+}
+
 type Option = { value: string; label: React.ReactNode; disabled?: boolean }
 
 function SelectField({
   label,
   description,
   className,
+  labelAction,
+  hideLabel,
   options,
   placeholder,
   disabled,
-}: FieldShellProps & { options: Option[]; placeholder?: string; disabled?: boolean }) {
+}: VerticalShellProps & { options: Option[]; placeholder?: string; disabled?: boolean }) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className}>
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
       <Select
         name={field.name}
         value={value ?? ""}
@@ -167,13 +252,15 @@ function ComboboxField({
   label,
   description,
   className,
+  labelAction,
+  hideLabel,
   ...props
-}: FieldShellProps & Omit<React.ComponentProps<typeof Combobox>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
+}: VerticalShellProps & Omit<React.ComponentProps<typeof Combobox>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className}>
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
       <Combobox
         id={meta.id}
         value={value ?? ""}
@@ -192,13 +279,15 @@ function DateField({
   label,
   description,
   className,
+  labelAction,
+  hideLabel,
   ...props
-}: FieldShellProps & Omit<React.ComponentProps<typeof DatePicker>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
+}: VerticalShellProps & Omit<React.ComponentProps<typeof DatePicker>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as Date | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className}>
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
       <DatePicker
         id={meta.id}
         value={value}
@@ -295,18 +384,25 @@ function SwitchField(props: FieldShellProps & { disabled?: boolean }) {
   return <ToggleField {...props} control="switch" />
 }
 
-/** Submit button: stays enabled so a click reveals every error; disabled with a spinner while submitting. */
+/** Submit button: stays enabled so a click reveals every error; disabled with a spinner while submitting or `pending`. */
 function SubmitButton({
   children,
   pendingLabel,
+  pending = false,
+  disabled,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "type"> & { pendingLabel?: React.ReactNode }) {
+}: Omit<React.ComponentProps<typeof Button>, "type"> & {
+  pendingLabel?: React.ReactNode
+  /** Busy state you control (an OAuth redirect, a parent's request), on top of the form's own submission. */
+  pending?: boolean
+}) {
   const form = useFormContext()
   const isSubmitting = useStore(form.store, (s) => s.isSubmitting)
+  const busy = isSubmitting || pending
   return (
-    <Button type="submit" data-submitting={isSubmitting || undefined} disabled={isSubmitting || props.disabled} {...props}>
-      {isSubmitting && <Spinner className="text-current" />}
-      {isSubmitting && pendingLabel ? pendingLabel : children}
+    <Button {...props} type="submit" data-submitting={isSubmitting || undefined} aria-busy={busy || undefined} disabled={busy || disabled}>
+      {busy && <Spinner className="text-current" />}
+      {busy && pendingLabel ? pendingLabel : children}
     </Button>
   )
 }
@@ -337,6 +433,7 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     RadioGroupField,
     CheckboxField,
     SwitchField,
+    OTPField,
   },
   formComponents: {
     SubmitButton,
@@ -358,6 +455,7 @@ export {
   RadioGroupField,
   CheckboxField,
   SwitchField,
+  OTPField,
   SubmitButton,
   FormErrors,
 }

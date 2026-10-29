@@ -1,16 +1,16 @@
 "use client"
 
 // Coreloom UI — SignupForm (auth block). Name, email and password, with the terms underneath.
+// Built on @coreloom/form (TanStack Form), like LoginForm.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import type { OAuthProvider } from "@/components/login-form"
+import { FieldGroup, FieldSeparator } from "@/components/ui/field"
+import { useAppForm } from "@/components/ui/form"
+import { validateEmail, type OAuthProvider } from "@/components/login-form"
 
 function SignupForm({
   onSubmit,
@@ -25,6 +25,7 @@ function SignupForm({
   description = "Start a workspace in under a minute.",
   className,
 }: {
+  /** Called with valid values. Return a promise to keep the button busy until it settles. */
   onSubmit: (values: { name: string; email: string; password: string }) => unknown
   onProvider?: (providerId: string) => void
   providers?: OAuthProvider[]
@@ -38,6 +39,13 @@ function SignupForm({
   description?: React.ReactNode
   className?: string
 }) {
+  const form = useAppForm({
+    defaultValues: { name: "", email: "", password: "" },
+    onSubmit: async ({ value }) => {
+      await onSubmit({ name: value.name.trim(), email: value.email.trim(), password: value.password })
+    },
+  })
+
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
@@ -46,14 +54,10 @@ function SignupForm({
       </CardHeader>
       <CardContent>
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault()
-            const data = new FormData(e.currentTarget)
-            onSubmit({
-              name: String(data.get("name") ?? ""),
-              email: String(data.get("email") ?? ""),
-              password: String(data.get("password") ?? ""),
-            })
+            void form.handleSubmit()
           }}
         >
           <FieldGroup className="gap-4">
@@ -75,23 +79,25 @@ function SignupForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Field>
-              <FieldLabel htmlFor="signup-name">Name</FieldLabel>
-              <Input id="signup-name" name="name" autoComplete="name" required />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="signup-email">Work email</FieldLabel>
-              <Input id="signup-email" name="email" type="email" autoComplete="email" placeholder="you@company.dev" required />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="signup-password">Password</FieldLabel>
-              <Input id="signup-password" name="password" type="password" autoComplete="new-password" minLength={minPasswordLength} required />
-              <FieldDescription>At least {minPasswordLength} characters.</FieldDescription>
-            </Field>
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending && <Spinner className="text-current" />}
-              {pending ? "Creating account" : "Create account"}
-            </Button>
+            <form.AppField name="name" validators={{ onChange: ({ value }) => (value.trim() ? undefined : "Enter your name.") }}>
+              {(field) => <field.TextField label="Name" autoComplete="name" />}
+            </form.AppField>
+            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
+              {(field) => <field.TextField label="Work email" type="email" autoComplete="email" placeholder="you@company.dev" />}
+            </form.AppField>
+            <form.AppField
+              name="password"
+              validators={{
+                onChange: ({ value }) => (value.length < minPasswordLength ? `Use at least ${minPasswordLength} characters.` : undefined),
+              }}
+            >
+              {(field) => <field.TextField label="Password" type="password" autoComplete="new-password" description={`At least ${minPasswordLength} characters.`} />}
+            </form.AppField>
+            <form.AppForm>
+              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Creating account">
+                Create account
+              </form.SubmitButton>
+            </form.AppForm>
             {terms && <p className="m-0 text-center text-[12px] leading-[1.5] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">{terms}</p>}
             {signInHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">

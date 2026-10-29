@@ -87,7 +87,7 @@ In a monorepo, install into the shared `ui` package (its own `components.json` w
 - Components target React 19 (refs as props), like current shadcn.
 - Forms use [TanStack Form](https://tanstack.com/form) through `@coreloom/form`: `useAppForm` comes with
   Coreloom field components (`field.TextField`, `SelectField`, `ComboboxField`, `DateField`,
-  `RadioGroupField`, `TextareaField`, `CheckboxField`, `SwitchField`) and `form.SubmitButton` /
+  `RadioGroupField`, `TextareaField`, `CheckboxField`, `SwitchField`, `OTPField`) and `form.SubmitButton` /
   `form.FormErrors`. Validate with any Standard Schema (zod, valibot) on change; errors show once a field
   has been left or the form submitted.
 
