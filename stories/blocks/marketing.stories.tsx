@@ -10,7 +10,7 @@ import { SiteHeader } from "@/components/site-header"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 
-const brand = <a href="#" className="font-display text-[19px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary">loom</span></a>
+const brand = <a href="#" className="font-display text-[19px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary-text">loom</span></a>
 
 const meta = {
   title: "Blocks/Marketing",

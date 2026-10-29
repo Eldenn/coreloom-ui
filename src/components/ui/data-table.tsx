@@ -192,7 +192,7 @@ function DataTableColumnHeader<TData, TValue>({
       )}
     >
       {title}
-      <Icon className={cn("size-3.5", !sorted && "text-faint-foreground")} />
+      <Icon className={cn("size-3.5", !sorted && "text-muted-foreground")} />
     </button>
   )
 }

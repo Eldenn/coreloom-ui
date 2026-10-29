@@ -25,6 +25,8 @@ export const TabsStory: Story = {
       </Tabs>
       <Tabs defaultValue="preview" className="max-w-md">
         <TabsList variant="line"><TabsTrigger value="preview">Preview</TabsTrigger><TabsTrigger value="code">Code</TabsTrigger></TabsList>
+        <TabsContent value="preview" className="pt-3">The rendered component.</TabsContent>
+        <TabsContent value="code" className="pt-3">Its source.</TabsContent>
       </Tabs>
     </div>
   ),

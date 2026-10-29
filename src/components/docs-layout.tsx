@@ -20,7 +20,7 @@ function DocsNav({ groups, onNavigate }: { groups: DocsNavGroup[]; onNavigate?: 
     <nav aria-label="Documentation">
       {groups.map((group) => (
         <div key={group.title} className="mb-5">
-          <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">{group.title}</div>
+          <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{group.title}</div>
           {group.items.map((item) => (
             <a
               key={item.href}

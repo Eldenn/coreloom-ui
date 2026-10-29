@@ -47,7 +47,7 @@ function FeatureGrid({
                 <CardTitle>{f.title}</CardTitle>
                 <CardDescription>{f.description}</CardDescription>
               </CardHeader>
-              {f.meta && <div className="mt-auto font-mono text-[11px] tracking-[0.02em] text-faint-foreground">{f.meta}</div>}
+              {f.meta && <div className="mt-auto font-mono text-[11px] tracking-[0.02em] text-muted-foreground">{f.meta}</div>}
             </Card>
           ))}
         </div>

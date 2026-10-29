@@ -29,7 +29,7 @@ export const ComponentPage: Story = {
   render: (args) => (
     <DocsLayout
       {...args}
-      header={<SiteHeader maxWidth="max-w-[1240px]" brand={<span className="font-display text-[18px] font-bold text-foreground">Core<span className="text-primary">loom</span></span>} actions={<><CommandMenu triggerLabel="Search docs…" groups={[{ heading: "Components", items: [{ label: "Button", icon: BlocksIcon, onSelect: () => {} }] }]} /><ThemeToggle /></>} />}
+      header={<SiteHeader maxWidth="max-w-[1240px]" brand={<span className="font-display text-[18px] font-bold text-foreground">Core<span className="text-primary-text">loom</span></span>} actions={<><CommandMenu triggerLabel="Search docs…" groups={[{ heading: "Components", items: [{ label: "Button", icon: BlocksIcon, onSelect: () => {} }] }]} /><ThemeToggle /></>} />}
     >
       <DocsPageHeader eyebrow={<Badge variant="default"><BadgeDot />shadcn/ui</Badge>} title="Button" lead="Triggers an action or event." />
       <h2 id="installation" className="mt-10 mb-3 scroll-mt-20 font-display text-[24px] font-semibold">Installation</h2>

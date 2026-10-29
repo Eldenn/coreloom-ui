@@ -5,14 +5,18 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
+const ItemGroupContext = React.createContext(false)
+
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      role="list"
-      data-slot="item-group"
-      className={cn("group/item-group flex flex-col", className)}
-      {...props}
-    />
+    <ItemGroupContext.Provider value={true}>
+      <div
+        role="list"
+        data-slot="item-group"
+        className={cn("group/item-group flex flex-col", className)}
+        {...props}
+      />
+    </ItemGroupContext.Provider>
   )
 }
 
@@ -60,14 +64,24 @@ function Item({
 }: React.ComponentProps<"div"> &
   VariantProps<typeof itemVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot.Root : "div"
-  return (
+  const inGroup = React.useContext(ItemGroupContext)
+  const item = (
     <Comp
+      role={inGroup && !asChild ? "listitem" : undefined}
       data-slot="item"
       data-variant={variant}
       data-size={size}
       className={cn(itemVariants({ variant, size, className }))}
       {...props}
     />
+  )
+  // A link row (asChild) keeps its own role; the list item wraps it without a box.
+  return inGroup && asChild ? (
+    <div role="listitem" className="contents">
+      {item}
+    </div>
+  ) : (
+    item
   )
 }
 

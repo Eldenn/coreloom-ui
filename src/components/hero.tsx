@@ -56,7 +56,7 @@ function Hero({
         {command && (
           <div className="mx-auto mt-8 flex max-w-[460px] items-center justify-between gap-4 rounded-md border border-border bg-inset py-2 pr-2 pl-4 font-mono text-[14px] text-foreground">
             <span className="truncate">
-              <span className="text-primary">$</span>&nbsp; {command}
+              <span className="text-primary-text">$</span>&nbsp; {command}
             </span>
             <CopyButton value={command} label="Copy command" toastMessage="Command copied" />
           </div>
