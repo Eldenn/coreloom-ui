@@ -9,3 +9,5 @@ public/storybook
 storybook-static
 test-results
 playwright-report
+public/starter
+public/404.html

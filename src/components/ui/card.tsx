@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
@@ -52,9 +53,12 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+/** The card's title. A <div> by default; with `asChild`, your heading (<CardTitle asChild><h2>…</h2></CardTitle>)
+ *  takes the style, so the page's outline stays right. */
+function CardTitle({ className, asChild = false, ...props }: React.ComponentProps<"div"> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "div"
   return (
-    <div
+    <Comp
       data-slot="card-title"
       className={cn(
         "font-display text-[17px] leading-tight font-semibold tracking-[-0.01em] text-foreground",

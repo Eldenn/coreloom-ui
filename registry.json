@@ -136,7 +136,9 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "Elevated surface panel with icon tile, accent glow and mono footer.",
-      "dependencies": [],
+      "dependencies": [
+        "radix-ui"
+      ],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils"

@@ -12,11 +12,12 @@ import type { LinkProps } from "@/lib/link"
 export function RouterLink({ href, onClick, onMouseEnter, onFocus, target, ...props }: LinkProps) {
   const router = useRouter()
 
-  // The blocks' hrefs are plain strings, so they skip the typed `to` API: history.push() navigates
-  // (the router picks the change up and parses the search string), preloadRoute() warms the route.
+  // The blocks' hrefs are plain app paths ("/projects?status=ready"), so they skip the typed `to`
+  // API: navigate({ href }) parses them, and the rendered href gets the basepath for new tabs.
+  const target_ = { href } as unknown as Parameters<typeof router.navigate>[0]
+  const base = router.basepath === "/" ? "" : router.basepath.replace(/\/$/, "")
   const preload = () => {
-    const { pathname } = new URL(href, window.location.origin)
-    void router.preloadRoute({ to: pathname } as never).catch(() => {})
+    void router.preloadRoute(target_ as never).catch(() => {})
   }
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -24,12 +25,12 @@ export function RouterLink({ href, onClick, onMouseEnter, onFocus, target, ...pr
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     if (target && target !== "_self") return
     event.preventDefault()
-    router.history.push(href)
+    void router.navigate(target_)
   }
 
   return (
     <a
-      href={href}
+      href={href.startsWith("/") ? base + href : href}
       target={target}
       onClick={handleClick}
       onMouseEnter={(event) => {

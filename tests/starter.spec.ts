@@ -26,6 +26,7 @@ async function expectNoViolations(page: Page) {
 test("signed-out visitors go to the sign-in page, then back where they were going", async ({ page }) => {
   await page.goto("/projects?status=ready")
   await expect(page).toHaveURL(/\/login\?redirect=/)
+  await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible()
   await page.getByLabel("Email").fill("ada@acme.dev")
   await page.getByLabel("Password").fill("short")
   await page.getByRole("button", { name: "Sign in", exact: true }).click()

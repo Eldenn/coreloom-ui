@@ -80,7 +80,7 @@ The registry is built and published to GitHub Pages on every push to `main`
 
 [`starter/`](./starter) is a ready app on Vite + TanStack Router, Query and Form with every
 component installed, the providers wired, English and French, and sign-in, dashboard, projects,
-settings and error screens. No backend needed:
+settings and error screens. No backend needed (live demo: https://eldenn.github.io/coreloom-ui/starter/):
 
 ```bash
 pnpm dlx degit Eldenn/coreloom-ui/starter my-app && cd my-app && pnpm install && pnpm dev

@@ -53,7 +53,9 @@ function VerifyForm({
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
-        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
+        <CardTitle asChild className="m-0 text-[22px]">
+          <h1>{title ?? l.title}</h1>
+        </CardTitle>
         <CardDescription className="text-[14px]">
           {destination ? l.sentTo(destination) : l.sent}
         </CardDescription>

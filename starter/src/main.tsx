@@ -14,6 +14,8 @@ const queryClient = new QueryClient({
 
 const router = createRouter({
   routeTree,
+  // Vite's `base` (e.g. `vite build --base /my-app/`) becomes the router's basepath.
+  basepath: import.meta.env.BASE_URL,
   context: { queryClient, auth },
   // Hovering a link preloads the next route's data; Query decides when it is stale.
   defaultPreload: "intent",

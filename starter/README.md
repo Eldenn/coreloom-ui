@@ -11,7 +11,8 @@ pnpm install
 pnpm dev
 ```
 
-Sign in with any email and a password of 8 characters or more.
+Sign in with any email and a password of 8 characters or more. Live demo:
+https://eldenn.github.io/coreloom-ui/starter/
 
 ## What's in it
 
@@ -70,4 +71,6 @@ Docs and live examples: https://eldenn.github.io/coreloom-ui/
 
 Deploying `dist/` as a static site: send every unknown path to `index.html` (the router handles
 it), e.g. a `_redirects` rule `/* /index.html 200` on Netlify, a rewrite on Vercel, or
-`try_files $uri /index.html` in nginx.
+`try_files $uri /index.html` in nginx. Under a sub-path, build with `vite build --base /my-app/`:
+the router takes Vite's base as its basepath. GitHub Pages has no rewrites; copy `index.html` to
+`404.html` at the site root, as the coreloom-ui repo does for its demo.

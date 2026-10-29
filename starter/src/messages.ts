@@ -28,6 +28,12 @@ export const en = {
     production: "Production",
     preview: "Preview",
     activity: "Recent activity",
+    events: {
+      deployed: (project: string) => `${project} deployed to production`,
+      joined: (person: string) => `${person} joined the workspace`,
+      buildFailed: (project: string) => `${project} build failed`,
+    },
+    typeErrorIn: (file: string) => `Type error in ${file}`,
   },
   projects: {
     title: "Projects",
@@ -124,6 +130,12 @@ export const fr: Messages = {
     production: "Production",
     preview: "Preview",
     activity: "Activité récente",
+    events: {
+      deployed: (project) => `${project} déployé en production`,
+      joined: (person) => `${person} a rejoint l'espace`,
+      buildFailed: (project) => `Échec du build de ${project}`,
+    },
+    typeErrorIn: (file) => `Erreur de type dans ${file}`,
   },
   projects: {
     title: "Projets",
