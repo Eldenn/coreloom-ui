@@ -1,0 +1,34 @@
+<!-- @dsCard group="Navigation" height=330 subtitle="Done · current · upcoming · horizontal and vertical" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Stepper || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { Stepper } = UI;
+      const steps = [{ title: 'Account', description: 'Name and email' }, { title: 'Workspace', description: 'Team and region' }, { title: 'Invite', description: 'Add teammates' }, { title: 'Done' }];
+      function Demo() {
+        const [current, setCurrent] = React.useState(2);
+        return h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 220px', gap: 40, alignItems: 'start' } },
+          h(Stepper, { steps, current, onStepChange: setCurrent }),
+          h(Stepper, { steps, current: 1, orientation: 'vertical', 'aria-label': 'Setup progress (vertical)' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

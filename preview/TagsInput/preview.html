@@ -1,0 +1,31 @@
+<!-- @dsCard group="Forms" height=200 subtitle="Typed tags · Enter or comma · Backspace removes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TagsInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { TagsInput, Field, FieldLabel, FieldDescription } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { maxWidth: 440 } }, h(Field, null,
+          h(FieldLabel, { htmlFor: 'tags' }, 'Topics'),
+          h(TagsInput, { id: 'tags', defaultValue: ['design-system', 'react', 'tailwind'], maxTags: 8 }),
+          h(FieldDescription, null, 'Enter or a comma adds a tag; Backspace removes the last one.'))));
+    }
+    render();
+  </script>
+</body>
+</html>

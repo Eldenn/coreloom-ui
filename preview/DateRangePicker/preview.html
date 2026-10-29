@@ -1,0 +1,36 @@
+<!-- @dsCard group="Forms" height=470 subtitle="Range trigger · two months · shortcuts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DateRangePicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { DateRangePicker, Field, FieldLabel, FieldDescription, TooltipProvider } = UI;
+      function Demo() {
+        const [range, setRange] = React.useState({ from: new Date(2026, 9, 1), to: new Date(2026, 9, 14) });
+        const ref = React.useRef(null);
+        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button'); if (b) b.click(); }, []);
+        return h('div', { ref, style: { maxWidth: 300 } }, h(Field, null,
+          h(FieldLabel, { htmlFor: 'range' }, 'Report period'),
+          h(DateRangePicker, { id: 'range', value: range, onValueChange: setRange }),
+          h(FieldDescription, null, 'Shortcuts are relative to today.')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!-- @dsCard group="Blocks" width=1280 height=640 subtitle="onboarding block · stepper · step card · back / continue" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-base);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.OnboardingLayout || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent-fg)' } }, 'loom'));
+      const { OnboardingLayout, FieldGroup, Field, FieldLabel, FieldDescription, Input, TooltipProvider } = UI;
+      const steps = [{ title: 'Workspace', description: 'Name and URL' }, { title: 'Region', description: 'Where it runs' }, { title: 'Team', description: 'Invite people' }];
+      function Demo() {
+        const [step, setStep] = React.useState(0);
+        return h(OnboardingLayout, { brand: h(Brand), steps, current: step, onStepChange: setStep, title: 'Name your workspace', description: 'You can change both later in Settings.',
+            onBack: () => setStep((s) => s - 1), onNext: () => setStep((s) => Math.min(s + 1, 2)) },
+          h(FieldGroup, { className: 'gap-5' },
+            h(Field, null, h(FieldLabel, { htmlFor: 'ws' }, 'Workspace name'), h(Input, { id: 'ws', defaultValue: 'Acme' })),
+            h(Field, null, h(FieldLabel, { htmlFor: 'slug' }, 'URL'), h(Input, { id: 'slug', defaultValue: 'acme' }), h(FieldDescription, null, 'coreloom.dev/acme'))));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

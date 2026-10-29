@@ -1,0 +1,41 @@
+<!-- @dsCard group="Blocks" width=1280 height=820 subtitle="dashboard block · stat grid · trend chart · activity feed" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.StatGrid || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent-fg)' } }, 'loom'));
+      const { AppShell, PageHeader, StatGrid, ChartCard, TrendChart, ActivityFeed, DateRangePicker, ToggleGroup, ToggleGroupItem, TooltipProvider } = UI;
+      const days = Array.from({ length: 30 }, (_, i) => ({ day: new Date(2026, 8, 15 + i).toLocaleDateString('en', { month: 'short', day: 'numeric' }), production: 32 + ((i * 7) % 11) + (i % 7 < 5 ? 14 : 0), preview: 58 + ((i * 5) % 13) + (i % 7 < 5 ? 22 : 4) }));
+      function Demo() {
+        const [type, setType] = React.useState('area');
+        const [range, setRange] = React.useState({ from: new Date(2026, 8, 15), to: new Date(2026, 9, 14) });
+        return h(AppShell, { workspaces: [{ name: 'Coreloom', plan: 'Pro workspace' }], user: { name: 'Matthieu C.', email: 'matthieu@coreloom.dev' }, breadcrumbs: [{ label: 'Coreloom', href: '#' }, { label: 'Overview' }],
+            groups: [{ label: 'Platform', items: [{ title: 'Overview', url: '#', icon: I.home, isActive: true }, { title: 'Projects', url: '#', icon: I.folder }, { title: 'Deployments', url: '#', icon: I.rocket }, { title: 'Analytics', url: '#', icon: I.barChart }, { title: 'Settings', url: '#', icon: I.settings }] }] },
+          h(PageHeader, { title: 'Overview', description: 'Deployments and usage across the workspace.', actions: h(DateRangePicker, { value: range, onValueChange: setRange, className: 'w-[260px]', 'aria-label': 'Period' }) }),
+          h(StatGrid, { stats: [{ label: 'Deployments', value: '1,284', delta: '+12.4%', note: 'last 30 days' }, { label: 'Success rate', value: '98.7%', delta: '+0.6 pt', note: 'last 30 days' }, { label: 'Median build', value: '42s', delta: '−8s', trend: 'down', good: true, note: 'vs previous period' }, { label: 'Open incidents', value: '2', delta: '+1', good: false, note: 'since yesterday' }] }),
+          h('div', { className: 'grid gap-4 xl:grid-cols-3' },
+            h(ChartCard, { className: 'xl:col-span-2', title: 'Deployments per day', description: 'Production and preview, last 30 days',
+                actions: h(ToggleGroup, { type: 'single', variant: 'outline', size: 'sm', value: type, onValueChange: (v) => v && setType(v), 'aria-label': 'Chart type' }, h(ToggleGroupItem, { value: 'area' }, 'Area'), h(ToggleGroupItem, { value: 'bar' }, 'Bars'), h(ToggleGroupItem, { value: 'line' }, 'Lines')) },
+              h(TrendChart, { data: days, xKey: 'day', type, series: [{ key: 'production', label: 'Production' }, { key: 'preview', label: 'Preview' }], 'aria-label': 'Deployments per day' })),
+            h(ActivityFeed, { items: [{ id: '1', icon: h(I.rocket), status: 'success', title: 'coreloom-web deployed to production', description: 'main · 3f2a9c1', time: '2m' }, { id: '2', icon: h(I.user), status: 'neutral', title: 'Ada joined the workspace', time: '1h' }, { id: '3', icon: h(I.alertTriangle), status: 'danger', title: 'coreloom-api build failed', description: 'Type error in src/billing.ts', time: '1h' }, { id: '4', icon: h(I.rocket), status: 'success', title: 'docs deployed to production', time: '3h' }] })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

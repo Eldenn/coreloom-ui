@@ -1,0 +1,32 @@
+<!-- @dsCard group="Blocks" width=1280 height=520 subtitle="error-pages block · 404 · 500 · maintenance" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NotFoundPage || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+      const Brand = () => h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent-fg)' } }, 'loom'));
+      const { NotFoundPage, ServerErrorPage, MaintenancePage } = UI;
+      const box = (child) => h('div', { style: { height: 480, overflow: 'hidden', borderRadius: 12, border: '1px solid var(--border)' } }, child);
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 } },
+          box(h(NotFoundPage, { brand: h(Brand), className: 'min-h-0 h-full' })),
+          box(h(ServerErrorPage, { brand: h(Brand), onRetry: () => {}, reference: 'req_8f2k91', className: 'min-h-0 h-full' })),
+          box(h(MaintenancePage, { brand: h(Brand), until: new Date(2026, 9, 14, 14, 30), statusHref: '#', className: 'min-h-0 h-full' }))));
+    }
+    render();
+  </script>
+</body>
+</html>

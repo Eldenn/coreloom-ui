@@ -1129,7 +1129,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, date range, tags, file, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
       "dependencies": [
         "@tanstack/react-form@^1",
         "input-otp@^1"
@@ -1150,11 +1150,100 @@
         "@coreloom/switch",
         "@coreloom/button",
         "@coreloom/spinner",
-        "@coreloom/alert"
+        "@coreloom/alert",
+        "@coreloom/date-range-picker",
+        "@coreloom/tags-input",
+        "@coreloom/file-upload"
       ],
       "files": [
         {
           "path": "src/components/ui/form.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-range-picker",
+      "type": "registry:ui",
+      "title": "DateRangePicker",
+      "description": "Date range field: a two-month range Calendar in a Popover, with shortcuts (Last 7 days, This month…).",
+      "dependencies": [
+        "date-fns@^4",
+        "react-day-picker@^9",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/popover",
+        "@coreloom/calendar"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/date-range-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tags-input",
+      "type": "registry:ui",
+      "title": "TagsInput",
+      "description": "Text field that turns entries into removable tags (Enter, comma or paste).",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tags-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "file-upload",
+      "type": "registry:ui",
+      "title": "FileUpload",
+      "description": "Drop zone and file list with type and size checks, image thumbnails and per-file progress.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/progress"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/file-upload.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "Progress through a multi-step flow: done, current and upcoming steps, horizontal or vertical.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/stepper.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1219,7 +1308,11 @@
         "@coreloom/carousel",
         "@coreloom/drawer",
         "@coreloom/chart",
-        "@coreloom/form"
+        "@coreloom/form",
+        "@coreloom/date-range-picker",
+        "@coreloom/tags-input",
+        "@coreloom/file-upload",
+        "@coreloom/stepper"
       ],
       "dependencies": []
     },
@@ -1227,7 +1320,7 @@
       "name": "theme-toggle",
       "type": "registry:component",
       "title": "ThemeToggle",
-      "description": "Dark / light switch with a useTheme() hook; persists the choice in localStorage.",
+      "description": "ThemeToggle (light ↔ dark) and ThemeMenu (Light, Dark, System), with useTheme. The choice is saved in localStorage.",
       "dependencies": [
         "lucide-react"
       ],
@@ -1236,7 +1329,8 @@
         "@coreloom/utils",
         "@coreloom/i18n",
         "@coreloom/button",
-        "@coreloom/tooltip"
+        "@coreloom/tooltip",
+        "@coreloom/dropdown-menu"
       ],
       "files": [
         {
@@ -1537,6 +1631,146 @@
         },
         {
           "path": "src/components/component-preview.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "type": "registry:block",
+      "title": "Dashboard",
+      "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines) and an activity feed.",
+      "categories": [
+        "dashboard",
+        "application"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "recharts@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/card",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/dashboard.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/stat-card.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "data-list",
+      "type": "registry:block",
+      "title": "Data list",
+      "description": "Search, faceted filters with counts and pagination, with the state kept in the URL.",
+      "categories": [
+        "application",
+        "table"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/empty",
+        "@coreloom/input",
+        "@coreloom/popover",
+        "@coreloom/separator"
+      ],
+      "files": [
+        {
+          "path": "src/components/data-list.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "pricing",
+      "type": "registry:block",
+      "title": "Pricing",
+      "description": "Plan cards with a monthly / yearly switch, locale-formatted prices and a featured plan.",
+      "categories": [
+        "marketing",
+        "pricing"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/toggle-group"
+      ],
+      "files": [
+        {
+          "path": "src/components/pricing.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "onboarding",
+      "type": "registry:block",
+      "title": "Onboarding",
+      "description": "Multi-step setup: a Stepper, the step's content in a card, Back / Continue / Finish.",
+      "categories": [
+        "application",
+        "onboarding"
+      ],
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/spinner",
+        "@coreloom/stepper"
+      ],
+      "files": [
+        {
+          "path": "src/components/onboarding.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "error-pages",
+      "type": "registry:block",
+      "title": "Error pages",
+      "description": "404, 500 and maintenance pages, plus the bare ErrorPage layout for any other status.",
+      "categories": [
+        "application",
+        "error"
+      ],
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/error-page.tsx",
           "type": "registry:component"
         }
       ]
