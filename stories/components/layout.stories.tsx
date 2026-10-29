@@ -14,7 +14,9 @@ const pane = (label: string) => <div className="flex h-full items-center justify
 export const ResizableStory: Story = {
   name: "Resizable",
   render: () => (
-    <ResizablePanelGroup orientation="horizontal" className="h-[260px] max-w-2xl rounded-md border border-border bg-surface">
+    // The group fills its parent (height: 100%), so the parent sets the height.
+    <div className="h-[260px] max-w-2xl overflow-hidden rounded-md border border-border bg-surface">
+    <ResizablePanelGroup orientation="horizontal">
       <ResizablePanel defaultSize="30%" minSize="20%">{pane("files")}</ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="70%">
@@ -25,6 +27,7 @@ export const ResizableStory: Story = {
         </ResizablePanelGroup>
       </ResizablePanel>
     </ResizablePanelGroup>
+    </div>
   ),
 }
 

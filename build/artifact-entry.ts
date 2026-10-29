@@ -52,6 +52,7 @@ export * from "@/components/ui/resizable"
 export * from "@/components/ui/carousel"
 export * from "@/components/ui/drawer"
 export * from "@/components/ui/chart"
+export * from "@/components/ui/form"
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from "recharts"
 // Blocks (registry:block parts)

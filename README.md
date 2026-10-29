@@ -13,7 +13,7 @@ component.
 | `src/styles/fonts.css` | Geist, Space Grotesk and JetBrains Mono from Fontsource (variable files), bundled by the app. Part of `@coreloom/theme`. |
 | `src/styles/theme.css` | The shadcn layer: maps Tailwind / shadcn color utilities (`bg-background`, `bg-primary`, `text-muted-foreground`, `border-input`, `ring-ring`…) onto the Coreloom tokens, adds Coreloom-only utilities (`bg-inset`, `text-fg-secondary`, `bg-primary-subtle`, `shadow-glow`, `bg-scrim`…) and makes `dark:` follow `data-theme`. |
 | `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
-| `src/components/ui/*.tsx` | 53 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, empty, field, hover-card, icon, input, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, switch, table, tabs, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
+| `src/components/ui/*.tsx` | 54 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, empty, field, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, switch, table, tabs, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
 | `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview); shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
 | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
 | `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
@@ -85,6 +85,11 @@ In a monorepo, install into the shared `ui` package (its own `components.json` w
 - Variant names follow shadcn (`default`, `secondary`, `outline`, `ghost`, `destructive`,
   `link`), plus Coreloom's `success` / `warning` on Badge and Alert and `accent` on Card.
 - Components target React 19 (refs as props), like current shadcn.
+- Forms use [TanStack Form](https://tanstack.com/form) through `@coreloom/form`: `useAppForm` comes with
+  Coreloom field components (`field.TextField`, `SelectField`, `ComboboxField`, `DateField`,
+  `RadioGroupField`, `TextareaField`, `CheckboxField`, `SwitchField`) and `form.SubmitButton` /
+  `form.FormErrors`. Validate with any Standard Schema (zod, valibot) on change; errors show once a field
+  has been left or the form submitted.
 
 Brand rules, token usage and per-component guidelines live in the Coreloom UI design system.
 
@@ -96,13 +101,28 @@ only installs versions published at least 14 days ago.
 
 ```bash
 pnpm install
-pnpm typecheck           # library + stories
+pnpm typecheck           # library, stories and tests
 pnpm storybook           # http://localhost:6006
 pnpm registry:build      # → public/r/*.json (not committed; CI builds it)
 pnpm storybook:build     # → public/storybook (not committed; CI builds it)
+pnpm test:a11y           # axe on every story, dark and light (needs the Storybook build)
+pnpm test:visual         # screenshots of every story, compared with tests/__screenshots__
 ```
 
-The accessibility bar for a new component or story: no violations in the Accessibility panel, in both themes.
+### Tests
+
+Every push and pull request runs `pnpm test` in the Playwright container (`.github/workflows/registry.yml`);
+`main` only deploys when it passes.
+
+- **Accessibility:** axe (WCAG 2.0–2.2 A / AA and best practices) on every story in both themes. A new
+  component or story must come with no violations.
+- **Visual:** a full-page screenshot of every story in both themes, with a frozen clock and no outside
+  network. Screenshots depend on the OS's font rendering, so the baselines in `tests/__screenshots__` come
+  from CI, not from a laptop: after an intended visual change (or to create them the first time), run the
+  **Visual baselines** workflow on your branch (Actions → Visual baselines → Run workflow). It commits the
+  new PNGs; review them in the PR diff. Until baselines exist, the visual tests are skipped.
+- A failed run uploads the Playwright report (diffs, traces) as the `playwright-report` artifact.
+- Tag a story `no-test` to leave it out (for stories that can't be deterministic).
 
 Push to `main` and the workflow republishes both to GitHub Pages: Storybook under `/storybook/`
 (https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`. Add a story in `stories/` for

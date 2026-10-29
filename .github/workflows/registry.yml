@@ -1,25 +1,29 @@
-# Builds the shadcn registry (public/r/*.json) and Storybook (public/storybook) and publishes
-# both to GitHub Pages: https://eldenn.github.io/coreloom-ui/ (Storybook) and …/r/ (registry).
+# Tests every push and pull request, then builds the shadcn registry (public/r/*.json) and Storybook
+# (public/storybook) and publishes both to GitHub Pages from main:
+# https://eldenn.github.io/coreloom-ui/ (Storybook) and …/r/ (registry).
 # Consumers: pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
 name: Registry & Storybook
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  test:
+    name: Typecheck, a11y and visual tests
     runs-on: ubuntu-latest
+    # Same image as the "Visual baselines" workflow, so screenshots render identically.
+    # Keep the tag in step with @playwright/test in package.json.
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
@@ -31,6 +35,30 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm registry:build
       - run: pnpm storybook:build
+      - run: pnpm test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
+  build:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm registry:build
+      - run: pnpm storybook:build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
@@ -39,6 +67,12 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}r/registry.json

@@ -1,0 +1,49 @@
+<!-- @dsCard group="Forms" height=440 page subtitle="TanStack Form · validation on change · submit" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);padding:24px 28px}
+  #root{max-width:420px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.useAppForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { useAppForm, FieldGroup } = UI;
+      // Plain validator functions here; in an app, pass a zod schema: validators: { onChange: schema }.
+      const rules = {
+        name: (v) => (v.length < 3 ? 'Use at least 3 characters.' : /[^a-z0-9-]/.test(v) ? 'Use lowercase letters, digits and hyphens.' : undefined),
+        framework: (v) => (v ? undefined : 'Pick a framework.'),
+        terms: (v) => (v ? undefined : 'Accept the terms to continue.'),
+      };
+      function Demo() {
+        const form = useAppForm({
+          defaultValues: { name: 'Acme Web', framework: '', previews: true, terms: false },
+          onSubmit: async () => { await new Promise((r) => setTimeout(r, 900)); },
+        });
+        React.useEffect(() => { form.handleSubmit(); }, []);
+        const field = (name, render) => h(form.AppField, { name, validators: rules[name] ? { onChange: ({ value }) => rules[name](value) } : undefined }, render);
+        return h('form', { noValidate: true, onSubmit: (e) => { e.preventDefault(); form.handleSubmit(); } },
+          h(FieldGroup, { className: 'gap-5' },
+            field('name', (f) => h(f.TextField, { label: 'Project name', description: 'Lowercase, hyphen-separated.' })),
+            field('framework', (f) => h(f.SelectField, { label: 'Framework', placeholder: 'Choose a framework', options: [
+              { value: 'next', label: 'Next.js' }, { value: 'vite', label: 'Vite + React' }, { value: 'adonis', label: 'AdonisJS' }] })),
+            field('previews', (f) => h(f.SwitchField, { label: 'Preview deployments', description: 'Deploy every pull request to its own URL.' })),
+            field('terms', (f) => h(f.CheckboxField, { label: 'I accept the terms of service' })),
+            h(form.AppForm, null, h(form.SubmitButton, { pendingLabel: 'Creating…', className: 'self-start' }, 'Create project'))
+          )
+        );
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
