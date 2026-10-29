@@ -41,9 +41,9 @@ function AppShell({
             </>
           }
         />
-        <main className="mx-auto flex w-full max-w-(--container-app) flex-1 flex-col gap-6 px-4 py-8 md:px-8">
+        <div className="mx-auto flex w-full max-w-(--container-app) flex-1 flex-col gap-6 px-4 py-8 md:px-8">
           {children}
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

@@ -78,8 +78,10 @@ In a monorepo, install into the shared `ui` package (its own `components.json` w
 - Layers float on the `z-*` ladder: `z-(--z-modal)` for dialogs and sheets, `z-(--z-popover)` for
   Select lists, popovers and dropdown menus (they open above dialogs), `z-(--z-toast)`, then `z-(--z-tooltip)` on
   top. Never a raw z-index.
-- Focus is always the 3px `accent-ring` (`ring-[3px] ring-ring`); invalid fields use
-  `aria-invalid`, which turns borders `danger`.
+- Focus is always the 3px `accent-ring` (`ring-[3px] ring-ring`, 3:1 on every surface); invalid fields use
+  `aria-invalid`, which turns borders `danger`. Field outlines use `border-input` (`border-strong`, 3:1),
+  placeholders `text-muted-foreground`; `text-faint-foreground` is for disabled text only.
+- `theme.css` honors `prefers-reduced-motion`: transitions and enter / exit animations finish at once.
 - Variant names follow shadcn (`default`, `secondary`, `outline`, `ghost`, `destructive`,
   `link`), plus Coreloom's `success` / `warning` on Badge and Alert and `accent` on Card.
 - Components target React 19 (refs as props), like current shadcn.
@@ -99,6 +101,8 @@ pnpm storybook           # http://localhost:6006
 pnpm registry:build      # → public/r/*.json (not committed; CI builds it)
 pnpm storybook:build     # → public/storybook (not committed; CI builds it)
 ```
+
+The accessibility bar for a new component or story: no violations in the Accessibility panel, in both themes.
 
 Push to `main` and the workflow republishes both to GitHub Pages: Storybook under `/storybook/`
 (https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`. Add a story in `stories/` for

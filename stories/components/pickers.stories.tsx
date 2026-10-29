@@ -47,7 +47,7 @@ export const CalendarStory: Story = {
     return (
       <div className="flex flex-wrap gap-6">
         <Calendar mode="single" defaultMonth={new Date(2026, 9, 1)} className="rounded-md border border-border" />
-        <Calendar mode="range" selected={range as never} onSelect={setRange as never} defaultMonth={new Date(2026, 9, 1)} className="rounded-md border border-border" />
+        <Calendar mode="range" labels={{ labelNav: () => "Range calendar navigation" }} selected={range as never} onSelect={setRange as never} defaultMonth={new Date(2026, 9, 1)} className="rounded-md border border-border" />
       </div>
     )
   },

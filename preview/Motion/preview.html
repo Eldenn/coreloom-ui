@@ -1,0 +1,52 @@
+<!-- @dsCard group="Foundations" height=330 page subtitle="Durations · easings · reduced motion" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);padding:22px 28px}
+  h3{margin:0 0 10px;font:600 11px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-muted)}
+  .grid{display:grid;grid-template-columns:150px 1fr;gap:10px 18px;align-items:center;margin-bottom:20px}
+  .name{font:500 12px/1.3 var(--font-mono);color:var(--fg-1)}
+  .name small{display:block;font:400 12px/1.4 var(--font-sans);color:var(--fg-muted);margin-top:2px}
+  .track{position:relative;height:22px;border-radius:var(--radius-pill);background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+  .dot{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--accent);
+       animation:slide 2.4s infinite;animation-timing-function:var(--ease-out)}
+  .dur-fast .dot{animation-duration:calc(var(--dur-fast) * 10)}
+  .dur-base .dot{animation-duration:calc(var(--dur-base) * 10)}
+  .dur-slow .dot{animation-duration:calc(var(--dur-slow) * 10)}
+  .ease-out .dot{animation-duration:8s;animation-timing-function:var(--ease-out)}
+  .ease-in-out .dot{animation-duration:8s;animation-timing-function:var(--ease-in-out)}
+  .ease-spring .dot{animation-duration:8s;animation-timing-function:var(--ease-spring)}
+  /* The move takes 10% of each loop, so the dot runs at the token's real speed, then rests. */
+  @keyframes slide{0%,40%{transform:translateX(0)}50%,90%{transform:translateX(calc(var(--w) - 22px))}100%{transform:translateX(0)}}
+  .note{font-size:12px;line-height:1.5;color:var(--fg-muted);margin:0}
+  .note code{font-family:var(--font-mono);color:var(--fg-2)}
+  @media (prefers-reduced-motion: reduce){
+    .dot{animation:none;transform:translateX(calc(var(--w) - 22px))}
+    .rm{display:inline}
+  }
+  .rm{display:none;color:var(--accent-fg)}
+</style>
+</head>
+<body>
+  <h3>Durations <span class="rm">· reduced motion: shown at rest</span></h3>
+  <div class="grid">
+    <div class="name">--dur-fast · 120ms<small>Hover, press, toggles</small></div><div class="track dur-fast"><span class="dot"></span></div>
+    <div class="name">--dur-base · 180ms<small>Color, border, focus ring</small></div><div class="track dur-base"><span class="dot"></span></div>
+    <div class="name">--dur-slow · 320ms<small>Overlays, sheets, drawers</small></div><div class="track dur-slow"><span class="dot"></span></div>
+  </div>
+  <h3>Easings</h3>
+  <div class="grid">
+    <div class="name">--ease-out<small>Things arriving (default)</small></div><div class="track ease-out"><span class="dot"></span></div>
+    <div class="name">--ease-in-out<small>Things moving across</small></div><div class="track ease-in-out"><span class="dot"></span></div>
+    <div class="name">--ease-spring<small>Switch thumb only</small></div><div class="track ease-spring"><span class="dot"></span></div>
+  </div>
+  <p class="note">Duration rows move at the token's real speed; easing rows are slowed to 800ms so the curve shows. Under <code>prefers-reduced-motion</code> transitions and overlay animations finish at once; only the <code>Spinner</code> keeps turning, slower.</p>
+  <script>
+    function size() { document.querySelectorAll('.track').forEach((t) => t.style.setProperty('--w', t.clientWidth + 'px')); }
+    size(); addEventListener('resize', size);
+  </script>
+</body>
+</html>

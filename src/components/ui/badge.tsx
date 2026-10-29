@@ -9,7 +9,7 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary-subtle text-primary [a&]:hover:bg-primary-subtle/80",
+        default: "bg-primary-subtle text-primary-text [a&]:hover:bg-primary-subtle/80",
         secondary: "border-border bg-secondary text-fg-secondary [a&]:hover:bg-accent",
         success: "bg-success-subtle text-success",
         warning: "bg-warning-subtle text-warning",

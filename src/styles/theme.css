@@ -26,7 +26,7 @@
   --color-destructive: var(--danger);
   --color-destructive-foreground: var(--fg-1);
   --color-border: var(--border);
-  --color-input: var(--border);
+  --color-input: var(--border-strong);
   --color-ring: var(--accent-ring);
 
   /* shadcn Sidebar → the page's deepest layer, so the content area reads as raised */
@@ -107,6 +107,20 @@
   }
   ::selection {
     @apply bg-primary-subtle;
+  }
+}
+
+/* Reduced motion: transitions and enter / exit animations finish at once (overlays appear
+   without sliding or zooming, the accordion opens without growing). The Spinner keeps
+   turning, slower — it is the only motion that carries meaning. */
+@media (prefers-reduced-motion: reduce) {
+  *:not([data-slot="spinner"]),
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

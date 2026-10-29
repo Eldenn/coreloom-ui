@@ -11,6 +11,8 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledby,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
   const _values = React.useMemo(
@@ -31,7 +33,7 @@ function Slider({
       min={min}
       max={max}
       className={cn(
-        "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-55 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
+        "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-55 data-[orientation=horizontal]:min-h-6 data-[orientation=vertical]:min-w-6 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
         className
       )}
       {...props}
@@ -49,7 +51,15 @@ function Slider({
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
-          className="block size-[18px] shrink-0 cursor-grab rounded-full border-[3px] border-background bg-primary shadow-sm transition-[box-shadow] duration-180 ease-out outline-none hover:ring-4 hover:ring-primary-subtle focus-visible:ring-[3px] focus-visible:ring-ring active:cursor-grabbing disabled:pointer-events-none"
+          aria-label={
+            ariaLabel === undefined
+              ? undefined
+              : _values.length === 1
+                ? ariaLabel
+                : `${ariaLabel}, ${index === 0 ? "minimum" : index === _values.length - 1 ? "maximum" : index + 1}`
+          }
+          aria-labelledby={ariaLabelledby}
+          className="relative block size-6 shrink-0 cursor-grab rounded-full transition-[box-shadow] duration-180 ease-out outline-none before:absolute before:inset-[3px] before:rounded-full before:border-[3px] before:border-background before:bg-primary before:shadow-sm before:content-[''] hover:ring-4 hover:ring-primary-subtle focus-visible:ring-[3px] focus-visible:ring-ring active:cursor-grabbing disabled:pointer-events-none"
         />
       ))}
     </SliderPrimitive.Root>

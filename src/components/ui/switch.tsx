@@ -19,7 +19,7 @@ function Switch({
       className={cn(
         "peer group/switch relative inline-flex shrink-0 cursor-pointer items-center rounded-pill border transition-[background-color,box-shadow] duration-180 ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55",
         "data-[size=default]:h-[25px] data-[size=default]:w-[42px] data-[size=sm]:h-[21px] data-[size=sm]:w-[34px]",
-        "data-[state=checked]:border-transparent data-[state=checked]:bg-primary data-[state=unchecked]:border-border data-[state=unchecked]:bg-accent",
+        "data-[state=checked]:border-transparent data-[state=checked]:bg-primary data-[state=unchecked]:border-border-strong data-[state=unchecked]:bg-accent",
         className
       )}
       {...props}

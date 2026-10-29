@@ -32,7 +32,7 @@ function DocsToc({ items, title = "On this page" }: { items: TocItem[]; title?: 
   const active = useActiveHeading(items.map((i) => i.id))
   return (
     <nav aria-label={title}>
-      <div className="mb-3 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">{title}</div>
+      <div className="mb-3 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{title}</div>
       {items.map((item) => (
         <a
           key={item.id}

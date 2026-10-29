@@ -74,7 +74,7 @@ function CommandInput({
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          "flex h-10 w-full rounded-md bg-transparent py-3 text-[14px] text-foreground outline-hidden placeholder:text-faint-foreground disabled:cursor-not-allowed disabled:opacity-55",
+          "flex h-10 w-full rounded-md bg-transparent py-3 text-[14px] text-foreground outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-55",
           className
         )}
         {...props}
@@ -134,6 +134,7 @@ function CommandSeparator({
   return (
     <CommandPrimitive.Separator
       data-slot="command-separator"
+      aria-hidden="true"
       className={cn("-mx-1 my-1 h-px bg-border-subtle", className)}
       {...props}
     />

@@ -6,7 +6,7 @@ import { LoginForm } from "@/components/login-form"
 import { SignupForm } from "@/components/signup-form"
 import { VerifyForm } from "@/components/verify-form"
 
-const brand = <span className="font-display text-[20px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary">loom</span></span>
+const brand = <span className="font-display text-[20px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary-text">loom</span></span>
 
 const meta = {
   title: "Blocks/Auth",

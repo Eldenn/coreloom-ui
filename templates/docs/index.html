@@ -107,7 +107,7 @@
         return (
           <a href="#" className="flex items-center gap-2.5">
             <img src="../../assets/Logos/coreloom-logomark.svg" alt="" className="size-7 rounded-[7px]" />
-            <span className="font-display text-[18px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary">loom</span></span>
+            <span className="font-display text-[18px] font-bold tracking-[-0.03em] text-foreground">Core<span className="text-primary-text">loom</span></span>
           </a>
         );
       }
@@ -135,7 +135,7 @@
       function NavList({ onPick }) {
         return NAV.map((g) => (
           <div key={g.group} className="mb-5">
-            <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">{g.group}</div>
+            <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{g.group}</div>
             {g.items.map((item) => (
               <a key={item} href="#" onClick={onPick}
                 aria-current={item === ACTIVE ? 'page' : undefined}
@@ -339,7 +339,7 @@
 
               {/* ---- TOC ---- */}
               <nav className="sticky top-14 hidden h-[calc(100svh-3.5rem)] px-4 py-8 lg:block" aria-label="On this page">
-                <div className="mb-3 font-mono text-[10px] tracking-[0.12em] text-faint-foreground uppercase">On this page</div>
+                <div className="mb-3 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">On this page</div>
                 {TOC.map((t) => (
                   <a key={t.id} href={'#' + t.id}
                     className={'block border-l-2 py-1.5 pl-3 text-[13px] transition-colors ' +

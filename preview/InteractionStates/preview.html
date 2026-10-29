@@ -1,0 +1,71 @@
+<!-- @dsCard group="Foundations" height=260 page subtitle="Rest · hover · focus · pressed · invalid · disabled" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);padding:22px 28px}
+  #root{display:grid;grid-template-columns:96px repeat(6,minmax(0,1fr));gap:14px 12px;align-items:center}
+  .head{font:600 10px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-muted)}
+  .row{font:500 12px/1.3 var(--font-mono);color:var(--fg-2)}
+  .na{font:400 12px var(--font-mono);color:var(--fg-muted)}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Button || !UI.Input || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Button, Input, Checkbox } = UI;
+      // States are forced with the classes the pseudo-classes would apply, so they show side by side.
+      const FOCUS = 'ring-[3px] ring-ring';
+      const cols = ['Rest', 'Hover', 'Focus', 'Pressed', 'Invalid', 'Disabled'];
+      const na = h('span', { className: 'na' }, '—');
+      const rows = [
+        ['Primary', [
+          h(Button, { tabIndex: -1 }, 'Deploy'),
+          h(Button, { tabIndex: -1, className: 'bg-primary-hover shadow-glow' }, 'Deploy'),
+          h(Button, { tabIndex: -1, className: FOCUS }, 'Deploy'),
+          h(Button, { tabIndex: -1, className: 'bg-primary-press translate-y-px' }, 'Deploy'),
+          na,
+          h(Button, { disabled: true }, 'Deploy'),
+        ]],
+        ['Secondary', [
+          h(Button, { tabIndex: -1, variant: 'secondary' }, 'Cancel'),
+          h(Button, { tabIndex: -1, variant: 'secondary', className: 'bg-accent' }, 'Cancel'),
+          h(Button, { tabIndex: -1, variant: 'secondary', className: FOCUS }, 'Cancel'),
+          h(Button, { tabIndex: -1, variant: 'secondary', className: 'bg-accent translate-y-px' }, 'Cancel'),
+          na,
+          h(Button, { variant: 'secondary', disabled: true }, 'Cancel'),
+        ]],
+        ['Input', [
+          h(Input, { tabIndex: -1, 'aria-label': 'Rest', defaultValue: 'coreloom' }),
+          na,
+          h(Input, { tabIndex: -1, 'aria-label': 'Focus', defaultValue: 'coreloom', className: 'border-primary ' + FOCUS }),
+          na,
+          h(Input, { tabIndex: -1, 'aria-label': 'Invalid', defaultValue: 'core loom', 'aria-invalid': true }),
+          h(Input, { 'aria-label': 'Disabled', defaultValue: 'coreloom', disabled: true }),
+        ]],
+        ['Checkbox', [
+          h(Checkbox, { tabIndex: -1, 'aria-label': 'Rest' }),
+          na,
+          h(Checkbox, { tabIndex: -1, 'aria-label': 'Focus', defaultChecked: true, className: FOCUS }),
+          h(Checkbox, { tabIndex: -1, 'aria-label': 'Checked', defaultChecked: true }),
+          h(Checkbox, { tabIndex: -1, 'aria-label': 'Invalid', 'aria-invalid': true }),
+          h(Checkbox, { 'aria-label': 'Disabled', defaultChecked: true, disabled: true }),
+        ]],
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h('span'), ...cols.map((c) => h('span', { key: c, className: 'head' }, c)),
+          ...rows.flatMap(([name, cells]) => [h('span', { key: name, className: 'row' }, name), ...cells.map((c, i) => h('div', { key: name + i }, c))]),
+        )
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

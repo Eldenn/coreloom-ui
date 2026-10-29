@@ -10,6 +10,7 @@ import {
   ChevronRightIcon,
 } from "lucide-react"
 import {
+  DateLib,
   DayPicker,
   getDefaultClassNames,
   type DayButton,
@@ -24,6 +25,7 @@ function Calendar({
   captionLayout = "label",
   buttonVariant = "ghost",
   formatters,
+  labels,
   components,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
@@ -45,6 +47,17 @@ function Calendar({
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),
         ...formatters,
+      }}
+      labels={{
+        // The day's number as a word in its name ("Sunday 27 September 2026"), so the
+        // visible label is part of the accessible one (WCAG 2.5.3).
+        labelDayButton: (date, modifiers, options, dateLib) => {
+          let label = (dateLib ?? new DateLib(options)).format(date, "EEEE d MMMM yyyy")
+          if (modifiers.today) label = `Today, ${label}`
+          if (modifiers.selected) label = `${label}, selected`
+          return label
+        },
+        ...labels,
       }}
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
@@ -123,7 +136,7 @@ function Calendar({
           defaultClassNames.today
         ),
         outside: cn(
-          "text-faint-foreground aria-selected:text-muted-foreground",
+          "text-muted-foreground aria-selected:text-fg-secondary",
           defaultClassNames.outside
         ),
         disabled: cn(

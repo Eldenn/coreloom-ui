@@ -11,7 +11,7 @@ A data table with sorting, a text filter, row selection and pagination: shadcn's
 
 Use `<DataTableColumnHeader column title>` as a column's `header` to make it sortable. Add a selection column with `Checkbox`es bound to `row.getIsSelected()`.
 
-- Built on `Table`, so it has the same frame, mono headers and row states. Selected rows take `accent-subtle`. Sort arrows are `fg-faint` until active. The footer shows the row count (or "n of m selected"), rows per page and Previous / Next.
+- Built on `Table`, so it has the same frame, mono headers and row states. Selected rows take `accent-subtle`. Sort arrows are `fg-muted` until active. The footer shows the row count (or "n of m selected"), rows per page and Previous / Next.
 - Sorting and filtering run in the browser on the `data` you pass. For server-side data, use `Table` with your own TanStack setup.
 - Right-align and mono numbers; put status in a `Badge` with a word; keep one primary action in the toolbar.
 
