@@ -6,6 +6,7 @@ import * as React from "react"
 import { MenuIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { DocsToc, type TocItem } from "@/components/docs-toc"
@@ -24,7 +25,7 @@ function DocsNav({ groups, onNavigate }: { groups: DocsNavGroup[]; onNavigate?: 
         <div key={group.title} className="mb-5">
           <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{group.title}</div>
           {group.items.map((item) => (
-            <a
+            <AppLink
               key={item.href}
               href={item.href}
               onClick={onNavigate}
@@ -35,7 +36,7 @@ function DocsNav({ groups, onNavigate }: { groups: DocsNavGroup[]; onNavigate?: 
               )}
             >
               {item.title}
-            </a>
+            </AppLink>
           ))}
         </div>
       ))}

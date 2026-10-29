@@ -26,9 +26,15 @@ type IconLike = LucideIcon | React.ReactElement
 
 function renderIcon(icon: IconLike | undefined) {
   if (!icon) return null
-  if (React.isValidElement(icon)) return icon
-  const Icon = icon as LucideIcon
-  return <Icon />
+  // A component (function, forwardRef or memo, like Lucide's icons) is rendered here. Anything
+  // else is already a node: an element, or what a server component's element became on the way to
+  // the client (React dedupes repeated elements into lazy references).
+  const kind = (icon as { $$typeof?: symbol }).$$typeof
+  if (typeof icon === "function" || kind === Symbol.for("react.forward_ref") || kind === Symbol.for("react.memo")) {
+    const Icon = icon as LucideIcon
+    return <Icon />
+  }
+  return icon as React.ReactNode
 }
 
 type CommandMenuItem = {

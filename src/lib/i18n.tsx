@@ -77,7 +77,7 @@ const en = {
     filter: "Filter…",
     empty: "No results.",
     rows: (count: string, n: number) => `${count} ${n === 1 ? "row" : "rows"}`,
-    selected: (selected: string, total: string, n: number) => `${selected} of ${total} selected`,
+    selected: (selected: string, total: string, _n: number) => `${selected} of ${total} selected`,
     rowsPerPage: "Rows per page",
     previousPage: "Previous page",
     nextPage: "Next page",

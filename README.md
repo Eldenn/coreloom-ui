@@ -18,6 +18,8 @@ component.
 | `src/lib/i18n.tsx` | `CoreloomI18nProvider` and `useCoreloomI18n()`: every built-in string (labels, placeholders, screen-reader text, validation messages) in English and French, overridable per string. Installed with the components that use it. |
 | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
 | `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
+| `starter/` | A Vite + TanStack Router / Query / Form app built with the registry (see below). Its copies of the components are refreshed by `pnpm starter:sync`; CI fails if they drift, then builds and tests it. |
+| `CHANGELOG.md` | What changed per release. Tag `vX.Y.Z` (matching `package.json`) to publish a GitHub release with the registry attached. |
 | `stories/`, `.storybook/` | Storybook 10 (React + Vite): a story for every component and block, the theme toolbar (dark / light) and the accessibility panel. Published at https://eldenn.github.io/coreloom-ui/. |
 | `templates/` | The design system's starting points — docs page, landing page, app shell — as single HTML pages on the artifact bundle. Read them for layout patterns; in an app, rebuild them from the installed components. |
 | `build/`, `preview/` | Builds the design-system artifact's bundle (all components on one global, React 19 as browser scripts, compiled Tailwind) from the same sources. |
@@ -74,6 +76,22 @@ The registry is built and published to GitHub Pages on every push to `main`
    or set `document.documentElement.dataset.theme = "light"` yourself. The getting-started guide has
    the one-line `<head>` script that applies the saved choice before the first paint.
 
+### Or start from the starter
+
+[`starter/`](./starter) is a ready app on Vite + TanStack Router, Query and Form with every
+component installed, the providers wired, English and French, and sign-in, dashboard, projects,
+settings and error screens. No backend needed:
+
+```bash
+pnpm dlx degit Eldenn/coreloom-ui/starter my-app && cd my-app && pnpm install && pnpm dev
+```
+
+### Router links
+
+Blocks render their links with `AppLink` (`@coreloom/link`). Give them your router's link once and
+they navigate without reloading: `<CoreloomLinkProvider component={Link}>` (Next.js `Link` as is;
+TanStack Router: see `starter/src/components/router-link.tsx`).
+
 In a monorepo, install into the shared `ui` package (its own `components.json` with the
 `@coreloom` registry) and import from there, the way shadcn's monorepo template does.
 
@@ -128,15 +146,30 @@ Every push and pull request runs `pnpm test` in the Playwright container (`.gith
   from CI, not from a laptop: after an intended visual change (or to create them the first time), run the
   **Visual baselines** workflow on your branch (Actions → Visual baselines → Run workflow). It commits the
   new PNGs; review them in the PR diff. Until baselines exist, the visual tests are skipped.
+- **Interactions:** `tests/interactions.spec.ts` drives components and blocks with the keyboard and pointer
+  (focus traps, filtering, tags, file checks, form errors and busy states, URL state, theme). Add a case when a
+  component gains behaviour.
+- **Starter:** `tests/starter.spec.ts` runs the built starter end to end (sign-in, navigation, filters, forms,
+  404, language, theme) and axe on every screen in both themes. CI builds the starter first; locally,
+  `pnpm --dir starter build` before `pnpm test`, or the starter tests are skipped.
 - A failed run uploads the Playwright report (diffs, traces) as the `playwright-report` artifact.
 - Tag a story `no-test` to leave it out (for stories that can't be deterministic).
 
 Push to `main` and the workflow republishes both to GitHub Pages: Storybook under `/storybook/`
 (https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`. Add a story in `stories/` for
 every new component or block; the Theme toolbar switches `data-theme`, and the Accessibility panel
-runs axe on the story. Tag releases (`git tag v0.1.0 && git push --tags`)
-so projects can tell which version they installed — shadcn copies code, so updating a project
-means running `pnpm dlx shadcn@latest add @coreloom/<name> --overwrite` (or `--diff` first to review).
+runs axe on the story.
+
+### Releases
+
+1. Move the `[Unreleased]` notes in `CHANGELOG.md` under a new `## [x.y.z] - date` heading and set
+   `"version"` in `package.json` to match.
+2. Commit, push `main`, then `git tag vx.y.z && git push origin vx.y.z`.
+
+The **Release** workflow checks that the tag, `package.json` and the CHANGELOG agree, then publishes a
+GitHub release with the notes and the registry's JSON files. Projects can pin it in `components.json`
+(`"@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/vx.y.z/{name}.json"`) and update
+with `pnpm dlx shadcn@latest add @coreloom/<name> --overwrite` (or `--diff` first to review).
 
 ## License
 

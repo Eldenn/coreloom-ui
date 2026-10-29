@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./coreloom/fonts.css";
+@import "./coreloom/tokens.css";
+@import "./coreloom/theme.css";

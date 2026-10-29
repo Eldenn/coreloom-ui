@@ -7,6 +7,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { useCoreloomI18n } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 
@@ -69,7 +70,7 @@ function NotFoundPage({ homeHref = "/", title, description, actions, ...props }:
         actions ?? (
           <>
             <Button asChild>
-              <a href={homeHref}>{t.home}</a>
+              <AppLink href={homeHref}>{t.home}</AppLink>
             </Button>
             <Button variant="secondary" onClick={() => window.history.back()}>
               {t.back}
@@ -105,7 +106,7 @@ function ServerErrorPage({
           <>
             {onRetry && <Button onClick={onRetry}>{t.retry}</Button>}
             <Button asChild variant={onRetry ? "secondary" : "default"}>
-              <a href={homeHref}>{t.home}</a>
+              <AppLink href={homeHref}>{t.home}</AppLink>
             </Button>
           </>
         )
@@ -116,9 +117,9 @@ function ServerErrorPage({
           <span className="flex flex-wrap items-center justify-center gap-3">
             {reference && <span>{t.reference(reference)}</span>}
             {statusHref && (
-              <a href={statusHref} className="text-primary-text underline-offset-4 hover:underline">
+              <AppLink href={statusHref} className="text-primary-text underline-offset-4 hover:underline">
                 {t.status}
-              </a>
+              </AppLink>
             )}
           </span>
         ))
@@ -146,9 +147,9 @@ function MaintenancePage({ until, statusHref, title, description, footer, ...pro
       footer={
         footer ??
         (statusHref && (
-          <a href={statusHref} className="text-primary-text underline-offset-4 hover:underline">
+          <AppLink href={statusHref} className="text-primary-text underline-offset-4 hover:underline">
             {t.status}
-          </a>
+          </AppLink>
         ))
       }
       {...props}

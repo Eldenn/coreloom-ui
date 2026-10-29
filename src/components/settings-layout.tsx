@@ -6,6 +6,7 @@ import * as React from "react"
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AppLink } from "@/lib/link"
 import { useCoreloomI18n } from "@/lib/i18n"
 
 /** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
@@ -14,9 +15,15 @@ type IconLike = LucideIcon | React.ReactElement
 
 function renderIcon(icon: IconLike | undefined) {
   if (!icon) return null
-  if (React.isValidElement(icon)) return icon
-  const Icon = icon as LucideIcon
-  return <Icon />
+  // A component (function, forwardRef or memo, like Lucide's icons) is rendered here. Anything
+  // else is already a node: an element, or what a server component's element became on the way to
+  // the client (React dedupes repeated elements into lazy references).
+  const kind = (icon as { $$typeof?: symbol }).$$typeof
+  if (typeof icon === "function" || kind === Symbol.for("react.forward_ref") || kind === Symbol.for("react.memo")) {
+    const Icon = icon as LucideIcon
+    return <Icon />
+  }
+  return icon as React.ReactNode
 }
 
 type SettingsNavItem = { id: string; label: string; icon?: IconLike; href?: string }
@@ -66,9 +73,9 @@ function SettingsLayout({
               return (
                 <li key={item.id}>
                   {item.href ? (
-                    <a href={item.href} className={cls} aria-current={isActive ? "page" : undefined}>
+                    <AppLink href={item.href} className={cls} aria-current={isActive ? "page" : undefined}>
                       {content}
-                    </a>
+                    </AppLink>
                   ) : (
                     <button type="button" className={cls} aria-current={isActive ? "page" : undefined} onClick={() => onNavigate?.(item.id)}>
                       {content}
