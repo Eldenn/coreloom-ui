@@ -1,0 +1,46 @@
+<!-- @dsCard group="Blocks" width=1280 height=560 subtitle="data-list block · search · faceted filters · state in the URL" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{max-width:1000px;margin:0 auto;padding:32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.useDataList || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { useDataList, DataListToolbar, DataListEmpty, DataListPagination, Badge, BadgeDot, Button, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TooltipProvider } = UI;
+      const names = ['coreloom-web', 'coreloom-api', 'docs', 'marketing-site', 'billing-service', 'auth-gateway', 'status-page', 'design-tokens', 'cli', 'mobile-bff', 'analytics-worker', 'image-proxy'];
+      const st = ['ready', 'ready', 'building', 'ready', 'failed'], rg = ['cdg1', 'fra1', 'iad1'], fw = ['Next.js', 'Vite', 'AdonisJS', 'Astro'];
+      const rows = names.map((name, i) => ({ name, status: st[i % 5], region: rg[i % 3], framework: fw[(i * 3) % 4], updated: ((i % 9) + 1) + 'h ago' }));
+      const variant = { ready: 'success', building: 'warning', failed: 'destructive' };
+      function Demo() {
+        const list = useDataList({ rows, searchKeys: ['name', 'framework'], pageSize: 6, facets: [
+          { key: 'status', label: 'Status', options: [{ value: 'ready', label: 'Ready' }, { value: 'building', label: 'Building' }, { value: 'failed', label: 'Failed' }] },
+          { key: 'region', label: 'Region', options: [{ value: 'cdg1', label: 'Paris (cdg1)' }, { value: 'fra1', label: 'Frankfurt (fra1)' }, { value: 'iad1', label: 'Washington (iad1)' }] }] });
+        return h('div', { className: 'flex flex-col gap-4' },
+          h(DataListToolbar, { list, searchLabel: 'Search projects…', actions: h(Button, { size: 'sm' }, h(I.plus), 'New project') }),
+          list.filtered.length === 0 ? h(DataListEmpty, { list }) : h('div', { className: 'rounded-lg border border-border' }, h(Table, null,
+            h(TableHeader, null, h(TableRow, null, ['Project', 'Status', 'Region', 'Framework'].map((c) => h(TableHead, { key: c }, c)), h(TableHead, { className: 'text-right' }, 'Updated'))),
+            h(TableBody, null, list.pageRows.map((p) => h(TableRow, { key: p.name },
+              h(TableCell, { className: 'font-medium text-foreground' }, p.name),
+              h(TableCell, null, h(Badge, { variant: variant[p.status] }, h(BadgeDot), p.status)),
+              h(TableCell, { className: 'font-mono text-[12px]' }, p.region), h(TableCell, null, p.framework),
+              h(TableCell, { className: 'text-right font-mono text-[12px]' }, p.updated)))))),
+          h(DataListPagination, { list }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!-- @dsCard group="Forms" height=400 subtitle="Drop zone · thumbnails · progress · type and size checks" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.FileUpload || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { FileUpload, Field, FieldLabel, FieldDescription } = UI;
+      const pixel = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNgYPj/HwADBQJ/gK3bWAAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
+      const files = [new File([pixel], 'cover.png', { type: 'image/png', lastModified: 1 }), new File([new Uint8Array(2400000)], 'brand-guidelines.pdf', { type: 'application/pdf', lastModified: 2 })];
+      function Demo() {
+        const [value, setValue] = React.useState(files);
+        return h('div', { style: { maxWidth: 460 } }, h(Field, null,
+          h(FieldLabel, { htmlFor: 'files' }, 'Attachments'),
+          h(FileUpload, { id: 'files', value, onValueChange: setValue, accept: 'image/*,.pdf', maxSize: 5 * 1024 * 1024, maxFiles: 4, progress: (f) => (f.name.endsWith('.pdf') ? 64 : undefined) }),
+          h(FieldDescription, null, 'PNG, JPG or PDF, up to 5 MB each.')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

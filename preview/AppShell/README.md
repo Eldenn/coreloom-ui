@@ -2,7 +2,7 @@
 
 The product layout as one installable block: sidebar, header, ⌘K palette, theme toggle and the page.
 
-**Install** `pnpm dlx shadcn@latest add @coreloom/app-shell`. It writes `app-shell.tsx`, `app-sidebar.tsx`, `nav-user.tsx`, `app-header.tsx` and `stat-card.tsx` to `components/`, along with the components they use (Sidebar, DropdownMenu, Avatar, Breadcrumb, Card, CommandMenu, ThemeToggle…).
+**Install** `pnpm dlx shadcn@latest add @coreloom/app-shell`. It writes `app-shell.tsx`, `app-sidebar.tsx`, `nav-user.tsx`, `app-header.tsx` and `stat-card.tsx` to `components/`, along with the components they use (Sidebar, DropdownMenu, Avatar, Breadcrumb, Card, CommandMenu, ThemeMenu…). The header's theme button is `ThemeMenu`: Light, Dark or System (follows the OS).
 
 **The consumer provides**:
 

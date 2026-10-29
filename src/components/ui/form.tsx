@@ -19,13 +19,16 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Combobox } from "@/components/ui/combobox"
 import { DatePicker } from "@/components/ui/date-picker"
+import { DateRangePicker, type DateRange } from "@/components/ui/date-range-picker"
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
+import { FileUpload } from "@/components/ui/file-upload"
 import { Input } from "@/components/ui/input"
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
+import { TagsInput } from "@/components/ui/tags-input"
 import { Textarea } from "@/components/ui/textarea"
 import { useCoreloomI18n } from "@/lib/i18n"
 
@@ -303,6 +306,89 @@ function DateField({
   )
 }
 
+function DateRangeField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof DateRangePicker>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as DateRange | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <DateRangePicker
+        id={meta.id}
+        value={value ?? { from: undefined }}
+        onValueChange={(r) => field.handleChange(r)}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Tags typed into one field (string[]). */
+function TagsField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof TagsInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as string[] | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <TagsInput
+        id={meta.id}
+        value={value ?? []}
+        onValueChange={(tags) => field.handleChange(tags)}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Files from a drop zone (File[]). Type and size limits refuse files with their own message. */
+function FileField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof FileUpload>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as File[] | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <FileUpload
+        id={meta.id}
+        value={value ?? []}
+        onValueChange={(files) => {
+          field.handleChange(files)
+          field.handleBlur()
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
 function RadioGroupField({
   label,
   description,
@@ -432,6 +518,9 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     SelectField,
     ComboboxField,
     DateField,
+    DateRangeField,
+    TagsField,
+    FileField,
     RadioGroupField,
     CheckboxField,
     SwitchField,
@@ -454,6 +543,9 @@ export {
   SelectField,
   ComboboxField,
   DateField,
+  DateRangeField,
+  TagsField,
+  FileField,
   RadioGroupField,
   CheckboxField,
   SwitchField,

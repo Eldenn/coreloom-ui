@@ -9,7 +9,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppHeader, type Crumb } from "@/components/app-header"
 import { AppSidebar } from "@/components/app-sidebar"
 import { CommandMenu, type CommandMenuGroup } from "@/components/command-menu"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeMenu } from "@/components/theme-toggle"
 import { useCoreloomI18n } from "@/lib/i18n"
 
 function AppShell({
@@ -39,7 +39,7 @@ function AppShell({
             <>
               {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} />}
               {headerActions}
-              <ThemeToggle />
+              <ThemeMenu />
             </>
           }
         />

@@ -9,7 +9,8 @@ files = []
 for it in items.values():
     for f in it.get("files", []):
         p = f["path"]
-        if (p.startswith("src/components/") or p == "src/lib/i18n.tsx") and p.endswith(".tsx"):
+        # A file shared by two items (stat-card in app-shell and dashboard) is declared once.
+        if (p.startswith("src/components/") or p == "src/lib/i18n.tsx") and p.endswith(".tsx") and p not in {f for _, f in files}:
             files.append((it, p))
 ui = sorted([x for x in files if "/ui/" in x[1]], key=lambda x: x[1])
 blocks = [x for x in files if "/ui/" not in x[1]]

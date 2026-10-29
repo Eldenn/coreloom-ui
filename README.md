@@ -13,8 +13,8 @@ component.
 | `src/styles/fonts.css` | Geist, Space Grotesk and JetBrains Mono from Fontsource (variable files), bundled by the app. Part of `@coreloom/theme`. |
 | `src/styles/theme.css` | The shadcn layer: maps Tailwind / shadcn color utilities (`bg-background`, `bg-primary`, `text-muted-foreground`, `border-input`, `ring-ring`…) onto the Coreloom tokens, adds Coreloom-only utilities (`bg-inset`, `text-fg-secondary`, `bg-primary-subtle`, `shadow-glow`, `bg-scrim`…) and makes `dark:` follow `data-theme`. |
 | `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
-| `src/components/ui/*.tsx` | 54 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, empty, field, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, switch, table, tabs, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
-| `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview); shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
+| `src/components/ui/*.tsx` | 58 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, date-range-picker, dialog, drawer, dropdown-menu, empty, field, file-upload, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, stepper, switch, table, tabs, tags-input, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
+| `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview), `dashboard` (dashboard, stat-card), `data-list`, `pricing`, `onboarding`, `error-pages` (error-page); shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
 | `src/lib/i18n.tsx` | `CoreloomI18nProvider` and `useCoreloomI18n()`: every built-in string (labels, placeholders, screen-reader text, validation messages) in English and French, overridable per string. Installed with the components that use it. |
 | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
 | `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
@@ -54,7 +54,8 @@ The registry is built and published to GitHub Pages on every push to `main`
    Whole screens install as blocks:
 
    ```bash
-   pnpm dlx shadcn@latest add @coreloom/app-shell   # or auth, settings, marketing, docs
+   pnpm dlx shadcn@latest add @coreloom/app-shell   # or auth, settings, marketing, docs, dashboard,
+                                                   # data-list, pricing, onboarding, error-pages
    ```
 
 3. In `globals.css`, after `@import "tailwindcss";`:
@@ -68,8 +69,10 @@ The registry is built and published to GitHub Pages on every push to `main`
 
    and remove the default shadcn color block (`:root { --background: … }`, `.dark { … }`,
    `@theme inline { --color-… }`) if `shadcn init` created one.
-4. Wrap the app once in `<TooltipProvider>` if you use tooltips, and render one `<Toaster />` at the root if you use toasts (`import { toast } from "@/components/ui/sonner"`). Toggle themes with
-   `document.documentElement.dataset.theme = "light" | "dark"`.
+4. Wrap the app once in `<TooltipProvider>` if you use tooltips, and render one `<Toaster />` at the root if you use toasts (`import { toast } from "@/components/ui/sonner"`). Themes: `<ThemeMenu />` /
+   `<ThemeToggle />` from `@coreloom/theme-toggle` (Light, Dark or System, saved in `localStorage`),
+   or set `document.documentElement.dataset.theme = "light"` yourself. The getting-started guide has
+   the one-line `<head>` script that applies the saved choice before the first paint.
 
 In a monorepo, install into the shared `ui` package (its own `components.json` with the
 `@coreloom` registry) and import from there, the way shadcn's monorepo template does.
