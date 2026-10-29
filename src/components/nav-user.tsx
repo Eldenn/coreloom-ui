@@ -20,11 +20,23 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useCoreloomI18n } from "@/lib/i18n"
+
+/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
+ *  server → client boundary in Next.js, components don't. */
+type IconLike = LucideIcon | React.ReactElement
+
+function renderIcon(icon: IconLike | undefined) {
+  if (!icon) return null
+  if (React.isValidElement(icon)) return icon
+  const Icon = icon as LucideIcon
+  return <Icon />
+}
 
 type NavUserProps = {
   user: { name: string; email?: string; role?: string; avatar?: string }
   /** Entries above "Log out": Account, Billing, Notifications… */
-  menu?: { label: string; icon?: LucideIcon; onSelect: () => void }[]
+  menu?: { label: string; icon?: IconLike; onSelect: () => void }[]
   onSignOut?: () => void
 }
 
@@ -38,6 +50,7 @@ function initials(name: string) {
 }
 
 function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
+  const t = useCoreloomI18n().messages
   const { isMobile } = useSidebar()
   const avatar = (
     <Avatar>
@@ -80,7 +93,7 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
                 <DropdownMenuGroup>
                   {menu.map((item) => (
                     <DropdownMenuItem key={item.label} onSelect={item.onSelect}>
-                      {item.icon && <item.icon />}
+                      {renderIcon(item.icon)}
                       {item.label}
                     </DropdownMenuItem>
                   ))}
@@ -92,7 +105,7 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" onSelect={onSignOut}>
                   <LogOutIcon />
-                  Log out
+                  {t.appShell.logOut}
                 </DropdownMenuItem>
               </>
             )}

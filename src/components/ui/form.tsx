@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
 
@@ -408,14 +409,15 @@ function SubmitButton({
 }
 
 /** Form-level errors (a validator returning `{ form: "…" }`, or a server error you set). */
-function FormErrors({ title = "Couldn't save", className }: { title?: React.ReactNode; className?: string }) {
+function FormErrors({ title, className }: { title?: React.ReactNode; className?: string }) {
+  const t = useCoreloomI18n().messages
   const form = useFormContext()
   const errors = useStore(form.store, (s) => s.errors)
   const issues = toIssues(errors)
   if (!issues.length) return null
   return (
     <Alert variant="destructive" className={className}>
-      <AlertTitle>{title}</AlertTitle>
+      <AlertTitle>{title ?? t.form.errorTitle}</AlertTitle>
       <AlertDescription>{issues.map((i) => i.message).filter(Boolean).join(" ")}</AlertDescription>
     </Alert>
   )

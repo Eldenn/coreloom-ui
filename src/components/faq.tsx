@@ -1,11 +1,14 @@
+"use client"
+
 // Coreloom UI — Faq (marketing block). Questions in an Accordion, the first one open.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function Faq({
-  title = "Questions",
+  title,
   items,
   className,
 }: {
@@ -13,6 +16,8 @@ function Faq({
   items: { question: string; answer: React.ReactNode }[]
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  title ??= t.marketing.faq
   return (
     <section className={cn("border-t border-border-subtle px-5 py-20", className)}>
       <div className="mx-auto max-w-[720px]">

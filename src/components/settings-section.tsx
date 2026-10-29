@@ -26,6 +26,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import type { SubmitButton } from "@/components/ui/form"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 /** What SettingsSection needs from a `useAppForm` instance. */
 type SectionForm = {
@@ -42,7 +43,7 @@ function SettingsSection({
   onSubmit,
   form,
   pending = false,
-  submitLabel = "Save changes",
+  submitLabel,
   className,
 }: {
   title: React.ReactNode
@@ -58,6 +59,8 @@ function SettingsSection({
   submitLabel?: string
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  submitLabel ??= t.settings.save
   const body = (
     <>
       <div className="flex flex-col gap-1 px-5 pt-5">
@@ -143,7 +146,7 @@ function SettingsRow({
  * the resource's name.
  */
 function DangerZone({
-  title = "Danger zone",
+  title,
   description,
   actionLabel,
   confirmTitle,
@@ -163,6 +166,8 @@ function DangerZone({
   onConfirm: () => unknown
   pending?: boolean
 }) {
+  const t = useCoreloomI18n().messages
+  title ??= t.settings.dangerZone
   const [typed, setTyped] = React.useState("")
   return (
     <section className="overflow-hidden rounded-lg border border-destructive/40 bg-card">
@@ -185,13 +190,13 @@ function DangerZone({
             </AlertDialogHeader>
             <Field>
               <FieldLabel htmlFor="danger-confirm">
-                Type <span className="font-mono text-foreground">{resourceName}</span> to confirm
+                {t.settings.typeToConfirm(resourceName)}
               </FieldLabel>
               <Input id="danger-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" spellCheck={false} />
-              <FieldDescription>This can’t be undone.</FieldDescription>
+              <FieldDescription>{t.settings.cannotUndo}</FieldDescription>
             </Field>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
               <AlertDialogAction variant="destructive" disabled={typed !== resourceName || pending} onClick={() => onConfirm()}>
                 {pending && <Spinner className="text-current" />}
                 {actionLabel}

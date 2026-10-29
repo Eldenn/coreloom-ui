@@ -11,14 +11,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldGroup, FieldSeparator } from "@/components/ui/field"
 import { useAppForm } from "@/components/ui/form"
+import { en, useCoreloomI18n, type Messages } from "@/lib/i18n"
 
 type OAuthProvider = { id: string; label: string; icon?: React.ReactNode }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function validateEmail(value: string) {
-  if (!value.trim()) return "Enter your email address."
-  if (!EMAIL.test(value.trim())) return "Enter a valid email address, like you@company.dev."
+/** Checks an email field; messages come from the i18n `auth` group. */
+function validateEmail(value: string, t: Pick<Messages["auth"], "emailRequired" | "emailInvalid"> = en.auth) {
+  if (!value.trim()) return t.emailRequired
+  if (!EMAIL.test(value.trim())) return t.emailInvalid
   return undefined
 }
 
@@ -31,8 +33,8 @@ function LoginForm({
   defaultEmail = "",
   forgotPasswordHref = "#",
   signUpHref,
-  title = "Sign in",
-  description = "Welcome back. Enter your email to continue.",
+  title,
+  description,
   className,
 }: {
   /** Called with valid values. Return a promise to keep the button busy until it settles. */
@@ -51,6 +53,8 @@ function LoginForm({
   description?: React.ReactNode
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  const l = t.auth.login
   const form = useAppForm({
     defaultValues: { email: defaultEmail, password: "" },
     onSubmit: async ({ value }) => {
@@ -61,8 +65,8 @@ function LoginForm({
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
-        <CardTitle className="text-[22px]">{title}</CardTitle>
-        <CardDescription className="text-[14px]">{description}</CardDescription>
+        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
+        <CardDescription className="text-[14px]">{description ?? l.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -83,7 +87,7 @@ function LoginForm({
                     </Button>
                   ))}
                 </div>
-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">or</FieldSeparator>
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">{t.auth.or}</FieldSeparator>
               </>
             )}
             {error && (
@@ -91,33 +95,33 @@ function LoginForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
-              {(field) => <field.TextField label="Email" type="email" autoComplete="email" placeholder="you@company.dev" />}
+            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}>
+              {(field) => <field.TextField label={l.email} type="email" autoComplete="email" placeholder={t.auth.emailPlaceholder} />}
             </form.AppField>
-            <form.AppField name="password" validators={{ onChange: ({ value }) => (value ? undefined : "Enter your password.") }}>
+            <form.AppField name="password" validators={{ onChange: ({ value }) => (value ? undefined : l.passwordRequired) }}>
               {(field) => (
                 <field.TextField
-                  label="Password"
+                  label={l.password}
                   type="password"
                   autoComplete="current-password"
                   labelAction={
                     <a href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
-                      Forgot password?
+                      {l.forgotPassword}
                     </a>
                   }
                 />
               )}
             </form.AppField>
             <form.AppForm>
-              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Signing in">
-                Sign in
+              <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
+                {l.submit}
               </form.SubmitButton>
             </form.AppForm>
             {signUpHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">
-                No account yet?{" "}
+                {l.noAccount}{" "}
                 <a href={signUpHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
-                  Create one
+                  {l.signUp}
                 </a>
               </p>
             )}

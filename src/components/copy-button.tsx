@@ -8,11 +8,12 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function CopyButton({
   value,
-  label = "Copy",
-  toastMessage = "Copied to clipboard",
+  label,
+  toastMessage,
   className,
 }: {
   value: string
@@ -21,6 +22,9 @@ function CopyButton({
   toastMessage?: string
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  label ??= t.copy.copy
+  toastMessage ??= t.copy.copied
   const [copied, setCopied] = React.useState(false)
   React.useEffect(() => {
     if (!copied) return
@@ -43,7 +47,7 @@ function CopyButton({
               setCopied(true)
               if (toastMessage) toast.success(toastMessage)
             } catch {
-              toast.error("Couldn’t copy — select the text instead.")
+              toast.error(t.copy.failed)
             }
           }}
         >

@@ -6,11 +6,23 @@ import * as React from "react"
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useCoreloomI18n } from "@/lib/i18n"
 
-type SettingsNavItem = { id: string; label: string; icon?: LucideIcon; href?: string }
+/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
+ *  server → client boundary in Next.js, components don't. */
+type IconLike = LucideIcon | React.ReactElement
+
+function renderIcon(icon: IconLike | undefined) {
+  if (!icon) return null
+  if (React.isValidElement(icon)) return icon
+  const Icon = icon as LucideIcon
+  return <Icon />
+}
+
+type SettingsNavItem = { id: string; label: string; icon?: IconLike; href?: string }
 
 function SettingsLayout({
-  title = "Settings",
+  title,
   description,
   nav,
   active,
@@ -28,6 +40,8 @@ function SettingsLayout({
   children: React.ReactNode
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  title ??= t.settings.title
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div>
@@ -45,7 +59,7 @@ function SettingsLayout({
               )
               const content = (
                 <>
-                  {item.icon && <item.icon />}
+                  {renderIcon(item.icon)}
                   {item.label}
                 </>
               )

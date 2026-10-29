@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import {
   ChevronLeftIcon,
@@ -8,12 +10,14 @@ import {
 import { buttonVariants, type Button } from "@/components/ui/button"
 
 import { cn } from "@/lib/utils"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+  const t = useCoreloomI18n().messages
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label={t.pagination.label}
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
@@ -72,15 +76,16 @@ function PaginationPrevious({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
+  const t = useCoreloomI18n().messages
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label={t.pagination.previousPage}
       size="default"
       className={cn("gap-1 px-2.5 text-[14px] sm:pl-2.5", className)}
       {...props}
     >
       <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
+      <span className="hidden sm:block">{t.pagination.previous}</span>
     </PaginationLink>
   )
 }
@@ -89,14 +94,15 @@ function PaginationNext({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
+  const t = useCoreloomI18n().messages
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label={t.pagination.nextPage}
       size="default"
       className={cn("gap-1 px-2.5 text-[14px] sm:pr-2.5", className)}
       {...props}
     >
-      <span className="hidden sm:block">Next</span>
+      <span className="hidden sm:block">{t.pagination.next}</span>
       <ChevronRightIcon />
     </PaginationLink>
   )
@@ -106,6 +112,7 @@ function PaginationEllipsis({
   className,
   ...props
 }: React.ComponentProps<"span">) {
+  const t = useCoreloomI18n().messages
   return (
     <span
       aria-hidden
@@ -114,7 +121,7 @@ function PaginationEllipsis({
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">{t.pagination.morePages}</span>
     </span>
   )
 }

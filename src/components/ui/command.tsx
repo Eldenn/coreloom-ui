@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 
 import { cn } from "@/lib/utils"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function Command({
   className,
@@ -31,8 +32,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
+  title,
+  description,
   children,
   className,
   showCloseButton = true,
@@ -43,6 +44,9 @@ function CommandDialog({
   className?: string
   showCloseButton?: boolean
 }) {
+  const t = useCoreloomI18n().messages
+  title ??= t.command.title
+  description ??= t.command.description
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">

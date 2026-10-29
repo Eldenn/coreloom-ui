@@ -1,0 +1,37 @@
+<!-- @dsCard group="Foundations" width=980 height=560 page subtitle="CoreloomI18nProvider · English and French built in" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-base);color:var(--fg-1);font-family:var(--font-sans);padding:24px 28px}
+  #root{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
+  .tag{font:600 10px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.CoreloomI18nProvider || !UI.LoginForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { CoreloomI18nProvider, LoginForm, TooltipProvider } = UI;
+      function Side({ locale, tag }) {
+        // Submit once on mount so the validation messages show in each language.
+        const ref = React.useRef(null);
+        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button[type=submit]'); if (b) b.click(); }, []);
+        return h('div', { ref, lang: locale },
+          h('p', { className: 'tag' }, tag),
+          h(CoreloomI18nProvider, { locale }, h(LoginForm, { onSubmit: () => {}, signUpHref: '#' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(Side, { locale: 'en', tag: 'locale="en" (default)' }),
+          h(Side, { locale: 'fr', tag: 'locale="fr"' })));
+    }
+    render();
+  </script>
+</body>
+</html>

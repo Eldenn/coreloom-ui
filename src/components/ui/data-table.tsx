@@ -46,16 +46,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function DataTable<TData, TValue>({
   columns,
   data,
   filterColumn,
-  filterPlaceholder = "Filter…",
+  filterPlaceholder,
   toolbar,
   pageSize = 10,
   pageSizeOptions = [10, 20, 50],
-  emptyText = "No results.",
+  emptyText,
   getRowId,
   onRowSelectionChange,
   className,
@@ -74,6 +75,9 @@ function DataTable<TData, TValue>({
   onRowSelectionChange?: (rows: TData[]) => void
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  filterPlaceholder ??= t.dataTable.filter
+  emptyText ??= t.dataTable.empty
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -177,6 +181,7 @@ function DataTableColumnHeader<TData, TValue>({
   title: string
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
   if (!column.getCanSort()) return <span className={className}>{title}</span>
   const sorted = column.getIsSorted()
   const Icon = sorted === "asc" ? ArrowUpIcon : sorted === "desc" ? ArrowDownIcon : ArrowUpDownIcon
@@ -184,7 +189,7 @@ function DataTableColumnHeader<TData, TValue>({
     <button
       type="button"
       onClick={column.getToggleSortingHandler()}
-      aria-label={`Sort by ${title}`}
+      aria-label={t.dataTable.sortBy(title)}
       className={cn(
         "-mx-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-1 uppercase outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring",
         sorted && "text-foreground",
@@ -204,6 +209,7 @@ function DataTablePagination<TData>({
   table: TanstackTable<TData>
   pageSizeOptions?: number[]
 }) {
+  const { messages: t, formatNumber } = useCoreloomI18n()
   const selected = table.getFilteredSelectedRowModel().rows.length
   const total = table.getFilteredRowModel().rows.length
   const { pageIndex, pageSize } = table.getState().pagination
@@ -213,13 +219,13 @@ function DataTablePagination<TData>({
       className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground"
     >
       <span className="font-mono text-[12px]">
-        {selected > 0 ? `${selected} of ${total} selected` : `${total} ${total === 1 ? "row" : "rows"}`}
+        {selected > 0 ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected) : t.dataTable.rows(formatNumber(total), total)}
       </span>
       <div className="flex items-center gap-4">
         <div className="hidden items-center gap-2 sm:flex">
-          <span>Rows per page</span>
+          <span>{t.dataTable.rowsPerPage}</span>
           <Select value={String(pageSize)} onValueChange={(v) => table.setPageSize(Number(v))}>
-            <SelectTrigger size="sm" className="w-[72px]" aria-label="Rows per page">
+            <SelectTrigger size="sm" className="w-[72px]" aria-label={t.dataTable.rowsPerPage}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -232,7 +238,7 @@ function DataTablePagination<TData>({
           </Select>
         </div>
         <span className="font-mono text-[12px]">
-          Page {pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
+          {t.dataTable.pageOf(formatNumber(pageIndex + 1), formatNumber(Math.max(table.getPageCount(), 1)))}
         </span>
         <div className="flex gap-1.5">
           <Button
@@ -240,7 +246,7 @@ function DataTablePagination<TData>({
             size="icon-sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            aria-label="Previous page"
+            aria-label={t.dataTable.previousPage}
           >
             <ChevronLeftIcon />
           </Button>
@@ -249,7 +255,7 @@ function DataTablePagination<TData>({
             size="icon-sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            aria-label="Next page"
+            aria-label={t.dataTable.nextPage}
           >
             <ChevronRightIcon />
           </Button>

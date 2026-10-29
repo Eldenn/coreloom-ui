@@ -17,6 +17,7 @@ import {
 } from "react-day-picker"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function Calendar({
   className,
@@ -27,10 +28,13 @@ function Calendar({
   formatters,
   labels,
   components,
+  locale,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
+  const i18n = useCoreloomI18n()
+  const t = i18n.messages
   const defaultClassNames = getDefaultClassNames()
 
   return (
@@ -43,18 +47,19 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
+      locale={locale ?? (i18n.dateLocale as React.ComponentProps<typeof DayPicker>["locale"])}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          date.toLocaleString(i18n.locale, { month: "short" }),
         ...formatters,
       }}
       labels={{
         // The day's number as a word in its name ("Sunday 27 September 2026"), so the
         // visible label is part of the accessible one (WCAG 2.5.3).
         labelDayButton: (date, modifiers, options, dateLib) => {
-          let label = (dateLib ?? new DateLib(options)).format(date, "EEEE d MMMM yyyy")
-          if (modifiers.today) label = `Today, ${label}`
-          if (modifiers.selected) label = `${label}, selected`
+          let label = (dateLib ?? new DateLib(options)).format(date, t.calendar.dayLabel)
+          if (modifiers.today) label = `${t.calendar.today}, ${label}`
+          if (modifiers.selected) label = `${label}, ${t.calendar.selected}`
           return label
         },
         ...labels,

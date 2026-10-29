@@ -7,7 +7,7 @@ The product layout as one installable block: sidebar, header, ⌘K palette, them
 **The consumer provides**:
 
 - `workspaces` (`{ name, plan?, logo? }`) with `activeWorkspace`, `onWorkspaceSelect` and `onWorkspaceCreate`;
-- `groups` of navigation (`{ label, items: [{ title, url, icon, isActive?, badge? }] }`, icons from `lucide-react`) and `secondary` links;
+- `groups` of navigation (`{ label, items: [{ title, url, icon, isActive?, badge? }] }`, icons from `lucide-react`, as a component `HomeIcon` or an element `<HomeIcon />` — use elements from a Next.js server component) and `secondary` links;
 - `user` (`{ name, email?, role?, avatar? }`) with `menu` entries and `onSignOut`;
 - `breadcrumbs` (`{ label, href? }`), `commands` for the palette (`{ heading, items: [{ label, icon?, shortcut?, onSelect }] }`) and `headerActions`;
 - the page as children: start with `<PageHeader title description actions>`, then `StatCard`s, tables, forms.

@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FieldGroup, FieldSeparator } from "@/components/ui/field"
 import { useAppForm } from "@/components/ui/form"
 import { validateEmail, type OAuthProvider } from "@/components/login-form"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function SignupForm({
   onSubmit,
@@ -21,8 +22,8 @@ function SignupForm({
   minPasswordLength = 8,
   signInHref,
   terms,
-  title = "Create your account",
-  description = "Start a workspace in under a minute.",
+  title,
+  description,
   className,
 }: {
   /** Called with valid values. Return a promise to keep the button busy until it settles. */
@@ -39,6 +40,8 @@ function SignupForm({
   description?: React.ReactNode
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  const l = t.auth.signup
   const form = useAppForm({
     defaultValues: { name: "", email: "", password: "" },
     onSubmit: async ({ value }) => {
@@ -49,8 +52,8 @@ function SignupForm({
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
-        <CardTitle className="text-[22px]">{title}</CardTitle>
-        <CardDescription className="text-[14px]">{description}</CardDescription>
+        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
+        <CardDescription className="text-[14px]">{description ?? l.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -71,7 +74,7 @@ function SignupForm({
                     </Button>
                   ))}
                 </div>
-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">or</FieldSeparator>
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">{t.auth.or}</FieldSeparator>
               </>
             )}
             {error && (
@@ -79,31 +82,31 @@ function SignupForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <form.AppField name="name" validators={{ onChange: ({ value }) => (value.trim() ? undefined : "Enter your name.") }}>
-              {(field) => <field.TextField label="Name" autoComplete="name" />}
+            <form.AppField name="name" validators={{ onChange: ({ value }) => (value.trim() ? undefined : l.nameRequired) }}>
+              {(field) => <field.TextField label={l.name} autoComplete="name" />}
             </form.AppField>
-            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
-              {(field) => <field.TextField label="Work email" type="email" autoComplete="email" placeholder="you@company.dev" />}
+            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}>
+              {(field) => <field.TextField label={l.email} type="email" autoComplete="email" placeholder={t.auth.emailPlaceholder} />}
             </form.AppField>
             <form.AppField
               name="password"
               validators={{
-                onChange: ({ value }) => (value.length < minPasswordLength ? `Use at least ${minPasswordLength} characters.` : undefined),
+                onChange: ({ value }) => (value.length < minPasswordLength ? l.passwordTooShort(minPasswordLength) : undefined),
               }}
             >
-              {(field) => <field.TextField label="Password" type="password" autoComplete="new-password" description={`At least ${minPasswordLength} characters.`} />}
+              {(field) => <field.TextField label={l.password} type="password" autoComplete="new-password" description={l.passwordHint(minPasswordLength)} />}
             </form.AppField>
             <form.AppForm>
-              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Creating account">
-                Create account
+              <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
+                {l.submit}
               </form.SubmitButton>
             </form.AppForm>
             {terms && <p className="m-0 text-center text-[12px] leading-[1.5] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">{terms}</p>}
             {signInHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">
-                Already have an account?{" "}
+                {l.haveAccount}{" "}
                 <a href={signInHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
-                  Sign in
+                  {l.signIn}
                 </a>
               </p>
             )}

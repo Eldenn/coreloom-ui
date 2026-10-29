@@ -16,13 +16,13 @@ export function stories(): Entry[] {
 }
 
 /** Opens one story in the bare iframe, with a fixed clock, no outside network, fonts loaded. */
-export async function openStory(page: Page, id: string, theme: Theme) {
+export async function openStory(page: Page, id: string, theme: Theme, locale: "en" | "fr" = "en") {
   // Calendars mark "today" and tables show dates: freeze time so screenshots don't change daily.
   await page.clock.setFixedTime(new Date("2026-10-14T10:00:00+02:00"))
   // Only the local Storybook loads; anything remote (avatars, embeds) falls back.
   await page.route(/^(?!http:\/\/127\.0\.0\.1)/, (route) => route.abort())
   // a11y.manual stops Storybook's own a11y addon from running axe in the page (two runs collide).
-  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true`)
+  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};locale:${locale};a11y.manual:!true`)
   await page.locator("#storybook-root").waitFor()
   await page.evaluate(() => document.fonts.ready)
   await page.waitForLoadState("networkidle")
