@@ -7,3 +7,5 @@ public/storybook
 *:Zone.Identifier
 *.log
 storybook-static
+test-results
+playwright-report

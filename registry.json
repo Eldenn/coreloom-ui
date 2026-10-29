@@ -1101,6 +1101,37 @@
       ]
     },
     {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, radio, checkbox and switch fields, a submit button and form-level errors.",
+      "dependencies": [
+        "@tanstack/react-form@^1"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/textarea",
+        "@coreloom/select",
+        "@coreloom/combobox",
+        "@coreloom/date-picker",
+        "@coreloom/radio-group",
+        "@coreloom/checkbox",
+        "@coreloom/switch",
+        "@coreloom/button",
+        "@coreloom/spinner",
+        "@coreloom/alert"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/form.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -1158,7 +1189,8 @@
         "@coreloom/resizable",
         "@coreloom/carousel",
         "@coreloom/drawer",
-        "@coreloom/chart"
+        "@coreloom/chart",
+        "@coreloom/form"
       ],
       "dependencies": []
     },
