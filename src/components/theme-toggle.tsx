@@ -8,6 +8,7 @@ import { MoonIcon, SunIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 type Theme = "dark" | "light"
 
@@ -41,8 +42,9 @@ function useTheme() {
 }
 
 function ThemeToggle({ className }: { className?: string }) {
+  const t = useCoreloomI18n().messages
   const { theme, toggleTheme } = useTheme()
-  const label = theme === "light" ? "Switch to dark theme" : "Switch to light theme"
+  const label = theme === "light" ? t.theme.toDark : t.theme.toLight
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -50,7 +52,7 @@ function ThemeToggle({ className }: { className?: string }) {
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{theme === "light" ? "Dark theme" : "Light theme"}</TooltipContent>
+      <TooltipContent>{theme === "light" ? t.theme.dark : t.theme.light}</TooltipContent>
     </Tooltip>
   )
 }

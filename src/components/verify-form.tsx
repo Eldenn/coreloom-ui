@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAppForm } from "@/components/ui/form"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function VerifyForm({
   onSubmit,
@@ -18,7 +19,7 @@ function VerifyForm({
   pending = false,
   error,
   resendIn = 30,
-  title = "Check your inbox",
+  title,
   className,
 }: {
   /** Called with the 6 digits. Return a promise to keep the form busy until it settles. */
@@ -33,6 +34,8 @@ function VerifyForm({
   title?: React.ReactNode
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  const l = t.auth.verify
   const [wait, setWait] = React.useState(resendIn)
   const form = useAppForm({
     defaultValues: { code: "" },
@@ -50,9 +53,9 @@ function VerifyForm({
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
-        <CardTitle className="text-[22px]">{title}</CardTitle>
+        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
         <CardDescription className="text-[14px]">
-          {destination ? <>We sent a 6-digit code to <span className="text-foreground">{destination}</span>.</> : "Enter the 6-digit code we sent you."}
+          {destination ? l.sentTo(destination) : l.sent}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -69,10 +72,10 @@ function VerifyForm({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : "Enter the 6 digits of the code.") }}>
+          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : l.codeRequired) }}>
             {(field) => (
               <field.OTPField
-                label="Verification code"
+                label={l.code}
                 hideLabel
                 pattern={REGEXP_ONLY_DIGITS}
                 autoFocus
@@ -83,15 +86,15 @@ function VerifyForm({
             )}
           </form.AppField>
           <form.AppForm>
-            <form.SubmitButton className="w-full" pending={pending} pendingLabel="Verifying">
-              Verify
+            <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
+              {l.submit}
             </form.SubmitButton>
           </form.AppForm>
           {onResend && (
             <p className="m-0 text-center text-[13px] text-muted-foreground">
-              Didn’t get it?{" "}
+              {l.notReceived}{" "}
               {wait > 0 ? (
-                <span className="font-mono text-[12px]">Resend in {wait}s</span>
+                <span className="font-mono text-[12px]">{l.resendIn(wait)}</span>
               ) : (
                 <button
                   type="button"
@@ -101,7 +104,7 @@ function VerifyForm({
                     setWait(resendIn)
                   }}
                 >
-                  Resend code
+                  {l.resend}
                 </button>
               )}
             </p>

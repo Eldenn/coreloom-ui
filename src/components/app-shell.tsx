@@ -10,6 +10,7 @@ import { AppHeader, type Crumb } from "@/components/app-header"
 import { AppSidebar } from "@/components/app-sidebar"
 import { CommandMenu, type CommandMenuGroup } from "@/components/command-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function AppShell({
   children,
@@ -27,6 +28,7 @@ function AppShell({
   headerActions?: React.ReactNode
   defaultSidebarOpen?: boolean
 }) {
+  const t = useCoreloomI18n().messages
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar {...sidebar} />
@@ -35,7 +37,7 @@ function AppShell({
           breadcrumbs={breadcrumbs}
           actions={
             <>
-              {commands && <CommandMenu groups={commands} triggerLabel="Search or jump to…" />}
+              {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} />}
               {headerActions}
               <ThemeToggle />
             </>

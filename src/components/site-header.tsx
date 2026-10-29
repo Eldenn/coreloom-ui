@@ -8,6 +8,7 @@ import { MenuIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 type SiteLink = { label: string; href: string; active?: boolean }
 
@@ -29,6 +30,7 @@ function SiteHeader({
   maxWidth?: string
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
   const [open, setOpen] = React.useState(false)
   return (
     <header className={cn("sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md", className)}>
@@ -53,7 +55,7 @@ function SiteHeader({
           {(links.length > 0 || mobileActions) && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+                <Button variant="ghost" size="icon" className="md:hidden" aria-label={t.common.openMenu}>
                   <MenuIcon />
                 </Button>
               </SheetTrigger>

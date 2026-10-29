@@ -4,6 +4,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 type TocItem = { id: string; title: string; depth?: 2 | 3 }
 
@@ -28,7 +29,9 @@ function useActiveHeading(ids: string[]) {
   return active
 }
 
-function DocsToc({ items, title = "On this page" }: { items: TocItem[]; title?: string }) {
+function DocsToc({ items, title }: { items: TocItem[]; title?: string }) {
+  const t = useCoreloomI18n().messages
+  title ??= t.docs.onThisPage
   const active = useActiveHeading(items.map((i) => i.id))
   return (
     <nav aria-label={title}>

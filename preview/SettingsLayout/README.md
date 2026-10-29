@@ -6,7 +6,7 @@ Settings layout with section navigation, form sections, switch rows and a danger
 
 **The consumer provides**:
 
-- `<SettingsLayout title description nav active onNavigate>`. `nav` items are `{ id, label, icon?, href? }`: with an `href` they're links, without one they're tabs that call `onNavigate(id)`.
+- `<SettingsLayout title description nav active onNavigate>`. `nav` items are `{ id, label, icon?, href? }` (`icon` a Lucide component or element): with an `href` they're links, without one they're tabs that call `onNavigate(id)`.
 - `<SettingsSection title description form footer>` with a `useAppForm` instance and its `form.AppField`s inside: the section is the `<form>` and Save is the form's `SubmitButton`, busy while your `onSubmit` runs. For plain inputs, `onSubmit(formData)` instead. With neither, it's a plain section for settings that apply instantly.
 - `<SettingsRow label description htmlFor>` with one control on the right (a `Switch`, a `Select`, a small Button).
 - `<DangerZone description actionLabel confirmTitle confirmDescription resourceName onConfirm>` last on the page.

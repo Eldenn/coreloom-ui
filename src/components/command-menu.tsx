@@ -18,10 +18,22 @@ import {
   CommandShortcut,
 } from "@/components/ui/command"
 import { Kbd } from "@/components/ui/kbd"
+import { useCoreloomI18n } from "@/lib/i18n"
+
+/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
+ *  server → client boundary in Next.js, components don't. */
+type IconLike = LucideIcon | React.ReactElement
+
+function renderIcon(icon: IconLike | undefined) {
+  if (!icon) return null
+  if (React.isValidElement(icon)) return icon
+  const Icon = icon as LucideIcon
+  return <Icon />
+}
 
 type CommandMenuItem = {
   label: string
-  icon?: LucideIcon
+  icon?: IconLike
   shortcut?: string
   keywords?: string[]
   onSelect: () => void
@@ -34,9 +46,9 @@ type CommandMenuGroup = {
 
 function CommandMenu({
   groups,
-  placeholder = "Type a command or search…",
-  triggerLabel = "Search…",
-  emptyText = "No results found.",
+  placeholder,
+  triggerLabel,
+  emptyText,
   className,
 }: {
   groups: CommandMenuGroup[]
@@ -45,6 +57,10 @@ function CommandMenu({
   emptyText?: string
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
+  placeholder ??= t.commandMenu.placeholder
+  triggerLabel ??= t.commandMenu.trigger
+  emptyText ??= t.commandMenu.empty
   const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
@@ -100,7 +116,7 @@ function CommandMenu({
                       item.onSelect()
                     }}
                   >
-                    {item.icon && <item.icon />}
+                    {renderIcon(item.icon)}
                     {item.label}
                     {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
                   </CommandItem>

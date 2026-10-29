@@ -5,8 +5,19 @@ import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardDescription, CardHeader, CardIcon, CardTitle } from "@/components/ui/card"
 
+/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
+ *  server → client boundary in Next.js, components don't. */
+type IconLike = LucideIcon | React.ReactElement
+
+function renderIcon(icon: IconLike | undefined) {
+  if (!icon) return null
+  if (React.isValidElement(icon)) return icon
+  const Icon = icon as LucideIcon
+  return <Icon />
+}
+
 type Feature = {
-  icon: LucideIcon
+  icon: IconLike
   title: string
   description: React.ReactNode
   /** Mono footnote: a package name, a real number. Leave it out rather than invent one. */
@@ -41,7 +52,7 @@ function FeatureGrid({
           {features.map((f, i) => (
             <Card key={f.title} accent={i === featured}>
               <CardIcon>
-                <f.icon />
+                {renderIcon(f.icon)}
               </CardIcon>
               <CardHeader>
                 <CardTitle>{f.title}</CardTitle>

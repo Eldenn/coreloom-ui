@@ -1,0 +1,2371 @@
+From 5abcef493edce8da0d23c1d0a735dc6db064a686 Mon Sep 17 00:00:00 2001
+From: Matthieu <matthieu.chanewenc@gmail.com>
+Date: Thu, 29 Oct 2026 05:25:08 +0100
+Subject: [PATCH] Translate every built-in string (English, French) and support
+ Next.js
+
+- CoreloomI18nProvider (src/lib/i18n.tsx, @coreloom/i18n): labels,
+  placeholders, screen-reader text and validation messages of every
+  component and block come from one dictionary. English and French are
+  built in; `messages` overrides single strings or adds a language;
+  `dateLocale` drives Calendar and DatePicker. Props still win.
+- Storybook gets a Language toolbar; the a11y tests also run in French.
+- Next.js App Router verified end to end: blocks accept icons as
+  elements (<HomeIcon />) as well as components, so a server component
+  can render them.
+- index.d.ts drops repeated local helper types.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Te9bARZBkSfcxCSZLhK4ZW
+---
+ .storybook/preview.tsx               |  33 +++-
+ README.md                            |   4 +
+ build/artifact-entry.ts              |   1 +
+ build/gen-dts.py                     |  13 +-
+ preview/AppShell/README.md           |   2 +-
+ preview/Language/README.md           |  17 ++
+ preview/Language/preview.html        |  37 ++++
+ preview/SettingsLayout/README.md     |   2 +-
+ registry.json                        |  44 ++++-
+ src/components/app-shell.tsx         |   4 +-
+ src/components/app-sidebar.tsx       |  21 +-
+ src/components/command-menu.tsx      |  26 ++-
+ src/components/component-preview.tsx |   8 +-
+ src/components/copy-button.tsx       |  10 +-
+ src/components/docs-layout.tsx       |   9 +-
+ src/components/docs-toc.tsx          |   5 +-
+ src/components/faq.tsx               |   7 +-
+ src/components/feature-grid.tsx      |  15 +-
+ src/components/hero.tsx              |   2 +-
+ src/components/login-form.tsx        |  38 ++--
+ src/components/nav-user.tsx          |  19 +-
+ src/components/settings-layout.tsx   |  20 +-
+ src/components/settings-section.tsx  |  15 +-
+ src/components/signup-form.tsx       |  33 ++--
+ src/components/site-header.tsx       |   4 +-
+ src/components/theme-toggle.tsx      |   6 +-
+ src/components/ui/breadcrumb.tsx     |   9 +-
+ src/components/ui/calendar.tsx       |  13 +-
+ src/components/ui/carousel.tsx       |   7 +-
+ src/components/ui/combobox.tsx       |  11 +-
+ src/components/ui/command.tsx        |   8 +-
+ src/components/ui/data-table.tsx     |  24 ++-
+ src/components/ui/date-picker.tsx    |   6 +-
+ src/components/ui/dialog.tsx         |   7 +-
+ src/components/ui/form.tsx           |   6 +-
+ src/components/ui/pagination.tsx     |  19 +-
+ src/components/ui/sheet.tsx          |   4 +-
+ src/components/ui/sidebar.tsx        |  14 +-
+ src/components/ui/slider.tsx         |   4 +-
+ src/components/ui/spinner.tsx        |   6 +-
+ src/components/verify-form.tsx       |  23 ++-
+ src/lib/i18n.tsx                     | 284 +++++++++++++++++++++++++++
+ tests/a11y.spec.ts                   |   9 +-
+ tests/stories.ts                     |   4 +-
+ 44 files changed, 715 insertions(+), 138 deletions(-)
+ create mode 100644 preview/Language/README.md
+ create mode 100644 preview/Language/preview.html
+ create mode 100644 src/lib/i18n.tsx
+
+diff --git a/.storybook/preview.tsx b/.storybook/preview.tsx
+index 9ae7a36..dd8bdad 100644
+--- a/.storybook/preview.tsx
++++ b/.storybook/preview.tsx
+@@ -1,23 +1,32 @@
+ import * as React from "react"
+ import type { Decorator, Preview } from "@storybook/react-vite"
+ 
++import { fr as frDates } from "date-fns/locale"
++
+ import "./storybook.css"
+ import { coreloomTheme } from "./theme"
+ import { Toaster } from "../src/components/ui/sonner"
+ import { TooltipProvider } from "../src/components/ui/tooltip"
++import { CoreloomI18nProvider } from "../src/lib/i18n"
+ 
+-/** Applies the toolbar's theme to <html data-theme>, like an app does. */
++/** Applies the toolbar's theme to <html data-theme> and its language to the i18n provider, like an app does. */
+ const withTheme: Decorator = (Story, context) => {
+   const theme = context.globals.theme === "light" ? "light" : "dark"
++  const locale = context.globals.locale === "fr" ? "fr" : "en"
+   React.useEffect(() => {
+     if (theme === "light") document.documentElement.dataset.theme = "light"
+     else delete document.documentElement.dataset.theme
+   }, [theme])
++  React.useEffect(() => {
++    document.documentElement.lang = locale
++  }, [locale])
+   return (
+-    <TooltipProvider>
+-      <Story />
+-      <Toaster />
+-    </TooltipProvider>
++    <CoreloomI18nProvider locale={locale} dateLocale={locale === "fr" ? frDates : undefined}>
++      <TooltipProvider>
++        <Story />
++        <Toaster />
++      </TooltipProvider>
++    </CoreloomI18nProvider>
+   )
+ }
+ 
+@@ -36,8 +45,20 @@ const preview: Preview = {
+         dynamicTitle: true,
+       },
+     },
++    locale: {
++      description: "Language of the components' built-in text",
++      toolbar: {
++        title: "Language",
++        icon: "globe",
++        items: [
++          { value: "en", title: "English", right: "EN" },
++          { value: "fr", title: "Français", right: "FR" },
++        ],
++        dynamicTitle: true,
++      },
++    },
+   },
+-  initialGlobals: { theme: "dark" },
++  initialGlobals: { theme: "dark", locale: "en" },
+   parameters: {
+     layout: "padded",
+     backgrounds: { disable: true },
+diff --git a/README.md b/README.md
+index 0a67b04..8df07e7 100644
+--- a/README.md
++++ b/README.md
+@@ -15,6 +15,7 @@ component.
+ | `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
+ | `src/components/ui/*.tsx` | 54 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, empty, field, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, switch, table, tabs, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
+ | `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview); shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
++| `src/lib/i18n.tsx` | `CoreloomI18nProvider` and `useCoreloomI18n()`: every built-in string (labels, placeholders, screen-reader text, validation messages) in English and French, overridable per string. Installed with the components that use it. |
+ | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
+ | `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
+ | `stories/`, `.storybook/` | Storybook 10 (React + Vite): a story for every component and block, the theme toolbar (dark / light) and the accessibility panel. Published at https://eldenn.github.io/coreloom-ui/. |
+@@ -85,6 +86,9 @@ In a monorepo, install into the shared `ui` package (its own `components.json` w
+ - Variant names follow shadcn (`default`, `secondary`, `outline`, `ghost`, `destructive`,
+   `link`), plus Coreloom's `success` / `warning` on Badge and Alert and `accent` on Card.
+ - Components target React 19 (refs as props), like current shadcn.
++- No hard-coded user-facing text: read it from `useCoreloomI18n().messages`, add the key to both `en`
++  and `fr` in `src/lib/i18n.tsx`, and let a prop override it. Storybook's Language toolbar switches
++  the stories to French; the a11y tests run in French too.
+ - Forms use [TanStack Form](https://tanstack.com/form) through `@coreloom/form`: `useAppForm` comes with
+   Coreloom field components (`field.TextField`, `SelectField`, `ComboboxField`, `DateField`,
+   `RadioGroupField`, `TextareaField`, `CheckboxField`, `SwitchField`, `OTPField`) and `form.SubmitButton` /
+diff --git a/build/artifact-entry.ts b/build/artifact-entry.ts
+index c0a5f54..50f65e6 100644
+--- a/build/artifact-entry.ts
++++ b/build/artifact-entry.ts
+@@ -81,3 +81,4 @@ export * from "@/components/docs-toc"
+ export * from "@/components/code-block"
+ export * from "@/components/component-preview"
+ export { cn } from "@/lib/utils"
++export { CoreloomI18nProvider, useCoreloomI18n, en as messagesEn, fr as messagesFr } from "@/lib/i18n"
+diff --git a/build/gen-dts.py b/build/gen-dts.py
+index 8ad953b..aa2f88a 100644
+--- a/build/gen-dts.py
++++ b/build/gen-dts.py
+@@ -9,12 +9,13 @@ files = []
+ for it in items.values():
+     for f in it.get("files", []):
+         p = f["path"]
+-        if p.startswith("src/components/") and p.endswith(".tsx"):
++        if (p.startswith("src/components/") or p == "src/lib/i18n.tsx") and p.endswith(".tsx"):
+             files.append((it, p))
+ ui = sorted([x for x in files if "/ui/" in x[1]], key=lambda x: x[1])
+ blocks = [x for x in files if "/ui/" not in x[1]]
+ 
+ imports, sections, seen = [], [], set()
++seen_types = set()
+ for it, path in ui + blocks:
+     rel = path[len("src/"):-len(".tsx")] + ".d.ts"
+     src = open(os.path.join(dts, rel)).read()
+@@ -26,6 +27,16 @@ for it, path in ui + blocks:
+                 imports.append(line)
+             continue
+         body.append(line)
++    # Local helper types repeated across files (IconLike…): keep the first declaration only.
++    kept = []
++    for line in body:
++        m = re.match(r"^(?:declare )?type (\w+)\b.*;$", line)
++        if m and not line.startswith("export"):
++            if m.group(1) in seen_types:
++                continue
++            seen_types.add(m.group(1))
++        kept.append(line)
++    body = kept
+     text = "\n".join(body).strip()
+     exports = re.findall(r"^export \{([^}]*)\}", text, re.M)
+     names = [n.strip().replace("type ", "") for e in exports for n in e.split(",") if n.strip()]
+diff --git a/preview/AppShell/README.md b/preview/AppShell/README.md
+index 366aead..1e838e5 100644
+--- a/preview/AppShell/README.md
++++ b/preview/AppShell/README.md
+@@ -7,7 +7,7 @@ The product layout as one installable block: sidebar, header, ⌘K palette, them
+ **The consumer provides**:
+ 
+ - `workspaces` (`{ name, plan?, logo? }`) with `activeWorkspace`, `onWorkspaceSelect` and `onWorkspaceCreate`;
+-- `groups` of navigation (`{ label, items: [{ title, url, icon, isActive?, badge? }] }`, icons from `lucide-react`) and `secondary` links;
++- `groups` of navigation (`{ label, items: [{ title, url, icon, isActive?, badge? }] }`, icons from `lucide-react`, as a component `HomeIcon` or an element `<HomeIcon />` — use elements from a Next.js server component) and `secondary` links;
+ - `user` (`{ name, email?, role?, avatar? }`) with `menu` entries and `onSignOut`;
+ - `breadcrumbs` (`{ label, href? }`), `commands` for the palette (`{ heading, items: [{ label, icon?, shortcut?, onSelect }] }`) and `headerActions`;
+ - the page as children: start with `<PageHeader title description actions>`, then `StatCard`s, tables, forms.
+diff --git a/preview/Language/README.md b/preview/Language/README.md
+new file mode 100644
+index 0000000..c17727f
+--- /dev/null
++++ b/preview/Language/README.md
+@@ -0,0 +1,17 @@
++# Language
++
++Every string the components and blocks show or announce comes from one dictionary, so an app switches language in one place.
++
++**The consumer provides** one `<CoreloomI18nProvider locale dateLocale messages>` around the app (`@/lib/i18n`, installed with the components that use it):
++
++- `locale`: a BCP 47 tag. `"en"` (the default) and `"fr"` are built in; it also formats numbers ("1 234 lignes").
++- `dateLocale`: a date-fns locale (`import { fr } from "date-fns/locale"`) for `Calendar` and `DatePicker`: month and day names, week start, the date label.
++- `messages`: a partial dictionary merged over the built-in one (`{ auth: { login: { title: "Connexion à Acme" } } }`), or a full one for another language — start from `en`.
++
++- Covered: dialog and sheet close buttons, pagination, breadcrumb, carousel, combobox, command palette, data table (counts, pages, sorting), date picker and calendar, sidebar toggle, spinner, slider thumbs, form errors, theme toggle, copy button, and every block's titles, labels, buttons and validation messages.
++- A prop always wins: pass `title`, `placeholder`, `emptyText` or `submitLabel` and it's used as is.
++- Entries with values are functions (`rows: (count, n) => …`, `typeToConfirm: (name) => …`), so plurals and word order stay natural in each language.
++- Set `<html lang>` to match. Without a provider, everything is English.
++- New component text goes into both `en` and `fr`, read through `useCoreloomI18n().messages`.
++
++_On `window.CoreloomUIDesignSystem_ff5f32` as `CoreloomI18nProvider`, `useCoreloomI18n`, `messagesEn` and `messagesFr`; in an app, `pnpm dlx shadcn@latest add @coreloom/i18n` and import from `@/lib/i18n`._
+diff --git a/preview/Language/preview.html b/preview/Language/preview.html
+new file mode 100644
+index 0000000..98ef454
+--- /dev/null
++++ b/preview/Language/preview.html
+@@ -0,0 +1,37 @@
++<!-- @dsCard group="Foundations" width=980 height=560 page subtitle="CoreloomI18nProvider · English and French built in" -->
++<!DOCTYPE html>
++<html lang="en">
++<head>
++<meta charset="UTF-8">
++<style>
++  html,body{margin:0}
++  body{background:var(--bg-base);color:var(--fg-1);font-family:var(--font-sans);padding:24px 28px}
++  #root{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
++  .tag{font:600 10px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
++</style>
++</head>
++<body>
++  <div id="root"></div>
++  <script>
++    function render() {
++      const UI = window.CoreloomUIDesignSystem_ff5f32;
++      if (!UI || !UI.CoreloomI18nProvider || !UI.LoginForm || !window.ReactDOM) return setTimeout(render, 50);
++      const h = React.createElement;
++      const { CoreloomI18nProvider, LoginForm, TooltipProvider } = UI;
++      function Side({ locale, tag }) {
++        // Submit once on mount so the validation messages show in each language.
++        const ref = React.useRef(null);
++        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button[type=submit]'); if (b) b.click(); }, []);
++        return h('div', { ref, lang: locale },
++          h('p', { className: 'tag' }, tag),
++          h(CoreloomI18nProvider, { locale }, h(LoginForm, { onSubmit: () => {}, signUpHref: '#' })));
++      }
++      ReactDOM.createRoot(document.getElementById('root')).render(
++        h(TooltipProvider, null,
++          h(Side, { locale: 'en', tag: 'locale="en" (default)' }),
++          h(Side, { locale: 'fr', tag: 'locale="fr"' })));
++    }
++    render();
++  </script>
++</body>
++</html>
+diff --git a/preview/SettingsLayout/README.md b/preview/SettingsLayout/README.md
+index c94a500..2020e49 100644
+--- a/preview/SettingsLayout/README.md
++++ b/preview/SettingsLayout/README.md
+@@ -6,7 +6,7 @@ Settings layout with section navigation, form sections, switch rows and a danger
+ 
+ **The consumer provides**:
+ 
+-- `<SettingsLayout title description nav active onNavigate>`. `nav` items are `{ id, label, icon?, href? }`: with an `href` they're links, without one they're tabs that call `onNavigate(id)`.
++- `<SettingsLayout title description nav active onNavigate>`. `nav` items are `{ id, label, icon?, href? }` (`icon` a Lucide component or element): with an `href` they're links, without one they're tabs that call `onNavigate(id)`.
+ - `<SettingsSection title description form footer>` with a `useAppForm` instance and its `form.AppField`s inside: the section is the `<form>` and Save is the form's `SubmitButton`, busy while your `onSubmit` runs. For plain inputs, `onSubmit(formData)` instead. With neither, it's a plain section for settings that apply instantly.
+ - `<SettingsRow label description htmlFor>` with one control on the right (a `Switch`, a `Select`, a small Button).
+ - `<DangerZone description actionLabel confirmTitle confirmDescription resourceName onConfirm>` last on the page.
+diff --git a/registry.json b/registry.json
+index c819d77..ebc514e 100644
+--- a/registry.json
++++ b/registry.json
+@@ -48,6 +48,18 @@
+         }
+       ]
+     },
++    {
++      "name": "i18n",
++      "type": "registry:lib",
++      "title": "i18n",
++      "description": "CoreloomI18nProvider and useCoreloomI18n: every built-in string of the components and blocks, in English and French, overridable per string.",
++      "files": [
++        {
++          "path": "src/lib/i18n.tsx",
++          "type": "registry:lib"
++        }
++      ]
++    },
+     {
+       "name": "alert",
+       "type": "registry:ui",
+@@ -156,6 +168,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button"
+       ],
+       "files": [
+@@ -326,7 +339,8 @@
+       ],
+       "registryDependencies": [
+         "@coreloom/theme",
+-        "@coreloom/utils"
++        "@coreloom/utils",
++        "@coreloom/i18n"
+       ],
+       "files": [
+         {
+@@ -441,7 +455,8 @@
+       ],
+       "registryDependencies": [
+         "@coreloom/theme",
+-        "@coreloom/utils"
++        "@coreloom/utils",
++        "@coreloom/i18n"
+       ],
+       "files": [
+         {
+@@ -481,7 +496,8 @@
+       ],
+       "registryDependencies": [
+         "@coreloom/theme",
+-        "@coreloom/utils"
++        "@coreloom/utils",
++        "@coreloom/i18n"
+       ],
+       "files": [
+         {
+@@ -501,6 +517,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button"
+       ],
+       "files": [
+@@ -542,6 +559,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/dialog",
+         "@coreloom/kbd"
+       ],
+@@ -658,7 +676,8 @@
+       ],
+       "registryDependencies": [
+         "@coreloom/theme",
+-        "@coreloom/utils"
++        "@coreloom/utils",
++        "@coreloom/i18n"
+       ],
+       "files": [
+         {
+@@ -697,6 +716,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/input",
+         "@coreloom/separator",
+@@ -845,6 +865,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button"
+       ],
+       "files": [
+@@ -904,6 +925,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/popover",
+         "@coreloom/command"
+       ],
+@@ -926,6 +948,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/popover",
+         "@coreloom/calendar"
+       ],
+@@ -948,6 +971,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/input",
+         "@coreloom/select",
+@@ -1053,6 +1077,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button"
+       ],
+       "files": [
+@@ -1112,6 +1137,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/field",
+         "@coreloom/input",
+         "@coreloom/textarea",
+@@ -1139,6 +1165,7 @@
+       "title": "Coreloom UI — everything",
+       "description": "Theme, utils and every Coreloom UI component in one install.",
+       "registryDependencies": [
++        "@coreloom/i18n",
+         "@coreloom/alert",
+         "@coreloom/badge",
+         "@coreloom/button",
+@@ -1207,6 +1234,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/tooltip"
+       ],
+@@ -1228,6 +1256,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/command",
+         "@coreloom/kbd"
+@@ -1250,6 +1279,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/sonner",
+         "@coreloom/tooltip"
+@@ -1272,6 +1302,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/sheet"
+       ],
+@@ -1315,6 +1346,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/sidebar",
+         "@coreloom/dropdown-menu",
+         "@coreloom/avatar",
+@@ -1363,6 +1395,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/alert",
+         "@coreloom/button",
+         "@coreloom/card",
+@@ -1406,6 +1439,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/alert-dialog",
+         "@coreloom/button",
+         "@coreloom/field",
+@@ -1439,6 +1473,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/badge",
+         "@coreloom/card",
+         "@coreloom/accordion",
+@@ -1479,6 +1514,7 @@
+       "registryDependencies": [
+         "@coreloom/theme",
+         "@coreloom/utils",
++        "@coreloom/i18n",
+         "@coreloom/button",
+         "@coreloom/sheet",
+         "@coreloom/tabs",
+diff --git a/src/components/app-shell.tsx b/src/components/app-shell.tsx
+index 666dd29..2b0b6a0 100644
+--- a/src/components/app-shell.tsx
++++ b/src/components/app-shell.tsx
+@@ -10,6 +10,7 @@ import { AppHeader, type Crumb } from "@/components/app-header"
+ import { AppSidebar } from "@/components/app-sidebar"
+ import { CommandMenu, type CommandMenuGroup } from "@/components/command-menu"
+ import { ThemeToggle } from "@/components/theme-toggle"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function AppShell({
+   children,
+@@ -27,6 +28,7 @@ function AppShell({
+   headerActions?: React.ReactNode
+   defaultSidebarOpen?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <SidebarProvider defaultOpen={defaultSidebarOpen}>
+       <AppSidebar {...sidebar} />
+@@ -35,7 +37,7 @@ function AppShell({
+           breadcrumbs={breadcrumbs}
+           actions={
+             <>
+-              {commands && <CommandMenu groups={commands} triggerLabel="Search or jump to…" />}
++              {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} />}
+               {headerActions}
+               <ThemeToggle />
+             </>
+diff --git a/src/components/app-sidebar.tsx b/src/components/app-sidebar.tsx
+index 570d677..e3f4652 100644
+--- a/src/components/app-sidebar.tsx
++++ b/src/components/app-sidebar.tsx
+@@ -30,11 +30,23 @@ import {
+   SidebarRail,
+ } from "@/components/ui/sidebar"
+ import { NavUser, type NavUserProps } from "@/components/nav-user"
++import { useCoreloomI18n } from "@/lib/i18n"
++
++/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
++ *  server → client boundary in Next.js, components don't. */
++type IconLike = LucideIcon | React.ReactElement
++
++function renderIcon(icon: IconLike | undefined) {
++  if (!icon) return null
++  if (React.isValidElement(icon)) return icon
++  const Icon = icon as LucideIcon
++  return <Icon />
++}
+ 
+ type NavItem = {
+   title: string
+   url: string
+-  icon: LucideIcon
++  icon: IconLike
+   isActive?: boolean
+   badge?: React.ReactNode
+ }
+@@ -57,7 +69,7 @@ function NavLinks({ items, size }: { items: NavItem[]; size?: "sm" | "default" }
+         <SidebarMenuItem key={item.title}>
+           <SidebarMenuButton asChild isActive={item.isActive} tooltip={item.title} size={size}>
+             <a href={item.url} aria-current={item.isActive ? "page" : undefined}>
+-              <item.icon />
++              {renderIcon(item.icon)}
+               <span>{item.title}</span>
+             </a>
+           </SidebarMenuButton>
+@@ -79,6 +91,7 @@ function WorkspaceSwitcher({
+   onSelect?: (workspace: Workspace) => void
+   onCreate?: () => void
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <SidebarMenu>
+       <SidebarMenuItem>
+@@ -94,7 +107,7 @@ function WorkspaceSwitcher({
+             </SidebarMenuButton>
+           </DropdownMenuTrigger>
+           <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
+-            <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
++            <DropdownMenuLabel>{t.appShell.workspaces}</DropdownMenuLabel>
+             {workspaces.map((workspace, i) => (
+               <DropdownMenuItem key={workspace.name} onSelect={() => onSelect?.(workspace)}>
+                 <WorkspaceLogo workspace={workspace} small />
+@@ -107,7 +120,7 @@ function WorkspaceSwitcher({
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem onSelect={onCreate}>
+                   <PlusIcon />
+-                  New workspace
++                  {t.appShell.newWorkspace}
+                 </DropdownMenuItem>
+               </>
+             )}
+diff --git a/src/components/command-menu.tsx b/src/components/command-menu.tsx
+index f74541a..24be301 100644
+--- a/src/components/command-menu.tsx
++++ b/src/components/command-menu.tsx
+@@ -18,10 +18,22 @@ import {
+   CommandShortcut,
+ } from "@/components/ui/command"
+ import { Kbd } from "@/components/ui/kbd"
++import { useCoreloomI18n } from "@/lib/i18n"
++
++/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
++ *  server → client boundary in Next.js, components don't. */
++type IconLike = LucideIcon | React.ReactElement
++
++function renderIcon(icon: IconLike | undefined) {
++  if (!icon) return null
++  if (React.isValidElement(icon)) return icon
++  const Icon = icon as LucideIcon
++  return <Icon />
++}
+ 
+ type CommandMenuItem = {
+   label: string
+-  icon?: LucideIcon
++  icon?: IconLike
+   shortcut?: string
+   keywords?: string[]
+   onSelect: () => void
+@@ -34,9 +46,9 @@ type CommandMenuGroup = {
+ 
+ function CommandMenu({
+   groups,
+-  placeholder = "Type a command or search…",
+-  triggerLabel = "Search…",
+-  emptyText = "No results found.",
++  placeholder,
++  triggerLabel,
++  emptyText,
+   className,
+ }: {
+   groups: CommandMenuGroup[]
+@@ -45,6 +57,10 @@ function CommandMenu({
+   emptyText?: string
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  placeholder ??= t.commandMenu.placeholder
++  triggerLabel ??= t.commandMenu.trigger
++  emptyText ??= t.commandMenu.empty
+   const [open, setOpen] = React.useState(false)
+ 
+   React.useEffect(() => {
+@@ -100,7 +116,7 @@ function CommandMenu({
+                       item.onSelect()
+                     }}
+                   >
+-                    {item.icon && <item.icon />}
++                    {renderIcon(item.icon)}
+                     {item.label}
+                     {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
+                   </CommandItem>
+diff --git a/src/components/component-preview.tsx b/src/components/component-preview.tsx
+index 5962c2a..8619d30 100644
+--- a/src/components/component-preview.tsx
++++ b/src/components/component-preview.tsx
+@@ -1,9 +1,12 @@
++"use client"
++
+ // Coreloom UI — ComponentPreview (docs block). Preview and Code tabs for a live example.
+ import * as React from "react"
+ 
+ import { cn } from "@/lib/utils"
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+ import { CodeBlock } from "@/components/code-block"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function ComponentPreview({
+   code,
+@@ -16,11 +19,12 @@ function ComponentPreview({
+   align?: "center" | "start"
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <Tabs defaultValue="preview" className={cn("mt-4", className)}>
+       <TabsList variant="line">
+-        <TabsTrigger value="preview">Preview</TabsTrigger>
+-        <TabsTrigger value="code">Code</TabsTrigger>
++        <TabsTrigger value="preview">{t.docs.preview}</TabsTrigger>
++        <TabsTrigger value="code">{t.docs.code}</TabsTrigger>
+       </TabsList>
+       <TabsContent value="preview">
+         <div
+diff --git a/src/components/copy-button.tsx b/src/components/copy-button.tsx
+index 2150d6d..8df1a2a 100644
+--- a/src/components/copy-button.tsx
++++ b/src/components/copy-button.tsx
+@@ -8,11 +8,12 @@ import { cn } from "@/lib/utils"
+ import { Button } from "@/components/ui/button"
+ import { toast } from "@/components/ui/sonner"
+ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function CopyButton({
+   value,
+-  label = "Copy",
+-  toastMessage = "Copied to clipboard",
++  label,
++  toastMessage,
+   className,
+ }: {
+   value: string
+@@ -21,6 +22,9 @@ function CopyButton({
+   toastMessage?: string
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  label ??= t.copy.copy
++  toastMessage ??= t.copy.copied
+   const [copied, setCopied] = React.useState(false)
+   React.useEffect(() => {
+     if (!copied) return
+@@ -43,7 +47,7 @@ function CopyButton({
+               setCopied(true)
+               if (toastMessage) toast.success(toastMessage)
+             } catch {
+-              toast.error("Couldn’t copy — select the text instead.")
++              toast.error(t.copy.failed)
+             }
+           }}
+         >
+diff --git a/src/components/docs-layout.tsx b/src/components/docs-layout.tsx
+index 113cefa..6c52eed 100644
+--- a/src/components/docs-layout.tsx
++++ b/src/components/docs-layout.tsx
+@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
+ import { Button } from "@/components/ui/button"
+ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+ import { DocsToc, type TocItem } from "@/components/docs-toc"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type DocsNavGroup = {
+   title: string
+@@ -16,8 +17,9 @@ type DocsNavGroup = {
+ }
+ 
+ function DocsNav({ groups, onNavigate }: { groups: DocsNavGroup[]; onNavigate?: () => void }) {
++  const t = useCoreloomI18n().messages
+   return (
+-    <nav aria-label="Documentation">
++    <nav aria-label={t.docs.nav}>
+       {groups.map((group) => (
+         <div key={group.title} className="mb-5">
+           <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{group.title}</div>
+@@ -56,6 +58,7 @@ function DocsLayout({
+   children: React.ReactNode
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
+   const [open, setOpen] = React.useState(false)
+   return (
+     <div className={cn("min-h-svh bg-background", className)}>
+@@ -69,12 +72,12 @@ function DocsLayout({
+             <SheetTrigger asChild>
+               <Button variant="outline" size="sm" className="mb-6 md:hidden">
+                 <MenuIcon />
+-                Menu
++                {t.docs.menu}
+               </Button>
+             </SheetTrigger>
+             <SheetContent side="left" className="w-[280px] overflow-y-auto px-4">
+               <SheetHeader className="px-0">
+-                <SheetTitle>Documentation</SheetTitle>
++                <SheetTitle>{t.docs.nav}</SheetTitle>
+               </SheetHeader>
+               <DocsNav groups={nav} onNavigate={() => setOpen(false)} />
+             </SheetContent>
+diff --git a/src/components/docs-toc.tsx b/src/components/docs-toc.tsx
+index 41e51bf..69063dc 100644
+--- a/src/components/docs-toc.tsx
++++ b/src/components/docs-toc.tsx
+@@ -4,6 +4,7 @@
+ import * as React from "react"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type TocItem = { id: string; title: string; depth?: 2 | 3 }
+ 
+@@ -28,7 +29,9 @@ function useActiveHeading(ids: string[]) {
+   return active
+ }
+ 
+-function DocsToc({ items, title = "On this page" }: { items: TocItem[]; title?: string }) {
++function DocsToc({ items, title }: { items: TocItem[]; title?: string }) {
++  const t = useCoreloomI18n().messages
++  title ??= t.docs.onThisPage
+   const active = useActiveHeading(items.map((i) => i.id))
+   return (
+     <nav aria-label={title}>
+diff --git a/src/components/faq.tsx b/src/components/faq.tsx
+index f758716..741a22d 100644
+--- a/src/components/faq.tsx
++++ b/src/components/faq.tsx
+@@ -1,11 +1,14 @@
++"use client"
++
+ // Coreloom UI — Faq (marketing block). Questions in an Accordion, the first one open.
+ import * as React from "react"
+ 
+ import { cn } from "@/lib/utils"
+ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Faq({
+-  title = "Questions",
++  title,
+   items,
+   className,
+ }: {
+@@ -13,6 +16,8 @@ function Faq({
+   items: { question: string; answer: React.ReactNode }[]
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  title ??= t.marketing.faq
+   return (
+     <section className={cn("border-t border-border-subtle px-5 py-20", className)}>
+       <div className="mx-auto max-w-[720px]">
+diff --git a/src/components/feature-grid.tsx b/src/components/feature-grid.tsx
+index 9c647b4..a230f53 100644
+--- a/src/components/feature-grid.tsx
++++ b/src/components/feature-grid.tsx
+@@ -5,8 +5,19 @@ import type { LucideIcon } from "lucide-react"
+ import { cn } from "@/lib/utils"
+ import { Card, CardDescription, CardHeader, CardIcon, CardTitle } from "@/components/ui/card"
+ 
++/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
++ *  server → client boundary in Next.js, components don't. */
++type IconLike = LucideIcon | React.ReactElement
++
++function renderIcon(icon: IconLike | undefined) {
++  if (!icon) return null
++  if (React.isValidElement(icon)) return icon
++  const Icon = icon as LucideIcon
++  return <Icon />
++}
++
+ type Feature = {
+-  icon: LucideIcon
++  icon: IconLike
+   title: string
+   description: React.ReactNode
+   /** Mono footnote: a package name, a real number. Leave it out rather than invent one. */
+@@ -41,7 +52,7 @@ function FeatureGrid({
+           {features.map((f, i) => (
+             <Card key={f.title} accent={i === featured}>
+               <CardIcon>
+-                <f.icon />
++                {renderIcon(f.icon)}
+               </CardIcon>
+               <CardHeader>
+                 <CardTitle>{f.title}</CardTitle>
+diff --git a/src/components/hero.tsx b/src/components/hero.tsx
+index 4eeee0c..4d9b644 100644
+--- a/src/components/hero.tsx
++++ b/src/components/hero.tsx
+@@ -58,7 +58,7 @@ function Hero({
+             <span className="truncate">
+               <span className="text-primary-text">$</span>&nbsp; {command}
+             </span>
+-            <CopyButton value={command} label="Copy command" toastMessage="Command copied" />
++            <CopyButton value={command} />
+           </div>
+         )}
+         {children && <div className="mt-14">{children}</div>}
+diff --git a/src/components/login-form.tsx b/src/components/login-form.tsx
+index 7b677e0..6fa375f 100644
+--- a/src/components/login-form.tsx
++++ b/src/components/login-form.tsx
+@@ -11,14 +11,16 @@ import { Button } from "@/components/ui/button"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+ import { FieldGroup, FieldSeparator } from "@/components/ui/field"
+ import { useAppForm } from "@/components/ui/form"
++import { en, useCoreloomI18n, type Messages } from "@/lib/i18n"
+ 
+ type OAuthProvider = { id: string; label: string; icon?: React.ReactNode }
+ 
+ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+ 
+-function validateEmail(value: string) {
+-  if (!value.trim()) return "Enter your email address."
+-  if (!EMAIL.test(value.trim())) return "Enter a valid email address, like you@company.dev."
++/** Checks an email field; messages come from the i18n `auth` group. */
++function validateEmail(value: string, t: Pick<Messages["auth"], "emailRequired" | "emailInvalid"> = en.auth) {
++  if (!value.trim()) return t.emailRequired
++  if (!EMAIL.test(value.trim())) return t.emailInvalid
+   return undefined
+ }
+ 
+@@ -31,8 +33,8 @@ function LoginForm({
+   defaultEmail = "",
+   forgotPasswordHref = "#",
+   signUpHref,
+-  title = "Sign in",
+-  description = "Welcome back. Enter your email to continue.",
++  title,
++  description,
+   className,
+ }: {
+   /** Called with valid values. Return a promise to keep the button busy until it settles. */
+@@ -51,6 +53,8 @@ function LoginForm({
+   description?: React.ReactNode
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  const l = t.auth.login
+   const form = useAppForm({
+     defaultValues: { email: defaultEmail, password: "" },
+     onSubmit: async ({ value }) => {
+@@ -61,8 +65,8 @@ function LoginForm({
+   return (
+     <Card className={cn("gap-5 px-6 py-6", className)}>
+       <CardHeader className="text-center">
+-        <CardTitle className="text-[22px]">{title}</CardTitle>
+-        <CardDescription className="text-[14px]">{description}</CardDescription>
++        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
++        <CardDescription className="text-[14px]">{description ?? l.description}</CardDescription>
+       </CardHeader>
+       <CardContent>
+         <form
+@@ -83,7 +87,7 @@ function LoginForm({
+                     </Button>
+                   ))}
+                 </div>
+-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">or</FieldSeparator>
++                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">{t.auth.or}</FieldSeparator>
+               </>
+             )}
+             {error && (
+@@ -91,33 +95,33 @@ function LoginForm({
+                 <AlertDescription>{error}</AlertDescription>
+               </Alert>
+             )}
+-            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
+-              {(field) => <field.TextField label="Email" type="email" autoComplete="email" placeholder="you@company.dev" />}
++            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}>
++              {(field) => <field.TextField label={l.email} type="email" autoComplete="email" placeholder={t.auth.emailPlaceholder} />}
+             </form.AppField>
+-            <form.AppField name="password" validators={{ onChange: ({ value }) => (value ? undefined : "Enter your password.") }}>
++            <form.AppField name="password" validators={{ onChange: ({ value }) => (value ? undefined : l.passwordRequired) }}>
+               {(field) => (
+                 <field.TextField
+-                  label="Password"
++                  label={l.password}
+                   type="password"
+                   autoComplete="current-password"
+                   labelAction={
+                     <a href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
+-                      Forgot password?
++                      {l.forgotPassword}
+                     </a>
+                   }
+                 />
+               )}
+             </form.AppField>
+             <form.AppForm>
+-              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Signing in">
+-                Sign in
++              <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
++                {l.submit}
+               </form.SubmitButton>
+             </form.AppForm>
+             {signUpHref && (
+               <p className="m-0 text-center text-[13px] text-muted-foreground">
+-                No account yet?{" "}
++                {l.noAccount}{" "}
+                 <a href={signUpHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
+-                  Create one
++                  {l.signUp}
+                 </a>
+               </p>
+             )}
+diff --git a/src/components/nav-user.tsx b/src/components/nav-user.tsx
+index 084a4b1..cefd2d7 100644
+--- a/src/components/nav-user.tsx
++++ b/src/components/nav-user.tsx
+@@ -20,11 +20,23 @@ import {
+   SidebarMenuItem,
+   useSidebar,
+ } from "@/components/ui/sidebar"
++import { useCoreloomI18n } from "@/lib/i18n"
++
++/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
++ *  server → client boundary in Next.js, components don't. */
++type IconLike = LucideIcon | React.ReactElement
++
++function renderIcon(icon: IconLike | undefined) {
++  if (!icon) return null
++  if (React.isValidElement(icon)) return icon
++  const Icon = icon as LucideIcon
++  return <Icon />
++}
+ 
+ type NavUserProps = {
+   user: { name: string; email?: string; role?: string; avatar?: string }
+   /** Entries above "Log out": Account, Billing, Notifications… */
+-  menu?: { label: string; icon?: LucideIcon; onSelect: () => void }[]
++  menu?: { label: string; icon?: IconLike; onSelect: () => void }[]
+   onSignOut?: () => void
+ }
+ 
+@@ -38,6 +50,7 @@ function initials(name: string) {
+ }
+ 
+ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
++  const t = useCoreloomI18n().messages
+   const { isMobile } = useSidebar()
+   const avatar = (
+     <Avatar>
+@@ -80,7 +93,7 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
+                 <DropdownMenuGroup>
+                   {menu.map((item) => (
+                     <DropdownMenuItem key={item.label} onSelect={item.onSelect}>
+-                      {item.icon && <item.icon />}
++                      {renderIcon(item.icon)}
+                       {item.label}
+                     </DropdownMenuItem>
+                   ))}
+@@ -92,7 +105,7 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
+                 <DropdownMenuSeparator />
+                 <DropdownMenuItem variant="destructive" onSelect={onSignOut}>
+                   <LogOutIcon />
+-                  Log out
++                  {t.appShell.logOut}
+                 </DropdownMenuItem>
+               </>
+             )}
+diff --git a/src/components/settings-layout.tsx b/src/components/settings-layout.tsx
+index 57e695b..23edb67 100644
+--- a/src/components/settings-layout.tsx
++++ b/src/components/settings-layout.tsx
+@@ -6,11 +6,23 @@ import * as React from "react"
+ import type { LucideIcon } from "lucide-react"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+-type SettingsNavItem = { id: string; label: string; icon?: LucideIcon; href?: string }
++/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
++ *  server → client boundary in Next.js, components don't. */
++type IconLike = LucideIcon | React.ReactElement
++
++function renderIcon(icon: IconLike | undefined) {
++  if (!icon) return null
++  if (React.isValidElement(icon)) return icon
++  const Icon = icon as LucideIcon
++  return <Icon />
++}
++
++type SettingsNavItem = { id: string; label: string; icon?: IconLike; href?: string }
+ 
+ function SettingsLayout({
+-  title = "Settings",
++  title,
+   description,
+   nav,
+   active,
+@@ -28,6 +40,8 @@ function SettingsLayout({
+   children: React.ReactNode
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  title ??= t.settings.title
+   return (
+     <div className={cn("flex flex-col gap-6", className)}>
+       <div>
+@@ -45,7 +59,7 @@ function SettingsLayout({
+               )
+               const content = (
+                 <>
+-                  {item.icon && <item.icon />}
++                  {renderIcon(item.icon)}
+                   {item.label}
+                 </>
+               )
+diff --git a/src/components/settings-section.tsx b/src/components/settings-section.tsx
+index 096c6a1..42cca35 100644
+--- a/src/components/settings-section.tsx
++++ b/src/components/settings-section.tsx
+@@ -26,6 +26,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+ import { Input } from "@/components/ui/input"
+ import { Spinner } from "@/components/ui/spinner"
+ import type { SubmitButton } from "@/components/ui/form"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ /** What SettingsSection needs from a `useAppForm` instance. */
+ type SectionForm = {
+@@ -42,7 +43,7 @@ function SettingsSection({
+   onSubmit,
+   form,
+   pending = false,
+-  submitLabel = "Save changes",
++  submitLabel,
+   className,
+ }: {
+   title: React.ReactNode
+@@ -58,6 +59,8 @@ function SettingsSection({
+   submitLabel?: string
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  submitLabel ??= t.settings.save
+   const body = (
+     <>
+       <div className="flex flex-col gap-1 px-5 pt-5">
+@@ -143,7 +146,7 @@ function SettingsRow({
+  * the resource's name.
+  */
+ function DangerZone({
+-  title = "Danger zone",
++  title,
+   description,
+   actionLabel,
+   confirmTitle,
+@@ -163,6 +166,8 @@ function DangerZone({
+   onConfirm: () => unknown
+   pending?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
++  title ??= t.settings.dangerZone
+   const [typed, setTyped] = React.useState("")
+   return (
+     <section className="overflow-hidden rounded-lg border border-destructive/40 bg-card">
+@@ -185,13 +190,13 @@ function DangerZone({
+             </AlertDialogHeader>
+             <Field>
+               <FieldLabel htmlFor="danger-confirm">
+-                Type <span className="font-mono text-foreground">{resourceName}</span> to confirm
++                {t.settings.typeToConfirm(resourceName)}
+               </FieldLabel>
+               <Input id="danger-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" spellCheck={false} />
+-              <FieldDescription>This can’t be undone.</FieldDescription>
++              <FieldDescription>{t.settings.cannotUndo}</FieldDescription>
+             </Field>
+             <AlertDialogFooter>
+-              <AlertDialogCancel>Cancel</AlertDialogCancel>
++              <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+               <AlertDialogAction variant="destructive" disabled={typed !== resourceName || pending} onClick={() => onConfirm()}>
+                 {pending && <Spinner className="text-current" />}
+                 {actionLabel}
+diff --git a/src/components/signup-form.tsx b/src/components/signup-form.tsx
+index 536b264..7f2c37c 100644
+--- a/src/components/signup-form.tsx
++++ b/src/components/signup-form.tsx
+@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
+ import { FieldGroup, FieldSeparator } from "@/components/ui/field"
+ import { useAppForm } from "@/components/ui/form"
+ import { validateEmail, type OAuthProvider } from "@/components/login-form"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function SignupForm({
+   onSubmit,
+@@ -21,8 +22,8 @@ function SignupForm({
+   minPasswordLength = 8,
+   signInHref,
+   terms,
+-  title = "Create your account",
+-  description = "Start a workspace in under a minute.",
++  title,
++  description,
+   className,
+ }: {
+   /** Called with valid values. Return a promise to keep the button busy until it settles. */
+@@ -39,6 +40,8 @@ function SignupForm({
+   description?: React.ReactNode
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  const l = t.auth.signup
+   const form = useAppForm({
+     defaultValues: { name: "", email: "", password: "" },
+     onSubmit: async ({ value }) => {
+@@ -49,8 +52,8 @@ function SignupForm({
+   return (
+     <Card className={cn("gap-5 px-6 py-6", className)}>
+       <CardHeader className="text-center">
+-        <CardTitle className="text-[22px]">{title}</CardTitle>
+-        <CardDescription className="text-[14px]">{description}</CardDescription>
++        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
++        <CardDescription className="text-[14px]">{description ?? l.description}</CardDescription>
+       </CardHeader>
+       <CardContent>
+         <form
+@@ -71,7 +74,7 @@ function SignupForm({
+                     </Button>
+                   ))}
+                 </div>
+-                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">or</FieldSeparator>
++                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card [&_[data-slot=separator]]:bg-border">{t.auth.or}</FieldSeparator>
+               </>
+             )}
+             {error && (
+@@ -79,31 +82,31 @@ function SignupForm({
+                 <AlertDescription>{error}</AlertDescription>
+               </Alert>
+             )}
+-            <form.AppField name="name" validators={{ onChange: ({ value }) => (value.trim() ? undefined : "Enter your name.") }}>
+-              {(field) => <field.TextField label="Name" autoComplete="name" />}
++            <form.AppField name="name" validators={{ onChange: ({ value }) => (value.trim() ? undefined : l.nameRequired) }}>
++              {(field) => <field.TextField label={l.name} autoComplete="name" />}
+             </form.AppField>
+-            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
+-              {(field) => <field.TextField label="Work email" type="email" autoComplete="email" placeholder="you@company.dev" />}
++            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}>
++              {(field) => <field.TextField label={l.email} type="email" autoComplete="email" placeholder={t.auth.emailPlaceholder} />}
+             </form.AppField>
+             <form.AppField
+               name="password"
+               validators={{
+-                onChange: ({ value }) => (value.length < minPasswordLength ? `Use at least ${minPasswordLength} characters.` : undefined),
++                onChange: ({ value }) => (value.length < minPasswordLength ? l.passwordTooShort(minPasswordLength) : undefined),
+               }}
+             >
+-              {(field) => <field.TextField label="Password" type="password" autoComplete="new-password" description={`At least ${minPasswordLength} characters.`} />}
++              {(field) => <field.TextField label={l.password} type="password" autoComplete="new-password" description={l.passwordHint(minPasswordLength)} />}
+             </form.AppField>
+             <form.AppForm>
+-              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Creating account">
+-                Create account
++              <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
++                {l.submit}
+               </form.SubmitButton>
+             </form.AppForm>
+             {terms && <p className="m-0 text-center text-[12px] leading-[1.5] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">{terms}</p>}
+             {signInHref && (
+               <p className="m-0 text-center text-[13px] text-muted-foreground">
+-                Already have an account?{" "}
++                {l.haveAccount}{" "}
+                 <a href={signInHref} className="font-medium text-primary-text underline-offset-4 hover:underline">
+-                  Sign in
++                  {l.signIn}
+                 </a>
+               </p>
+             )}
+diff --git a/src/components/site-header.tsx b/src/components/site-header.tsx
+index 26b4aea..f84ff42 100644
+--- a/src/components/site-header.tsx
++++ b/src/components/site-header.tsx
+@@ -8,6 +8,7 @@ import { MenuIcon } from "lucide-react"
+ import { cn } from "@/lib/utils"
+ import { Button } from "@/components/ui/button"
+ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type SiteLink = { label: string; href: string; active?: boolean }
+ 
+@@ -29,6 +30,7 @@ function SiteHeader({
+   maxWidth?: string
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
+   const [open, setOpen] = React.useState(false)
+   return (
+     <header className={cn("sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md", className)}>
+@@ -53,7 +55,7 @@ function SiteHeader({
+           {(links.length > 0 || mobileActions) && (
+             <Sheet open={open} onOpenChange={setOpen}>
+               <SheetTrigger asChild>
+-                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
++                <Button variant="ghost" size="icon" className="md:hidden" aria-label={t.common.openMenu}>
+                   <MenuIcon />
+                 </Button>
+               </SheetTrigger>
+diff --git a/src/components/theme-toggle.tsx b/src/components/theme-toggle.tsx
+index bc466c0..df5481e 100644
+--- a/src/components/theme-toggle.tsx
++++ b/src/components/theme-toggle.tsx
+@@ -8,6 +8,7 @@ import { MoonIcon, SunIcon } from "lucide-react"
+ 
+ import { Button } from "@/components/ui/button"
+ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type Theme = "dark" | "light"
+ 
+@@ -41,8 +42,9 @@ function useTheme() {
+ }
+ 
+ function ThemeToggle({ className }: { className?: string }) {
++  const t = useCoreloomI18n().messages
+   const { theme, toggleTheme } = useTheme()
+-  const label = theme === "light" ? "Switch to dark theme" : "Switch to light theme"
++  const label = theme === "light" ? t.theme.toDark : t.theme.toLight
+   return (
+     <Tooltip>
+       <TooltipTrigger asChild>
+@@ -50,7 +52,7 @@ function ThemeToggle({ className }: { className?: string }) {
+           {theme === "light" ? <MoonIcon /> : <SunIcon />}
+         </Button>
+       </TooltipTrigger>
+-      <TooltipContent>{theme === "light" ? "Dark theme" : "Light theme"}</TooltipContent>
++      <TooltipContent>{theme === "light" ? t.theme.dark : t.theme.light}</TooltipContent>
+     </Tooltip>
+   )
+ }
+diff --git a/src/components/ui/breadcrumb.tsx b/src/components/ui/breadcrumb.tsx
+index 70ad8e5..ccf5ad0 100644
+--- a/src/components/ui/breadcrumb.tsx
++++ b/src/components/ui/breadcrumb.tsx
+@@ -1,11 +1,15 @@
++"use client"
++
+ import * as React from "react"
+ import { ChevronRight, MoreHorizontal } from "lucide-react"
+ import { Slot } from "radix-ui"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
+-  return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />
++  const t = useCoreloomI18n().messages
++  return <nav aria-label={t.breadcrumb.label} data-slot="breadcrumb" {...props} />
+ }
+ 
+ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
+@@ -84,6 +88,7 @@ function BreadcrumbEllipsis({
+   className,
+   ...props
+ }: React.ComponentProps<"span">) {
++  const t = useCoreloomI18n().messages
+   return (
+     <span
+       data-slot="breadcrumb-ellipsis"
+@@ -93,7 +98,7 @@ function BreadcrumbEllipsis({
+       {...props}
+     >
+       <MoreHorizontal className="size-4" />
+-      <span className="sr-only">More</span>
++      <span className="sr-only">{t.breadcrumb.more}</span>
+     </span>
+   )
+ }
+diff --git a/src/components/ui/calendar.tsx b/src/components/ui/calendar.tsx
+index f467be3..6426bd2 100644
+--- a/src/components/ui/calendar.tsx
++++ b/src/components/ui/calendar.tsx
+@@ -17,6 +17,7 @@ import {
+ } from "react-day-picker"
+ 
+ import { Button, buttonVariants } from "@/components/ui/button"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Calendar({
+   className,
+@@ -27,10 +28,13 @@ function Calendar({
+   formatters,
+   labels,
+   components,
++  locale,
+   ...props
+ }: React.ComponentProps<typeof DayPicker> & {
+   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+ }) {
++  const i18n = useCoreloomI18n()
++  const t = i18n.messages
+   const defaultClassNames = getDefaultClassNames()
+ 
+   return (
+@@ -43,18 +47,19 @@ function Calendar({
+         className
+       )}
+       captionLayout={captionLayout}
++      locale={locale ?? (i18n.dateLocale as React.ComponentProps<typeof DayPicker>["locale"])}
+       formatters={{
+         formatMonthDropdown: (date) =>
+-          date.toLocaleString("default", { month: "short" }),
++          date.toLocaleString(i18n.locale, { month: "short" }),
+         ...formatters,
+       }}
+       labels={{
+         // The day's number as a word in its name ("Sunday 27 September 2026"), so the
+         // visible label is part of the accessible one (WCAG 2.5.3).
+         labelDayButton: (date, modifiers, options, dateLib) => {
+-          let label = (dateLib ?? new DateLib(options)).format(date, "EEEE d MMMM yyyy")
+-          if (modifiers.today) label = `Today, ${label}`
+-          if (modifiers.selected) label = `${label}, selected`
++          let label = (dateLib ?? new DateLib(options)).format(date, t.calendar.dayLabel)
++          if (modifiers.today) label = `${t.calendar.today}, ${label}`
++          if (modifiers.selected) label = `${label}, ${t.calendar.selected}`
+           return label
+         },
+         ...labels,
+diff --git a/src/components/ui/carousel.tsx b/src/components/ui/carousel.tsx
+index 7c6811e..f9dc3e6 100644
+--- a/src/components/ui/carousel.tsx
++++ b/src/components/ui/carousel.tsx
+@@ -10,6 +10,7 @@ import useEmblaCarousel, {
+ import { ArrowLeft, ArrowRight } from "lucide-react"
+ 
+ import { Button } from "@/components/ui/button"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type CarouselApi = UseEmblaCarouselType[1]
+ type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
+@@ -179,6 +180,7 @@ function CarouselPrevious({
+   size = "icon",
+   ...props
+ }: React.ComponentProps<typeof Button>) {
++  const t = useCoreloomI18n().messages
+   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
+ 
+   return (
+@@ -198,7 +200,7 @@ function CarouselPrevious({
+       {...props}
+     >
+       <ArrowLeft />
+-      <span className="sr-only">Previous slide</span>
++      <span className="sr-only">{t.carousel.previous}</span>
+     </Button>
+   )
+ }
+@@ -209,6 +211,7 @@ function CarouselNext({
+   size = "icon",
+   ...props
+ }: React.ComponentProps<typeof Button>) {
++  const t = useCoreloomI18n().messages
+   const { orientation, scrollNext, canScrollNext } = useCarousel()
+ 
+   return (
+@@ -228,7 +231,7 @@ function CarouselNext({
+       {...props}
+     >
+       <ArrowRight />
+-      <span className="sr-only">Next slide</span>
++      <span className="sr-only">{t.carousel.next}</span>
+     </Button>
+   )
+ }
+diff --git a/src/components/ui/combobox.tsx b/src/components/ui/combobox.tsx
+index f689cd7..d3043f0 100644
+--- a/src/components/ui/combobox.tsx
++++ b/src/components/ui/combobox.tsx
+@@ -15,6 +15,7 @@ import {
+   CommandList,
+ } from "@/components/ui/command"
+ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ type ComboboxOption = {
+   value: string
+@@ -31,9 +32,9 @@ function Combobox({
+   value,
+   defaultValue,
+   onValueChange,
+-  placeholder = "Select…",
+-  searchPlaceholder = "Search…",
+-  emptyText = "No results.",
++  placeholder,
++  searchPlaceholder,
++  emptyText,
+   disabled,
+   className,
+   contentClassName,
+@@ -55,6 +56,10 @@ function Combobox({
+   "aria-invalid"?: boolean | "true" | "false"
+   "aria-label"?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  placeholder ??= t.combobox.placeholder
++  searchPlaceholder ??= t.combobox.search
++  emptyText ??= t.combobox.empty
+   const [open, setOpen] = React.useState(false)
+   const [inner, setInner] = React.useState(defaultValue ?? "")
+   const current = value !== undefined ? value : inner
+diff --git a/src/components/ui/command.tsx b/src/components/ui/command.tsx
+index 0fac135..23010d8 100644
+--- a/src/components/ui/command.tsx
++++ b/src/components/ui/command.tsx
+@@ -13,6 +13,7 @@ import {
+ } from "@/components/ui/dialog"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Command({
+   className,
+@@ -31,8 +32,8 @@ function Command({
+ }
+ 
+ function CommandDialog({
+-  title = "Command Palette",
+-  description = "Search for a command to run...",
++  title,
++  description,
+   children,
+   className,
+   showCloseButton = true,
+@@ -43,6 +44,9 @@ function CommandDialog({
+   className?: string
+   showCloseButton?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
++  title ??= t.command.title
++  description ??= t.command.description
+   return (
+     <Dialog {...props}>
+       <DialogHeader className="sr-only">
+diff --git a/src/components/ui/data-table.tsx b/src/components/ui/data-table.tsx
+index aea8e08..a11be17 100644
+--- a/src/components/ui/data-table.tsx
++++ b/src/components/ui/data-table.tsx
+@@ -46,16 +46,17 @@ import {
+   TableHeader,
+   TableRow,
+ } from "@/components/ui/table"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function DataTable<TData, TValue>({
+   columns,
+   data,
+   filterColumn,
+-  filterPlaceholder = "Filter…",
++  filterPlaceholder,
+   toolbar,
+   pageSize = 10,
+   pageSizeOptions = [10, 20, 50],
+-  emptyText = "No results.",
++  emptyText,
+   getRowId,
+   onRowSelectionChange,
+   className,
+@@ -74,6 +75,9 @@ function DataTable<TData, TValue>({
+   onRowSelectionChange?: (rows: TData[]) => void
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  filterPlaceholder ??= t.dataTable.filter
++  emptyText ??= t.dataTable.empty
+   const [sorting, setSorting] = React.useState<SortingState>([])
+   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+@@ -177,6 +181,7 @@ function DataTableColumnHeader<TData, TValue>({
+   title: string
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
+   if (!column.getCanSort()) return <span className={className}>{title}</span>
+   const sorted = column.getIsSorted()
+   const Icon = sorted === "asc" ? ArrowUpIcon : sorted === "desc" ? ArrowDownIcon : ArrowUpDownIcon
+@@ -184,7 +189,7 @@ function DataTableColumnHeader<TData, TValue>({
+     <button
+       type="button"
+       onClick={column.getToggleSortingHandler()}
+-      aria-label={`Sort by ${title}`}
++      aria-label={t.dataTable.sortBy(title)}
+       className={cn(
+         "-mx-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-1 uppercase outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring",
+         sorted && "text-foreground",
+@@ -204,6 +209,7 @@ function DataTablePagination<TData>({
+   table: TanstackTable<TData>
+   pageSizeOptions?: number[]
+ }) {
++  const { messages: t, formatNumber } = useCoreloomI18n()
+   const selected = table.getFilteredSelectedRowModel().rows.length
+   const total = table.getFilteredRowModel().rows.length
+   const { pageIndex, pageSize } = table.getState().pagination
+@@ -213,13 +219,13 @@ function DataTablePagination<TData>({
+       className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground"
+     >
+       <span className="font-mono text-[12px]">
+-        {selected > 0 ? `${selected} of ${total} selected` : `${total} ${total === 1 ? "row" : "rows"}`}
++        {selected > 0 ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected) : t.dataTable.rows(formatNumber(total), total)}
+       </span>
+       <div className="flex items-center gap-4">
+         <div className="hidden items-center gap-2 sm:flex">
+-          <span>Rows per page</span>
++          <span>{t.dataTable.rowsPerPage}</span>
+           <Select value={String(pageSize)} onValueChange={(v) => table.setPageSize(Number(v))}>
+-            <SelectTrigger size="sm" className="w-[72px]" aria-label="Rows per page">
++            <SelectTrigger size="sm" className="w-[72px]" aria-label={t.dataTable.rowsPerPage}>
+               <SelectValue />
+             </SelectTrigger>
+             <SelectContent>
+@@ -232,7 +238,7 @@ function DataTablePagination<TData>({
+           </Select>
+         </div>
+         <span className="font-mono text-[12px]">
+-          Page {pageIndex + 1} of {Math.max(table.getPageCount(), 1)}
++          {t.dataTable.pageOf(formatNumber(pageIndex + 1), formatNumber(Math.max(table.getPageCount(), 1)))}
+         </span>
+         <div className="flex gap-1.5">
+           <Button
+@@ -240,7 +246,7 @@ function DataTablePagination<TData>({
+             size="icon-sm"
+             onClick={() => table.previousPage()}
+             disabled={!table.getCanPreviousPage()}
+-            aria-label="Previous page"
++            aria-label={t.dataTable.previousPage}
+           >
+             <ChevronLeftIcon />
+           </Button>
+@@ -249,7 +255,7 @@ function DataTablePagination<TData>({
+             size="icon-sm"
+             onClick={() => table.nextPage()}
+             disabled={!table.getCanNextPage()}
+-            aria-label="Next page"
++            aria-label={t.dataTable.nextPage}
+           >
+             <ChevronRightIcon />
+           </Button>
+diff --git a/src/components/ui/date-picker.tsx b/src/components/ui/date-picker.tsx
+index 2fc971c..7b32852 100644
+--- a/src/components/ui/date-picker.tsx
++++ b/src/components/ui/date-picker.tsx
+@@ -9,12 +9,13 @@ import { CalendarIcon } from "lucide-react"
+ import { cn } from "@/lib/utils"
+ import { Calendar } from "@/components/ui/calendar"
+ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function DatePicker({
+   value,
+   defaultValue,
+   onValueChange,
+-  placeholder = "Pick a date",
++  placeholder,
+   formatString = "PPP",
+   locale,
+   disabled,
+@@ -40,6 +41,9 @@ function DatePicker({
+   "aria-invalid"?: boolean | "true" | "false"
+   "aria-label"?: string
+ }) {
++  const i18n = useCoreloomI18n()
++  placeholder ??= i18n.messages.datePicker.placeholder
++  locale ??= i18n.dateLocale as Locale | undefined
+   const [open, setOpen] = React.useState(false)
+   const [inner, setInner] = React.useState<Date | undefined>(defaultValue)
+   const current = value !== undefined ? value : inner
+diff --git a/src/components/ui/dialog.tsx b/src/components/ui/dialog.tsx
+index b0cf51b..0c170c4 100644
+--- a/src/components/ui/dialog.tsx
++++ b/src/components/ui/dialog.tsx
+@@ -7,6 +7,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
+ import { Button } from "@/components/ui/button"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Dialog({
+   ...props
+@@ -56,6 +57,7 @@ function DialogContent({
+ }: React.ComponentProps<typeof DialogPrimitive.Content> & {
+   showCloseButton?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <DialogPortal data-slot="dialog-portal">
+       <DialogOverlay />
+@@ -74,7 +76,7 @@ function DialogContent({
+             className="absolute top-[18px] right-4 cursor-pointer rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[18px]"
+           >
+             <XIcon />
+-            <span className="sr-only">Close</span>
++            <span className="sr-only">{t.common.close}</span>
+           </DialogPrimitive.Close>
+         )}
+       </DialogPrimitive.Content>
+@@ -100,6 +102,7 @@ function DialogFooter({
+ }: React.ComponentProps<"div"> & {
+   showCloseButton?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <div
+       data-slot="dialog-footer"
+@@ -112,7 +115,7 @@ function DialogFooter({
+       {children}
+       {showCloseButton && (
+         <DialogPrimitive.Close asChild>
+-          <Button variant="ghost">Close</Button>
++          <Button variant="ghost">{t.common.close}</Button>
+         </DialogPrimitive.Close>
+       )}
+     </div>
+diff --git a/src/components/ui/form.tsx b/src/components/ui/form.tsx
+index 471cfe5..415f7cf 100644
+--- a/src/components/ui/form.tsx
++++ b/src/components/ui/form.tsx
+@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
+ import { Spinner } from "@/components/ui/spinner"
+ import { Switch } from "@/components/ui/switch"
+ import { Textarea } from "@/components/ui/textarea"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
+ 
+@@ -408,14 +409,15 @@ function SubmitButton({
+ }
+ 
+ /** Form-level errors (a validator returning `{ form: "…" }`, or a server error you set). */
+-function FormErrors({ title = "Couldn't save", className }: { title?: React.ReactNode; className?: string }) {
++function FormErrors({ title, className }: { title?: React.ReactNode; className?: string }) {
++  const t = useCoreloomI18n().messages
+   const form = useFormContext()
+   const errors = useStore(form.store, (s) => s.errors)
+   const issues = toIssues(errors)
+   if (!issues.length) return null
+   return (
+     <Alert variant="destructive" className={className}>
+-      <AlertTitle>{title}</AlertTitle>
++      <AlertTitle>{title ?? t.form.errorTitle}</AlertTitle>
+       <AlertDescription>{issues.map((i) => i.message).filter(Boolean).join(" ")}</AlertDescription>
+     </Alert>
+   )
+diff --git a/src/components/ui/pagination.tsx b/src/components/ui/pagination.tsx
+index 68022ec..215c5d0 100644
+--- a/src/components/ui/pagination.tsx
++++ b/src/components/ui/pagination.tsx
+@@ -1,3 +1,5 @@
++"use client"
++
+ import * as React from "react"
+ import {
+   ChevronLeftIcon,
+@@ -8,12 +10,14 @@ import {
+ import { buttonVariants, type Button } from "@/components/ui/button"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
++  const t = useCoreloomI18n().messages
+   return (
+     <nav
+       role="navigation"
+-      aria-label="pagination"
++      aria-label={t.pagination.label}
+       data-slot="pagination"
+       className={cn("mx-auto flex w-full justify-center", className)}
+       {...props}
+@@ -72,15 +76,16 @@ function PaginationPrevious({
+   className,
+   ...props
+ }: React.ComponentProps<typeof PaginationLink>) {
++  const t = useCoreloomI18n().messages
+   return (
+     <PaginationLink
+-      aria-label="Go to previous page"
++      aria-label={t.pagination.previousPage}
+       size="default"
+       className={cn("gap-1 px-2.5 text-[14px] sm:pl-2.5", className)}
+       {...props}
+     >
+       <ChevronLeftIcon />
+-      <span className="hidden sm:block">Previous</span>
++      <span className="hidden sm:block">{t.pagination.previous}</span>
+     </PaginationLink>
+   )
+ }
+@@ -89,14 +94,15 @@ function PaginationNext({
+   className,
+   ...props
+ }: React.ComponentProps<typeof PaginationLink>) {
++  const t = useCoreloomI18n().messages
+   return (
+     <PaginationLink
+-      aria-label="Go to next page"
++      aria-label={t.pagination.nextPage}
+       size="default"
+       className={cn("gap-1 px-2.5 text-[14px] sm:pr-2.5", className)}
+       {...props}
+     >
+-      <span className="hidden sm:block">Next</span>
++      <span className="hidden sm:block">{t.pagination.next}</span>
+       <ChevronRightIcon />
+     </PaginationLink>
+   )
+@@ -106,6 +112,7 @@ function PaginationEllipsis({
+   className,
+   ...props
+ }: React.ComponentProps<"span">) {
++  const t = useCoreloomI18n().messages
+   return (
+     <span
+       aria-hidden
+@@ -114,7 +121,7 @@ function PaginationEllipsis({
+       {...props}
+     >
+       <MoreHorizontalIcon className="size-4" />
+-      <span className="sr-only">More pages</span>
++      <span className="sr-only">{t.pagination.morePages}</span>
+     </span>
+   )
+ }
+diff --git a/src/components/ui/sheet.tsx b/src/components/ui/sheet.tsx
+index 3e8bdd3..6d297a4 100644
+--- a/src/components/ui/sheet.tsx
++++ b/src/components/ui/sheet.tsx
+@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
+ import { Dialog as SheetPrimitive } from "radix-ui"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+   return <SheetPrimitive.Root data-slot="sheet" {...props} />
+@@ -54,6 +55,7 @@ function SheetContent({
+   side?: "top" | "right" | "bottom" | "left"
+   showCloseButton?: boolean
+ }) {
++  const t = useCoreloomI18n().messages
+   return (
+     <SheetPortal>
+       <SheetOverlay />
+@@ -77,7 +79,7 @@ function SheetContent({
+         {showCloseButton && (
+           <SheetPrimitive.Close className="absolute top-[18px] right-4 cursor-pointer rounded-sm p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-hidden disabled:pointer-events-none">
+             <XIcon className="size-[18px]" />
+-            <span className="sr-only">Close</span>
++            <span className="sr-only">{t.common.close}</span>
+           </SheetPrimitive.Close>
+         )}
+       </SheetPrimitive.Content>
+diff --git a/src/components/ui/sidebar.tsx b/src/components/ui/sidebar.tsx
+index b495aff..3f54ebb 100644
+--- a/src/components/ui/sidebar.tsx
++++ b/src/components/ui/sidebar.tsx
+@@ -27,6 +27,7 @@ import {
+   TooltipProvider,
+   TooltipTrigger,
+ } from "@/components/ui/tooltip"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ const SIDEBAR_COOKIE_NAME = "sidebar_state"
+ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+@@ -166,6 +167,7 @@ function Sidebar({
+   variant?: "sidebar" | "floating" | "inset"
+   collapsible?: "offcanvas" | "icon" | "none"
+ }) {
++  const t = useCoreloomI18n().messages
+   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+ 
+   if (collapsible === "none") {
+@@ -199,8 +201,8 @@ function Sidebar({
+           side={side}
+         >
+           <SheetHeader className="sr-only">
+-            <SheetTitle>Sidebar</SheetTitle>
+-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
++            <SheetTitle>{t.sidebar.title}</SheetTitle>
++            <SheetDescription>{t.sidebar.description}</SheetDescription>
+           </SheetHeader>
+           <div className="flex h-full w-full flex-col">{children}</div>
+         </SheetContent>
+@@ -261,6 +263,7 @@ function SidebarTrigger({
+   onClick,
+   ...props
+ }: React.ComponentProps<typeof Button>) {
++  const t = useCoreloomI18n().messages
+   const { toggleSidebar } = useSidebar()
+ 
+   return (
+@@ -277,22 +280,23 @@ function SidebarTrigger({
+       {...props}
+     >
+       <PanelLeftIcon />
+-      <span className="sr-only">Toggle Sidebar</span>
++      <span className="sr-only">{t.sidebar.toggle}</span>
+     </Button>
+   )
+ }
+ 
+ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
++  const t = useCoreloomI18n().messages
+   const { toggleSidebar } = useSidebar()
+ 
+   return (
+     <button
+       data-sidebar="rail"
+       data-slot="sidebar-rail"
+-      aria-label="Toggle Sidebar"
++      aria-label={t.sidebar.toggle}
+       tabIndex={-1}
+       onClick={toggleSidebar}
+-      title="Toggle Sidebar"
++      title={t.sidebar.toggle}
+       className={cn(
+         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-pointer transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex",
+         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
+diff --git a/src/components/ui/slider.tsx b/src/components/ui/slider.tsx
+index 6d0db1d..98ddccf 100644
+--- a/src/components/ui/slider.tsx
++++ b/src/components/ui/slider.tsx
+@@ -4,6 +4,7 @@ import * as React from "react"
+ import { Slider as SliderPrimitive } from "radix-ui"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Slider({
+   className,
+@@ -15,6 +16,7 @@ function Slider({
+   "aria-labelledby": ariaLabelledby,
+   ...props
+ }: React.ComponentProps<typeof SliderPrimitive.Root>) {
++  const t = useCoreloomI18n().messages
+   const _values = React.useMemo(
+     () =>
+       Array.isArray(value)
+@@ -56,7 +58,7 @@ function Slider({
+               ? undefined
+               : _values.length === 1
+                 ? ariaLabel
+-                : `${ariaLabel}, ${index === 0 ? "minimum" : index === _values.length - 1 ? "maximum" : index + 1}`
++                : `${ariaLabel}, ${index === 0 ? t.slider.minimum : index === _values.length - 1 ? t.slider.maximum : index + 1}`
+           }
+           aria-labelledby={ariaLabelledby}
+           className="relative block size-6 shrink-0 cursor-grab rounded-full transition-[box-shadow] duration-180 ease-out outline-none before:absolute before:inset-[3px] before:rounded-full before:border-[3px] before:border-background before:bg-primary before:shadow-sm before:content-[''] hover:ring-4 hover:ring-primary-subtle focus-visible:ring-[3px] focus-visible:ring-ring active:cursor-grabbing disabled:pointer-events-none"
+diff --git a/src/components/ui/spinner.tsx b/src/components/ui/spinner.tsx
+index 149d108..519e9e9 100644
+--- a/src/components/ui/spinner.tsx
++++ b/src/components/ui/spinner.tsx
+@@ -1,14 +1,18 @@
++"use client"
++
+ import * as React from "react"
+ import { Loader2Icon } from "lucide-react"
+ 
+ import { cn } from "@/lib/utils"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
++  const t = useCoreloomI18n().messages
+   return (
+     <Loader2Icon
+       data-slot="spinner"
+       role="status"
+-      aria-label="Loading"
++      aria-label={t.common.loading}
+       className={cn("size-4 animate-spin text-muted-foreground motion-reduce:animate-[spin_1.5s_linear_infinite]", className)}
+       {...props}
+     />
+diff --git a/src/components/verify-form.tsx b/src/components/verify-form.tsx
+index 747dd49..0a12db3 100644
+--- a/src/components/verify-form.tsx
++++ b/src/components/verify-form.tsx
+@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
+ import { Alert, AlertDescription } from "@/components/ui/alert"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+ import { useAppForm } from "@/components/ui/form"
++import { useCoreloomI18n } from "@/lib/i18n"
+ 
+ function VerifyForm({
+   onSubmit,
+@@ -18,7 +19,7 @@ function VerifyForm({
+   pending = false,
+   error,
+   resendIn = 30,
+-  title = "Check your inbox",
++  title,
+   className,
+ }: {
+   /** Called with the 6 digits. Return a promise to keep the form busy until it settles. */
+@@ -33,6 +34,8 @@ function VerifyForm({
+   title?: React.ReactNode
+   className?: string
+ }) {
++  const t = useCoreloomI18n().messages
++  const l = t.auth.verify
+   const [wait, setWait] = React.useState(resendIn)
+   const form = useAppForm({
+     defaultValues: { code: "" },
+@@ -50,9 +53,9 @@ function VerifyForm({
+   return (
+     <Card className={cn("gap-5 px-6 py-6", className)}>
+       <CardHeader className="text-center">
+-        <CardTitle className="text-[22px]">{title}</CardTitle>
++        <CardTitle className="text-[22px]">{title ?? l.title}</CardTitle>
+         <CardDescription className="text-[14px]">
+-          {destination ? <>We sent a 6-digit code to <span className="text-foreground">{destination}</span>.</> : "Enter the 6-digit code we sent you."}
++          {destination ? l.sentTo(destination) : l.sent}
+         </CardDescription>
+       </CardHeader>
+       <CardContent>
+@@ -69,10 +72,10 @@ function VerifyForm({
+               <AlertDescription>{error}</AlertDescription>
+             </Alert>
+           )}
+-          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : "Enter the 6 digits of the code.") }}>
++          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : l.codeRequired) }}>
+             {(field) => (
+               <field.OTPField
+-                label="Verification code"
++                label={l.code}
+                 hideLabel
+                 pattern={REGEXP_ONLY_DIGITS}
+                 autoFocus
+@@ -83,15 +86,15 @@ function VerifyForm({
+             )}
+           </form.AppField>
+           <form.AppForm>
+-            <form.SubmitButton className="w-full" pending={pending} pendingLabel="Verifying">
+-              Verify
++            <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
++              {l.submit}
+             </form.SubmitButton>
+           </form.AppForm>
+           {onResend && (
+             <p className="m-0 text-center text-[13px] text-muted-foreground">
+-              Didn’t get it?{" "}
++              {l.notReceived}{" "}
+               {wait > 0 ? (
+-                <span className="font-mono text-[12px]">Resend in {wait}s</span>
++                <span className="font-mono text-[12px]">{l.resendIn(wait)}</span>
+               ) : (
+                 <button
+                   type="button"
+@@ -101,7 +104,7 @@ function VerifyForm({
+                     setWait(resendIn)
+                   }}
+                 >
+-                  Resend code
++                  {l.resend}
+                 </button>
+               )}
+             </p>
+diff --git a/src/lib/i18n.tsx b/src/lib/i18n.tsx
+new file mode 100644
+index 0000000..7b58170
+--- /dev/null
++++ b/src/lib/i18n.tsx
+@@ -0,0 +1,284 @@
++"use client"
++
++// Coreloom UI — i18n. Every string the components and blocks show or announce (button labels,
++// placeholders, screen-reader text, validation messages) comes from here.
++//
++//   <CoreloomI18nProvider locale="fr" dateLocale={fr}>…</CoreloomI18nProvider>
++//
++// English and French ship built in; any other language is a `messages` object (start from `en`).
++// `messages` also overrides single strings: { auth: { login: { title: "Connexion" } } }.
++// Without a provider everything is English. Props on a component (a `title`, a `placeholder`)
++// still win over the messages.
++import * as React from "react"
++
++type Text = React.ReactNode
++
++const en = {
++  common: {
++    close: "Close",
++    cancel: "Cancel",
++    loading: "Loading",
++    noResults: "No results.",
++    menu: "Menu",
++    openMenu: "Open menu",
++  },
++  breadcrumb: { label: "Breadcrumb", more: "More" },
++  pagination: {
++    label: "Pagination",
++    previous: "Previous",
++    next: "Next",
++    previousPage: "Go to previous page",
++    nextPage: "Go to next page",
++    morePages: "More pages",
++  },
++  carousel: { previous: "Previous slide", next: "Next slide" },
++  calendar: {
++    /** date-fns pattern for the day buttons' accessible names. */
++    dayLabel: "EEEE d MMMM yyyy",
++    today: "Today",
++    selected: "selected",
++  },
++  datePicker: { placeholder: "Pick a date" },
++  combobox: { placeholder: "Select…", search: "Search…", empty: "No results." },
++  command: { title: "Command palette", description: "Search for a command to run." },
++  dataTable: {
++    filter: "Filter…",
++    empty: "No results.",
++    rows: (count: string, n: number) => `${count} ${n === 1 ? "row" : "rows"}`,
++    selected: (selected: string, total: string, n: number) => `${selected} of ${total} selected`,
++    rowsPerPage: "Rows per page",
++    previousPage: "Previous page",
++    nextPage: "Next page",
++    sortBy: (column: string) => `Sort by ${column}`,
++    pageOf: (page: string, total: string) => `Page ${page} of ${total}`,
++  },
++  sidebar: { toggle: "Toggle sidebar", title: "Sidebar", description: "Displays the mobile sidebar." },
++  slider: { minimum: "minimum", maximum: "maximum" },
++  form: { errorTitle: "Couldn’t save" },
++  theme: { toLight: "Switch to light theme", toDark: "Switch to dark theme", light: "Light theme", dark: "Dark theme" },
++  copy: { copy: "Copy", copied: "Copied to clipboard", failed: "Couldn’t copy — select the text instead." },
++  commandMenu: { trigger: "Search…", placeholder: "Type a command or search…", empty: "No results found." },
++  appShell: { search: "Search or jump to…", workspaces: "Workspaces", newWorkspace: "New workspace", logOut: "Log out" },
++  docs: { nav: "Documentation", menu: "Menu", onThisPage: "On this page", preview: "Preview", code: "Code" },
++  marketing: { faq: "Questions" },
++  auth: {
++    or: "or",
++    emailPlaceholder: "you@company.dev",
++    emailRequired: "Enter your email address.",
++    emailInvalid: "Enter a valid email address, like you@company.dev.",
++    login: {
++      title: "Sign in",
++      description: "Welcome back. Enter your email to continue.",
++      email: "Email",
++      password: "Password",
++      passwordRequired: "Enter your password.",
++      forgotPassword: "Forgot password?",
++      submit: "Sign in",
++      submitting: "Signing in",
++      noAccount: "No account yet?",
++      signUp: "Create one",
++    },
++    signup: {
++      title: "Create your account",
++      description: "Start a workspace in under a minute.",
++      name: "Name",
++      nameRequired: "Enter your name.",
++      email: "Work email",
++      password: "Password",
++      passwordHint: (min: number) => `At least ${min} characters.`,
++      passwordTooShort: (min: number) => `Use at least ${min} characters.`,
++      submit: "Create account",
++      submitting: "Creating account",
++      haveAccount: "Already have an account?",
++      signIn: "Sign in",
++    },
++    verify: {
++      title: "Check your inbox",
++      sentTo: (destination: Text): Text => (
++        <>
++          We sent a 6-digit code to <span className="text-foreground">{destination}</span>.
++        </>
++      ),
++      sent: "Enter the 6-digit code we sent you.",
++      code: "Verification code",
++      codeRequired: "Enter the 6 digits of the code.",
++      submit: "Verify",
++      submitting: "Verifying",
++      notReceived: "Didn’t get it?",
++      resendIn: (seconds: number) => `Resend in ${seconds}s`,
++      resend: "Resend code",
++    },
++  },
++  settings: {
++    title: "Settings",
++    save: "Save changes",
++    dangerZone: "Danger zone",
++    typeToConfirm: (name: Text): Text => (
++      <>
++        Type <span className="font-mono text-foreground">{name}</span> to confirm
++      </>
++    ),
++    cannotUndo: "This can’t be undone.",
++  },
++}
++
++type Messages = typeof en
++type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...args: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
++
++const fr: Messages = {
++  common: {
++    close: "Fermer",
++    cancel: "Annuler",
++    loading: "Chargement",
++    noResults: "Aucun résultat.",
++    menu: "Menu",
++    openMenu: "Ouvrir le menu",
++  },
++  breadcrumb: { label: "Fil d’Ariane", more: "Plus" },
++  pagination: {
++    label: "Pagination",
++    previous: "Précédent",
++    next: "Suivant",
++    previousPage: "Page précédente",
++    nextPage: "Page suivante",
++    morePages: "Autres pages",
++  },
++  carousel: { previous: "Diapositive précédente", next: "Diapositive suivante" },
++  calendar: { dayLabel: "EEEE d MMMM yyyy", today: "Aujourd’hui", selected: "sélectionné" },
++  datePicker: { placeholder: "Choisir une date" },
++  combobox: { placeholder: "Sélectionner…", search: "Rechercher…", empty: "Aucun résultat." },
++  command: { title: "Palette de commandes", description: "Rechercher une commande à lancer." },
++  dataTable: {
++    filter: "Filtrer…",
++    empty: "Aucun résultat.",
++    rows: (count, n) => `${count} ${n > 1 ? "lignes" : "ligne"}`,
++    selected: (selected, total, n) => `${selected} sur ${total} sélectionnée${n > 1 ? "s" : ""}`,
++    rowsPerPage: "Lignes par page",
++    previousPage: "Page précédente",
++    nextPage: "Page suivante",
++    sortBy: (column) => `Trier par ${column}`,
++    pageOf: (page, total) => `Page ${page} sur ${total}`,
++  },
++  sidebar: { toggle: "Afficher ou masquer la barre latérale", title: "Barre latérale", description: "Affiche la barre latérale sur mobile." },
++  slider: { minimum: "minimum", maximum: "maximum" },
++  form: { errorTitle: "Enregistrement impossible" },
++  theme: { toLight: "Passer au thème clair", toDark: "Passer au thème sombre", light: "Thème clair", dark: "Thème sombre" },
++  copy: { copy: "Copier", copied: "Copié dans le presse-papiers", failed: "Copie impossible : sélectionnez le texte." },
++  commandMenu: { trigger: "Rechercher…", placeholder: "Tapez une commande ou recherchez…", empty: "Aucun résultat." },
++  appShell: { search: "Rechercher ou aller à…", workspaces: "Espaces de travail", newWorkspace: "Nouvel espace de travail", logOut: "Se déconnecter" },
++  docs: { nav: "Documentation", menu: "Menu", onThisPage: "Sur cette page", preview: "Aperçu", code: "Code" },
++  marketing: { faq: "Questions fréquentes" },
++  auth: {
++    or: "ou",
++    emailPlaceholder: "vous@entreprise.fr",
++    emailRequired: "Saisissez votre adresse e-mail.",
++    emailInvalid: "Saisissez une adresse e-mail valide, comme vous@entreprise.fr.",
++    login: {
++      title: "Connexion",
++      description: "Bon retour parmi nous. Saisissez votre e-mail pour continuer.",
++      email: "E-mail",
++      password: "Mot de passe",
++      passwordRequired: "Saisissez votre mot de passe.",
++      forgotPassword: "Mot de passe oublié ?",
++      submit: "Se connecter",
++      submitting: "Connexion",
++      noAccount: "Pas encore de compte ?",
++      signUp: "Créer un compte",
++    },
++    signup: {
++      title: "Créer votre compte",
++      description: "Votre espace de travail en moins d’une minute.",
++      name: "Nom",
++      nameRequired: "Saisissez votre nom.",
++      email: "E-mail professionnel",
++      password: "Mot de passe",
++      passwordHint: (min) => `Au moins ${min} caractères.`,
++      passwordTooShort: (min) => `Utilisez au moins ${min} caractères.`,
++      submit: "Créer le compte",
++      submitting: "Création du compte",
++      haveAccount: "Vous avez déjà un compte ?",
++      signIn: "Se connecter",
++    },
++    verify: {
++      title: "Consultez votre boîte de réception",
++      sentTo: (destination) => (
++        <>
++          Nous avons envoyé un code à 6 chiffres à <span className="text-foreground">{destination}</span>.
++        </>
++      ),
++      sent: "Saisissez le code à 6 chiffres que nous vous avons envoyé.",
++      code: "Code de vérification",
++      codeRequired: "Saisissez les 6 chiffres du code.",
++      submit: "Vérifier",
++      submitting: "Vérification",
++      notReceived: "Rien reçu ?",
++      resendIn: (seconds) => `Renvoyer dans ${seconds} s`,
++      resend: "Renvoyer le code",
++    },
++  },
++  settings: {
++    title: "Paramètres",
++    save: "Enregistrer",
++    dangerZone: "Zone de danger",
++    typeToConfirm: (name) => (
++      <>
++        Saisissez <span className="font-mono text-foreground">{name}</span> pour confirmer
++      </>
++    ),
++    cannotUndo: "Cette action est irréversible.",
++  },
++}
++
++const builtIn: Record<string, Messages> = { en, fr }
++
++function merge<T>(base: T, over: DeepPartial<T> | undefined): T {
++  if (!over) return base
++  const out = { ...base } as Record<string, unknown>
++  for (const [k, v] of Object.entries(over)) {
++    const b = (base as Record<string, unknown>)[k]
++    out[k] = v && typeof v === "object" && !React.isValidElement(v) && b && typeof b === "object" ? merge(b, v as DeepPartial<typeof b>) : v
++  }
++  return out as T
++}
++
++/** A date-fns locale (`import { fr } from "date-fns/locale"`), passed to Calendar and DatePicker. */
++type DateLocale = { code?: string } & object
++
++type CoreloomI18n = {
++  locale: string
++  messages: Messages
++  dateLocale?: DateLocale
++  /** Formats a number for the locale (row counts, pages). */
++  formatNumber: (n: number) => string
++}
++
++const fallback: CoreloomI18n = { locale: "en", messages: en, formatNumber: (n) => new Intl.NumberFormat("en").format(n) }
++const I18nContext = React.createContext<CoreloomI18n>(fallback)
++
++function CoreloomI18nProvider({
++  locale = "en",
++  messages,
++  dateLocale,
++  children,
++}: {
++  /** BCP 47 tag: "fr", "fr-CA", "en-GB"… Picks the built-in messages by language (en or fr). */
++  locale?: string
++  /** A full dictionary for another language, or overrides for single strings. */
++  messages?: DeepPartial<Messages>
++  dateLocale?: DateLocale
++  children: React.ReactNode
++}) {
++  const value = React.useMemo<CoreloomI18n>(() => {
++    const base = builtIn[locale.toLowerCase().split("-")[0]] ?? en
++    const nf = new Intl.NumberFormat(locale)
++    return { locale, messages: merge(base, messages), dateLocale, formatNumber: (n) => nf.format(n) }
++  }, [locale, messages, dateLocale])
++  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
++}
++
++/** The current messages, locale and date-fns locale. English when there's no provider. */
++function useCoreloomI18n() {
++  return React.useContext(I18nContext)
++}
++
++export { CoreloomI18nProvider, useCoreloomI18n, en, fr, type Messages, type DeepPartial, type DateLocale }
+diff --git a/tests/a11y.spec.ts b/tests/a11y.spec.ts
+index efd6e33..874af8e 100644
+--- a/tests/a11y.spec.ts
++++ b/tests/a11y.spec.ts
+@@ -4,10 +4,13 @@ import { expect, test } from "@playwright/test"
+ 
+ import { THEMES, openStory, stories } from "./stories"
+ 
++// Both themes in English, plus French in dark: translated labels must stay accessible too.
++const RUNS = [...THEMES.map((theme) => ({ theme, locale: "en" as const })), { theme: "dark" as const, locale: "fr" as const }]
++
+ for (const story of stories()) {
+-  for (const theme of THEMES) {
+-    test(`a11y · ${story.title} · ${story.name} · ${theme}`, async ({ page }) => {
+-      await openStory(page, story.id, theme)
++  for (const { theme, locale } of RUNS) {
++    test(`a11y · ${story.title} · ${story.name} · ${theme}${locale === "fr" ? " · fr" : ""}`, async ({ page }) => {
++      await openStory(page, story.id, theme, locale)
+       const { violations } = await new AxeBuilder({ page })
+         .include("#storybook-root")
+         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])
+diff --git a/tests/stories.ts b/tests/stories.ts
+index b79283a..d5a2a15 100644
+--- a/tests/stories.ts
++++ b/tests/stories.ts
+@@ -16,13 +16,13 @@ export function stories(): Entry[] {
+ }
+ 
+ /** Opens one story in the bare iframe, with a fixed clock, no outside network, fonts loaded. */
+-export async function openStory(page: Page, id: string, theme: Theme) {
++export async function openStory(page: Page, id: string, theme: Theme, locale: "en" | "fr" = "en") {
+   // Calendars mark "today" and tables show dates: freeze time so screenshots don't change daily.
+   await page.clock.setFixedTime(new Date("2026-10-14T10:00:00+02:00"))
+   // Only the local Storybook loads; anything remote (avatars, embeds) falls back.
+   await page.route(/^(?!http:\/\/127\.0\.0\.1)/, (route) => route.abort())
+   // a11y.manual stops Storybook's own a11y addon from running axe in the page (two runs collide).
+-  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true`)
++  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};locale:${locale};a11y.manual:!true`)
+   await page.locator("#storybook-root").waitFor()
+   await page.evaluate(() => document.fonts.ready)
+   await page.waitForLoadState("networkidle")
+-- 
+2.43.0
+

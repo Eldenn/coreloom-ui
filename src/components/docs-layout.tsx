@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { DocsToc, type TocItem } from "@/components/docs-toc"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 type DocsNavGroup = {
   title: string
@@ -16,8 +17,9 @@ type DocsNavGroup = {
 }
 
 function DocsNav({ groups, onNavigate }: { groups: DocsNavGroup[]; onNavigate?: () => void }) {
+  const t = useCoreloomI18n().messages
   return (
-    <nav aria-label="Documentation">
+    <nav aria-label={t.docs.nav}>
       {groups.map((group) => (
         <div key={group.title} className="mb-5">
           <div className="mb-2 px-2.5 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">{group.title}</div>
@@ -56,6 +58,7 @@ function DocsLayout({
   children: React.ReactNode
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
   const [open, setOpen] = React.useState(false)
   return (
     <div className={cn("min-h-svh bg-background", className)}>
@@ -69,12 +72,12 @@ function DocsLayout({
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="mb-6 md:hidden">
                 <MenuIcon />
-                Menu
+                {t.docs.menu}
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] overflow-y-auto px-4">
               <SheetHeader className="px-0">
-                <SheetTitle>Documentation</SheetTitle>
+                <SheetTitle>{t.docs.nav}</SheetTitle>
               </SheetHeader>
               <DocsNav groups={nav} onNavigate={() => setOpen(false)} />
             </SheetContent>

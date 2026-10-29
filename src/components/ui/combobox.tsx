@@ -15,6 +15,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 type ComboboxOption = {
   value: string
@@ -31,9 +32,9 @@ function Combobox({
   value,
   defaultValue,
   onValueChange,
-  placeholder = "Select…",
-  searchPlaceholder = "Search…",
-  emptyText = "No results.",
+  placeholder,
+  searchPlaceholder,
+  emptyText,
   disabled,
   className,
   contentClassName,
@@ -55,6 +56,10 @@ function Combobox({
   "aria-invalid"?: boolean | "true" | "false"
   "aria-label"?: string
 }) {
+  const t = useCoreloomI18n().messages
+  placeholder ??= t.combobox.placeholder
+  searchPlaceholder ??= t.combobox.search
+  emptyText ??= t.combobox.empty
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState(defaultValue ?? "")
   const current = value !== undefined ? value : inner

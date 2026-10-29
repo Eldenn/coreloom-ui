@@ -49,6 +49,18 @@
       ]
     },
     {
+      "name": "i18n",
+      "type": "registry:lib",
+      "title": "i18n",
+      "description": "CoreloomI18nProvider and useCoreloomI18n: every built-in string of the components and blocks, in English and French, overridable per string.",
+      "files": [
+        {
+          "path": "src/lib/i18n.tsx",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
@@ -156,6 +168,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button"
       ],
       "files": [
@@ -326,7 +339,8 @@
       ],
       "registryDependencies": [
         "@coreloom/theme",
-        "@coreloom/utils"
+        "@coreloom/utils",
+        "@coreloom/i18n"
       ],
       "files": [
         {
@@ -441,7 +455,8 @@
       ],
       "registryDependencies": [
         "@coreloom/theme",
-        "@coreloom/utils"
+        "@coreloom/utils",
+        "@coreloom/i18n"
       ],
       "files": [
         {
@@ -481,7 +496,8 @@
       ],
       "registryDependencies": [
         "@coreloom/theme",
-        "@coreloom/utils"
+        "@coreloom/utils",
+        "@coreloom/i18n"
       ],
       "files": [
         {
@@ -501,6 +517,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button"
       ],
       "files": [
@@ -542,6 +559,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/dialog",
         "@coreloom/kbd"
       ],
@@ -658,7 +676,8 @@
       ],
       "registryDependencies": [
         "@coreloom/theme",
-        "@coreloom/utils"
+        "@coreloom/utils",
+        "@coreloom/i18n"
       ],
       "files": [
         {
@@ -697,6 +716,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/input",
         "@coreloom/separator",
@@ -845,6 +865,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button"
       ],
       "files": [
@@ -904,6 +925,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/popover",
         "@coreloom/command"
       ],
@@ -926,6 +948,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/popover",
         "@coreloom/calendar"
       ],
@@ -948,6 +971,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/input",
         "@coreloom/select",
@@ -1053,6 +1077,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button"
       ],
       "files": [
@@ -1112,6 +1137,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/field",
         "@coreloom/input",
         "@coreloom/textarea",
@@ -1139,6 +1165,7 @@
       "title": "Coreloom UI — everything",
       "description": "Theme, utils and every Coreloom UI component in one install.",
       "registryDependencies": [
+        "@coreloom/i18n",
         "@coreloom/alert",
         "@coreloom/badge",
         "@coreloom/button",
@@ -1207,6 +1234,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/tooltip"
       ],
@@ -1228,6 +1256,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/command",
         "@coreloom/kbd"
@@ -1250,6 +1279,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/sonner",
         "@coreloom/tooltip"
@@ -1272,6 +1302,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/sheet"
       ],
@@ -1315,6 +1346,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/sidebar",
         "@coreloom/dropdown-menu",
         "@coreloom/avatar",
@@ -1363,6 +1395,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/alert",
         "@coreloom/button",
         "@coreloom/card",
@@ -1406,6 +1439,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/alert-dialog",
         "@coreloom/button",
         "@coreloom/field",
@@ -1439,6 +1473,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/badge",
         "@coreloom/card",
         "@coreloom/accordion",
@@ -1479,6 +1514,7 @@
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
+        "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/sheet",
         "@coreloom/tabs",

@@ -4,10 +4,13 @@ import { expect, test } from "@playwright/test"
 
 import { THEMES, openStory, stories } from "./stories"
 
+// Both themes in English, plus French in dark: translated labels must stay accessible too.
+const RUNS = [...THEMES.map((theme) => ({ theme, locale: "en" as const })), { theme: "dark" as const, locale: "fr" as const }]
+
 for (const story of stories()) {
-  for (const theme of THEMES) {
-    test(`a11y · ${story.title} · ${story.name} · ${theme}`, async ({ page }) => {
-      await openStory(page, story.id, theme)
+  for (const { theme, locale } of RUNS) {
+    test(`a11y · ${story.title} · ${story.name} · ${theme}${locale === "fr" ? " · fr" : ""}`, async ({ page }) => {
+      await openStory(page, story.id, theme, locale)
       const { violations } = await new AxeBuilder({ page })
         .include("#storybook-root")
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"])

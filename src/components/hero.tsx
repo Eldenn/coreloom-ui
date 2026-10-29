@@ -58,7 +58,7 @@ function Hero({
             <span className="truncate">
               <span className="text-primary-text">$</span>&nbsp; {command}
             </span>
-            <CopyButton value={command} label="Copy command" toastMessage="Command copied" />
+            <CopyButton value={command} />
           </div>
         )}
         {children && <div className="mt-14">{children}</div>}

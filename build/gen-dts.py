@@ -9,12 +9,13 @@ files = []
 for it in items.values():
     for f in it.get("files", []):
         p = f["path"]
-        if p.startswith("src/components/") and p.endswith(".tsx"):
+        if (p.startswith("src/components/") or p == "src/lib/i18n.tsx") and p.endswith(".tsx"):
             files.append((it, p))
 ui = sorted([x for x in files if "/ui/" in x[1]], key=lambda x: x[1])
 blocks = [x for x in files if "/ui/" not in x[1]]
 
 imports, sections, seen = [], [], set()
+seen_types = set()
 for it, path in ui + blocks:
     rel = path[len("src/"):-len(".tsx")] + ".d.ts"
     src = open(os.path.join(dts, rel)).read()
@@ -26,6 +27,16 @@ for it, path in ui + blocks:
                 imports.append(line)
             continue
         body.append(line)
+    # Local helper types repeated across files (IconLike…): keep the first declaration only.
+    kept = []
+    for line in body:
+        m = re.match(r"^(?:declare )?type (\w+)\b.*;$", line)
+        if m and not line.startswith("export"):
+            if m.group(1) in seen_types:
+                continue
+            seen_types.add(m.group(1))
+        kept.append(line)
+    body = kept
     text = "\n".join(body).strip()
     exports = re.findall(r"^export \{([^}]*)\}", text, re.M)
     names = [n.strip().replace("type ", "") for e in exports for n in e.split(",") if n.strip()]

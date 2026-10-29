@@ -1,9 +1,12 @@
+"use client"
+
 // Coreloom UI — ComponentPreview (docs block). Preview and Code tabs for a live example.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CodeBlock } from "@/components/code-block"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function ComponentPreview({
   code,
@@ -16,11 +19,12 @@ function ComponentPreview({
   align?: "center" | "start"
   className?: string
 }) {
+  const t = useCoreloomI18n().messages
   return (
     <Tabs defaultValue="preview" className={cn("mt-4", className)}>
       <TabsList variant="line">
-        <TabsTrigger value="preview">Preview</TabsTrigger>
-        <TabsTrigger value="code">Code</TabsTrigger>
+        <TabsTrigger value="preview">{t.docs.preview}</TabsTrigger>
+        <TabsTrigger value="code">{t.docs.code}</TabsTrigger>
       </TabsList>
       <TabsContent value="preview">
         <div

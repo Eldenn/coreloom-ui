@@ -9,12 +9,13 @@ import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useCoreloomI18n } from "@/lib/i18n"
 
 function DatePicker({
   value,
   defaultValue,
   onValueChange,
-  placeholder = "Pick a date",
+  placeholder,
   formatString = "PPP",
   locale,
   disabled,
@@ -40,6 +41,9 @@ function DatePicker({
   "aria-invalid"?: boolean | "true" | "false"
   "aria-label"?: string
 }) {
+  const i18n = useCoreloomI18n()
+  placeholder ??= i18n.messages.datePicker.placeholder
+  locale ??= i18n.dateLocale as Locale | undefined
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState<Date | undefined>(defaultValue)
   const current = value !== undefined ? value : inner

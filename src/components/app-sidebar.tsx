@@ -30,11 +30,23 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { NavUser, type NavUserProps } from "@/components/nav-user"
+import { useCoreloomI18n } from "@/lib/i18n"
+
+/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
+ *  server → client boundary in Next.js, components don't. */
+type IconLike = LucideIcon | React.ReactElement
+
+function renderIcon(icon: IconLike | undefined) {
+  if (!icon) return null
+  if (React.isValidElement(icon)) return icon
+  const Icon = icon as LucideIcon
+  return <Icon />
+}
 
 type NavItem = {
   title: string
   url: string
-  icon: LucideIcon
+  icon: IconLike
   isActive?: boolean
   badge?: React.ReactNode
 }
@@ -57,7 +69,7 @@ function NavLinks({ items, size }: { items: NavItem[]; size?: "sm" | "default" }
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild isActive={item.isActive} tooltip={item.title} size={size}>
             <a href={item.url} aria-current={item.isActive ? "page" : undefined}>
-              <item.icon />
+              {renderIcon(item.icon)}
               <span>{item.title}</span>
             </a>
           </SidebarMenuButton>
@@ -79,6 +91,7 @@ function WorkspaceSwitcher({
   onSelect?: (workspace: Workspace) => void
   onCreate?: () => void
 }) {
+  const t = useCoreloomI18n().messages
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -94,7 +107,7 @@ function WorkspaceSwitcher({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
-            <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+            <DropdownMenuLabel>{t.appShell.workspaces}</DropdownMenuLabel>
             {workspaces.map((workspace, i) => (
               <DropdownMenuItem key={workspace.name} onSelect={() => onSelect?.(workspace)}>
                 <WorkspaceLogo workspace={workspace} small />
@@ -107,7 +120,7 @@ function WorkspaceSwitcher({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={onCreate}>
                   <PlusIcon />
-                  New workspace
+                  {t.appShell.newWorkspace}
                 </DropdownMenuItem>
               </>
             )}
