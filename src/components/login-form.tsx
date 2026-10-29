@@ -1,18 +1,26 @@
 "use client"
 
 // Coreloom UI — LoginForm (auth block). Email + password sign-in with optional OAuth buttons.
-// Uncontrolled: onSubmit receives the values; you call your auth API and pass back `error`.
+// Built on @coreloom/form (TanStack Form): fields validate on change once left, and the button
+// shows a spinner while your `onSubmit` promise runs. Pass the API's answer back as `error`.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
+import { FieldGroup, FieldSeparator } from "@/components/ui/field"
+import { useAppForm } from "@/components/ui/form"
 
 type OAuthProvider = { id: string; label: string; icon?: React.ReactNode }
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function validateEmail(value: string) {
+  if (!value.trim()) return "Enter your email address."
+  if (!EMAIL.test(value.trim())) return "Enter a valid email address, like you@company.dev."
+  return undefined
+}
 
 function LoginForm({
   onSubmit,
@@ -20,25 +28,36 @@ function LoginForm({
   providers = [],
   pending = false,
   error,
+  defaultEmail = "",
   forgotPasswordHref = "#",
   signUpHref,
   title = "Sign in",
   description = "Welcome back. Enter your email to continue.",
   className,
 }: {
+  /** Called with valid values. Return a promise to keep the button busy until it settles. */
   onSubmit: (values: { email: string; password: string }) => unknown
   onProvider?: (providerId: string) => void
   /** OAuth buttons shown above the form ("Continue with GitHub"). */
   providers?: OAuthProvider[]
+  /** Busy state you control (e.g. during an OAuth redirect); the form's own submission also counts. */
   pending?: boolean
   /** Shown above the fields, e.g. "Wrong email or password." */
   error?: React.ReactNode
+  defaultEmail?: string
   forgotPasswordHref?: string
   signUpHref?: string
   title?: React.ReactNode
   description?: React.ReactNode
   className?: string
 }) {
+  const form = useAppForm({
+    defaultValues: { email: defaultEmail, password: "" },
+    onSubmit: async ({ value }) => {
+      await onSubmit({ email: value.email.trim(), password: value.password })
+    },
+  })
+
   return (
     <Card className={cn("gap-5 px-6 py-6", className)}>
       <CardHeader className="text-center">
@@ -47,10 +66,10 @@ function LoginForm({
       </CardHeader>
       <CardContent>
         <form
+          noValidate
           onSubmit={(e) => {
             e.preventDefault()
-            const data = new FormData(e.currentTarget)
-            onSubmit({ email: String(data.get("email") ?? ""), password: String(data.get("password") ?? "") })
+            void form.handleSubmit()
           }}
         >
           <FieldGroup className="gap-4">
@@ -72,23 +91,28 @@ function LoginForm({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Field data-invalid={error ? true : undefined}>
-              <FieldLabel htmlFor="login-email">Email</FieldLabel>
-              <Input id="login-email" name="email" type="email" autoComplete="email" placeholder="you@company.dev" required aria-invalid={error ? true : undefined} />
-            </Field>
-            <Field data-invalid={error ? true : undefined}>
-              <div className="flex items-center justify-between">
-                <FieldLabel htmlFor="login-password">Password</FieldLabel>
-                <a href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
-              <Input id="login-password" name="password" type="password" autoComplete="current-password" required aria-invalid={error ? true : undefined} />
-            </Field>
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending && <Spinner className="text-current" />}
-              {pending ? "Signing in" : "Sign in"}
-            </Button>
+            <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value) }}>
+              {(field) => <field.TextField label="Email" type="email" autoComplete="email" placeholder="you@company.dev" />}
+            </form.AppField>
+            <form.AppField name="password" validators={{ onChange: ({ value }) => (value ? undefined : "Enter your password.") }}>
+              {(field) => (
+                <field.TextField
+                  label="Password"
+                  type="password"
+                  autoComplete="current-password"
+                  labelAction={
+                    <a href={forgotPasswordHref} className="text-[13px] text-primary-text underline-offset-4 hover:underline">
+                      Forgot password?
+                    </a>
+                  }
+                />
+              )}
+            </form.AppField>
+            <form.AppForm>
+              <form.SubmitButton className="w-full" pending={pending} pendingLabel="Signing in">
+                Sign in
+              </form.SubmitButton>
+            </form.AppForm>
             {signUpHref && (
               <p className="m-0 text-center text-[13px] text-muted-foreground">
                 No account yet?{" "}
@@ -104,4 +128,4 @@ function LoginForm({
   )
 }
 
-export { LoginForm, type OAuthProvider }
+export { LoginForm, validateEmail, type OAuthProvider }

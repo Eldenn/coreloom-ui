@@ -1,16 +1,15 @@
 "use client"
 
 // Coreloom UI — VerifyForm (auth block). Enter the 6-digit code sent by email or SMS.
-// Submits by itself once the last digit is in; the button stays for those who wait.
+// Built on @coreloom/form (TanStack Form, OTPField): submits by itself once the last digit is in;
+// the button stays for those who wait.
 import * as React from "react"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
-import { Spinner } from "@/components/ui/spinner"
+import { useAppForm } from "@/components/ui/form"
 
 function VerifyForm({
   onSubmit,
@@ -22,6 +21,7 @@ function VerifyForm({
   title = "Check your inbox",
   className,
 }: {
+  /** Called with the 6 digits. Return a promise to keep the form busy until it settles. */
   onSubmit: (code: string) => unknown
   onResend?: () => void
   /** Where the code went, masked: "m•••@coreloom.dev". */
@@ -33,8 +33,13 @@ function VerifyForm({
   title?: React.ReactNode
   className?: string
 }) {
-  const [code, setCode] = React.useState("")
   const [wait, setWait] = React.useState(resendIn)
+  const form = useAppForm({
+    defaultValues: { code: "" },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value.code)
+    },
+  })
 
   React.useEffect(() => {
     if (wait <= 0) return
@@ -52,41 +57,36 @@ function VerifyForm({
       </CardHeader>
       <CardContent>
         <form
+          noValidate
           className="flex flex-col items-center gap-5"
           onSubmit={(e) => {
             e.preventDefault()
-            if (code.length === 6) onSubmit(code)
+            void form.handleSubmit()
           }}
         >
-          <Field data-invalid={error ? true : undefined} className="w-auto items-center">
-            <FieldLabel htmlFor="verify-code" className="sr-only">
-              Verification code
-            </FieldLabel>
-            <InputOTP
-              id="verify-code"
-              maxLength={6}
-              pattern={REGEXP_ONLY_DIGITS}
-              autoComplete="one-time-code"
-              autoFocus
-              value={code}
-              onChange={setCode}
-              onComplete={(value: string) => onSubmit(value)}
-              disabled={pending}
-            >
-              <InputOTPGroup>
-                {[0, 1, 2].map((i) => <InputOTPSlot key={i} index={i} aria-invalid={error ? true : undefined} />)}
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                {[3, 4, 5].map((i) => <InputOTPSlot key={i} index={i} aria-invalid={error ? true : undefined} />)}
-              </InputOTPGroup>
-            </InputOTP>
-            {error && <FieldError className="text-center">{error}</FieldError>}
-          </Field>
-          <Button type="submit" className="w-full" disabled={pending || code.length < 6}>
-            {pending && <Spinner className="text-current" />}
-            {pending ? "Verifying" : "Verify"}
-          </Button>
+          {error && (
+            <Alert variant="destructive" className="w-full">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : "Enter the 6 digits of the code.") }}>
+            {(field) => (
+              <field.OTPField
+                label="Verification code"
+                hideLabel
+                pattern={REGEXP_ONLY_DIGITS}
+                autoFocus
+                submitOnComplete
+                disabled={pending}
+                className="w-auto items-center"
+              />
+            )}
+          </form.AppField>
+          <form.AppForm>
+            <form.SubmitButton className="w-full" pending={pending} pendingLabel="Verifying">
+              Verify
+            </form.SubmitButton>
+          </form.AppForm>
           {onResend && (
             <p className="m-0 text-center text-[13px] text-muted-foreground">
               Didn’t get it?{" "}

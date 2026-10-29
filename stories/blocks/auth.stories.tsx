@@ -1,3 +1,4 @@
+import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Icon } from "@/components/ui/icon"
 
@@ -26,6 +27,26 @@ export const SignIn: Story = {
 export const SignInError: Story = {
   args: { error: "Wrong email or password." },
   render: (args) => <AuthLayout brand={brand}><LoginForm {...args} /></AuthLayout>,
+}
+
+/** Try it: the form validates on change once a field is left; any password but "coreloom" fails after a short wait. */
+export const SignInFlow: Story = {
+  render: (args) => {
+    const [error, setError] = React.useState<string>()
+    return (
+      <AuthLayout brand={brand}>
+        <LoginForm
+          {...args}
+          error={error}
+          onSubmit={async ({ password }) => {
+            setError(undefined)
+            await new Promise((r) => setTimeout(r, 900))
+            if (password !== "coreloom") setError("Wrong email or password.")
+          }}
+        />
+      </AuthLayout>
+    )
+  },
 }
 
 export const SignUp: Story = {
