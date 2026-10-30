@@ -20,6 +20,18 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ### Added
 
+- AI components: `PromptInput` (Enter sends, Shift + Enter breaks the line, Send becomes Stop while
+  streaming, attachments), `Markdown` (model output with GFM tables, task lists and code blocks
+  with Copy; raw HTML skipped), `Reasoning` (thinking folded under "Thought for N s") and
+  `ToolCall` (a tool's state, input, output or error, and Allow / Deny when it needs approval).
+- AI blocks: `ai-chat` (`Chat` with reasoning, tool calls, sources, copy, regenerate, feedback,
+  a live log and stick-to-bottom scrolling; `ConversationList` with search, day groups, rename and
+  delete), `ai-agents` (`AgentList`, `AgentEditor` with `{{variables}}` and ask-first tools),
+  `ai-runs` (`RunList`, `RunTrace` waterfall), `ai-playground` and `ai-knowledge`
+  (`KnowledgeBase`, `RetrievalTest`). `@coreloom/ai` types read the AI SDK's `UIMessage` parts as
+  they are (checked against `ai` 7 in the unit tests); nothing depends on the SDK or calls an API.
+- Starter: Assistant, Agents, Runs, Playground and Knowledge pages on in-memory data, with a
+  simulated `useChat` (`src/lib/use-demo-chat.ts`); the README shows the swap to `@ai-sdk/react`.
 - New logo: Coreloom's ginger cat, redrawn on a 256 grid from three shapes (head, eyes cut out, cyan
   slit pupils) so it holds at 16 px and in one colour; dark, light, one-colour, small-size and tile
   versions with lockups. Storybook's sidebar and tab and the starter's brand and favicon use it.

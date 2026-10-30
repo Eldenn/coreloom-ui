@@ -26,11 +26,43 @@ https://eldenn.github.io/coreloom-ui/starter/
 | Project | `src/routes/_app/projects/$projectId.tsx` | Loader with `notFound()`, breadcrumb from loader data; notes in `RichTextEditor`, loaded with `React.lazy` so Tiptap downloads only here |
 | Deployments | `src/routes/_app/deployments.tsx` | `DataTable` driven by the API (sort, search, pages) with the query in the URL |
 | Settings | `src/routes/_app/settings.tsx` | `SettingsLayout` with one URL per section: a form, appearance (theme and `AccentPicker`), members, billing, notification switches, the danger zone |
+| Assistant | `src/routes/_app/assistant.tsx` | `Chat` and `ConversationList`, the conversation in the URL (`?c=…`); answers streamed by `useDemoChat`, with reasoning, a tool call and approval for a rollback |
+| Agents | `src/routes/_app/agents/` | `AgentList`, then `AgentEditor` and the agent's runs |
+| Runs | `src/routes/_app/runs/` | `RunList`, then `RunTrace` for one run |
+| Playground | `src/routes/_app/playground.tsx` | `Playground`, variants streamed side by side |
+| Knowledge | `src/routes/_app/knowledge.tsx` | `KnowledgeBase` with an indexing queue the query polls, `RetrievalTest` |
 | 404 and errors | `src/routes/__root.tsx` | `NotFoundPage`, `ServerErrorPage` with retry |
 
 Around them: the app shell (sidebar, breadcrumbs, ⌘K palette, notifications, theme menu, language
 menu), English and French, light / dark / system theme and the accent without a flash on load, and
 the TanStack devtools in development.
+
+## AI pages
+
+Nothing calls a model: `src/lib/ai-api.ts` holds agents, runs, documents and conversations in
+memory, and `src/lib/use-demo-chat.ts` simulates an answer (it thinks, calls a tool, streams text).
+That hook has the AI SDK's `useChat` shape, so moving to a real model is a swap in
+`src/routes/_app/assistant.tsx`:
+
+```tsx
+import { useChat } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
+
+const chat = useChat({ id, messages: initialMessages, transport: new DefaultChatTransport({ api: "/api/chat" }) })
+
+// The SDK takes attachments as a FileList: wrap the File[] the composer hands over.
+const onSend = ({ text, files }: { text: string; files: File[] }) => {
+  const list = new DataTransfer()
+  files.forEach((file) => list.items.add(file))
+  void chat.sendMessage({ text, files: list.files })
+}
+// <Chat messages={chat.messages} status={chat.status} error={chat.error} onSend={onSend} onStop={chat.stop}
+//       onRegenerate={chat.regenerate} onToolApprovalResponse={chat.addToolApprovalResponse} … />
+```
+
+The endpoint is yours (`streamText(…).toUIMessageStreamResponse()` on your server); the blocks
+only render what it streams. Replace the functions in `ai-api.ts` with calls to your backend the
+same way as `api.ts`.
 
 ## How it fits together
 

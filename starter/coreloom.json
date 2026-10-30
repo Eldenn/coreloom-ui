@@ -11,6 +11,11 @@
     "error-pages",
     "notifications",
     "team",
-    "billing"
+    "billing",
+    "ai-chat",
+    "ai-agents",
+    "ai-runs",
+    "ai-playground",
+    "ai-knowledge"
   ]
 }

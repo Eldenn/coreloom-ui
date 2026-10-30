@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../blocks/ai-workspace.stories"
+import guide from "./AiRuns.md?raw"
+
+<Meta title="Guidelines/AI/Runs and Traces" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Trace} />

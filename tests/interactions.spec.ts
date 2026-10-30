@@ -527,3 +527,126 @@ test.describe("rich text editor", () => {
     await expect(page.locator("[data-slot=field-error]")).toHaveCount(0)
   })
 })
+
+test.describe("AI components", () => {
+  test("the prompt sends on Enter, breaks lines on Shift + Enter, and turns Send into Stop", async ({ page }) => {
+    await open(page, "components-ai--prompt")
+    const box = page.getByRole("textbox", { name: "Message" })
+    await expect(box).toHaveAccessibleDescription(/Enter to send/)
+    await box.click()
+    await page.keyboard.press("Enter")
+    await expect(page.getByRole("list", { name: "Sent" }).getByRole("listitem")).toHaveCount(0)
+    await page.keyboard.type("First line")
+    await page.keyboard.press("Shift+Enter")
+    await page.keyboard.type("second line")
+    await expect(box).toHaveValue("First line\nsecond line")
+    await page.keyboard.press("Enter")
+    await expect(page.getByRole("list", { name: "Sent" })).toContainText("First line")
+    await expect(box).toHaveValue("")
+    const stop = page.getByRole("button", { name: "Stop" })
+    await expect(stop).toBeVisible()
+    await stop.click()
+    await expect(page.getByRole("button", { name: "Send" })).toBeVisible()
+  })
+
+  test("a tool waiting for approval runs only once allowed", async ({ page }) => {
+    await open(page, "components-ai--tool-calls")
+    const card = page.locator('[data-slot="tool-call"]').filter({ hasText: "Roll back production" })
+    await expect(card).toContainText("Needs your approval")
+    await card.getByRole("button", { name: "Allow" }).click()
+    await expect(card).toContainText("Done")
+    await expect(card.getByRole("button", { name: "Allow" })).toHaveCount(0)
+    // A finished tool opens to show what went in and out.
+    const done = page.locator('[data-slot="tool-call"]').filter({ hasText: "searchDeployments" })
+    const trigger = done.getByRole("button").first()
+    await expect(trigger).toHaveAttribute("aria-expanded", "false")
+    await trigger.click()
+    await expect(done).toContainText("dpl_8f2k")
+  })
+
+  test("reasoning folds and unfolds", async ({ page }) => {
+    await open(page, "components-ai--reasoning-story")
+    const done = page.getByRole("button", { name: "Thought for 6 s" })
+    await expect(done).toHaveAttribute("aria-expanded", "false")
+    await done.click()
+    await expect(done).toHaveAttribute("aria-expanded", "true")
+    await expect(page.getByText("a type error in settings.tsx")).toBeVisible()
+  })
+})
+
+test.describe("AI blocks", () => {
+  test("chat: the conversation is a log, and feedback is a pressed toggle", async ({ page }) => {
+    await open(page, "blocks-ai-chat--conversation-story")
+    await expect(page.getByRole("log", { name: "Conversation" })).toBeVisible()
+    const bad = page.getByRole("button", { name: "Bad response" }).last()
+    await bad.click()
+    await expect(bad).toHaveAttribute("aria-pressed", "true")
+    await expect(page.getByRole("button", { name: "Good response" }).last()).toHaveAttribute("aria-pressed", "false")
+  })
+
+  test("conversations: search, rename in place, delete after asking", async ({ page }) => {
+    await open(page, "blocks-ai-chat--with-history")
+    const search = page.getByRole("textbox", { name: "Search conversations" })
+    await search.fill("incident")
+    await expect(page.getByText("Incident 42 postmortem")).toBeVisible()
+    await expect(page.getByText("Onboarding checklist")).toHaveCount(0)
+    await search.fill("")
+
+    await page.getByRole("button", { name: "Actions for Release notes for v0.8" }).click()
+    await page.getByRole("menuitem", { name: "Rename" }).click()
+    const title = page.getByRole("textbox", { name: "Conversation title" })
+    await title.fill("Release notes for v0.9")
+    await title.press("Enter")
+    await expect(page.getByText("Release notes for v0.9")).toBeVisible()
+
+    await page.getByRole("button", { name: "Actions for Onboarding checklist" }).click()
+    await page.getByRole("menuitem", { name: "Delete" }).click()
+    const dialog = page.getByRole("alertdialog", { name: "Delete this conversation?" })
+    await dialog.getByRole("button", { name: "Delete" }).click()
+    await expect(page.getByText("Onboarding checklist")).toHaveCount(0)
+  })
+
+  test("agent settings: required fields, variables, and sensitive tools ask first", async ({ page }) => {
+    await open(page, "blocks-ai-workspace--agent-settings")
+    const name = page.getByRole("textbox", { name: "Name" })
+    await name.fill("")
+    await name.blur()
+    await expect(page.getByText("Give the agent a name.")).toBeVisible()
+    await page.getByRole("textbox", { name: "Instructions" }).fill("Answer {{customer}} about {{plan}}.")
+    await expect(page.getByText("customer", { exact: true }).or(page.getByText("{{customer}}", { exact: true })).first()).toBeVisible()
+
+    await page.getByRole("checkbox", { name: /createTicket/ }).click()
+    await expect(page.getByRole("switch", { name: "Ask first: createTicket" })).toBeChecked()
+  })
+
+  test("trace: the failed step is selected first; another one shows its details", async ({ page }) => {
+    await open(page, "blocks-ai-workspace--trace")
+    await expect(page.getByRole("button", { name: /rollback/, pressed: true })).toBeVisible()
+    await expect(page.getByText("Rollback refused")).toBeVisible()
+    await page.getByRole("button", { name: /searchDeployments/ }).click()
+    await expect(page.getByRole("button", { name: /searchDeployments/, pressed: true })).toBeVisible()
+    await expect(page.getByText("TS2339").first()).toBeVisible()
+  })
+
+  test("playground: Run all streams into every variant; variants come and go", async ({ page }) => {
+    await open(page, "blocks-ai-workspace--playground-story")
+    await page.getByRole("button", { name: "Add a variant" }).click()
+    await expect(page.getByRole("button", { name: "Add a variant" })).toBeDisabled()
+    await page.getByRole("button", { name: "Remove variant 3" }).click()
+    await page.getByRole("button", { name: "Run all" }).click()
+    // Both answers stream at once: allow for a busy machine.
+    await expect(page.getByText("it is now called").first()).toBeVisible({ timeout: 15_000 })
+  })
+
+  test("knowledge: removing asks first; retrieval shows scored passages", async ({ page }) => {
+    await open(page, "blocks-ai-workspace--knowledge")
+    await page.getByRole("button", { name: "Actions for Scanned contract.pdf" }).click()
+    await page.getByRole("menuitem", { name: "Remove" }).click()
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove" }).click()
+    await expect(page.getByRole("cell", { name: "Scanned contract.pdf" })).toHaveCount(0)
+
+    await page.getByRole("textbox", { name: "Question" }).fill("How do I roll back?")
+    await page.getByRole("button", { name: "Search" }).click()
+    await expect(page.getByText("86%").or(page.getByText("86 %"))).toBeVisible()
+  })
+})
