@@ -1,0 +1,37 @@
+<!-- @dsCard group="Forms" height=480 subtitle="Chips · searchable checklist · select all / clear" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.MultiSelect || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { MultiSelect, Field, FieldLabel, FieldDescription } = UI;
+      const regions = ['Paris (cdg1)', 'Frankfurt (fra1)', 'London (lhr1)', 'Washington (iad1)', 'San Francisco (sfo1)', 'Tokyo (hnd1)'].map((label) => ({ value: label.slice(-5, -1), label }));
+      function Demo() {
+        const [value, setValue] = React.useState(['cdg1', 'fra1', 'lhr1', 'iad1']);
+        const ref = React.useRef(null);
+        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button'); if (b) b.click(); }, []);
+        return h('div', { ref, style: { maxWidth: 360 } }, h(Field, null,
+          h(FieldLabel, { htmlFor: 'regions' }, 'Regions'),
+          h(MultiSelect, { id: 'regions', options: regions, value, onValueChange: setValue }),
+          h(FieldDescription, null, 'Deploys go to every region you pick.')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

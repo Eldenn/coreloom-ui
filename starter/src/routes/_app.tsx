@@ -1,7 +1,7 @@
 // The signed-in area: every route under src/routes/_app/ renders inside this app shell, and
 // signed-out visitors are sent to /login first (then back where they were going).
 import { Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouterState } from "@tanstack/react-router"
-import { FolderIcon, HomeIcon, LanguagesIcon, LifeBuoyIcon, PlusIcon, SettingsIcon } from "lucide-react"
+import { FolderIcon, HomeIcon, LanguagesIcon, LifeBuoyIcon, PlusIcon, RocketIcon, SettingsIcon } from "lucide-react"
 
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
@@ -80,6 +80,7 @@ function AppLayout() {
           items: [
             { title: t.nav.overview, url: "/", icon: HomeIcon, isActive: isActive("/") },
             { title: t.nav.projects, url: "/projects", icon: FolderIcon, isActive: isActive("/projects") },
+            { title: t.nav.deployments, url: "/deployments", icon: RocketIcon, isActive: isActive("/deployments") },
             { title: t.nav.settings, url: "/settings", icon: SettingsIcon, isActive: isActive("/settings") },
           ],
         },
@@ -92,6 +93,7 @@ function AppLayout() {
           items: [
             { label: t.nav.overview, icon: HomeIcon, onSelect: () => void navigate({ to: "/" }) },
             { label: t.nav.projects, icon: FolderIcon, onSelect: () => void navigate({ to: "/projects" }) },
+            { label: t.nav.deployments, icon: RocketIcon, onSelect: () => void navigate({ to: "/deployments" }) },
             { label: t.nav.settings, icon: SettingsIcon, onSelect: () => void navigate({ to: "/settings" }) },
           ],
         },

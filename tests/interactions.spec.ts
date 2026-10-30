@@ -232,3 +232,108 @@ test.describe("theme and language", () => {
     await expect(page.getByText(/\d,\d\s?Mo/).first()).toBeVisible()
   })
 })
+
+const BUSINESS = "components-forms-multi-select-money-phone-typed-dates--"
+
+test.describe("business inputs", () => {
+  test("multi-select: search, toggle, select all, clear, with the count announced", async ({ page }) => {
+    await open(page, `${BUSINESS}multi-select-story`)
+    const trigger = page.getByRole("combobox", { name: /Regions|Paris/ })
+    await trigger.click()
+    await page.keyboard.type("tok")
+    await page.keyboard.press("Enter")
+    await expect(page.getByRole("status").filter({ hasText: "selected" })).toHaveText("5 selected")
+    await page.getByPlaceholder("Search…").fill("")
+    await page.getByRole("button", { name: "Select all" }).click()
+    await expect(page.getByRole("status").filter({ hasText: "selected" })).toHaveText("6 selected")
+    await page.getByRole("button", { name: "Clear" }).click()
+    await page.keyboard.press("Escape")
+    await expect(trigger).toHaveText(/Select…/)
+  })
+
+  test("money: typed the locale's way, rounded and formatted on blur", async ({ page }) => {
+    await open(page, `${BUSINESS}money-input-story`)
+    const budget = page.getByLabel("Monthly budget")
+    await budget.fill("2500.567")
+    await budget.blur()
+    await expect(budget).toHaveValue("2,500.57")
+    await expect(page.getByText("Value: 2500.57")).toBeVisible()
+    await budget.fill("-40")
+    await budget.blur()
+    await expect(budget).toHaveValue("40.00")
+  })
+
+  test("money in French reads commas and spaces", async ({ page }) => {
+    await open(page, `${BUSINESS}money-input-story`, "fr")
+    const budget = page.getByLabel("Monthly budget")
+    await budget.fill("1 234,5")
+    await budget.blur()
+    await expect(page.getByText("Value: 1234.5")).toBeVisible()
+  })
+
+  test("phone: national digits become E.164; a pasted international number picks its country", async ({ page }) => {
+    await open(page, `${BUSINESS}phone-input-story`)
+    const phone = page.getByLabel("Mobile")
+    const sent = page.locator("#storybook-root p code")
+    await phone.fill("07 98 76 54 32")
+    await expect(sent).toHaveText("+33798765432")
+    await phone.fill("+44 20 7946 0958")
+    await expect(sent).toHaveText("+442079460958")
+    await expect(page.getByRole("button", { name: /Country: United Kingdom/ })).toBeVisible()
+    await page.getByRole("button", { name: /Country:/ }).click()
+    await page.keyboard.type("belg")
+    await page.keyboard.press("Enter")
+    await expect(phone).toBeFocused()
+    await expect(sent).toHaveText(/^\+32/)
+  })
+
+  test("typed date: read in the locale's order, impossible dates rejected", async ({ page }) => {
+    await open(page, `${BUSINESS}typed-date`, "fr")
+    const input = page.getByLabel("Due date")
+    await expect(input).toHaveValue("03/11/2026")
+    await input.fill("14.10.26")
+    await input.blur()
+    await expect(input).toHaveValue("14/10/2026")
+    await expect(page.getByText("Wed Oct 14 2026")).toBeVisible()
+    await input.fill("31/02/2026")
+    await input.blur()
+    await expect(input).toHaveAttribute("aria-invalid", "true")
+    await expect(page.getByText("Saisissez une date au format jj/mm/aaaa.")).toBeVisible()
+    await page.getByRole("button", { name: "Choisir dans un calendrier" }).click()
+    await page.getByRole("button", { name: /20 octobre 2026/ }).click()
+    await expect(input).toHaveValue("20/10/2026")
+    await expect(input).not.toHaveAttribute("aria-invalid", "true")
+  })
+
+  test("the form validates every new field", async ({ page }) => {
+    await open(page, `${BUSINESS}in-a-form`)
+    await page.getByRole("button", { name: "Save plan" }).click()
+    await expect(page.locator("[data-slot=field-error]")).toHaveText([
+      "Pick at least one region.",
+      "Enter a budget.",
+      "Enter a complete phone number.",
+      "Enter a start date.",
+    ])
+  })
+})
+
+test.describe("server-driven table", () => {
+  test("sorting, search and paging go through the query", async ({ page }) => {
+    await open(page, "components-tables--server-driven")
+    const table = page.locator("[data-slot=data-table] table")
+    await expect(page.getByText("137 rows")).toBeVisible()
+    await expect(page.getByText("Page 1 of 14")).toBeVisible()
+    await page.getByRole("button", { name: "Next page" }).click()
+    await expect(page.getByText("Page 2 of 14")).toBeVisible()
+    await page.getByRole("button", { name: "Sort by Duration" }).click()
+    await expect(table).not.toHaveAttribute("aria-busy", "true")
+    await expect(page.getByText("Page 1 of 14")).toBeVisible()
+    // Numbers sort largest first on the first click (TanStack's default for numeric columns).
+    const durations = (await table.locator("tbody tr td:nth-child(4)").allInnerTexts()).map((d) => parseInt(d, 10))
+    expect(durations).toEqual([...durations].sort((x, y) => y - x))
+    await page.getByPlaceholder("Search deployments…").fill("docs")
+    await expect(page.getByText(/^2\d rows$/)).toBeVisible()
+    await expect(table).not.toHaveAttribute("aria-busy", "true")
+    for (const cell of await table.locator("tbody tr td:nth-child(2)").allInnerTexts()) expect(cell).toBe("docs")
+  })
+})

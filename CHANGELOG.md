@@ -20,6 +20,17 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ### Added
 
+- `MultiSelect`: several values from a list, chips in the trigger, a searchable checklist with
+  select all / clear and an optional maximum. Form field: `MultiSelectField`.
+- `MoneyInput`: an amount typed the locale's way ("1 234,50"), the currency symbol where the locale
+  puts it, a `number | null` value rounded to the currency's decimals. Form field: `MoneyField`.
+- `PhoneInput`: a searchable country picker and the national number in its usual grouping; the
+  value is E.164, `isValidPhone()` checks it. Form field: `PhoneField`.
+- `DatePicker` `typing`: a text input that reads dates in the locale's order, with the calendar a
+  button away; impossible dates are refused with the expected format. `DateField` passes it on.
+- `DataTable` `server`: the API sorts, searches and pages; `query` / `onQueryChange` / `rowCount`
+  / `loading`. Starter: a Deployments page keeps that query in the URL and fetches it with
+  TanStack Query.
 - The starter runs as a live demo at https://eldenn.github.io/coreloom-ui/starter/, deployed with
   Storybook. It honours Vite's `base` as the router's basepath, so it also works under a sub-path.
 - `CardTitle` takes `asChild` to render your own heading element with the card title's style.

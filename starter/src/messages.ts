@@ -3,7 +3,7 @@
 // Add a language: copy `en`, translate it, and register it in src/lib/locale.tsx.
 
 export const en = {
-  nav: { overview: "Overview", projects: "Projects", settings: "Settings", docs: "Design system" },
+  nav: { overview: "Overview", projects: "Projects", deployments: "Deployments", settings: "Settings", docs: "Design system" },
   shell: { plan: "Pro workspace", platform: "Platform", goTo: "Go to", actions: "Actions", language: "Language" },
   login: {
     wrongCredentials: "Wrong email or password.",
@@ -45,6 +45,11 @@ export const en = {
     region: "Region",
     framework: "Framework",
     updated: "Updated",
+  },
+  deployments: {
+    title: "Deployments",
+    description: "Every build across projects. Sorting, search and paging run on the server.",
+    search: "Search by project, commit or branch…",
   },
   status: { ready: "Ready", building: "Building", failed: "Failed" },
   regions: { cdg1: "Paris (cdg1)", fra1: "Frankfurt (fra1)", iad1: "Washington (iad1)" },
@@ -105,7 +110,7 @@ export const en = {
 export type Messages = typeof en
 
 export const fr: Messages = {
-  nav: { overview: "Vue d'ensemble", projects: "Projets", settings: "Paramètres", docs: "Design system" },
+  nav: { overview: "Vue d'ensemble", projects: "Projets", deployments: "Déploiements", settings: "Paramètres", docs: "Design system" },
   shell: { plan: "Espace Pro", platform: "Plateforme", goTo: "Aller à", actions: "Actions", language: "Langue" },
   login: {
     wrongCredentials: "E-mail ou mot de passe incorrect.",
@@ -147,6 +152,11 @@ export const fr: Messages = {
     region: "Région",
     framework: "Framework",
     updated: "Mis à jour",
+  },
+  deployments: {
+    title: "Déploiements",
+    description: "Tous les builds, tous projets confondus. Tri, recherche et pagination côté serveur.",
+    search: "Rechercher un projet, un commit, une branche…",
   },
   status: { ready: "Prêt", building: "En cours", failed: "Échec" },
   regions: { cdg1: "Paris (cdg1)", fra1: "Francfort (fra1)", iad1: "Washington (iad1)" },

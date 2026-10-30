@@ -53,15 +53,45 @@ export async function getProject(id: string): Promise<Project | null> {
 
 export async function listDeployments(projectId: string): Promise<Deployment[]> {
   await wait()
-  const seed = projectId.length
+  return listDeploymentsNow(projectId)
+}
+
+function listDeploymentsNow(projectId: string): Deployment[] {
+  const seed = projectId.length + projectId.charCodeAt(projectId.length - 1)
   return Array.from({ length: 6 }, (_, i) => ({
     id: `dpl_${projectId.slice(4)}${i}`,
     commit: ((seed * 7919 + i * 104729) % 0xfffffff).toString(16).padStart(7, "0"),
     branch: i % 3 === 0 ? "main" : `feature/${["auth", "billing", "search"][i % 3]}`,
     status: i === 1 && seed % 2 ? "failed" : "ready",
-    createdAt: hoursAgo(i * 9 + 2),
+    createdAt: hoursAgo(i * 9 + 2 + (seed % 7)),
     duration: 28 + ((seed + i * 13) % 40),
   }))
+}
+
+export type DeploymentRow = Deployment & { projectId: string; project: string }
+
+export type DeploymentQuery = {
+  page: number
+  pageSize: number
+  /** "createdAt" | "duration" | "project", with desc. */
+  sort?: { id: string; desc: boolean }
+  search: string
+}
+
+/** Every deployment across projects, a page at a time — the server sorts, filters and slices. */
+export async function searchDeployments(query: DeploymentQuery): Promise<{ rows: DeploymentRow[]; total: number }> {
+  await wait()
+  const rows: DeploymentRow[] = []
+  for (const project of projects) {
+    for (const d of listDeploymentsNow(project.id)) rows.push({ ...d, projectId: project.id, project: project.name })
+  }
+  const q = query.search.trim().toLowerCase()
+  let matching = q ? rows.filter((r) => r.project.includes(q) || r.commit.includes(q) || r.branch.includes(q)) : rows
+  const { id, desc } = query.sort ?? { id: "createdAt", desc: true }
+  const key = (r: DeploymentRow) => (id === "duration" ? r.duration : id === "project" ? r.project : r.createdAt)
+  matching = [...matching].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0) * (desc ? -1 : 1))
+  const start = (query.page - 1) * query.pageSize
+  return { rows: matching.slice(start, start + query.pageSize), total: matching.length }
 }
 
 export class ApiError extends Error {
