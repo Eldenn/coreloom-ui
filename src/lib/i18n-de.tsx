@@ -101,6 +101,8 @@ export const de: Messages = {
     lightOption: "Hell",
     darkOption: "Dunkel",
     systemOption: "System",
+    accent: "Akzentfarbe",
+    accents: { cyan: "Cyan", blue: "Blau", violet: "Violett", amber: "Bernstein", rose: "Rosé" },
   },
   copy: { copy: "Kopieren", copied: "In die Zwischenablage kopiert", failed: "Kopieren nicht möglich – markiere den Text." },
   commandMenu: { trigger: "Suchen…", placeholder: "Befehl eingeben oder suchen…", empty: "Nichts gefunden." },
@@ -153,6 +155,30 @@ export const de: Messages = {
       notReceived: "Nichts angekommen?",
       resendIn: (seconds) => `Erneut senden in ${seconds} s`,
       resend: "Code erneut senden",
+    },
+    forgot: {
+      title: "Passwort zurücksetzen",
+      description: "Gib die E-Mail-Adresse deines Kontos ein. Wir senden dir einen Link, um ein neues Passwort festzulegen.",
+      email: "E-Mail",
+      submit: "Link senden",
+      submitting: "Wird gesendet",
+      sentTitle: "Sieh in dein Postfach",
+      sentTo: (email) => (
+        <>
+          Falls ein Konto <span className="text-foreground">{email}</span> verwendet, ist ein Link zum Zurücksetzen des Passworts unterwegs.
+        </>
+      ),
+      otherEmail: "Andere E-Mail-Adresse verwenden",
+      backToSignIn: "Zurück zur Anmeldung",
+    },
+    reset: {
+      title: "Neues Passwort festlegen",
+      description: "Damit meldest du dich ab jetzt an.",
+      password: "Neues Passwort",
+      confirm: "Passwort bestätigen",
+      mismatch: "Die beiden Passwörter stimmen nicht überein.",
+      submit: "Passwort speichern",
+      submitting: "Wird gespeichert",
     },
   },
   dashboard: { activity: "Letzte Aktivität", noActivity: "Noch keine Aktivität." },

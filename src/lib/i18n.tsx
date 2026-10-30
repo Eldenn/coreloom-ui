@@ -120,6 +120,8 @@ const en = {
     lightOption: "Light",
     darkOption: "Dark",
     systemOption: "System",
+    accent: "Accent colour",
+    accents: { cyan: "Cyan", blue: "Blue", violet: "Violet", amber: "Amber", rose: "Rose" },
   },
   copy: { copy: "Copy", copied: "Copied to clipboard", failed: "Couldn’t copy — select the text instead." },
   commandMenu: { trigger: "Search…", placeholder: "Type a command or search…", empty: "No results found." },
@@ -172,6 +174,30 @@ const en = {
       notReceived: "Didn’t get it?",
       resendIn: (seconds: number) => `Resend in ${seconds}s`,
       resend: "Resend code",
+    },
+    forgot: {
+      title: "Reset your password",
+      description: "Enter your account’s email and we’ll send you a link to choose a new password.",
+      email: "Email",
+      submit: "Send reset link",
+      submitting: "Sending",
+      sentTitle: "Check your inbox",
+      sentTo: (email: Text): Text => (
+        <>
+          If an account uses <span className="text-foreground">{email}</span>, a link to reset its password is on its way.
+        </>
+      ),
+      otherEmail: "Use another email",
+      backToSignIn: "Back to sign in",
+    },
+    reset: {
+      title: "Choose a new password",
+      description: "You’ll use it to sign in from now on.",
+      password: "New password",
+      confirm: "Confirm the password",
+      mismatch: "The two passwords don’t match.",
+      submit: "Save password",
+      submitting: "Saving",
     },
   },
   dashboard: { activity: "Recent activity", noActivity: "No activity yet." },
@@ -434,6 +460,8 @@ const fr: Messages = {
     lightOption: "Clair",
     darkOption: "Sombre",
     systemOption: "Système",
+    accent: "Couleur d’accent",
+    accents: { cyan: "Cyan", blue: "Bleu", violet: "Violet", amber: "Ambre", rose: "Rose" },
   },
   copy: { copy: "Copier", copied: "Copié dans le presse-papiers", failed: "Copie impossible : sélectionnez le texte." },
   commandMenu: { trigger: "Rechercher…", placeholder: "Tapez une commande ou recherchez…", empty: "Aucun résultat." },
@@ -486,6 +514,30 @@ const fr: Messages = {
       notReceived: "Rien reçu ?",
       resendIn: (seconds) => `Renvoyer dans ${seconds} s`,
       resend: "Renvoyer le code",
+    },
+    forgot: {
+      title: "Réinitialiser le mot de passe",
+      description: "Saisissez l’e-mail de votre compte : nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+      email: "E-mail",
+      submit: "Envoyer le lien",
+      submitting: "Envoi",
+      sentTitle: "Consultez votre boîte de réception",
+      sentTo: (email) => (
+        <>
+          Si un compte utilise <span className="text-foreground">{email}</span>, un lien pour réinitialiser son mot de passe est en route.
+        </>
+      ),
+      otherEmail: "Utiliser une autre adresse",
+      backToSignIn: "Retour à la connexion",
+    },
+    reset: {
+      title: "Choisir un nouveau mot de passe",
+      description: "Vous l’utiliserez désormais pour vous connecter.",
+      password: "Nouveau mot de passe",
+      confirm: "Confirmez le mot de passe",
+      mismatch: "Les deux mots de passe ne correspondent pas.",
+      submit: "Enregistrer",
+      submitting: "Enregistrement",
     },
   },
   dashboard: { activity: "Activité récente", noActivity: "Aucune activité pour l’instant." },

@@ -14,6 +14,10 @@ DARK_BG=['#15171c','#1a1d23','#21242b','#0d0f13','#0a0b0e']   # bg-1, surface-1/
 LIGHT_BG=['#ffffff','#f7f8fa','#f4f5f7','#edeff2']
 
 P={
+ # The default accent, written out so data-accent="cyan" can bring it back inside another preset.
+ 'cyan':  dict(dark=dict(accent='#1ce0d3',hover='#4deadf',press='#14b5ab',fg='#1ce0d3',on='#06201e',ring_a=0.55),
+               light=dict(accent='#00968d',hover='#14b5ab',press='#00958c',fg='#006f6c',on='#06201e',ring_a=0.80,
+                          border='#1ce0d3',glow_c='#14b5ab')),
  'blue':  dict(dark=dict(accent='#60a5fa',hover='#93c5fd',press='#3b82f6',fg='#7cb5fb',on='#04122a'),
                light=dict(accent='#2563eb',hover='#1d4fd8',press='#1e40af',fg='#1d4ed8',on='#ffffff')),
  'violet':dict(dark=dict(accent='#a78bfa',hover='#c4b5fd',press='#9d84fa',fg='#b4a0fb',on='#160c33'),
@@ -27,7 +31,7 @@ ok=True; out={}
 for name,themes in P.items():
     for theme,c in themes.items():
         bgs=DARK_BG if theme=='dark' else LIGHT_BG
-        ring_a=0.7 if theme=='dark' else 0.85
+        ring_a=c.get('ring_a', 0.7 if theme=='dark' else 0.85)
         checks={
           'on-accent text (4.5)': (min(cr(c['on'],c[k]) for k in ('accent','hover','press')),4.5),
           'accent fill vs surfaces (3)': (min(cr(c['accent'],b) for b in bgs),3),
@@ -49,6 +53,7 @@ lines=['/* Coreloom UI — accent presets. Import after theme.css, then set one 
        ' * for a section with its own accent):',
        ' *   <html data-accent="violet">            (dark)',
        ' *   <html data-accent="violet" data-theme="light">',
+       ' * "cyan" is the default; set it only to bring it back inside an element with another preset.',
        ' * Each preset replaces the whole accent family in both themes; every pairing meets WCAG AA',
        ' * (text 4.5:1, fills and focus rings 3:1 on all surfaces). Generated and checked by',
        ' * build/gen-accents.py: edit the colours there, then run',
@@ -58,12 +63,13 @@ for name,themes in P.items():
     for theme,c in themes.items():
         # On <html> or on any element (a section with its own accent); light wins inside light themes.
         sel=f'[data-accent="{name}"]' if theme=='dark' else f'[data-theme="light"][data-accent="{name}"],\n[data-theme="light"] [data-accent="{name}"]'
-        ring=rgba(c['accent'] if theme=='dark' else c['fg'], 0.7 if theme=='dark' else 0.85)
-        glow=f"0 0 0 1px {rgba(c['accent'],0.40 if theme=='dark' else 0.35)}, 0 6px {'24' if theme=='dark' else '20'}px {rgba(c['accent'],0.22 if theme=='dark' else 0.20)}"
+        ring=rgba(c['accent'] if theme=='dark' else c['fg'], c.get('ring_a', 0.7 if theme=='dark' else 0.85))
+        gc=c.get('glow_c', c['accent'])
+        glow=f"0 0 0 1px {rgba(gc,0.40 if theme=='dark' else 0.35)}, 0 6px {'24' if theme=='dark' else '20'}px {rgba(gc,0.22 if theme=='dark' else 0.20)}"
         lines += [f'{sel} {{',
                   f"  --accent: {c['accent']};", f"  --accent-hover: {c['hover']};", f"  --accent-press: {c['press']};",
                   f"  --accent-fg: {c['fg']};", f"  --accent-subtle: {rgba(c['accent'],0.10)};", f"  --accent-ring: {ring};",
-                  f"  --border-accent: {c['accent']};", f"  --fg-on-accent: {c['on']};", f"  --glow-accent: {glow};",
+                  f"  --border-accent: {c.get('border', c['accent'])};", f"  --fg-on-accent: {c['on']};", f"  --glow-accent: {glow};",
                   '}', '']
 import sys
 open(sys.argv[1],'w').write('\n'.join(lines))

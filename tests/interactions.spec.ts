@@ -163,6 +163,34 @@ test.describe("forms", () => {
     await expect(page.locator("[data-submitting]")).toHaveCount(0)
     await expect(page.getByText("Wrong email or password.")).toBeHidden()
   })
+
+  test("forgot password: confirms without naming the account, moves focus, and goes back", async ({ page }) => {
+    await open(page, "blocks-auth--forgot-password")
+    await page.getByRole("button", { name: "Send reset link" }).click()
+    await expect(page.getByText("Enter your email address.")).toBeVisible()
+    await page.getByLabel("Email").fill("ada@coreloom.dev")
+    await page.getByRole("button", { name: "Send reset link" }).click()
+    const heading = page.getByRole("heading", { level: 1, name: "Check your inbox" })
+    await expect(heading).toBeFocused()
+    await expect(page.getByText("If an account uses ada@coreloom.dev", { exact: false })).toBeVisible()
+    await page.getByRole("button", { name: "Use another email" }).click()
+    await expect(page.getByLabel("Email")).toHaveValue("ada@coreloom.dev")
+  })
+
+  test("reset password: both fields must match, and stay checked as the first one changes", async ({ page }) => {
+    await open(page, "blocks-auth--reset-password")
+    await page.getByLabel("New password").fill("short")
+    await page.getByLabel("New password").blur()
+    await expect(page.getByText("Use at least 8 characters.")).toBeVisible()
+    await page.getByLabel("New password").fill("long-enough")
+    await page.getByLabel("Confirm the password").fill("long-enough")
+    await page.getByLabel("Confirm the password").blur()
+    await expect(page.getByText("The two passwords don’t match.")).toBeHidden()
+    await page.getByLabel("New password").fill("long-enough!")
+    await expect(page.getByText("The two passwords don’t match.")).toBeVisible()
+    // The account's email goes to password managers with the new password.
+    await expect(page.locator("input[autocomplete=username]")).toHaveValue("ada@coreloom.dev")
+  })
 })
 
 test.describe("blocks", () => {
@@ -224,6 +252,22 @@ test.describe("theme and language", () => {
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("system")
     await page.emulateMedia({ colorScheme: "dark" })
     await expect.poll(theme).toBe("dark")
+  })
+
+  test("the accent picker: arrow keys, html data-accent, remembered", async ({ page }) => {
+    await open(page, "components-actions-theme-switch--accent")
+    const group = page.getByRole("radiogroup", { name: "Accent colour" })
+    await expect(group.getByRole("radio", { name: "Cyan" })).toBeChecked()
+    // Click first so the group has keyboard focus (Radix selects on arrow-key focus only).
+    await group.getByRole("radio", { name: "Cyan" }).click()
+    await expect(group.getByRole("radio", { name: "Cyan" })).toBeFocused()
+    await page.keyboard.press("ArrowRight")
+    await expect(group.getByRole("radio", { name: "Blue" })).toBeChecked()
+    await group.getByText("Rose").click()
+    await expect(group.getByRole("radio", { name: "Rose" })).toBeChecked()
+    expect(await page.evaluate(() => [document.documentElement.dataset.accent, localStorage.getItem("accent")])).toEqual(["rose", "rose"])
+    await group.getByRole("radio", { name: "Cyan" }).click()
+    expect(await page.evaluate(() => [document.documentElement.dataset.accent ?? null, localStorage.getItem("accent")])).toEqual([null, null])
   })
 
   test("French labels reach the controls", async ({ page }) => {

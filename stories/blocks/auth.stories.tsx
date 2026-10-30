@@ -4,6 +4,7 @@ import { Icon } from "@/components/ui/icon"
 
 import { AuthLayout } from "@/components/auth-layout"
 import { LoginForm } from "@/components/login-form"
+import { ForgotPasswordForm, ResetPasswordForm } from "@/components/password-reset-form"
 import { SignupForm } from "@/components/signup-form"
 import { VerifyForm } from "@/components/verify-form"
 
@@ -55,4 +56,21 @@ export const SignUp: Story = {
 
 export const VerifyCode: Story = {
   render: () => <AuthLayout brand={brand}><VerifyForm onSubmit={() => {}} onResend={() => {}} destination="m•••@coreloom.dev" /></AuthLayout>,
+}
+
+/** Try it: after "Send reset link" the card confirms without saying whether the account exists. */
+export const ForgotPassword: Story = {
+  render: () => (
+    <AuthLayout brand={brand}>
+      <ForgotPasswordForm signInHref="#" onSubmit={() => new Promise((r) => setTimeout(r, 700))} />
+    </AuthLayout>
+  ),
+}
+
+export const ResetPassword: Story = {
+  render: () => (
+    <AuthLayout brand={brand}>
+      <ResetPasswordForm email="ada@coreloom.dev" onSubmit={() => new Promise((r) => setTimeout(r, 700))} />
+    </AuthLayout>
+  ),
 }
