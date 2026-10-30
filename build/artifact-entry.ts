@@ -57,6 +57,9 @@ export * from "@/components/ui/date-range-picker"
 export * from "@/components/ui/tags-input"
 export * from "@/components/ui/file-upload"
 export * from "@/components/ui/stepper"
+export * from "@/components/ui/multi-select"
+export * from "@/components/ui/money-input"
+export * from "@/components/ui/phone-input"
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from "recharts"
 // Blocks (registry:block parts)

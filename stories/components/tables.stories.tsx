@@ -1,9 +1,10 @@
+import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ColumnDef } from "@tanstack/react-table"
 
 import { Badge, BadgeDot } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table"
+import { DataTable, DataTableColumnHeader, type DataTableQuery } from "@/components/ui/data-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 type Deployment = { id: string; project: string; status: "ready" | "building" | "failed"; secs?: number }
@@ -56,4 +57,62 @@ export const TableStory: Story = {
       </TableBody>
     </Table>
   ),
+}
+
+// A pretend API: 137 deployments, filtered, sorted and paged "on the server" after a short wait.
+const all: Deployment[] = Array.from({ length: 137 }, (_, i) => ({
+  id: `dpl_${(1000 + i).toString(36)}`,
+  project: ["coreloom-web", "coreloom-api", "docs", "cli", "marketing", "billing"][i % 6],
+  status: (["ready", "ready", "building", "ready", "failed"] as const)[i % 5],
+  secs: i % 5 === 2 ? undefined : 20 + ((i * 7) % 60),
+}))
+
+async function fetchDeployments(query: DataTableQuery) {
+  await new Promise((r) => setTimeout(r, 400))
+  let rows = all.filter((d) => d.project.includes(query.search.toLowerCase()) || d.id.includes(query.search.toLowerCase()))
+  if (query.sort) {
+    const { id, desc } = query.sort
+    rows = [...rows].sort((a, b) => {
+      const x = a[id as keyof Deployment]
+      const y = b[id as keyof Deployment]
+      // Rows without a value (still building) go last either way.
+      if (x === undefined || y === undefined) return x === y ? 0 : x === undefined ? 1 : -1
+      return (x < y ? -1 : x > y ? 1 : 0) * (desc ? -1 : 1)
+    })
+  }
+  const start = (query.page - 1) * query.pageSize
+  return { rows: rows.slice(start, start + query.pageSize), total: rows.length }
+}
+
+/** Sorting, search and paging happen in `fetchDeployments` (a stand-in for your API). In an app,
+ *  keep `query` in the URL and fetch with TanStack Query — the starter's Deployments page does. */
+export const ServerDriven: Story = {
+  name: "DataTable (server-driven)",
+  args: { columns: columns as never, data },
+  render: () => {
+    const [query, setQuery] = React.useState<DataTableQuery>({ page: 1, pageSize: 10, search: "" })
+    const [result, setResult] = React.useState<{ rows: Deployment[]; total: number }>({ rows: [], total: 0 })
+    const [loading, setLoading] = React.useState(true)
+    React.useEffect(() => {
+      let current = true
+      setLoading(true)
+      void fetchDeployments(query).then((r) => {
+        if (!current) return
+        setResult(r)
+        setLoading(false)
+      })
+      return () => {
+        current = false
+      }
+    }, [query])
+    return (
+      <DataTable
+        columns={columns}
+        data={result.rows}
+        getRowId={(row) => row.id}
+        filterPlaceholder="Search deployments…"
+        server={{ query, onQueryChange: setQuery, rowCount: result.total, loading, searchable: true }}
+      />
+    )
+  },
 }

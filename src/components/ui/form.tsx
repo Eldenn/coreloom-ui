@@ -23,6 +23,9 @@ import { DateRangePicker, type DateRange } from "@/components/ui/date-range-pick
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { FileUpload } from "@/components/ui/file-upload"
 import { Input } from "@/components/ui/input"
+import { MoneyInput } from "@/components/ui/money-input"
+import { MultiSelect } from "@/components/ui/multi-select"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -286,7 +289,7 @@ function DateField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof DatePicker>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
+}: VerticalShellProps & Omit<React.ComponentProps<typeof DatePicker>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as Date | undefined
@@ -297,9 +300,12 @@ function DateField({
         value={value}
         onValueChange={(d) => {
           field.handleChange(d)
-          field.handleBlur()
+          // Picked from the calendar: done. Typed: wait for the field to be left.
+          if (!props.typing) field.handleBlur()
         }}
+        onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
         {...props}
       />
     </VerticalShell>
@@ -350,6 +356,87 @@ function TagsField({
         id={meta.id}
         value={value ?? []}
         onValueChange={(tags) => field.handleChange(tags)}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Several values from a known list (string[]). */
+function MultiSelectField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof MultiSelect>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as string[] | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <MultiSelect
+        id={meta.id}
+        value={value ?? []}
+        onValueChange={(v) => field.handleChange(v)}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** An amount (number | null, in major units) in `currency`. */
+function MoneyField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof MoneyInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as number | null | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <MoneyInput
+        id={meta.id}
+        value={value ?? null}
+        onValueChange={(n) => field.handleChange(n)}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A phone number, as E.164 ("+33612345678"). Validate with `isValidPhone`. */
+function PhoneField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & Omit<React.ComponentProps<typeof PhoneInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useStore(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+      <PhoneInput
+        id={meta.id}
+        value={value ?? ""}
+        onValueChange={(v) => field.handleChange(v)}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -517,10 +604,13 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TextareaField,
     SelectField,
     ComboboxField,
+    MultiSelectField,
     DateField,
     DateRangeField,
     TagsField,
     FileField,
+    MoneyField,
+    PhoneField,
     RadioGroupField,
     CheckboxField,
     SwitchField,
@@ -542,10 +632,13 @@ export {
   TextareaField,
   SelectField,
   ComboboxField,
+  MultiSelectField,
   DateField,
   DateRangeField,
   TagsField,
   FileField,
+  MoneyField,
+  PhoneField,
   RadioGroupField,
   CheckboxField,
   SwitchField,

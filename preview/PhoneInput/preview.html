@@ -1,0 +1,36 @@
+<!-- @dsCard group="Forms" height=470 subtitle="Country picker · national format · E.164 value" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.PhoneInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { PhoneInput, isValidPhone, Field, FieldLabel, FieldDescription } = UI;
+      function Demo() {
+        const [value, setValue] = React.useState('+33612345678');
+        const ref = React.useRef(null);
+        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button'); if (b) b.click(); }, []);
+        return h('div', { ref, style: { maxWidth: 380 } }, h(Field, null,
+          h(FieldLabel, { htmlFor: 'phone' }, 'Mobile'),
+          h(PhoneInput, { id: 'phone', value, onValueChange: setValue }),
+          h(FieldDescription, null, 'Sent as ', h('code', { className: 'font-mono' }, value), ' · ', isValidPhone(value) ? 'valid' : 'incomplete')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

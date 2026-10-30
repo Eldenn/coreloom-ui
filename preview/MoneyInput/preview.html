@@ -1,0 +1,34 @@
+<!-- @dsCard group="Forms" height=250 subtitle="Locale-aware amount · currency symbol · number value" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.MoneyInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { MoneyInput, Field, FieldLabel, FieldDescription, FieldGroup } = UI;
+      function Demo() {
+        const [eur, setEur] = React.useState(1234.5);
+        const [usd, setUsd] = React.useState(980);
+        return h(FieldGroup, { style: { maxWidth: 300 }, className: 'gap-5' },
+          h(Field, null, h(FieldLabel, { htmlFor: 'budget' }, 'Monthly budget'), h(MoneyInput, { id: 'budget', value: eur, onValueChange: setEur, min: 0 }), h(FieldDescription, null, 'Value: ' + eur)),
+          h(Field, null, h(FieldLabel, { htmlFor: 'usd' }, 'Invoice total'), h(MoneyInput, { id: 'usd', currency: 'USD', value: usd, onValueChange: setUsd })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -78,6 +78,30 @@ test("creating a project: validation, an API error on its field, then the new pa
   await expect(page.locator("[data-slot=breadcrumb]")).toContainText("Projects")
 })
 
+test("deployments: the API pages, sorts and searches; the URL keeps the query", async ({ page }) => {
+  await signIn(page, "/deployments")
+  const table = page.locator("[data-slot=data-table] table")
+  await expect(page.getByText("84 rows")).toBeVisible()
+  await page.getByRole("button", { name: "Next page" }).click()
+  await expect(page).toHaveURL(/page=2/)
+  await page.getByRole("button", { name: "Sort by Build" }).click()
+  await expect(page).toHaveURL(/sort=duration/)
+  await expect(page).not.toHaveURL(/page=/)
+  // The sorted page arrives after the URL changes: poll until the rows are in order.
+  await expect
+    .poll(async () => {
+      const durations = (await table.locator("tbody tr td:nth-child(5)").allInnerTexts()).map((d) => parseInt(d, 10))
+      return durations.length > 1 && durations.every((d, i) => i === 0 || durations[i - 1] >= d)
+    })
+    .toBe(true)
+  await page.getByPlaceholder("Search by project, commit or branch…").fill("docs")
+  await expect(page).toHaveURL(/q=docs/)
+  await expect(page.getByText("6 rows")).toBeVisible()
+  await page.reload()
+  await expect(page.getByPlaceholder("Search by project, commit or branch…")).toHaveValue("docs")
+  await expect(table.locator("tbody tr")).toHaveCount(6)
+})
+
 test("unknown pages and projects show the 404 page", async ({ page }) => {
   await signIn(page, "/projects/nope")
   await expect(page.getByRole("heading", { level: 1, name: "Project not found" })).toBeVisible()
@@ -106,7 +130,7 @@ test("signing out protects the app again", async ({ page }) => {
 })
 
 // One test per screen and theme, so a slow machine never runs out of time on a long chain.
-const SCREENS = ["/login", "/", "/projects", "/projects?new=true", "/settings", "/settings?section=notifications", "/does/not/exist", "project"]
+const SCREENS = ["/login", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=notifications", "/does/not/exist", "project"]
 
 for (const theme of ["dark", "light"] as const) {
   for (const screen of SCREENS) {

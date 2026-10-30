@@ -12,7 +12,8 @@ A data table with sorting, a text filter, row selection and pagination: shadcn's
 Use `<DataTableColumnHeader column title>` as a column's `header` to make it sortable. Add a selection column with `Checkbox`es bound to `row.getIsSelected()`.
 
 - Built on `Table`, so it has the same frame, mono headers and row states. Selected rows take `accent-subtle`. Sort arrows are `fg-muted` until active. The footer shows the row count (or "n of m selected"), rows per page and Previous / Next.
-- Sorting and filtering run in the browser on the `data` you pass. For server-side data, use `Table` with your own TanStack setup.
+- By default, sorting, filtering and paging run in the browser on the `data` you pass.
+- **Server-driven** (`server={{ query, onQueryChange, rowCount, loading, searchable }}`): `data` is the current page and your API does the rest. `query` is `{ page, pageSize, sort?: { id, desc }, search }`; keep it in the URL's search params and refetch when it changes (TanStack Query's `placeholderData: keepPreviousData` keeps the page on screen meanwhile). Sorting or searching goes back to page 1; the search waits 300 ms after typing; `loading` dims the rows and sets `aria-busy`. The starter's Deployments page is a complete example.
 - Right-align and mono numbers; put status in a `Badge` with a word; keep one primary action in the toolbar.
 
 _All parts are on `window.CoreloomUIDesignSystem_ff5f32`; in an app, `pnpm dlx shadcn@latest add @coreloom/data-table` and import from `@/components/ui/data-table`._

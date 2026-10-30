@@ -954,7 +954,7 @@
       "name": "date-picker",
       "type": "registry:ui",
       "title": "DatePicker",
-      "description": "Date field: a trigger that opens a Calendar in a Popover.",
+      "description": "Date field: a Calendar in a Popover, or with `typing` a text input that reads dates in the locale's order, plus a calendar button.",
       "dependencies": [
         "date-fns@^4",
         "lucide-react"
@@ -977,7 +977,7 @@
       "name": "data-table",
       "type": "registry:ui",
       "title": "DataTable",
-      "description": "Table with sorting, filtering, selection and pagination (TanStack Table).",
+      "description": "Table with sorting, filtering, selection and pagination (TanStack Table). With `server`, sorting, search and pagination go to your API (page in, rows and total out).",
       "dependencies": [
         "@tanstack/react-table@^8",
         "lucide-react"
@@ -1143,7 +1143,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, date, date range, tags, file, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, multi-select, date (picked or typed), date range, tags, file, money, phone, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
       "dependencies": [
         "@tanstack/react-form@^1",
         "input-otp@^1"
@@ -1167,7 +1167,10 @@
         "@coreloom/alert",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",
-        "@coreloom/file-upload"
+        "@coreloom/file-upload",
+        "@coreloom/multi-select",
+        "@coreloom/money-input",
+        "@coreloom/phone-input"
       ],
       "files": [
         {
@@ -1263,6 +1266,68 @@
       ]
     },
     {
+      "name": "multi-select",
+      "type": "registry:ui",
+      "title": "MultiSelect",
+      "description": "Several values from a known list: chips in the trigger, a searchable checklist, select all / clear, an optional maximum.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/command",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/multi-select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "money-input",
+      "type": "registry:ui",
+      "title": "MoneyInput",
+      "description": "An amount typed the reader's way (1 234,50 / 1,234.50), the currency symbol where the locale puts it; the value is a number.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/money-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "phone-input",
+      "type": "registry:ui",
+      "title": "PhoneInput",
+      "description": "Country picker and national number, formatted as people write it; the value is E.164 (+33612345678). isValidPhone() included.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/command",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/phone-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -1327,7 +1392,10 @@
         "@coreloom/tags-input",
         "@coreloom/file-upload",
         "@coreloom/stepper",
-        "@coreloom/link"
+        "@coreloom/link",
+        "@coreloom/multi-select",
+        "@coreloom/money-input",
+        "@coreloom/phone-input"
       ],
       "dependencies": []
     },
