@@ -10,7 +10,7 @@ for it in items.values():
     for f in it.get("files", []):
         p = f["path"]
         # A file shared by two items (stat-card in app-shell and dashboard) is declared once.
-        if (p.startswith("src/components/") or p in ("src/lib/i18n.tsx", "src/lib/link.tsx")) and p.endswith(".tsx") and p not in {f for _, f in files}:
+        if ((p.startswith("src/components/") and p.endswith(".tsx")) or p in ("src/lib/i18n.tsx", "src/lib/link.tsx", "src/lib/ai.ts")) and p not in {f for _, f in files}:
             files.append((it, p))
 ui = sorted([x for x in files if "/ui/" in x[1]], key=lambda x: x[1])
 blocks = [x for x in files if "/ui/" not in x[1]]
@@ -18,7 +18,7 @@ blocks = [x for x in files if "/ui/" not in x[1]]
 imports, sections, seen = [], [], set()
 seen_types = set()
 for it, path in ui + blocks:
-    rel = path[len("src/"):-len(".tsx")] + ".d.ts"
+    rel = re.sub(r"\.tsx?$", "", path[len("src/"):]) + ".d.ts"
     src = open(os.path.join(dts, rel)).read()
     body = []
     for line in src.splitlines():

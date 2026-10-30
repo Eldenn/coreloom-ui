@@ -3,8 +3,19 @@
 // Add a language: copy `en`, translate it, and register it in src/lib/locale.tsx.
 
 export const en = {
-  nav: { overview: "Overview", projects: "Projects", deployments: "Deployments", settings: "Settings", docs: "Design system" },
-  shell: { plan: "Pro workspace", platform: "Platform", goTo: "Go to", actions: "Actions", language: "Language" },
+  nav: {
+    overview: "Overview",
+    projects: "Projects",
+    deployments: "Deployments",
+    settings: "Settings",
+    docs: "Design system",
+    assistant: "Assistant",
+    agents: "Agents",
+    runs: "Runs",
+    playground: "Playground",
+    knowledge: "Knowledge",
+  },
+  shell: { plan: "Pro workspace", platform: "Platform", ai: "AI", goTo: "Go to", actions: "Actions", language: "Language" },
   login: {
     wrongCredentials: "Wrong email or password.",
     hint: "Demo: any email and a password of 8 characters or more.",
@@ -134,13 +145,41 @@ export const en = {
     deleteText: "Every project, deployment and domain goes with it. This can't be undone.",
     deleted: "Workspace deleted",
   },
+  ai: {
+    demo: "Demo: answers are simulated in your browser; no model is called.",
+    assistant: { title: "Assistant", description: "Ask about your projects and deployments.", conversations: "Conversations", newTitle: "New conversation" },
+    suggestions: ["Why did the last deployment fail?", "Roll back coreloom-api", "Summarise this week's deployments"],
+    script: {
+      reasoning: "The question is about the workspace. Search the docs and the latest deployments, then answer in a few lines.",
+      answer: (q: string) =>
+        `Here is what I found about “${q}”:\n\n- The last **coreloom-api** deployment failed on a type error: \`Workspace.slug\` is now \`handle\`.\n- The four deployments before it succeeded.\n\nRename the property in \`src/routes/settings.tsx\`, then push again.`,
+      sensitive: /roll ?back|revert/i,
+      approved: "Done: **coreloom-api** is back on `dpl_5t3q`. I'll post a note in #incidents.",
+      denied: "OK, nothing was rolled back. Fixing the type error and redeploying is the safer route anyway.",
+    },
+    agents: { title: "Agents", description: "What each agent does, with which model and tools.", newName: "New agent", saved: "Agent saved", recentRuns: "Recent runs", notFoundTitle: "Agent not found", notFoundText: "It may have been deleted." },
+    runs: { title: "Runs", description: "Every run of every agent, with its cost.", run: (id: string) => `Run ${id}`, notFoundTitle: "Run not found", notFoundText: "Runs are kept for 30 days." },
+    playground: { title: "Playground", description: "Compare models and settings on the same prompt.", system: "You explain failed deployments to developers in two sentences.", prompt: "Why did deployment dpl_8f2k fail?" },
+    knowledge: { title: "Knowledge", description: "The documents agents search." },
+  },
 }
 
 export type Messages = typeof en
 
 export const fr: Messages = {
-  nav: { overview: "Vue d'ensemble", projects: "Projets", deployments: "Déploiements", settings: "Paramètres", docs: "Design system" },
-  shell: { plan: "Espace Pro", platform: "Plateforme", goTo: "Aller à", actions: "Actions", language: "Langue" },
+  nav: {
+    overview: "Vue d'ensemble",
+    projects: "Projets",
+    deployments: "Déploiements",
+    settings: "Paramètres",
+    docs: "Design system",
+    assistant: "Assistant",
+    agents: "Agents",
+    runs: "Exécutions",
+    playground: "Playground",
+    knowledge: "Connaissances",
+  },
+  shell: { plan: "Espace Pro", platform: "Plateforme", ai: "IA", goTo: "Aller à", actions: "Actions", language: "Langue" },
   login: {
     wrongCredentials: "E-mail ou mot de passe incorrect.",
     hint: "Démo : n'importe quel e-mail et un mot de passe d'au moins 8 caractères.",
@@ -269,5 +308,22 @@ export const fr: Messages = {
     deleteTitle: "Supprimer l'espace Coreloom ?",
     deleteText: "Tous les projets, déploiements et domaines seront supprimés. C'est irréversible.",
     deleted: "Espace supprimé",
+  },
+  ai: {
+    demo: "Démo : les réponses sont simulées dans votre navigateur, aucun modèle n'est appelé.",
+    assistant: { title: "Assistant", description: "Posez vos questions sur vos projets et déploiements.", conversations: "Conversations", newTitle: "Nouvelle conversation" },
+    suggestions: ["Pourquoi le dernier déploiement a échoué ?", "Revenir en arrière sur coreloom-api (rollback)", "Résume les déploiements de la semaine"],
+    script: {
+      reasoning: "La question porte sur l'espace de travail. Chercher dans la doc et les derniers déploiements, puis répondre en quelques lignes.",
+      answer: (q: string) =>
+        `Voici ce que j'ai trouvé sur « ${q} » :\n\n- Le dernier déploiement de **coreloom-api** a échoué sur une erreur de type : \`Workspace.slug\` s'appelle désormais \`handle\`.\n- Les quatre déploiements précédents ont réussi.\n\nRenommez la propriété dans \`src/routes/settings.tsx\`, puis poussez à nouveau.`,
+      sensitive: /roll ?back|revert|annule/i,
+      approved: "C'est fait : **coreloom-api** est revenu sur `dpl_5t3q`. Je publie une note dans #incidents.",
+      denied: "D'accord, rien n'a été annulé. Corriger l'erreur de type et redéployer reste le plus sûr.",
+    },
+    agents: { title: "Agents", description: "Ce que fait chaque agent, avec quel modèle et quels outils.", newName: "Nouvel agent", saved: "Agent enregistré", recentRuns: "Exécutions récentes", notFoundTitle: "Agent introuvable", notFoundText: "Il a peut-être été supprimé." },
+    runs: { title: "Exécutions", description: "Chaque exécution de chaque agent, avec son coût.", run: (id: string) => `Exécution ${id}`, notFoundTitle: "Exécution introuvable", notFoundText: "Les exécutions sont conservées 30 jours." },
+    playground: { title: "Playground", description: "Comparez modèles et réglages sur le même prompt.", system: "Tu expliques en deux phrases aux développeurs pourquoi un déploiement a échoué.", prompt: "Pourquoi le déploiement dpl_8f2k a-t-il échoué ?" },
+    knowledge: { title: "Connaissances", description: "Les documents dans lesquels cherchent les agents." },
   },
 }

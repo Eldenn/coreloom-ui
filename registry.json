@@ -108,6 +108,18 @@
       ]
     },
     {
+      "name": "ai",
+      "type": "registry:lib",
+      "title": "AI message types",
+      "description": "The message shapes the AI blocks read, matching the AI SDK's UIMessage (parts: text, reasoning, tools, files, sources), plus cost and duration formatters. No dependency on the AI SDK.",
+      "files": [
+        {
+          "path": "src/lib/ai.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
@@ -1421,6 +1433,97 @@
       ]
     },
     {
+      "name": "markdown",
+      "type": "registry:ui",
+      "title": "Markdown",
+      "description": "Model output (or any Markdown) in Coreloom type: GitHub-flavoured tables, task lists, code blocks with copy; raw HTML is dropped. A caret while streaming.",
+      "dependencies": [
+        "react-markdown@^10",
+        "remark-gfm@^4",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/markdown.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "prompt-input",
+      "type": "registry:ui",
+      "title": "PromptInput",
+      "description": "The composer for a chat: grows with the text, Enter sends, attachments, Send turns into Stop while a reply streams, a toolbar slot.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/button",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/prompt-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "reasoning",
+      "type": "registry:ui",
+      "title": "Reasoning",
+      "description": "A model's thinking folded under one line: open while it streams, \"Thought for 6 s\" once done.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/collapsible",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/reasoning.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tool-call",
+      "type": "registry:ui",
+      "title": "ToolCall",
+      "description": "One tool call from an agent: name, state, input and output, and Allow / Deny when it needs approval. Reads an AI SDK tool part.",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/button",
+        "@coreloom/collapsible",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tool-call.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -1490,7 +1593,11 @@
         "@coreloom/multi-select",
         "@coreloom/money-input",
         "@coreloom/phone-input",
-        "@coreloom/rich-text-editor"
+        "@coreloom/rich-text-editor",
+        "@coreloom/markdown",
+        "@coreloom/prompt-input",
+        "@coreloom/reasoning",
+        "@coreloom/tool-call"
       ],
       "dependencies": []
     },
@@ -2107,6 +2214,168 @@
       "files": [
         {
           "path": "src/components/event-calendar.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-chat",
+      "type": "registry:block",
+      "title": "AI chat",
+      "description": "A conversation with a model for the AI SDK's useChat: Markdown answers, reasoning, tool calls with approval, sources, files, copy / regenerate / feedback, suggestions, and the conversation history.",
+      "categories": [
+        "ai"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/link",
+        "@coreloom/markdown",
+        "@coreloom/prompt-input",
+        "@coreloom/reasoning",
+        "@coreloom/tool-call",
+        "@coreloom/alert",
+        "@coreloom/alert-dialog",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/input",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-chat.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-agents",
+      "type": "registry:block",
+      "title": "AI agents",
+      "description": "The agents as cards (status, model, tools, last run) and an agent's settings on the form kit: instructions with {{variables}}, model, temperature, steps, tools that ask first, knowledge.",
+      "categories": [
+        "ai"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "@tanstack/react-form"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/link",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/checkbox",
+        "@coreloom/form",
+        "@coreloom/input",
+        "@coreloom/slider",
+        "@coreloom/switch",
+        "@coreloom/multi-select",
+        "@coreloom/select"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-agents.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-runs",
+      "type": "registry:block",
+      "title": "AI runs and traces",
+      "description": "An agent's runs in a table, and one run's trace: a waterfall of model calls, tools and retrievals with each step's input, output, tokens, cost and error.",
+      "categories": [
+        "ai"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "@tanstack/react-table@^8"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/link",
+        "@coreloom/badge",
+        "@coreloom/data-table"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-runs.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-playground",
+      "type": "registry:block",
+      "title": "AI playground",
+      "description": "One prompt, up to three variants side by side (model, temperature) to compare answers, latency, tokens and cost.",
+      "categories": [
+        "ai"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/button",
+        "@coreloom/label",
+        "@coreloom/markdown",
+        "@coreloom/select",
+        "@coreloom/slider",
+        "@coreloom/spinner",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-playground.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-knowledge",
+      "type": "registry:block",
+      "title": "AI knowledge base",
+      "description": "The documents agents search, with indexing status and progress, upload, re-index and remove, and a retrieval test with scored passages.",
+      "categories": [
+        "ai"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert-dialog",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/file-upload",
+        "@coreloom/input",
+        "@coreloom/label",
+        "@coreloom/spinner",
+        "@coreloom/table"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-knowledge.tsx",
           "type": "registry:component"
         }
       ]

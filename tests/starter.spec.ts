@@ -257,9 +257,65 @@ test("signing out protects the app again", async ({ page }) => {
   await expect(page).toHaveURL(/\/login\?redirect=/)
 })
 
+test("assistant: an answer streams in with its tool call; the conversation joins the list", async ({ page }) => {
+  await signIn(page, "/assistant")
+  await expect(page.getByRole("heading", { name: "How can I help?" })).toBeVisible()
+  const box = page.getByRole("textbox", { name: "Message" })
+  await box.fill("Why did the last deployment fail?")
+  await box.press("Enter")
+  const log = page.getByRole("log", { name: "Conversation" })
+  await expect(page.getByRole("button", { name: "Stop" })).toBeVisible()
+  await expect(log.getByText("Rename the property")).toBeVisible({ timeout: 10_000 })
+  await expect(log.getByText("searchDocs")).toBeVisible()
+  await expect(page).toHaveURL(/\/assistant\?c=c/)
+  await expect(page.getByRole("navigation", { name: "Conversations" }).getByText("Why did the last deployment fail?")).toBeVisible()
+
+  // A sensitive tool waits for approval, then the answer resumes.
+  await box.fill("Roll back coreloom-api")
+  await box.press("Enter")
+  await expect(log.getByText("Needs your approval")).toBeVisible({ timeout: 10_000 })
+  await log.getByRole("button", { name: "Allow" }).click()
+  await expect(log.getByText("is back on")).toBeVisible({ timeout: 10_000 })
+})
+
+test("agents: a new agent opens its settings; saving and a run's trace", async ({ page }) => {
+  await signIn(page, "/agents")
+  await page.getByRole("button", { name: "New agent" }).click()
+  await expect(page).toHaveURL(/\/agents\/agt_/)
+  await expect(page.getByRole("heading", { level: 1, name: "New agent" })).toBeVisible()
+  await page.getByRole("button", { name: "Save agent" }).click()
+  await expect(page.getByText("Write the agent's instructions.").first()).toBeVisible()
+  await page.getByRole("textbox", { name: "Instructions" }).fill("Answer questions about {{project}}.")
+  await page.getByRole("button", { name: "Save agent" }).click()
+  await expect(page.getByText("Agent saved")).toBeVisible()
+
+  await page.goto("/agents/agt_deploy")
+  await page.locator("tbody a").first().click()
+  await expect(page).toHaveURL(/\/runs\/run_/)
+  await expect(page.getByRole("heading", { level: 1, name: /^Run run_/ })).toBeVisible()
+})
+
+test("knowledge: an upload is indexed in the background; retrieval finds passages", async ({ page }) => {
+  await signIn(page, "/knowledge")
+  await page.locator('input[type="file"]').setInputFiles({ name: "Rollbacks FAQ.md", mimeType: "text/markdown", buffer: Buffer.from("# FAQ\n".repeat(400)) })
+  const row = page.getByRole("row", { name: /Rollbacks FAQ\.md/ })
+  await expect(row).toContainText(/Queued|Processing/)
+  await expect(row).toContainText("Indexed", { timeout: 15_000 })
+  await page.getByRole("textbox", { name: "Question" }).fill("When should I roll back production?")
+  await page.getByRole("button", { name: "Search", exact: true }).click()
+  await expect(page.getByText(/^\d passages?$/)).toBeVisible()
+})
+
+test("playground: every variant streams an answer with its metrics", async ({ page }) => {
+  await signIn(page, "/playground")
+  await page.getByRole("button", { name: "Run all" }).click()
+  await expect(page.getByText("Latency").first()).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText("Rename the property")).toHaveCount(2, { timeout: 15_000 })
+})
+
 // One test per screen and theme, so a slow machine never runs out of time on a long chain.
 const SIGNED_OUT = ["/login", "/signup", "/forgot-password", "/reset-password?token=demo"]
-const SCREENS = [...SIGNED_OUT, "verify", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=appearance", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project"]
+const SCREENS = [...SIGNED_OUT, "verify", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=appearance", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project", "/assistant?c=c1", "/agents", "/agents/agt_deploy", "/runs", "/runs/run_1ycy", "/playground", "/knowledge"]
 
 for (const theme of ["dark", "light"] as const) {
   for (const screen of SCREENS) {

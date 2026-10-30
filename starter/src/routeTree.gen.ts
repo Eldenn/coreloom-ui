@@ -16,11 +16,20 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppAgentsRouteRouteImport } from './routes/_app/agents/route'
+import { Route as AppAssistantRouteImport } from './routes/_app/assistant'
 import { Route as AppDeploymentsRouteImport } from './routes/_app/deployments'
+import { Route as AppKnowledgeRouteImport } from './routes/_app/knowledge'
+import { Route as AppPlaygroundRouteImport } from './routes/_app/playground'
 import { Route as AppProjectsRouteRouteImport } from './routes/_app/projects/route'
+import { Route as AppRunsRouteRouteImport } from './routes/_app/runs/route'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppAgentsIndexRouteImport } from './routes/_app/agents/index'
+import { Route as AppAgentsAgentIdRouteImport } from './routes/_app/agents/$agentId'
 import { Route as AppProjectsIndexRouteImport } from './routes/_app/projects/index'
 import { Route as AppProjectsProjectIdRouteImport } from './routes/_app/projects/$projectId'
+import { Route as AppRunsIndexRouteImport } from './routes/_app/runs/index'
+import { Route as AppRunsRunIdRouteImport } from './routes/_app/runs/$runId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -56,9 +65,29 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAgentsRouteRoute = AppAgentsRouteRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDeploymentsRoute = AppDeploymentsRouteImport.update({
   id: '/deployments',
   path: '/deployments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKnowledgeRoute = AppKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlaygroundRoute = AppPlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProjectsRouteRoute = AppProjectsRouteRouteImport.update({
@@ -66,10 +95,25 @@ const AppProjectsRouteRoute = AppProjectsRouteRouteImport.update({
   path: '/projects',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRunsRouteRoute = AppRunsRouteRouteImport.update({
+  id: '/runs',
+  path: '/runs',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAgentsIndexRoute = AppAgentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAgentsRouteRoute,
+} as any)
+const AppAgentsAgentIdRoute = AppAgentsAgentIdRouteImport.update({
+  id: '/$agentId',
+  path: '/$agentId',
+  getParentRoute: () => AppAgentsRouteRoute,
 } as any)
 const AppProjectsIndexRoute = AppProjectsIndexRouteImport.update({
   id: '/',
@@ -81,6 +125,16 @@ const AppProjectsProjectIdRoute = AppProjectsProjectIdRouteImport.update({
   path: '/$projectId',
   getParentRoute: () => AppProjectsRouteRoute,
 } as any)
+const AppRunsIndexRoute = AppRunsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRunsRouteRoute,
+} as any)
+const AppRunsRunIdRoute = AppRunsRunIdRouteImport.update({
+  id: '/$runId',
+  path: '/$runId',
+  getParentRoute: () => AppRunsRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -89,11 +143,20 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
+  '/agents': typeof AppAgentsRouteRouteWithChildren
   '/projects': typeof AppProjectsRouteRouteWithChildren
+  '/runs': typeof AppRunsRouteRouteWithChildren
+  '/assistant': typeof AppAssistantRoute
   '/deployments': typeof AppDeploymentsRoute
+  '/knowledge': typeof AppKnowledgeRoute
+  '/playground': typeof AppPlaygroundRoute
   '/settings': typeof AppSettingsRoute
+  '/agents/$agentId': typeof AppAgentsAgentIdRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/runs/$runId': typeof AppRunsRunIdRoute
+  '/agents/': typeof AppAgentsIndexRoute
   '/projects/': typeof AppProjectsIndexRoute
+  '/runs/': typeof AppRunsIndexRoute
 }
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
@@ -101,11 +164,18 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
+  '/assistant': typeof AppAssistantRoute
   '/deployments': typeof AppDeploymentsRoute
+  '/knowledge': typeof AppKnowledgeRoute
+  '/playground': typeof AppPlaygroundRoute
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
+  '/agents/$agentId': typeof AppAgentsAgentIdRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/runs/$runId': typeof AppRunsRunIdRoute
+  '/agents': typeof AppAgentsIndexRoute
   '/projects': typeof AppProjectsIndexRoute
+  '/runs': typeof AppRunsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,12 +185,21 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
+  '/_app/agents': typeof AppAgentsRouteRouteWithChildren
   '/_app/projects': typeof AppProjectsRouteRouteWithChildren
+  '/_app/runs': typeof AppRunsRouteRouteWithChildren
+  '/_app/assistant': typeof AppAssistantRoute
   '/_app/deployments': typeof AppDeploymentsRoute
+  '/_app/knowledge': typeof AppKnowledgeRoute
+  '/_app/playground': typeof AppPlaygroundRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/agents/$agentId': typeof AppAgentsAgentIdRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
+  '/_app/runs/$runId': typeof AppRunsRunIdRoute
+  '/_app/agents/': typeof AppAgentsIndexRoute
   '/_app/projects/': typeof AppProjectsIndexRoute
+  '/_app/runs/': typeof AppRunsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,11 +210,20 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/agents'
     | '/projects'
+    | '/runs'
+    | '/assistant'
     | '/deployments'
+    | '/knowledge'
+    | '/playground'
     | '/settings'
+    | '/agents/$agentId'
     | '/projects/$projectId'
+    | '/runs/$runId'
+    | '/agents/'
     | '/projects/'
+    | '/runs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -143,11 +231,18 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/assistant'
     | '/deployments'
+    | '/knowledge'
+    | '/playground'
     | '/settings'
     | '/'
+    | '/agents/$agentId'
     | '/projects/$projectId'
+    | '/runs/$runId'
+    | '/agents'
     | '/projects'
+    | '/runs'
   id:
     | '__root__'
     | '/_app'
@@ -156,12 +251,21 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/verify'
+    | '/_app/agents'
     | '/_app/projects'
+    | '/_app/runs'
+    | '/_app/assistant'
     | '/_app/deployments'
+    | '/_app/knowledge'
+    | '/_app/playground'
     | '/_app/settings'
     | '/_app/'
+    | '/_app/agents/$agentId'
     | '/_app/projects/$projectId'
+    | '/_app/runs/$runId'
+    | '/_app/agents/'
     | '/_app/projects/'
+    | '/_app/runs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -224,11 +328,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/agents': {
+      id: '/_app/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AppAgentsRouteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/deployments': {
       id: '/_app/deployments'
       path: '/deployments'
       fullPath: '/deployments'
       preLoaderRoute: typeof AppDeploymentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/knowledge': {
+      id: '/_app/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof AppKnowledgeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/playground': {
+      id: '/_app/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof AppPlaygroundRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/projects': {
@@ -238,12 +370,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsRouteRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/runs': {
+      id: '/_app/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof AppRunsRouteRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/agents/': {
+      id: '/_app/agents/'
+      path: '/'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AppAgentsIndexRouteImport
+      parentRoute: typeof AppAgentsRouteRoute
+    }
+    '/_app/agents/$agentId': {
+      id: '/_app/agents/$agentId'
+      path: '/$agentId'
+      fullPath: '/agents/$agentId'
+      preLoaderRoute: typeof AppAgentsAgentIdRouteImport
+      parentRoute: typeof AppAgentsRouteRoute
     }
     '/_app/projects/': {
       id: '/_app/projects/'
@@ -259,8 +412,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsProjectIdRouteImport
       parentRoute: typeof AppProjectsRouteRoute
     }
+    '/_app/runs/': {
+      id: '/_app/runs/'
+      path: '/'
+      fullPath: '/runs/'
+      preLoaderRoute: typeof AppRunsIndexRouteImport
+      parentRoute: typeof AppRunsRouteRoute
+    }
+    '/_app/runs/$runId': {
+      id: '/_app/runs/$runId'
+      path: '/$runId'
+      fullPath: '/runs/$runId'
+      preLoaderRoute: typeof AppRunsRunIdRouteImport
+      parentRoute: typeof AppRunsRouteRoute
+    }
   }
 }
+
+interface AppAgentsRouteRouteChildren {
+  AppAgentsAgentIdRoute: typeof AppAgentsAgentIdRoute
+  AppAgentsIndexRoute: typeof AppAgentsIndexRoute
+}
+
+const AppAgentsRouteRouteChildren: AppAgentsRouteRouteChildren = {
+  AppAgentsAgentIdRoute: AppAgentsAgentIdRoute,
+  AppAgentsIndexRoute: AppAgentsIndexRoute,
+}
+
+const AppAgentsRouteRouteWithChildren = AppAgentsRouteRoute._addFileChildren(
+  AppAgentsRouteRouteChildren,
+)
 
 interface AppProjectsRouteRouteChildren {
   AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
@@ -275,16 +456,40 @@ const AppProjectsRouteRouteChildren: AppProjectsRouteRouteChildren = {
 const AppProjectsRouteRouteWithChildren =
   AppProjectsRouteRoute._addFileChildren(AppProjectsRouteRouteChildren)
 
+interface AppRunsRouteRouteChildren {
+  AppRunsRunIdRoute: typeof AppRunsRunIdRoute
+  AppRunsIndexRoute: typeof AppRunsIndexRoute
+}
+
+const AppRunsRouteRouteChildren: AppRunsRouteRouteChildren = {
+  AppRunsRunIdRoute: AppRunsRunIdRoute,
+  AppRunsIndexRoute: AppRunsIndexRoute,
+}
+
+const AppRunsRouteRouteWithChildren = AppRunsRouteRoute._addFileChildren(
+  AppRunsRouteRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAgentsRouteRoute: typeof AppAgentsRouteRouteWithChildren
   AppProjectsRouteRoute: typeof AppProjectsRouteRouteWithChildren
+  AppRunsRouteRoute: typeof AppRunsRouteRouteWithChildren
+  AppAssistantRoute: typeof AppAssistantRoute
   AppDeploymentsRoute: typeof AppDeploymentsRoute
+  AppKnowledgeRoute: typeof AppKnowledgeRoute
+  AppPlaygroundRoute: typeof AppPlaygroundRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAgentsRouteRoute: AppAgentsRouteRouteWithChildren,
   AppProjectsRouteRoute: AppProjectsRouteRouteWithChildren,
+  AppRunsRouteRoute: AppRunsRouteRouteWithChildren,
+  AppAssistantRoute: AppAssistantRoute,
   AppDeploymentsRoute: AppDeploymentsRoute,
+  AppKnowledgeRoute: AppKnowledgeRoute,
+  AppPlaygroundRoute: AppPlaygroundRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }

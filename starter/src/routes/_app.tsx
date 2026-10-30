@@ -1,7 +1,20 @@
 // The signed-in area: every route under src/routes/_app/ renders inside this app shell, and
 // signed-out visitors are sent to /login first (then back where they were going).
 import { Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouterState } from "@tanstack/react-router"
-import { FolderIcon, HomeIcon, LanguagesIcon, LifeBuoyIcon, PlusIcon, RocketIcon, SettingsIcon } from "lucide-react"
+import {
+  ActivityIcon,
+  BookOpenIcon,
+  BotIcon,
+  FlaskConicalIcon,
+  FolderIcon,
+  HomeIcon,
+  LanguagesIcon,
+  LifeBuoyIcon,
+  MessagesSquareIcon,
+  PlusIcon,
+  RocketIcon,
+  SettingsIcon,
+} from "lucide-react"
 
 import { AppNotifications } from "@/components/app-notifications"
 import { AppShell } from "@/components/app-shell"
@@ -85,6 +98,16 @@ function AppLayout() {
             { title: t.nav.settings, url: "/settings", icon: SettingsIcon, isActive: isActive("/settings") },
           ],
         },
+        {
+          label: t.shell.ai,
+          items: [
+            { title: t.nav.assistant, url: "/assistant", icon: MessagesSquareIcon, isActive: isActive("/assistant") },
+            { title: t.nav.agents, url: "/agents", icon: BotIcon, isActive: isActive("/agents") },
+            { title: t.nav.runs, url: "/runs", icon: ActivityIcon, isActive: isActive("/runs") },
+            { title: t.nav.playground, url: "/playground", icon: FlaskConicalIcon, isActive: isActive("/playground") },
+            { title: t.nav.knowledge, url: "/knowledge", icon: BookOpenIcon, isActive: isActive("/knowledge") },
+          ],
+        },
       ]}
       secondary={[{ title: t.nav.docs, url: "https://eldenn.github.io/coreloom-ui/", icon: LifeBuoyIcon }]}
       breadcrumbs={[{ label: "Coreloom", href: "/" }, ...crumbs]}
@@ -96,6 +119,11 @@ function AppLayout() {
             { label: t.nav.projects, icon: FolderIcon, onSelect: () => void navigate({ to: "/projects" }) },
             { label: t.nav.deployments, icon: RocketIcon, onSelect: () => void navigate({ to: "/deployments" }) },
             { label: t.nav.settings, icon: SettingsIcon, onSelect: () => void navigate({ to: "/settings" }) },
+            { label: t.nav.assistant, icon: MessagesSquareIcon, onSelect: () => void navigate({ to: "/assistant" }) },
+            { label: t.nav.agents, icon: BotIcon, onSelect: () => void navigate({ to: "/agents" }) },
+            { label: t.nav.runs, icon: ActivityIcon, onSelect: () => void navigate({ to: "/runs" }) },
+            { label: t.nav.playground, icon: FlaskConicalIcon, onSelect: () => void navigate({ to: "/playground" }) },
+            { label: t.nav.knowledge, icon: BookOpenIcon, onSelect: () => void navigate({ to: "/knowledge" }) },
           ],
         },
         {

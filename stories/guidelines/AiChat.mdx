@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../blocks/ai-chat.stories"
+import guide from "./AiChat.md?raw"
+
+<Meta title="Guidelines/AI/Chat" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.ConversationStory} />
