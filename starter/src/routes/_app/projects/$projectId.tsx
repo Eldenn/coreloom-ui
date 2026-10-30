@@ -1,3 +1,4 @@
+import * as React from "react"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link, createFileRoute, notFound } from "@tanstack/react-router"
 import { ArrowLeftIcon, ExternalLinkIcon, GitBranchIcon } from "lucide-react"
@@ -8,11 +9,15 @@ import { NotFoundPage } from "@/components/error-page"
 import { StatusBadge } from "@/components/status-badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatRelative } from "@/lib/format"
 import { useCoreloomI18n } from "@/lib/i18n"
 import { useT } from "@/lib/locale"
 import { deploymentsQuery, projectQuery } from "@/lib/queries"
+
+// The editor and its Tiptap dependencies load on their own, after the page is on screen.
+const ProjectNotes = React.lazy(() => import("@/components/project-notes"))
 
 export const Route = createFileRoute("/_app/projects/$projectId")({
   loader: async ({ context, params }) => {
@@ -103,6 +108,17 @@ function ProjectPage() {
               ))}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.project.notes}</CardTitle>
+          <CardDescription>{t.project.notesHint}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <React.Suspense fallback={<Skeleton className="h-[188px] w-full" />}>
+            <ProjectNotes key={project.id} project={project} />
+          </React.Suspense>
         </CardContent>
       </Card>
     </>

@@ -18,6 +18,40 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ## [Unreleased]
 
+### Added
+
+- `ForgotPasswordForm` and `ResetPasswordForm` in the `auth` block. The first confirms without
+  saying whether the account exists and moves focus to its new heading; the second checks the two
+  passwords against each other and hands the account's email to password managers.
+- `AccentPicker` and `useAccent()` in `@coreloom/theme-toggle`: one swatch per preset, a radio
+  group, saved in `localStorage("accent")`. `accents.css` gains a `cyan` preset that brings the
+  default back inside an element with another accent.
+- Starter: sign-up with an emailed code, forgot / reset password, Settings → Appearance (theme and
+  accent, applied before the first paint), and project notes in the rich text editor, loaded with
+  `React.lazy` so Tiptap downloads only on project pages.
+- Unit tests (Vitest, `pnpm test:unit`, run in CI) for the parsers and formatters: money, phone,
+  typed dates, file sizes, emails.
+- Visual tests also take every block at phone width (390 px).
+- Renovate: weekly dependency PRs for the registry and the starter, nothing younger than 14 days
+  (as in `pnpm-workspace.yaml`), grouped by family; Playwright and its CI container move together.
+
+### Changed
+
+- Light theme: `accent` `#009f96` → `#00968d` and `accent-fg` `#007270` → `#006f6c`. The accent
+  fill was 2.9:1 on `surface-inset`, under the 3:1 non-text minimum; it is now 3.1:1 or more on
+  every surface. The change is barely visible.
+- The **Visual baselines** workflow starts **Registry & Storybook** after committing, so main is
+  tested and Pages deployed with the new screenshots.
+
+### Fixed
+
+- Starter: the French workspace URL hint was in English.
+
+### Upgrading
+
+- Re-install `@coreloom/theme` with `--overwrite` for the new light accent and the `cyan` preset,
+  then run the **Visual baselines** workflow if you keep screenshots of your own.
+
 ## [0.7.0] - 2026-10-30
 
 ### Added

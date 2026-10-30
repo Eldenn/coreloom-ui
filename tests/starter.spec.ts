@@ -126,6 +126,96 @@ test("members: invite through the API, already-invited addresses refused", async
   await expect(page.getByText("margaret@acme.dev")).toBeVisible()
 })
 
+test("signing up: a taken email is refused, then the emailed code signs you in", async ({ page }) => {
+  await page.goto("/login")
+  await page.getByRole("link", { name: "Create one" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Create your account" })).toBeVisible()
+  await page.getByLabel("Name").fill("Grace Hopper")
+  await page.getByLabel("Work email").fill("taken@acme.dev")
+  await page.getByLabel("Password").fill("long-enough")
+  await page.getByRole("button", { name: "Create account" }).click()
+  await expect(page.getByText("An account already uses this email.", { exact: false })).toBeVisible()
+  await page.getByLabel("Work email").fill("grace@acme.dev")
+  await page.getByRole("button", { name: "Create account" }).click()
+  await expect(page).toHaveURL(/\/verify$/)
+  await expect(page.getByText("g•••@acme.dev")).toBeVisible()
+  await page.keyboard.type("000000")
+  await expect(page.getByText("That code isn’t right.", { exact: false })).toBeVisible()
+  // The digits stay in the field: clear them and type the right code (it submits on the last digit).
+  await page.getByLabel("Verification code").focus()
+  for (let i = 0; i < 6; i++) await page.keyboard.press("Backspace")
+  await page.keyboard.type("424242")
+  await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText("grace@acme.dev")).toBeVisible()
+})
+
+test("forgot password: the confirmation takes focus; the link resets it; an expired link says so", async ({ page }) => {
+  await page.goto("/login")
+  await page.getByRole("link", { name: "Forgot password?" }).click()
+  await page.getByLabel("Email").fill("ada@acme.dev")
+  await page.getByRole("button", { name: "Send reset link" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Check your inbox" })).toBeFocused()
+  await page.getByRole("link", { name: "Open the link from the email" }).click()
+  await expect(page).toHaveURL(/\/reset-password\?token=demo/)
+  await page.getByLabel("New password").fill("a-new-password")
+  await page.getByLabel("Confirm the password").fill("a-new-passwor")
+  await page.getByLabel("Confirm the password").blur()
+  await expect(page.getByText("The two passwords don’t match.")).toBeVisible()
+  await page.getByLabel("Confirm the password").fill("a-new-password")
+  await page.getByRole("button", { name: "Save password" }).click()
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByText("Password changed.", { exact: false })).toBeVisible()
+
+  await page.goto("/reset-password?token=expired")
+  await page.getByLabel("New password").fill("a-new-password")
+  await page.getByLabel("Confirm the password").fill("a-new-password")
+  await page.getByRole("button", { name: "Save password" }).click()
+  await expect(page.getByText("This link has expired.", { exact: false })).toBeVisible()
+  await page.getByRole("link", { name: "Ask for a new link" }).click()
+  await expect(page).toHaveURL(/\/forgot-password$/)
+})
+
+test("appearance: theme and accent apply at once and survive a reload", async ({ page }) => {
+  await signIn(page, "/settings?section=appearance")
+  await page.getByRole("radio", { name: "Light" }).click()
+  const accents = page.getByRole("radiogroup", { name: "Accent colour" })
+  await accents.getByRole("radio", { name: "Cyan" }).click()
+  await expect(accents.getByRole("radio", { name: "Cyan" })).toBeFocused()
+  // Arrow keys move through the swatches, like any radio group.
+  await page.keyboard.press("ArrowRight")
+  await expect(accents.getByRole("radio", { name: "Blue" })).toBeFocused()
+  await page.keyboard.press("ArrowRight")
+  await expect(accents.getByRole("radio", { name: "Violet" })).toBeFocused()
+  await expect(accents.getByRole("radio", { name: "Violet" })).toBeChecked()
+  expect(await page.evaluate(() => [document.documentElement.dataset.theme, document.documentElement.dataset.accent])).toEqual(["light", "violet"])
+  await page.reload()
+  await expect(page.getByRole("radio", { name: "Violet" })).toBeChecked()
+  expect(await page.evaluate(() => [document.documentElement.dataset.theme, document.documentElement.dataset.accent])).toEqual(["light", "violet"])
+  await page.getByRole("radio", { name: "Cyan" }).click()
+  expect(await page.evaluate(() => document.documentElement.dataset.accent)).toBeUndefined()
+})
+
+test("project notes: the editor loads with the project page only, and saves", async ({ page }) => {
+  const scripts: string[] = []
+  page.on("request", (request) => {
+    if (request.resourceType() === "script") scripts.push(request.url())
+  })
+  await signIn(page, "/projects")
+  expect(scripts.some((url) => url.includes("project-notes"))).toBe(false)
+  await page.locator("tbody a").first().click()
+  const editor = page.getByRole("textbox", { name: "Notes" })
+  await expect(editor).toBeVisible({ timeout: 10_000 })
+  expect(scripts.some((url) => url.includes("project-notes"))).toBe(true)
+  await editor.click()
+  await page.keyboard.type("Owned by the platform team.")
+  await page.getByRole("button", { name: "Save notes" }).click()
+  await expect(page.getByText("Notes saved")).toBeVisible()
+  // Back and forth: the saved notes come from the query cache.
+  await page.getByRole("link", { name: "All projects" }).click()
+  await page.goBack()
+  await expect(page.getByRole("textbox", { name: "Notes" })).toContainText("Owned by the platform team.")
+})
+
 test("unknown pages and projects show the 404 page", async ({ page }) => {
   await signIn(page, "/projects/nope")
   await expect(page.getByRole("heading", { level: 1, name: "Project not found" })).toBeVisible()
@@ -154,7 +244,8 @@ test("signing out protects the app again", async ({ page }) => {
 })
 
 // One test per screen and theme, so a slow machine never runs out of time on a long chain.
-const SCREENS = ["/login", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project"]
+const SIGNED_OUT = ["/login", "/signup", "/forgot-password", "/reset-password?token=demo"]
+const SCREENS = [...SIGNED_OUT, "verify", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=appearance", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project"]
 
 for (const theme of ["dark", "light"] as const) {
   for (const screen of SCREENS) {
@@ -163,18 +254,26 @@ for (const theme of ["dark", "light"] as const) {
       if (screen === "/does/not/exist") {
         // Unknown paths render the 404 page for everyone, signed in or not.
         await page.goto(screen)
-      } else if (screen === "/login") {
-        await page.goto("/login")
-        await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible()
+      } else if (SIGNED_OUT.includes(screen)) {
+        await page.goto(screen)
+        await expect(page.locator("h1")).toBeVisible()
+      } else if (screen === "verify") {
+        await page.goto("/signup")
+        await page.getByLabel("Name").fill("Grace Hopper")
+        await page.getByLabel("Work email").fill("grace@acme.dev")
+        await page.getByLabel("Password").fill("long-enough")
+        await page.getByRole("button", { name: "Create account" }).click()
+        await expect(page.getByRole("heading", { level: 1, name: "Check your inbox" })).toBeVisible()
       } else if (screen === "project") {
         await signIn(page, "/projects")
         await page.locator("tbody a").first().click()
         await expect(page).toHaveURL(/\/projects\/prj_/)
         await expect(page.locator("tbody tr")).toHaveCount(6)
+        await expect(page.getByRole("textbox", { name: "Notes" })).toBeVisible({ timeout: 10_000 })
       } else {
         await signIn(page, screen)
       }
-      if (screen !== "/login") await expect(page.locator("h1, [role=dialog]").first()).toBeVisible()
+      await expect(page.locator("h1, [role=dialog]").first()).toBeVisible()
       await expectNoViolations(page)
     })
   }

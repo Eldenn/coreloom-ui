@@ -19,15 +19,18 @@ https://eldenn.github.io/coreloom-ui/starter/
 | Screen | Route file | Shows |
 |---|---|---|
 | Sign in | `src/routes/login.tsx` | `LoginForm`, redirect back to the page you asked for |
+| Sign up | `src/routes/signup.tsx`, `verify.tsx` | `SignupForm`, then `VerifyForm` for the emailed code |
+| Password reset | `src/routes/forgot-password.tsx`, `reset-password.tsx` | `ForgotPasswordForm`, then `ResetPasswordForm` on the emailed link (`?token=…`) |
 | Overview | `src/routes/_app/index.tsx` | `StatGrid`, `TrendChart`, `ActivityFeed`, data from a route loader |
 | Projects | `src/routes/_app/projects/index.tsx` | `useDataList` with search, filters and page in the route's typed search params; "New project" dialog (`?new=true`) |
-| Project | `src/routes/_app/projects/$projectId.tsx` | Loader with `notFound()`, breadcrumb from loader data |
-| Settings | `src/routes/_app/settings.tsx` | `SettingsLayout` with one URL per section, a form, switches, the danger zone |
+| Project | `src/routes/_app/projects/$projectId.tsx` | Loader with `notFound()`, breadcrumb from loader data; notes in `RichTextEditor`, loaded with `React.lazy` so Tiptap downloads only here |
+| Deployments | `src/routes/_app/deployments.tsx` | `DataTable` driven by the API (sort, search, pages) with the query in the URL |
+| Settings | `src/routes/_app/settings.tsx` | `SettingsLayout` with one URL per section: a form, appearance (theme and `AccentPicker`), members, billing, notification switches, the danger zone |
 | 404 and errors | `src/routes/__root.tsx` | `NotFoundPage`, `ServerErrorPage` with retry |
 
-Around them: the app shell (sidebar, breadcrumbs, ⌘K palette, theme menu, language menu), English
-and French, light / dark / system theme without a flash on load, and the TanStack devtools in
-development.
+Around them: the app shell (sidebar, breadcrumbs, ⌘K palette, notifications, theme menu, language
+menu), English and French, light / dark / system theme and the accent without a flash on load, and
+the TanStack devtools in development.
 
 ## How it fits together
 
@@ -38,8 +41,10 @@ development.
   in-memory demo with a short delay; replace each function's body with a `fetch` to your backend.
   `src/lib/queries.ts` holds the query options: loaders call `ensureQueryData`, components
   `useSuspenseQuery`, mutations invalidate by key.
-- **Auth**: `src/lib/auth.ts` keeps a pretend session in `localStorage`. Keep its shape
-  (`auth.user`, `signIn`, `signOut`, `useAuth()`) and plug in your real sign-in.
+- **Auth**: `src/lib/auth.ts` keeps a pretend session in `localStorage`, and pretends to send the
+  sign-up code and the reset link. Keep its shape (`auth.user`, `signIn`, `signUp`, `verify`,
+  `requestPasswordReset`, `resetPassword`, `signOut`, `useAuth()`) and plug in your real auth. Each
+  screen states its demo rule underneath (e.g. any code but 000000).
 - **Forms** use `useAppForm` from `@/components/ui/form` with zod schemas. `new-project-dialog.tsx`
   shows an API error landing on its field.
 - **Links inside Coreloom blocks** (sidebar, breadcrumbs, settings nav, auth and error pages) go

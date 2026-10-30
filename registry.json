@@ -1475,9 +1475,10 @@
       "name": "theme-toggle",
       "type": "registry:component",
       "title": "ThemeToggle",
-      "description": "ThemeToggle (light ↔ dark) and ThemeMenu (Light, Dark, System), with useTheme. The choice is saved in localStorage.",
+      "description": "ThemeToggle (light ↔ dark), ThemeMenu (Light, Dark, System) and AccentPicker (the accent presets), with useTheme and useAccent. Choices are saved in localStorage.",
       "dependencies": [
-        "lucide-react"
+        "lucide-react",
+        "radix-ui"
       ],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1636,7 +1637,7 @@
       "name": "auth",
       "type": "registry:block",
       "title": "Auth screens",
-      "description": "Sign-in, sign-up and code verification forms on @coreloom/form (TanStack Form), with a centered layout.",
+      "description": "Sign-in, sign-up, code verification, forgot-password and reset-password forms on @coreloom/form (TanStack Form), with a centered layout.",
       "categories": [
         "authentication",
         "login"
@@ -1673,6 +1674,10 @@
         },
         {
           "path": "src/components/verify-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/password-reset-form.tsx",
           "type": "registry:component"
         }
       ]

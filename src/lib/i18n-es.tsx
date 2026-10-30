@@ -101,6 +101,8 @@ export const es: Messages = {
     lightOption: "Claro",
     darkOption: "Oscuro",
     systemOption: "Sistema",
+    accent: "Color de acento",
+    accents: { cyan: "Cian", blue: "Azul", violet: "Violeta", amber: "Ámbar", rose: "Rosa" },
   },
   copy: { copy: "Copiar", copied: "Copiado al portapapeles", failed: "No se pudo copiar: selecciona el texto." },
   commandMenu: { trigger: "Buscar…", placeholder: "Escribe un comando o busca…", empty: "No se encontraron resultados." },
@@ -153,6 +155,30 @@ export const es: Messages = {
       notReceived: "¿No te ha llegado?",
       resendIn: (seconds) => `Reenviar en ${seconds} s`,
       resend: "Reenviar el código",
+    },
+    forgot: {
+      title: "Restablece tu contraseña",
+      description: "Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.",
+      email: "Correo electrónico",
+      submit: "Enviar el enlace",
+      submitting: "Enviando",
+      sentTitle: "Revisa tu correo",
+      sentTo: (email) => (
+        <>
+          Si hay una cuenta con <span className="text-foreground">{email}</span>, te llegará un enlace para restablecer su contraseña.
+        </>
+      ),
+      otherEmail: "Usar otro correo",
+      backToSignIn: "Volver a iniciar sesión",
+    },
+    reset: {
+      title: "Elige una contraseña nueva",
+      description: "La usarás para iniciar sesión a partir de ahora.",
+      password: "Contraseña nueva",
+      confirm: "Confirma la contraseña",
+      mismatch: "Las dos contraseñas no coinciden.",
+      submit: "Guardar la contraseña",
+      submitting: "Guardando",
     },
   },
   dashboard: { activity: "Actividad reciente", noActivity: "Todavía no hay actividad." },

@@ -5,8 +5,11 @@
 // Add the inline script from the Getting started guide to <head> so it applies before the first paint.
 //   ThemeToggle: one icon button, light ↔ dark.
 //   ThemeMenu:   a menu with Light, Dark and System.
+// Accent presets (accents.css): <html data-accent="violet">, kept in localStorage("accent").
+//   AccentPicker: a row of swatches, one per preset, with useAccent behind it.
 import * as React from "react"
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
+import { CheckIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useCoreloomI18n } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
 /** The theme on screen. */
 type Theme = "dark" | "light"
@@ -145,4 +149,90 @@ function ThemeMenu({ className, align = "end" }: { className?: string; align?: "
   )
 }
 
-export { ThemeMenu, ThemeToggle, useTheme, type Theme, type ThemePreference }
+/** The presets in accents.css; "cyan" is the default (no attribute). */
+const ACCENTS = ["cyan", "blue", "violet", "amber", "rose"] as const
+type Accent = (typeof ACCENTS)[number]
+const ACCENT_KEY = "accent"
+
+function readAccent(): Accent {
+  if (typeof document === "undefined") return "cyan"
+  const current = document.documentElement.dataset.accent
+  return ACCENTS.includes(current as Accent) ? (current as Accent) : "cyan"
+}
+
+/** The accent on <html> and a setter that applies and persists it. */
+function useAccent() {
+  const [accent, setAccentState] = React.useState<Accent>("cyan")
+
+  React.useEffect(() => {
+    setAccentState(readAccent())
+    const observer = new MutationObserver(() => setAccentState(readAccent()))
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-accent"] })
+    return () => observer.disconnect()
+  }, [])
+
+  const setAccent = React.useCallback((next: Accent) => {
+    setAccentState(next)
+    const root = document.documentElement
+    if (next === "cyan") delete root.dataset.accent
+    else root.dataset.accent = next
+    try {
+      if (next === "cyan") localStorage.removeItem(ACCENT_KEY)
+      else localStorage.setItem(ACCENT_KEY, next)
+    } catch {
+      /* storage unavailable: the choice lasts for this page */
+    }
+  }, [])
+
+  return { accent, setAccent }
+}
+
+/**
+ * One swatch per accent preset, as a radio group (arrow keys move between them). Each swatch is
+ * drawn with its own preset (data-accent), so it shows the colour as it looks in the current theme.
+ * Needs accents.css. Label it: `aria-label`, or `aria-labelledby` pointing at a visible label.
+ */
+function AccentPicker({
+  accents = ACCENTS,
+  className,
+  ...props
+}: Omit<React.ComponentProps<typeof RadioGroupPrimitive.Root>, "value" | "defaultValue" | "onValueChange" | "orientation"> & {
+  /** The presets to offer, in order. */
+  accents?: readonly Accent[]
+}) {
+  const t = useCoreloomI18n().messages.theme
+  const { accent, setAccent } = useAccent()
+  return (
+    <RadioGroupPrimitive.Root
+      data-slot="accent-picker"
+      aria-label={props["aria-labelledby"] ? undefined : t.accent}
+      orientation="horizontal"
+      value={accent}
+      onValueChange={(v) => setAccent(v as Accent)}
+      className={cn("flex flex-wrap gap-3", className)}
+      {...props}
+    >
+      {accents.map((name) => (
+        <label key={name} className="flex w-14 cursor-pointer flex-col items-center gap-1.5 text-[12px] text-muted-foreground has-[[data-state=checked]]:text-foreground">
+          <RadioGroupPrimitive.Item
+            value={name}
+            data-accent={name}
+            aria-label={t.accents[name]}
+            // Radix checks a radio on arrow-key focus only while the key is still down, and moves focus
+            // a tick later: a quick tap could move focus without choosing. Choosing on focus is the
+            // radio pattern anyway (Tab lands on the checked one, so it changes nothing).
+            onFocus={() => setAccent(name)}
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] outline-none ring-offset-2 ring-offset-background transition-shadow duration-120 focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-ring data-[state=checked]:ring-2 data-[state=checked]:ring-foreground"
+          >
+            <RadioGroupPrimitive.Indicator>
+              <CheckIcon className="size-4" strokeWidth={3} />
+            </RadioGroupPrimitive.Indicator>
+          </RadioGroupPrimitive.Item>
+          {t.accents[name]}
+        </label>
+      ))}
+    </RadioGroupPrimitive.Root>
+  )
+}
+
+export { ACCENTS, AccentPicker, ThemeMenu, ThemeToggle, useAccent, useTheme, type Accent, type Theme, type ThemePreference }

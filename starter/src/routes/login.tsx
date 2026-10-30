@@ -26,6 +26,8 @@ function LoginPage() {
   return (
     <AuthLayout brand={<Brand />} footer={t.login.hint}>
       <LoginForm
+        signUpHref="/signup"
+        forgotPasswordHref="/forgot-password"
         error={error}
         onSubmit={async ({ email, password }) => {
           setError(undefined)

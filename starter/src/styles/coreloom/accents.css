@@ -2,10 +2,36 @@
  * for a section with its own accent):
  *   <html data-accent="violet">            (dark)
  *   <html data-accent="violet" data-theme="light">
+ * "cyan" is the default; set it only to bring it back inside an element with another preset.
  * Each preset replaces the whole accent family in both themes; every pairing meets WCAG AA
  * (text 4.5:1, fills and focus rings 3:1 on all surfaces). Generated and checked by
  * build/gen-accents.py: edit the colours there, then run
  * python3 build/gen-accents.py src/styles/accents.css */
+
+[data-accent="cyan"] {
+  --accent: #1ce0d3;
+  --accent-hover: #4deadf;
+  --accent-press: #14b5ab;
+  --accent-fg: #1ce0d3;
+  --accent-subtle: rgba(28, 224, 211, 0.1);
+  --accent-ring: rgba(28, 224, 211, 0.55);
+  --border-accent: #1ce0d3;
+  --fg-on-accent: #06201e;
+  --glow-accent: 0 0 0 1px rgba(28, 224, 211, 0.4), 0 6px 24px rgba(28, 224, 211, 0.22);
+}
+
+[data-theme="light"][data-accent="cyan"],
+[data-theme="light"] [data-accent="cyan"] {
+  --accent: #00968d;
+  --accent-hover: #14b5ab;
+  --accent-press: #00958c;
+  --accent-fg: #006f6c;
+  --accent-subtle: rgba(0, 150, 141, 0.1);
+  --accent-ring: rgba(0, 111, 108, 0.8);
+  --border-accent: #1ce0d3;
+  --fg-on-accent: #06201e;
+  --glow-accent: 0 0 0 1px rgba(20, 181, 171, 0.35), 0 6px 20px rgba(20, 181, 171, 0.2);
+}
 
 [data-accent="blue"] {
   --accent: #60a5fa;

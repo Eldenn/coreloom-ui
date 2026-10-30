@@ -85,13 +85,13 @@
   --border-subtle: #eceef1;
   --border: #dce0e6;
   --border-strong: #858a93;
-  --accent: #009f96;
+  --accent: #00968d;
   --accent-hover: var(--cyan-500);
   --accent-press: #00958c;
-  --accent-fg: #007270;
-  --accent-subtle: rgba(0, 159, 150, 0.10);
+  --accent-fg: #006f6c;
+  --accent-subtle: rgba(0, 150, 141, 0.10);
   --border-accent: var(--cyan-400);
-  --accent-ring: rgba(0, 114, 112, 0.80);
+  --accent-ring: rgba(0, 111, 108, 0.80);
   --success: #007330;
   --success-subtle: rgba(0, 115, 48, 0.10);
   --warning: #885b00;

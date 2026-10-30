@@ -1,0 +1,54 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Dependency updates for the registry and the starter (two pnpm projects). Same rule as pnpm-workspace.yaml: nothing younger than 14 days.",
+  "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommitsDisabled"],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 7am on monday"],
+  "minimumReleaseAge": "14 days",
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 6,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 7am on the first day of the month"] },
+  "packageRules": [
+    {
+      "description": "The Playwright package and CI's Playwright container move together: screenshots depend on both. After merging, run the Visual baselines workflow.",
+      "groupName": "Playwright",
+      "matchPackageNames": ["@playwright/test", "playwright", "mcr.microsoft.com/playwright"]
+    },
+    {
+      "groupName": "TanStack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "groupName": "Tiptap",
+      "matchPackageNames": ["@tiptap/**"]
+    },
+    {
+      "groupName": "Storybook",
+      "matchPackageNames": ["storybook", "@storybook/**"]
+    },
+    {
+      "groupName": "React",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"]
+    },
+    {
+      "groupName": "Tailwind CSS",
+      "matchPackageNames": ["tailwindcss", "@tailwindcss/**"]
+    },
+    {
+      "groupName": "dnd kit",
+      "matchPackageNames": ["@dnd-kit/**"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["!mcr.microsoft.com/playwright"]
+    },
+    {
+      "description": "Majors can change a component's look or API: one PR each, labelled, never grouped with the rest.",
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "labels": ["major"]
+    }
+  ]
+}
