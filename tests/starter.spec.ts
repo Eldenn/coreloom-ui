@@ -19,6 +19,16 @@ async function signIn(page: Page, to = "/") {
 
 async function expectNoViolations(page: Page) {
   await page.waitForLoadState("networkidle")
+  // A dialog fading in is half transparent: axe would measure contrast mid-animation.
+  // (Looping animations — the code field's blinking caret, spinners — never finish: skip those.)
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== "running" || a.effect?.getTiming().iterations === Infinity)
+  )
+  // Animations start a frame after the DOM changes: check twice, a moment apart.
+  await page.waitForTimeout(250)
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== "running" || a.effect?.getTiming().iterations === Infinity)
+  )
   const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze()
   expect(violations.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(" ")).join(", ")})`)).toEqual([])
 }
