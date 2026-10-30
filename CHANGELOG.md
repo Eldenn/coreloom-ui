@@ -13,10 +13,12 @@ registry attached, so a project can pin one by pointing the namespace there in
 `components.json` (dependencies between items resolve through the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.6.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.7.0/{name}.json" }
 ```
 
 ## [Unreleased]
+
+## [0.7.0] - 2026-10-30
 
 ### Added
 
@@ -55,6 +57,13 @@ registry attached, so a project can pin one by pointing the namespace there in
 - `LoginForm`, `SignupForm` and `VerifyForm` title the page with an `<h1>` (it was a `<div>`), so
   screen-reader users can find it from the headings list.
 - Starter: the dashboard's demo activity follows the app's language.
+
+### Upgrading
+
+- The new components read new strings: re-install `@coreloom/i18n` with `--overwrite` first
+  (it holds English and French), then add them.
+- Re-install `@coreloom/auth` with `--overwrite` for the `<h1>` titles, and `@coreloom/card` for
+  `CardTitle asChild`.
 
 ## [0.6.0] - 2026-10-29
 
@@ -160,5 +169,6 @@ registry attached, so a project can pin one by pointing the namespace there in
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
-[Unreleased]: https://github.com/Eldenn/coreloom-ui/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Eldenn/coreloom-ui/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.7.0
 [0.6.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.6.0
