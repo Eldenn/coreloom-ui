@@ -28,3 +28,5 @@ The wordmark is Space Grotesk Bold (SIL Open Font License, fine for logos), outl
 - **Don't:** recolour the cat outside these files, fill the eyes, add whiskers, outlines, shadows or gradients, rotate
   or stretch it, or add stripes or other markings.
 - **Trademark:** no clearance search has been done. Run one before registering the mark.
+- **Licence:** the logo is Coreloom's mark and isn't covered by the repository's MIT licence. Don't use it for
+  another product.
