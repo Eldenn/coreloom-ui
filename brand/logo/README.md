@@ -1,15 +1,14 @@
 # Logos
 
-**The woven cat.** Coreloom's ginger cat, its head cut in three bands: the tabby's stripes are the weft of a loom.
-Drawn on a 256 grid from three shapes (head with ears, two almond eyes as holes, slit pupils); built and tested with
-the logo-design process (16 px, one colour, reversed, greyscale).
+**The ginger cat.** Coreloom's cat, reduced to three shapes on a 256 grid: the head with its ears, two almond eyes
+cut out, two slit pupils. Built and tested with the logo-design process (16 px, one colour, reversed, greyscale).
 
 ## Files
 
 | File | Use |
 |---|---|
 
-| `coreloom-tile.svg`, `coreloom-tile-small.svg` | The tile, and its small-size cut for favicons and anything at 32 px or less (one wider stripe, bigger eyes). |
+| `coreloom-tile.svg`, `coreloom-tile-small.svg` | The tile, and its small-size cut for favicons and anything at 32 px or less (bigger eyes). |
 | `coreloom-symbol-dark.svg` | The cat alone on dark grounds: orange `#EF9140`, cyan pupils (`cl-cyan`); the eyes are holes, so the ground shows through. |
 | `coreloom-symbol-light.svg` | On light grounds: deeper orange `#C9611A` (4.0:1 on white), graphite pupils. |
 | `coreloom-symbol-small-dark.svg`, `-small-black.svg` | Small-size cut of the symbol. |
@@ -27,5 +26,5 @@ The wordmark is Space Grotesk Bold (SIL Open Font License, fine for logos), outl
 - **Grounds:** dark files on `bg-1`, `surface-*` or photos dark enough for the cyan; light files on white and light
   surfaces. On a busy or mid-tone ground, use the tile.
 - **Don't:** recolour the cat outside these files, fill the eyes, add whiskers, outlines, shadows or gradients, rotate
-  or stretch it, or change the stripes' spacing. The three bands are the idea.
+  or stretch it, or add stripes or other markings.
 - **Trademark:** no clearance search has been done. Run one before registering the mark.

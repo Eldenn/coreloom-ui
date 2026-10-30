@@ -20,8 +20,8 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ### Added
 
-- New logo: the woven cat. Coreloom's ginger cat, redrawn on a 256 grid with its head cut in three
-  bands (the tabby's stripes are the loom's weft); dark, light, one-colour, small-size and tile
+- New logo: Coreloom's ginger cat, redrawn on a 256 grid from three shapes (head, eyes cut out, cyan
+  slit pupils) so it holds at 16 px and in one colour; dark, light, one-colour, small-size and tile
   versions with lockups. Storybook's sidebar and tab and the starter's brand and favicon use it.
 - `DataTable` `virtual`: thousands of rows in a fixed-height box, only the visible ones rendered
   (TanStack Virtual), header pinned, `aria-rowcount` / `aria-rowindex` for screen readers.
