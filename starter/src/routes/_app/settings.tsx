@@ -1,8 +1,10 @@
 import * as React from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { BellIcon, SettingsIcon } from "lucide-react"
+import { BellIcon, CreditCardIcon, SettingsIcon, UsersIcon } from "lucide-react"
 import { z } from "zod"
 
+import { BillingSettings } from "@/components/billing-settings"
+import { MembersSettings } from "@/components/members-settings"
 import { SettingsLayout } from "@/components/settings-layout"
 import { DangerZone, SettingsRow, SettingsSection } from "@/components/settings-section"
 import { useAppForm } from "@/components/ui/form"
@@ -14,7 +16,7 @@ import { useT } from "@/lib/locale"
 // Each section has its own URL (/settings?section=notifications): the nav items are links,
 // so they work with the back button and open in a new tab.
 export const Route = createFileRoute("/_app/settings")({
-  validateSearch: z.object({ section: z.enum(["general", "notifications"]).catch("general").default("general") }),
+  validateSearch: z.object({ section: z.enum(["general", "members", "billing", "notifications"]).catch("general").default("general") }),
   staticData: { crumb: (t) => t.nav.settings },
   component: SettingsPage,
 })
@@ -29,10 +31,15 @@ function SettingsPage() {
       active={section}
       nav={[
         { id: "general", label: t.settings.general, icon: SettingsIcon, href: "/settings" },
+        { id: "members", label: t.settings.members, icon: UsersIcon, href: "/settings?section=members" },
+        { id: "billing", label: t.settings.billing, icon: CreditCardIcon, href: "/settings?section=billing" },
         { id: "notifications", label: t.settings.notifications, icon: BellIcon, href: "/settings?section=notifications" },
       ]}
     >
-      {section === "general" ? <GeneralSettings /> : <NotificationSettings />}
+      {section === "general" && <GeneralSettings />}
+      {section === "members" && <MembersSettings />}
+      {section === "billing" && <BillingSettings />}
+      {section === "notifications" && <NotificationSettings />}
     </SettingsLayout>
   )
 }

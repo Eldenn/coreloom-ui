@@ -57,7 +57,7 @@ function useFieldMeta() {
   const id = `${field.name}-${uid}`
   const issues = toIssues(errors)
   const invalid = (isBlurred || submitted) && issues.length > 0
-  return { field, id, descriptionId: `${id}-description`, errorId: `${id}-error`, invalid, issues }
+  return { field, id, labelId: `${id}-label`, descriptionId: `${id}-description`, errorId: `${id}-error`, invalid, issues }
 }
 
 type FieldShellProps = {
@@ -81,7 +81,11 @@ function describedBy(meta: Meta, description?: React.ReactNode) {
 
 /** Label on top, control, then the description and the error. */
 function VerticalShell({ meta, label, description, className, labelAction, hideLabel, children }: VerticalShellProps & { meta: Meta; children: React.ReactNode }) {
-  const labelEl = <FieldLabel htmlFor={meta.id} className={cn(hideLabel && "sr-only")}>{label}</FieldLabel>
+  const labelEl = (
+    <FieldLabel id={meta.labelId} htmlFor={meta.id} className={cn(hideLabel && "sr-only")}>
+      {label}
+    </FieldLabel>
+  )
   return (
     <Field data-invalid={meta.invalid || undefined} className={className}>
       {labelAction && !hideLabel ? (
@@ -645,4 +649,9 @@ export {
   OTPField,
   SubmitButton,
   FormErrors,
+  // For your own field components (see rich-text-field.tsx): ids, errors and the label / description / error frame.
+  useFieldMeta,
+  VerticalShell,
+  describedBy,
+  type VerticalShellProps,
 }

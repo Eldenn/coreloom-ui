@@ -2,7 +2,7 @@
 // `queryClient.ensureQueryData(...)`; components read with `useSuspenseQuery(...)`.
 import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
-import { getOverview, getProject, listDeployments, listProjects, searchDeployments, type DeploymentQuery } from "@/lib/api"
+import { getOverview, getProject, getTeam, listDeployments, listNotifications, listProjects, searchDeployments, type DeploymentQuery } from "@/lib/api"
 
 export const overviewQuery = queryOptions({ queryKey: ["overview"], queryFn: getOverview })
 
@@ -11,6 +11,10 @@ export const projectsQuery = queryOptions({ queryKey: ["projects"], queryFn: lis
 export const projectQuery = (id: string) => queryOptions({ queryKey: ["projects", id], queryFn: () => getProject(id) })
 
 export const deploymentsQuery = (id: string) => queryOptions({ queryKey: ["projects", id, "deployments"], queryFn: () => listDeployments(id) })
+
+export const notificationsQuery = queryOptions({ queryKey: ["notifications"], queryFn: listNotifications })
+
+export const teamQuery = (me: { name: string; email: string }) => queryOptions({ queryKey: ["team"], queryFn: () => getTeam(me) })
 
 export const deploymentSearchQuery = (query: DeploymentQuery) =>
   queryOptions({

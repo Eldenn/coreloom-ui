@@ -7,7 +7,7 @@
       "name": "theme",
       "type": "registry:item",
       "title": "Coreloom theme",
-      "description": "Coreloom UI tokens (dark-first, light via data-theme), the brand fonts (Fontsource) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto the tokens. Import fonts.css, tokens.css and theme.css in your globals.css after tailwindcss.",
+      "description": "Coreloom UI tokens (dark-first, light via data-theme), the brand fonts (Fontsource) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto the tokens. Import fonts.css, tokens.css and theme.css in your globals.css after tailwindcss. accents.css adds blue, violet, amber and rose presets (data-accent on <html>).",
       "dependencies": [
         "tw-animate-css",
         "@fontsource-variable/geist",
@@ -29,6 +29,11 @@
           "path": "src/styles/theme.css",
           "type": "registry:file",
           "target": "src/styles/coreloom/theme.css"
+        },
+        {
+          "path": "src/styles/accents.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/accents.css"
         }
       ]
     },
@@ -52,10 +57,40 @@
       "name": "i18n",
       "type": "registry:lib",
       "title": "i18n",
-      "description": "CoreloomI18nProvider and useCoreloomI18n: every built-in string of the components and blocks, in English and French, overridable per string.",
+      "description": "CoreloomI18nProvider and useCoreloomI18n: every built-in string of the components and blocks, in English and French, overridable per string. Spanish and German: @coreloom/i18n-es, @coreloom/i18n-de.",
       "files": [
         {
           "path": "src/lib/i18n.tsx",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "i18n-es",
+      "type": "registry:lib",
+      "title": "i18n — Spanish",
+      "description": "Spanish messages for CoreloomI18nProvider: <CoreloomI18nProvider locale=\"es\" messages={es} dateLocale={…}>.",
+      "registryDependencies": [
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/lib/i18n-es.tsx",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "i18n-de",
+      "type": "registry:lib",
+      "title": "i18n — German",
+      "description": "German messages for CoreloomI18nProvider: <CoreloomI18nProvider locale=\"de\" messages={de} dateLocale={…}>.",
+      "registryDependencies": [
+        "@coreloom/i18n"
+      ],
+      "files": [
+        {
+          "path": "src/lib/i18n-de.tsx",
           "type": "registry:lib"
         }
       ]
@@ -1328,6 +1363,42 @@
       ]
     },
     {
+      "name": "rich-text-editor",
+      "type": "registry:ui",
+      "title": "RichTextEditor",
+      "description": "Tiptap editor with a toolbar (marks, headings, lists, quote, code, links, undo) and RichTextField for the form kit; the value is HTML.",
+      "dependencies": [
+        "@tiptap/react@^3",
+        "@tiptap/pm@^3",
+        "@tiptap/starter-kit@^3",
+        "@tiptap/extensions@^3",
+        "@tanstack/react-form",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/popover",
+        "@coreloom/separator",
+        "@coreloom/toggle",
+        "@coreloom/tooltip",
+        "@coreloom/form"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/rich-text-editor.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/rich-text-field.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
@@ -1395,7 +1466,8 @@
         "@coreloom/link",
         "@coreloom/multi-select",
         "@coreloom/money-input",
-        "@coreloom/phone-input"
+        "@coreloom/phone-input",
+        "@coreloom/rich-text-editor"
       ],
       "dependencies": []
     },
@@ -1861,6 +1933,152 @@
       "files": [
         {
           "path": "src/components/error-page.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "type": "registry:block",
+      "title": "Notifications",
+      "description": "A bell with the unread count and a popover of notifications: all / unread, mark one or all as read, links.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/button",
+        "@coreloom/popover",
+        "@coreloom/scroll-area",
+        "@coreloom/toggle-group"
+      ],
+      "files": [
+        {
+          "path": "src/components/notifications.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "team",
+      "type": "registry:block",
+      "title": "Team",
+      "description": "Workspace members with roles, an invite dialog (several emails, one role), pending invites and confirmed removal.",
+      "categories": [
+        "application",
+        "settings"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "zod"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert-dialog",
+        "@coreloom/avatar",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/dialog",
+        "@coreloom/form",
+        "@coreloom/select"
+      ],
+      "files": [
+        {
+          "path": "src/components/team.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "billing",
+      "type": "registry:block",
+      "title": "Billing",
+      "description": "Current plan, usage meters against limits, payment method and invoices, in the reader's currency format.",
+      "categories": [
+        "application",
+        "settings"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/progress",
+        "@coreloom/table"
+      ],
+      "files": [
+        {
+          "path": "src/components/billing.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "kanban",
+      "type": "registry:block",
+      "title": "Kanban",
+      "description": "Columns of cards to reorder and move by drag and drop (pointer or keyboard, announced) or from a Move to menu; WIP limits.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "@dnd-kit/core@^6",
+        "@dnd-kit/sortable@^10",
+        "@dnd-kit/utilities@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "src/components/kanban.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "event-calendar",
+      "type": "registry:block",
+      "title": "Event calendar",
+      "description": "A month of events: grid on wide screens, agenda on phones, locale week start, n more, today.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "date-fns@^4"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/event-calendar.tsx",
           "type": "registry:component"
         }
       ]

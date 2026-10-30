@@ -94,6 +94,68 @@ export async function searchDeployments(query: DeploymentQuery): Promise<{ rows:
   return { rows: matching.slice(start, start + query.pageSize), total: matching.length }
 }
 
+// ——— Notifications ———
+
+export type Notification = { id: string; event: "deployed" | "joined" | "buildFailed"; subject: string; detail?: string; at: string; read: boolean; href?: string }
+
+let notifications: Notification[] = [
+  { id: "nt1", event: "deployed", subject: "coreloom-web", detail: "main · 3f2a9c1", at: hoursAgo(0.05), read: false, href: "/deployments?q=coreloom-web" },
+  { id: "nt2", event: "buildFailed", subject: "coreloom-api", detail: "src/billing.ts", at: hoursAgo(1.2), read: false, href: "/deployments?q=coreloom-api" },
+  { id: "nt3", event: "joined", subject: "Ada", at: hoursAgo(5), read: false, href: "/settings?section=members" },
+  { id: "nt4", event: "deployed", subject: "docs", at: hoursAgo(26), read: true },
+]
+
+export async function listNotifications(): Promise<Notification[]> {
+  await wait(150)
+  return notifications.map((n) => ({ ...n }))
+}
+
+export async function markNotificationsRead(ids: string[] | "all"): Promise<void> {
+  await wait(150)
+  notifications = notifications.map((n) => (ids === "all" || ids.includes(n.id) ? { ...n, read: true } : n))
+}
+
+// ——— Team ———
+
+export type Member = { id: string; name: string; email: string; role: string }
+export type Invite = { id: string; email: string; role: string; invitedAt: string }
+
+let members: Member[] = [
+  { id: "me", name: "You", email: "", role: "owner" },
+  { id: "m2", name: "Ada Lovelace", email: "ada@acme.dev", role: "admin" },
+  { id: "m3", name: "Grace Hopper", email: "grace@acme.dev", role: "developer" },
+  { id: "m4", name: "Alan Turing", email: "alan@acme.dev", role: "viewer" },
+]
+let invites: Invite[] = [{ id: "iv1", email: "linus@acme.dev", role: "developer", invitedAt: hoursAgo(50) }]
+
+export async function getTeam(me: { name: string; email: string }): Promise<{ members: Member[]; invites: Invite[] }> {
+  await wait()
+  members = members.map((m) => (m.id === "me" ? { ...m, ...me } : m))
+  return { members: members.map((m) => ({ ...m })), invites: invites.map((i) => ({ ...i })) }
+}
+
+export async function inviteMembers(emails: string[], role: string): Promise<void> {
+  await wait(500)
+  const taken = emails.filter((e) => members.some((m) => m.email === e) || invites.some((i) => i.email === e))
+  if (taken.length) throw new ApiError(`Already in the workspace: ${taken.join(", ")}`, "emails")
+  invites = [...invites, ...emails.map((email, i) => ({ id: `iv${Date.now()}${i}`, email, role, invitedAt: new Date().toISOString() }))]
+}
+
+export async function setMemberRole(id: string, role: string): Promise<void> {
+  await wait(300)
+  members = members.map((m) => (m.id === id ? { ...m, role } : m))
+}
+
+export async function removeMember(id: string): Promise<void> {
+  await wait(300)
+  members = members.filter((m) => m.id !== id)
+}
+
+export async function revokeInvite(id: string): Promise<void> {
+  await wait(300)
+  invites = invites.filter((i) => i.id !== id)
+}
+
 export class ApiError extends Error {
   constructor(message: string, readonly field?: string) {
     super(message)

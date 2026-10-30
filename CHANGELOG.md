@@ -31,6 +31,21 @@ registry attached, so a project can pin one by pointing the namespace there in
 - `DataTable` `server`: the API sorts, searches and pages; `query` / `onQueryChange` / `rowCount`
   / `loading`. Starter: a Deployments page keeps that query in the URL and fetches it with
   TanStack Query.
+- `RichTextEditor`: Tiptap with a Coreloom toolbar (marks, headings, lists, quote, code, links,
+  undo), Markdown shortcuts, an HTML value; `RichTextField` for the form kit lives beside it so
+  `@coreloom/form` doesn't pull in Tiptap. The form kit now exports `useFieldMeta`,
+  `VerticalShell` and `describedBy` for custom fields.
+- Blocks: `notifications` (bell, unread count, all / unread, mark read), `team` (members, roles,
+  invites with checked emails, confirmed removal), `billing` (plan, usage meters, payment method,
+  invoices), `kanban` (drag and drop with pointer or keyboard, announced, plus a Move to menu; WIP
+  limits) and `event-calendar` (month grid, agenda on phones, locale week start).
+- Starter: notifications in the header (TanStack Query, optimistic mark-as-read), and Members and
+  Billing settings sections.
+- Accent presets: `accents.css` (part of `@coreloom/theme`) adds blue, violet, amber and rose,
+  set with `<html data-accent>`; every pairing is checked in both themes by `build/gen-accents.py`
+  and by axe in CI. Storybook has an Accent toolbar.
+- Spanish and German: `@coreloom/i18n-es` and `@coreloom/i18n-de`, passed as `messages`. Storybook's
+  Language toolbar has them, and CI runs axe in both.
 - The starter runs as a live demo at https://eldenn.github.io/coreloom-ui/starter/, deployed with
   Storybook. It honours Vite's `base` as the router's basepath, so it also works under a sub-path.
 - `CardTitle` takes `asChild` to render your own heading element with the card title's style.

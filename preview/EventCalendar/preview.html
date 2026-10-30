@@ -1,0 +1,33 @@
+<!-- @dsCard group="Blocks" width=1280 height=760 subtitle="event-calendar block · month grid · agenda on phones · locale week" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.EventCalendar || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { EventCalendar } = UI;
+      const at = (day, hr, m = 0) => hr === undefined ? { start: new Date(2026, 9, day), allDay: true } : { start: new Date(2026, 9, day, hr, m), end: new Date(2026, 9, day, hr + 1, m) };
+      const events = [
+        { id: 'e1', title: 'Sprint planning', ...at(5, 9, 30), color: 1 }, { id: 'e2', title: 'Design review', ...at(7, 14), color: 2 },
+        { id: 'e3', title: 'Release 0.7', ...at(14), color: 4 }, { id: 'e4', title: '1:1 Ada', ...at(14, 10), color: 2 },
+        { id: 'e5', title: 'Incident review', ...at(14, 15), color: 5 }, { id: 'e6', title: 'Team lunch', ...at(14, 12, 30), color: 3 },
+        { id: 'e7', title: 'Sprint demo', ...at(16, 16), color: 1 }, { id: 'e8', title: 'Offsite', ...at(22), color: 3 }, { id: 'e9', title: 'Retro', ...at(30, 11), color: 1 }];
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { style: { maxWidth: 1100, margin: '0 auto' } }, h(EventCalendar, { events, defaultMonth: new Date(2026, 9, 1), onEventSelect: () => {}, onDaySelect: () => {} })));
+    }
+    render();
+  </script>
+</body>
+</html>

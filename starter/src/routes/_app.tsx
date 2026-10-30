@@ -3,6 +3,7 @@
 import { Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouterState } from "@tanstack/react-router"
 import { FolderIcon, HomeIcon, LanguagesIcon, LifeBuoyIcon, PlusIcon, RocketIcon, SettingsIcon } from "lucide-react"
 
+import { AppNotifications } from "@/components/app-notifications"
 import { AppShell } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import {
@@ -102,7 +103,12 @@ function AppLayout() {
           items: [{ label: t.projects.new, icon: PlusIcon, onSelect: () => void navigate({ to: "/projects", search: { new: true } }) }],
         },
       ]}
-      headerActions={<LanguageMenu />}
+      headerActions={
+        <>
+          <AppNotifications />
+          <LanguageMenu />
+        </>
+      }
     >
       <Outlet />
     </AppShell>

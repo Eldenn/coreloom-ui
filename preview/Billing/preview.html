@@ -1,0 +1,35 @@
+<!-- @dsCard group="Blocks" width=1280 height=720 subtitle="billing block · plan · usage · payment method · invoices" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.PlanCard || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { PlanCard, UsageMeters, PaymentMethod, InvoiceTable, TooltipProvider } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null,
+        h('div', { className: 'grid gap-4 lg:grid-cols-2', style: { maxWidth: 1040, margin: '0 auto' } },
+          h(PlanCard, { name: 'Pro', price: 24, renewsAt: new Date(2026, 10, 1), features: ['Unlimited projects', 'Custom domains', 'Team roles and SSO'], onChangePlan: () => {}, onCancel: () => {} }),
+          h(UsageMeters, { items: [{ label: 'Build minutes', used: 1840, limit: 3000, unit: 'min' }, { label: 'Bandwidth', used: 86, limit: 100, unit: 'GB' }, { label: 'Seats', used: 11, limit: 10 }] }),
+          h(PaymentMethod, { brand: 'Visa', last4: '4242', expires: new Date(2028, 3, 1), onUpdate: () => {} }),
+          h(InvoiceTable, { className: 'lg:col-span-2', invoices: [
+            { id: 'INV-2026-010', date: new Date(2026, 9, 1), amount: 24, status: 'due', href: '#' },
+            { id: 'INV-2026-009', date: new Date(2026, 8, 1), amount: 24, status: 'paid', href: '#' },
+            { id: 'INV-2026-008', date: new Date(2026, 7, 1), amount: 24, status: 'failed', href: '#' }] }))));
+    }
+    render();
+  </script>
+</body>
+</html>
