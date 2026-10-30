@@ -20,6 +20,18 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ### Added
 
+- New logo: the woven cat. Coreloom's ginger cat, redrawn on a 256 grid with its head cut in three
+  bands (the tabby's stripes are the loom's weft); dark, light, one-colour, small-size and tile
+  versions with lockups. Storybook's sidebar and tab and the starter's brand and favicon use it.
+- `DataTable` `virtual`: thousands of rows in a fixed-height box, only the visible ones rendered
+  (TanStack Virtual), header pinned, `aria-rowcount` / `aria-rowindex` for screen readers.
+- `VirtualList`: a long list with measured item heights and load-more at the end, made for
+  `useInfiniteQuery`.
+- Guidelines in Storybook: a page per component and block (when to use it, what it takes, its
+  rules, a live example), from the design system's guides; CI checks each one renders.
+- Design tokens in the DTCG format (2025.10) at https://eldenn.github.io/coreloom-ui/tokens/ and on
+  each release: base, dark and light files plus a resolver, for Figma, Style Dictionary or native
+  apps. `pnpm tokens:dtcg` writes them; unit tests check every colour against `tokens.css`.
 - `ForgotPasswordForm` and `ResetPasswordForm` in the `auth` block. The first confirms without
   saying whether the account exists and moves focus to its new heading; the second checks the two
   passwords against each other and hands the account's email to password managers.

@@ -1012,9 +1012,10 @@
       "name": "data-table",
       "type": "registry:ui",
       "title": "DataTable",
-      "description": "Table with sorting, filtering, selection and pagination (TanStack Table). With `server`, sorting, search and pagination go to your API (page in, rows and total out).",
+      "description": "Table with sorting, filtering, selection and pagination (TanStack Table). With `server`, sorting, search and pagination go to your API (page in, rows and total out). With `virtual`, thousands of rows scroll in a fixed-height box, only the visible ones rendered (TanStack Virtual).",
       "dependencies": [
         "@tanstack/react-table@^8",
+        "@tanstack/react-virtual@^3",
         "lucide-react"
       ],
       "registryDependencies": [
@@ -1029,6 +1030,27 @@
       "files": [
         {
           "path": "src/components/ui/data-table.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "virtual-list",
+      "type": "registry:ui",
+      "title": "VirtualList",
+      "description": "A long list in a scrolling box with only the visible items rendered (TanStack Virtual): measured item heights, load-more at the end for infinite queries.",
+      "dependencies": [
+        "@tanstack/react-virtual@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/virtual-list.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1451,6 +1473,7 @@
         "@coreloom/combobox",
         "@coreloom/date-picker",
         "@coreloom/data-table",
+        "@coreloom/virtual-list",
         "@coreloom/context-menu",
         "@coreloom/menubar",
         "@coreloom/navigation-menu",

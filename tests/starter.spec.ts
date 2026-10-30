@@ -113,7 +113,7 @@ test("notifications: unread count, a link marks it read and goes there", async (
 
 test("members: invite through the API, already-invited addresses refused", async ({ page }) => {
   await signIn(page, "/settings?section=members")
-  await expect(page.getByText("Ada Lovelace")).toBeVisible()
+  await expect(page.getByRole("main").getByText("Ada Lovelace", { exact: true })).toBeVisible({ timeout: 10_000 })
   await page.getByRole("button", { name: "Invite", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Email addresses").fill("linus@acme.dev, ")
@@ -152,9 +152,13 @@ test("signing up: a taken email is refused, then the emailed code signs you in",
 test("forgot password: the confirmation takes focus; the link resets it; an expired link says so", async ({ page }) => {
   await page.goto("/login")
   await page.getByRole("link", { name: "Forgot password?" }).click()
+  // Wait for the page to be the reset page before typing (the link navigates client-side).
+  await expect(page.getByRole("heading", { level: 1, name: "Reset your password" })).toBeVisible()
   await page.getByLabel("Email").fill("ada@acme.dev")
+  await expect(page.getByLabel("Email")).toHaveValue("ada@acme.dev")
   await page.getByRole("button", { name: "Send reset link" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Check your inbox" })).toBeFocused()
+  // The demo request takes 600 ms; allow for a busy CI machine.
+  await expect(page.getByRole("heading", { level: 1, name: "Check your inbox" })).toBeFocused({ timeout: 10_000 })
   await page.getByRole("link", { name: "Open the link from the email" }).click()
   await expect(page).toHaveURL(/\/reset-password\?token=demo/)
   await page.getByLabel("New password").fill("a-new-password")

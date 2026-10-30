@@ -8,6 +8,10 @@
 // API does: `data` is the current page, `server.rowCount` the total, and `server.query` /
 // `server.onQueryChange` hold page, page size, sort and search — keep them in the URL's search
 // params and refetch when they change.
+//
+// With `virtual`, every row stays in the browser but only the visible ones are in the DOM: the
+// table scrolls inside a fixed height with its header pinned, and there are no pages. For lists
+// of thousands of rows; sorting, the filter and selection work the same.
 import * as React from "react"
 import {
   flexRender,
@@ -24,6 +28,7 @@ import {
   type Table as TanstackTable,
   type VisibilityState,
 } from "@tanstack/react-table"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   ArrowDownIcon,
   ArrowUpDownIcon,
@@ -52,6 +57,18 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useCoreloomI18n } from "@/lib/i18n"
+
+/** A virtual table: its scrolling box and row size. */
+type DataTableVirtual = {
+  /** Height of the scrolling box: 480, "60vh"… */
+  height: number | string
+  /** Estimated row height in px (rows are measured as they render). Default 41, a one-line row. */
+  rowHeight?: number
+  /** Rows rendered beyond each edge, so fast scrolling doesn't show blanks. Default 10. */
+  overscan?: number
+  /** Name of the scrolling region for screen readers. Default: the i18n `dataTable.scrollable`. */
+  label?: string
+}
 
 /** What a server-driven table asks your API for. `page` starts at 1. */
 type DataTableQuery = {
@@ -86,6 +103,7 @@ function DataTable<TData, TValue>({
   getRowId,
   onRowSelectionChange,
   server,
+  virtual,
   className,
 }: {
   columns: ColumnDef<TData, TValue>[]
@@ -103,6 +121,8 @@ function DataTable<TData, TValue>({
   onRowSelectionChange?: (rows: TData[]) => void
   /** Sorting, search and pagination happen in your API (see the file's header). */
   server?: DataTableServer
+  /** Render only the visible rows of a long client-side table, in a scrolling box (see the file's header). */
+  virtual?: DataTableVirtual
   className?: string
 }) {
   const t = useCoreloomI18n().messages
@@ -145,9 +165,37 @@ function DataTable<TData, TValue>({
       : {
           getSortedRowModel: getSortedRowModel(),
           getFilteredRowModel: getFilteredRowModel(),
-          getPaginationRowModel: getPaginationRowModel(),
+          ...(virtual ? {} : { getPaginationRowModel: getPaginationRowModel() }),
         }),
   })
+
+  const rows = table.getRowModel().rows
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: virtual && !server ? rows.length : 0,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => virtual?.rowHeight ?? 41,
+    overscan: virtual?.overscan ?? 10,
+    getItemKey: (index) => rows[index]?.id ?? index,
+  })
+  const isVirtual = !!virtual && !server
+  const items = isVirtual ? virtualizer.getVirtualItems() : []
+  const padTop = items[0]?.start ?? 0
+  const padBottom = items.length ? virtualizer.getTotalSize() - items[items.length - 1].end : 0
+  const visibleCells = table.getVisibleLeafColumns().length
+
+  const renderRow = (row: (typeof rows)[number], index?: number) => (
+    <TableRow
+      key={row.id}
+      data-state={row.getIsSelected() ? "selected" : undefined}
+      // In a virtual table, assistive tech hears "row 512 of 5,001" although only a few rows exist.
+      {...(index !== undefined ? { "data-index": index, "aria-rowindex": index + 2, ref: virtualizer.measureElement } : {})}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+      ))}
+    </TableRow>
+  )
 
   // A new page from the server starts with nothing selected.
   React.useEffect(() => {
@@ -189,11 +237,25 @@ function DataTable<TData, TValue>({
 
       <Table
         aria-busy={server?.loading || undefined}
+        aria-rowcount={isVirtual ? rows.length + 1 : undefined}
         className={cn(server?.loading && "[&_tbody]:opacity-60 [&_tbody]:transition-opacity")}
+        container={
+          isVirtual
+            ? {
+                ref: scrollRef,
+                // A scrolling box must be reachable with the keyboard to scroll it.
+                tabIndex: 0,
+                role: "region",
+                "aria-label": virtual.label ?? t.dataTable.scrollable,
+                style: { height: virtual.height },
+                className: "overflow-y-auto overscroll-contain focus-visible:ring-[3px] focus-visible:ring-ring outline-none",
+              }
+            : undefined
+        }
       >
-        <TableHeader>
+        <TableHeader className={cn(isVirtual && "sticky top-0 z-10 shadow-[0_1px_0_var(--border-subtle)]")}>
           {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
+            <TableRow key={group.id} aria-rowindex={isVirtual ? 1 : undefined}>
               {group.headers.map((header) => (
                 <TableHead key={header.id} colSpan={header.colSpan}>
                   {header.isPlaceholder
@@ -205,16 +267,24 @@ function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+          {rows.length ? (
+            isVirtual ? (
+              <>
+                {padTop > 0 && (
+                  <tr aria-hidden style={{ height: padTop }}>
+                    <td colSpan={visibleCells} />
+                  </tr>
+                )}
+                {items.map((item) => renderRow(rows[item.index], item.index))}
+                {padBottom > 0 && (
+                  <tr aria-hidden style={{ height: padBottom }}>
+                    <td colSpan={visibleCells} />
+                  </tr>
+                )}
+              </>
+            ) : (
+              rows.map((row) => renderRow(row))
+            )
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">
@@ -225,11 +295,15 @@ function DataTable<TData, TValue>({
         </TableBody>
       </Table>
 
-      <DataTablePagination
-        table={table}
-        total={server?.rowCount}
-        pageSizeOptions={[...new Set([...pageSizeOptions, server?.query.pageSize ?? pageSize])].sort((x, y) => x - y)}
-      />
+      {isVirtual ? (
+        <DataTableCount table={table} />
+      ) : (
+        <DataTablePagination
+          table={table}
+          total={server?.rowCount}
+          pageSizeOptions={[...new Set([...pageSizeOptions, server?.query.pageSize ?? pageSize])].sort((x, y) => x - y)}
+        />
+      )}
     </div>
   )
 }
@@ -289,6 +363,18 @@ function DataTableColumnHeader<TData, TValue>({
       {title}
       <Icon className={cn("size-3.5", !sorted && "text-muted-foreground")} />
     </button>
+  )
+}
+
+/** "5,000 rows" / "3 of 5,000 selected", for tables without pages. */
+function DataTableCount<TData>({ table }: { table: TanstackTable<TData> }) {
+  const { messages: t, formatNumber } = useCoreloomI18n()
+  const selected = table.getFilteredSelectedRowModel().rows.length
+  const total = table.getFilteredRowModel().rows.length
+  return (
+    <div data-slot="data-table-count" aria-live="polite" className="font-mono text-[12px] text-muted-foreground">
+      {selected > 0 ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected) : t.dataTable.rows(formatNumber(total), total)}
+    </div>
   )
 }
 
@@ -358,4 +444,4 @@ function DataTablePagination<TData>({
   )
 }
 
-export { DataTable, DataTableColumnHeader, DataTablePagination, type DataTableQuery, type DataTableServer }
+export { DataTable, DataTableColumnHeader, DataTableCount, DataTablePagination, type DataTableQuery, type DataTableServer, type DataTableVirtual }

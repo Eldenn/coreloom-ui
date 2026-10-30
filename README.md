@@ -14,7 +14,7 @@ component.
 | `src/styles/theme.css` | The shadcn layer: maps Tailwind / shadcn color utilities (`bg-background`, `bg-primary`, `text-muted-foreground`, `border-input`, `ring-ring`…) onto the Coreloom tokens, adds Coreloom-only utilities (`bg-inset`, `text-fg-secondary`, `bg-primary-subtle`, `shadow-glow`, `bg-scrim`…) and makes `dark:` follow `data-theme`. |
 | `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
 | `src/styles/accents.css` | Accent presets (blue, violet, amber, rose) on `<html data-accent>`, generated and contrast-checked by `build/gen-accents.py`. |
-| `src/components/ui/*.tsx` | 62 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, date-range-picker, dialog, drawer, dropdown-menu, empty, field, file-upload, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, money-input, multi-select, navigation-menu, pagination, phone-input, popover, progress, radio-group, resizable, rich-text-editor (+ rich-text-field), scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, stepper, switch, table, tabs, tags-input, textarea, toggle, toggle-group, tooltip. shadcn's code and APIs, Coreloom's look. |
+| `src/components/ui/*.tsx` | 63 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, date-range-picker, dialog, drawer, dropdown-menu, empty, field, file-upload, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, money-input, multi-select, navigation-menu, pagination, phone-input, popover, progress, radio-group, resizable, rich-text-editor (+ rich-text-field), scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, stepper, switch, table, tabs, tags-input, textarea, toggle, toggle-group, tooltip, virtual-list. shadcn's code and APIs, Coreloom's look. |
 | `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form, password-reset-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview), `dashboard` (dashboard, stat-card), `data-list`, `pricing`, `onboarding`, `error-pages` (error-page), `notifications`, `team`, `billing`, `kanban`, `event-calendar`; shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
 | `src/lib/i18n.tsx`, `i18n-es.tsx`, `i18n-de.tsx` | `CoreloomI18nProvider` and `useCoreloomI18n()`: every built-in string (labels, placeholders, screen-reader text, validation messages) in English and French, overridable per string; Spanish and German as separate items. Installed with the components that use it. |
 | `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
@@ -125,6 +125,8 @@ Brand rules, token usage and per-component guidelines live in the Coreloom UI de
 The repo uses pnpm (version pinned in `package.json` → `packageManager`; `corepack enable` picks it up).
 `pnpm-workspace.yaml` allows the two install scripts the build needs (esbuild, @parcel/watcher) and
 only installs versions published at least 14 days ago.
+Renovate (`renovate.json`, once the Renovate app is installed on the repo) opens dependency PRs on
+Mondays with the same 14-day rule, for the registry and the starter.
 
 ```bash
 pnpm install
@@ -132,18 +134,22 @@ pnpm typecheck           # library, stories and tests
 pnpm storybook           # http://localhost:6006
 pnpm registry:build      # → public/r/*.json (not committed; CI builds it)
 pnpm storybook:build     # → public/storybook (not committed; CI builds it)
+pnpm tokens:dtcg         # → public/tokens/*.json, the tokens in the DTCG format (CI publishes them)
+pnpm test:unit           # Vitest: parsers, formatters, the DTCG export
 pnpm test:a11y           # axe on every story, dark and light (needs the Storybook build)
 pnpm test:visual         # screenshots of every story, compared with tests/__screenshots__
 ```
 
 ### Tests
 
-Every push and pull request runs `pnpm test` in the Playwright container (`.github/workflows/registry.yml`);
+Every push and pull request runs `pnpm test:unit`, then `pnpm test` in the Playwright container (`.github/workflows/registry.yml`);
 `main` only deploys when it passes.
 
 - **Accessibility:** axe (WCAG 2.0–2.2 A / AA and best practices) on every story in both themes. A new
   component or story must come with no violations.
-- **Visual:** a full-page screenshot of every story in both themes, with a frozen clock and no outside
+- **Unit:** `unit/*.test.ts` (Vitest) covers the pure functions edge case by edge case: money, phone and date
+  parsing, file sizes, emails, and the DTCG export (every colour checked against `tokens.css`).
+- **Visual:** a full-page screenshot of every story in both themes (blocks also at phone width, 390 px), with a frozen clock and no outside
   network. Screenshots depend on the OS's font rendering, so the baselines in `tests/__screenshots__` come
   from CI, not from a laptop: after an intended visual change (or to create them the first time), run the
   **Visual baselines** workflow on your branch (Actions → Visual baselines → Run workflow). It commits the
@@ -151,15 +157,16 @@ Every push and pull request runs `pnpm test` in the Playwright container (`.gith
 - **Interactions:** `tests/interactions.spec.ts` drives components and blocks with the keyboard and pointer
   (focus traps, filtering, tags, file checks, form errors and busy states, URL state, theme). Add a case when a
   component gains behaviour.
-- **Starter:** `tests/starter.spec.ts` runs the built starter end to end (sign-in, navigation, filters, forms,
-  404, language, theme) and axe on every screen in both themes. CI builds the starter first; locally,
+- **Guidelines:** `tests/docs.spec.ts` opens every Guidelines page and checks its guide and example render.
+- **Starter:** `tests/starter.spec.ts` runs the built starter end to end (sign-in, sign-up, password reset,
+  navigation, filters, forms, notes, 404, language, theme and accent) and axe on every screen in both themes. CI builds the starter first; locally,
   `pnpm --dir starter build` before `pnpm test`, or the starter tests are skipped.
 - A failed run uploads the Playwright report (diffs, traces) as the `playwright-report` artifact.
 - Tag a story `no-test` to leave it out (for stories that can't be deterministic).
 
 Push to `main` and the workflow republishes both to GitHub Pages: Storybook under `/storybook/`
-(https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`. Add a story in `stories/` for
-every new component or block; the Theme toolbar switches `data-theme`, and the Accessibility panel
+(https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`, the design tokens under `/tokens/`. Add a story in `stories/` for
+every new component or block, and its guide in `stories/guidelines/` (copy the design system's); the Theme toolbar switches `data-theme`, and the Accessibility panel
 runs axe on the story.
 
 ### Releases

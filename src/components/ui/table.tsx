@@ -4,11 +4,19 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function Table({
+  className,
+  container,
+  ...props
+}: React.ComponentProps<"table"> & {
+  /** Props for the scrolling wrapper (a ref, a fixed height, a label for a scrollable region). */
+  container?: React.ComponentProps<"div">
+}) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto rounded-md border border-border-subtle"
+      {...container}
+      className={cn("relative w-full overflow-x-auto rounded-md border border-border-subtle", container?.className)}
     >
       <table
         data-slot="table"

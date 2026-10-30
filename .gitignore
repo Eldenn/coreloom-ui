@@ -2,6 +2,7 @@ node_modules
 dist
 public/r
 public/storybook
+public/tokens
 .env*
 .DS_Store
 *:Zone.Identifier
