@@ -1,0 +1,41 @@
+<!-- @dsCard group="Blocks" width=1280 height=520 subtitle="team block · members · roles · invites · removal" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TeamMembers || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { TeamMembers, TooltipProvider, Toaster } = UI;
+      const roles = [{ value: 'owner', label: 'Owner' }, { value: 'admin', label: 'Admin' }, { value: 'developer', label: 'Developer' }, { value: 'viewer', label: 'Viewer' }];
+      function Demo() {
+        const [members, setMembers] = React.useState([
+          { id: 'u1', name: 'Matthieu C.', email: 'matthieu@coreloom.dev', role: 'owner' },
+          { id: 'u2', name: 'Ada Lovelace', email: 'ada@coreloom.dev', role: 'admin' },
+          { id: 'u3', name: 'Grace Hopper', email: 'grace@coreloom.dev', role: 'developer' },
+          { id: 'u4', name: 'Alan Turing', email: 'alan@coreloom.dev', role: 'viewer' }]);
+        const [invites, setInvites] = React.useState([{ id: 'i1', email: 'linus@acme.dev', role: 'developer', invitedAt: new Date(2026, 9, 12) }]);
+        return h('div', { style: { maxWidth: 760, margin: '0 auto' } }, h(TeamMembers, { members, roles, invites, currentUserId: 'u1',
+          onInvite: (emails, role) => setInvites((l) => [...l, ...emails.map((email, i) => ({ id: 'n' + i + Date.now(), email, role, invitedAt: new Date() }))]),
+          onRoleChange: (id, role) => setMembers((l) => l.map((m) => m.id === id ? { ...m, role } : m)),
+          onRemove: (id) => setMembers((l) => l.filter((m) => m.id !== id)),
+          onRevoke: (id) => setInvites((l) => l.filter((i) => i.id !== id)) }), h(Toaster));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

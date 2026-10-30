@@ -1,0 +1,38 @@
+<!-- @dsCard group="Foundations" width=980 height=470 page subtitle="data-accent · cyan, blue, violet, amber, rose · AA in both themes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:16px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Button || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { Button, Badge, BadgeDot, Switch, Checkbox, Progress } = UI;
+      const presets = [['cyan', 'Cyan — default'], ['blue', 'Blue'], ['violet', 'Violet'], ['amber', 'Amber'], ['rose', 'Rose']];
+      const row = ([id, name]) => h('div', { key: id, 'data-accent': id === 'cyan' ? undefined : id, className: 'grid items-center gap-4 border-b border-border-subtle py-3 last:border-b-0', style: { gridTemplateColumns: '150px 1fr' } },
+        h('div', null, h('div', { className: 'text-[14px] font-medium text-foreground' }, name), h('code', { className: 'font-mono text-[11px] text-muted-foreground' }, id === 'cyan' ? 'no attribute' : 'data-accent="' + id + '"')),
+        h('div', { className: 'flex flex-wrap items-center gap-3' },
+          h(Button, { size: 'sm' }, 'Deploy'),
+          h(Button, { size: 'sm', variant: 'outline', className: 'ring-[3px] ring-ring border-primary' }, 'Focused'),
+          h(Badge, { variant: 'default' }, h(BadgeDot), 'Active'),
+          h(Switch, { defaultChecked: true, 'aria-label': name + ' switch' }),
+          h(Checkbox, { defaultChecked: true, 'aria-label': name + ' checkbox' }),
+          h('a', { href: '#', className: 'text-[14px] text-primary-text underline underline-offset-4' }, 'A link'),
+          h('div', { style: { width: 120 } }, h(Progress, { value: 64, 'aria-label': name + ' progress' }))));
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', null, presets.map(row)));
+    }
+    render();
+  </script>
+</body>
+</html>

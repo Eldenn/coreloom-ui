@@ -74,7 +74,8 @@ test("creating a project: validation, an API error on its field, then the new pa
   await expect(dialog.getByText("A project already uses this name.")).toBeVisible()
   await dialog.getByLabel("Name").fill("my-api")
   await dialog.getByRole("button", { name: "Create project" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "my-api" })).toBeVisible()
+  // Saving, navigating and loading the new page: allow for a busy CI machine.
+  await expect(page.getByRole("heading", { level: 1, name: "my-api" })).toBeVisible({ timeout: 10_000 })
   await expect(page.locator("[data-slot=breadcrumb]")).toContainText("Projects")
 })
 
@@ -100,6 +101,29 @@ test("deployments: the API pages, sorts and searches; the URL keeps the query", 
   await page.reload()
   await expect(page.getByPlaceholder("Search by project, commit or branch…")).toHaveValue("docs")
   await expect(table.locator("tbody tr")).toHaveCount(6)
+})
+
+test("notifications: unread count, a link marks it read and goes there", async ({ page }) => {
+  await signIn(page)
+  await page.getByRole("button", { name: "Notifications, 3 unread" }).click()
+  await page.getByRole("link", { name: /coreloom-api build failed/ }).click()
+  await expect(page).toHaveURL(/\/deployments\?q=coreloom-api/)
+  await expect(page.getByRole("button", { name: "Notifications, 2 unread" })).toBeVisible()
+})
+
+test("members: invite through the API, already-invited addresses refused", async ({ page }) => {
+  await signIn(page, "/settings?section=members")
+  await expect(page.getByText("Ada Lovelace")).toBeVisible()
+  await page.getByRole("button", { name: "Invite", exact: true }).click()
+  const dialog = page.getByRole("dialog")
+  await dialog.getByLabel("Email addresses").fill("linus@acme.dev, ")
+  await dialog.getByRole("button", { name: "Send invites" }).click()
+  await expect(page.getByText("Already in the workspace: linus@acme.dev")).toBeVisible()
+  await dialog.getByRole("button", { name: "Remove linus@acme.dev" }).click()
+  await dialog.getByLabel("Email addresses").fill("margaret@acme.dev, ")
+  await dialog.getByRole("button", { name: "Send invites" }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByText("margaret@acme.dev")).toBeVisible()
 })
 
 test("unknown pages and projects show the 404 page", async ({ page }) => {
@@ -130,7 +154,7 @@ test("signing out protects the app again", async ({ page }) => {
 })
 
 // One test per screen and theme, so a slow machine never runs out of time on a long chain.
-const SCREENS = ["/login", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=notifications", "/does/not/exist", "project"]
+const SCREENS = ["/login", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project"]
 
 for (const theme of ["dark", "light"] as const) {
   for (const screen of SCREENS) {

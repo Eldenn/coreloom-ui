@@ -1,0 +1,39 @@
+<!-- @dsCard group="Blocks" width=1280 height=560 subtitle="notifications block · bell · unread filter · mark as read" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NotificationsMenu || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = UI.icons;
+
+      const { NotificationsMenu, TooltipProvider } = UI;
+      const items0 = [
+        { id: 'n1', icon: h(I.rocket), title: 'coreloom-web deployed to production', description: 'main · 3f2a9c1', time: '2 min ago', href: '#' },
+        { id: 'n2', icon: h(I.alertTriangle), title: 'coreloom-api build failed', description: 'Type error in src/billing.ts', time: '1 h ago', href: '#' },
+        { id: 'n3', icon: h(I.gitBranch), title: 'Ada requested your review', description: '#482 Add typed dates', time: '3 h ago', href: '#' },
+        { id: 'n4', icon: h(I.user), title: 'Grace joined the workspace', time: 'Yesterday', read: true }];
+      function Demo() {
+        const [items, setItems] = React.useState(items0);
+        const ref = React.useRef(null);
+        React.useEffect(() => { const b = ref.current && ref.current.querySelector('button'); if (b) b.click(); }, []);
+        return h('div', { ref, className: 'flex justify-end', style: { maxWidth: 760, margin: '0 auto' } },
+          h(NotificationsMenu, { items, onMarkRead: (id) => setItems((l) => l.map((n) => n.id === id ? { ...n, read: true } : n)), onMarkAllRead: () => setItems((l) => l.map((n) => ({ ...n, read: true }))), viewAllHref: '#' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

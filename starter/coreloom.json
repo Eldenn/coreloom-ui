@@ -1,4 +1,16 @@
 {
   "$comment": "Registry items copied into this starter by build/sync-starter.mjs in the coreloom-ui repo. In your own project, update them with: pnpm dlx shadcn@latest add @coreloom/<name> --overwrite",
-  "items": ["all", "link", "app-shell", "auth", "settings", "dashboard", "data-list", "error-pages"]
+  "items": [
+    "all",
+    "link",
+    "app-shell",
+    "auth",
+    "settings",
+    "dashboard",
+    "data-list",
+    "error-pages",
+    "notifications",
+    "team",
+    "billing"
+  ]
 }
