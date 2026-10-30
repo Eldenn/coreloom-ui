@@ -1,185 +1,159 @@
-# @coreloom/ui
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/logo/coreloom-horizontal-dark.svg">
+    <img src="brand/logo/coreloom-horizontal-light.svg" alt="Coreloom" height="72">
+  </picture>
+</p>
 
-Coreloom UI's components, built on [shadcn/ui](https://ui.shadcn.com) (Radix primitives,
-Tailwind CSS v4) and themed with the Coreloom tokens. It ships as a **shadcn registry**:
-projects install components with the shadcn CLI and own the code, as with any shadcn
-component.
+<p align="center">
+  React components and blocks on <a href="https://ui.shadcn.com">shadcn/ui</a>, in the Coreloom look.<br>
+  Installed with the shadcn CLI, so the code is yours.
+</p>
 
-## What's inside
+<p align="center">
+  <a href="https://eldenn.github.io/coreloom-ui/">Storybook</a> ·
+  <a href="https://eldenn.github.io/coreloom-ui/starter/">Starter demo</a> ·
+  <a href="https://eldenn.github.io/coreloom-ui/r/registry.json">Registry</a> ·
+  <a href="https://eldenn.github.io/coreloom-ui/tokens/coreloom.resolver.json">Design tokens</a> ·
+  <a href="./CHANGELOG.md">Changelog</a>
+</p>
 
-| Path | What |
-|---|---|
-| `src/styles/tokens.css` | The Coreloom tokens — colors per theme (dark default, light via `<html data-theme="light">`), type, spacing, radii, shadows, z-index, breakpoints, container widths. Copied from the design system's compiled `tokens.css` with `pnpm tokens:sync <path>` (drops the `@font-face` rules). |
-| `src/styles/fonts.css` | Geist, Space Grotesk and JetBrains Mono from Fontsource (variable files), bundled by the app. Part of `@coreloom/theme`. |
-| `src/styles/theme.css` | The shadcn layer: maps Tailwind / shadcn color utilities (`bg-background`, `bg-primary`, `text-muted-foreground`, `border-input`, `ring-ring`…) onto the Coreloom tokens, adds Coreloom-only utilities (`bg-inset`, `text-fg-secondary`, `bg-primary-subtle`, `shadow-glow`, `bg-scrim`…) and makes `dark:` follow `data-theme`. |
-| `src/styles/globals.css` | Imports Tailwind, `tw-animate-css`, the tokens and the theme. |
-| `src/styles/accents.css` | Accent presets (blue, violet, amber, rose) on `<html data-accent>`, generated and contrast-checked by `build/gen-accents.py`. |
-| `src/components/ui/*.tsx` | 63 components: accordion, alert, alert-dialog, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, combobox, command, context-menu, data-table, date-picker, date-range-picker, dialog, drawer, dropdown-menu, empty, field, file-upload, form (TanStack Form), hover-card, icon, input, input-otp, item, kbd, label, menubar, money-input, multi-select, navigation-menu, pagination, phone-input, popover, progress, radio-group, resizable, rich-text-editor (+ rich-text-field), scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner (Toaster), spinner, stepper, switch, table, tabs, tags-input, textarea, toggle, toggle-group, tooltip, virtual-list. shadcn's code and APIs, Coreloom's look. |
-| `src/components/*.tsx` | Block parts, installed with their block: `app-shell` (app-shell, app-sidebar, nav-user, app-header, stat-card), `auth` (auth-layout, login-form, signup-form, verify-form, password-reset-form), `settings` (settings-layout, settings-section), `marketing` (hero, feature-grid, faq, cta-section), `docs` (docs-layout, docs-toc, code-block, component-preview), `dashboard` (dashboard, stat-card), `data-list`, `pricing`, `onboarding`, `error-pages` (error-page), `notifications`, `team`, `billing`, `kanban`, `event-calendar`; shared: theme-toggle, command-menu, copy-button, site-header, site-footer. |
-| `src/lib/i18n.tsx`, `i18n-es.tsx`, `i18n-de.tsx` | `CoreloomI18nProvider` and `useCoreloomI18n()`: every built-in string (labels, placeholders, screen-reader text, validation messages) in English and French, overridable per string; Spanish and German as separate items. Installed with the components that use it. |
-| `src/hooks/use-mobile.ts` | `useIsMobile()` — below 768px (`--breakpoint-md`) the sidebar turns into a sheet. Installed with `@coreloom/sidebar`. |
-| `registry.json` → `public/r/*.json` | The registry. `pnpm registry:build` regenerates `public/r`. |
-| `starter/` | A Vite + TanStack Router / Query / Form app built with the registry (see below). Its copies of the components are refreshed by `pnpm starter:sync`; CI fails if they drift, then builds and tests it. |
-| `CHANGELOG.md` | What changed per release. Tag `vX.Y.Z` (matching `package.json`) to publish a GitHub release with the registry attached. |
-| `stories/`, `.storybook/` | Storybook 10 (React + Vite): a story for every component and block, the theme toolbar (dark / light) and the accessibility panel. Published at https://eldenn.github.io/coreloom-ui/. |
-| `templates/` | The design system's starting points — docs page, landing page, app shell — as single HTML pages on the artifact bundle. Read them for layout patterns; in an app, rebuild them from the installed components. |
-| `build/`, `preview/` | Builds the design-system artifact's bundle (all components on one global, React 19 as browser scripts, compiled Tailwind) from the same sources. |
+---
 
-The theme deliberately declares **no** shadcn variable names (`--background`, `--primary`…):
-Coreloom already uses `--accent` (cyan), `--border` and `--radius-*` for its own tokens, so the
-mapping lives in `@theme inline` instead. `bg-accent` is shadcn's hover surface
-(`surface-hover`); Coreloom's cyan is `bg-primary`.
+- **63 components** on Radix and Tailwind CSS v4: forms, overlays, navigation, tables (sorting, server-driven
+  or virtual), date, money and phone inputs, a rich text editor.
+- **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
+  pages, notifications, team, billing, kanban, calendar, marketing and docs.
+- **Dark and light** themes, four accent presets, every pairing WCAG AA. Axe runs on every story in CI.
+- **English, French, Spanish and German** for every built-in string.
+- **Forms** on TanStack Form with zod (or any Standard Schema).
+- **A starter** on Vite + TanStack Router, Query and Form, with every screen wired and no backend needed.
 
-## Use it in an app
+## Quick start
 
-The registry is built and published to GitHub Pages on every push to `main`
-(`.github/workflows/registry.yml`), at `https://eldenn.github.io/coreloom-ui/r/`.
+Add the registry to your project once:
 
-1. In the consuming project (or the monorepo's shared `ui` package), add the namespace once:
+```bash
+pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
+```
 
-   ```bash
-   pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
-   ```
+Install what you need:
 
-   which writes this to `components.json`:
+```bash
+pnpm dlx shadcn@latest add @coreloom/all         # theme, fonts, utils and every component
+pnpm dlx shadcn@latest add @coreloom/dialog      # or one at a time (pulls its dependencies)
+pnpm dlx shadcn@latest add @coreloom/app-shell   # or a whole screen: auth, settings, dashboard…
+```
 
-   ```json
-   "registries": { "@coreloom": "https://eldenn.github.io/coreloom-ui/r/{name}.json" }
-   ```
+At the top of your global CSS, replacing the colour block `shadcn init` wrote:
 
-2. Install:
+```css
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./coreloom/fonts.css";
+@import "./coreloom/tokens.css";
+@import "./coreloom/theme.css";
+@import "./coreloom/accents.css";   /* optional: accent presets */
+```
 
-   ```bash
-   pnpm dlx shadcn@latest add @coreloom/all        # theme, utils and every component
-   pnpm dlx shadcn@latest add @coreloom/dialog     # or one at a time (pulls its dependencies)
-   ```
-
-   Whole screens install as blocks:
-
-   ```bash
-   pnpm dlx shadcn@latest add @coreloom/app-shell   # or auth, settings, marketing, docs, dashboard,
-                                                   # data-list, pricing, onboarding, error-pages,
-                                                   # notifications, team, billing, kanban, event-calendar
-   ```
-
-3. In `globals.css`, after `@import "tailwindcss";`:
-
-   ```css
-   @import "tw-animate-css";
-   @import "./coreloom/fonts.css";
-   @import "./coreloom/tokens.css";
-   @import "./coreloom/theme.css";
-   ```
-
-   and remove the default shadcn color block (`:root { --background: … }`, `.dark { … }`,
-   `@theme inline { --color-… }`) if `shadcn init` created one.
-4. Wrap the app once in `<TooltipProvider>` if you use tooltips, and render one `<Toaster />` at the root if you use toasts (`import { toast } from "@/components/ui/sonner"`). Themes: `<ThemeMenu />` /
-   `<ThemeToggle />` from `@coreloom/theme-toggle` (Light, Dark or System, saved in `localStorage`),
-   or set `document.documentElement.dataset.theme = "light"` yourself. The getting-started guide has
-   the one-line `<head>` script that applies the saved choice before the first paint.
+Then wrap the app in `<TooltipProvider>` and render one `<Toaster />`. Using a router? Hand the blocks
+its link once with `<CoreloomLinkProvider component={Link}>` (Next.js's `Link` fits as is; for TanStack
+Router, copy [`router-link.tsx`](./starter/src/components/router-link.tsx)). The starter shows the rest
+wired up: the theme script in `index.html`, the language provider, the theme and accent menus.
 
 ### Or start from the starter
-
-[`starter/`](./starter) is a ready app on Vite + TanStack Router, Query and Form with every
-component installed, the providers wired, English and French, and sign-in, dashboard, projects,
-settings and error screens. No backend needed (live demo: https://eldenn.github.io/coreloom-ui/starter/):
 
 ```bash
 pnpm dlx degit Eldenn/coreloom-ui/starter my-app && cd my-app && pnpm install && pnpm dev
 ```
 
-### Router links
+A Vite + TanStack Router / Query / Form app with sign-in, sign-up, password reset, dashboard, projects,
+deployments, settings and error pages. Demo data is local; [`starter/README.md`](./starter/README.md) says
+where to plug in your API.
 
-Blocks render their links with `AppLink` (`@coreloom/link`). Give them your router's link once and
-they navigate without reloading: `<CoreloomLinkProvider component={Link}>` (Next.js `Link` as is;
-TanStack Router: see `starter/src/components/router-link.tsx`).
+### Pin a release
 
-In a monorepo, install into the shared `ui` package (its own `components.json` with the
-`@coreloom` registry) and import from there, the way shadcn's monorepo template does.
+The namespace above follows `main`. To stay on one version, point it at a release:
+
+```json
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/vX.Y.Z/{name}.json" }
+```
+
+Each release in the [changelog](./CHANGELOG.md) says what to do under **Upgrading**. Review with
+`shadcn add … --diff` before `--overwrite`: installed files are yours.
+
+## What's in the repo
+
+| Path | What |
+|---|---|
+| `src/components/ui/` | The components. shadcn's code and APIs, Coreloom's look. |
+| `src/components/` | Block parts, installed with their block (`auth` → `login-form.tsx`, `signup-form.tsx`…). |
+| `src/styles/` | `tokens.css` (from the design system), `theme.css` (the shadcn mapping), `fonts.css`, `accents.css`. |
+| `src/lib/` | `i18n.tsx` (English and French), `i18n-es.tsx`, `i18n-de.tsx`, `link.tsx`, `utils.ts`. |
+| `registry.json` | The registry's items. `pnpm registry:build` writes `public/r/`. |
+| `starter/` | The starter app. `pnpm starter:sync` refreshes its copies of the components. |
+| `stories/` | Storybook: a story per component and block, and a Guidelines page for each. |
+| `tests/`, `unit/` | Playwright (a11y, visual, interactions, guidelines, starter) and Vitest. |
+| `brand/logo/` | The Coreloom logo: symbol, lockups, tile, one-colour versions and usage rules. |
+| `build/` | Scripts: the design-system bundle, accent presets, DTCG tokens, release notes, starter sync. |
+| `preview/`, `templates/` | The design system's component cards and page templates. |
 
 ## Conventions
 
-- Layers float on the `z-*` ladder: `z-(--z-modal)` for dialogs and sheets, `z-(--z-popover)` for
-  Select lists, popovers and dropdown menus (they open above dialogs), `z-(--z-toast)`, then `z-(--z-tooltip)` on
-  top. Never a raw z-index.
-- Focus is always the 3px `accent-ring` (`ring-[3px] ring-ring`, 3:1 on every surface); invalid fields use
-  `aria-invalid`, which turns borders `danger`. Field outlines use `border-input` (`border-strong`, 3:1),
-  placeholders `text-muted-foreground`; `text-faint-foreground` is for disabled text only.
-- `theme.css` honors `prefers-reduced-motion`: transitions and enter / exit animations finish at once.
-- Variant names follow shadcn (`default`, `secondary`, `outline`, `ghost`, `destructive`,
-  `link`), plus Coreloom's `success` / `warning` on Badge and Alert and `accent` on Card.
-- Components target React 19 (refs as props), like current shadcn.
-- No hard-coded user-facing text: read it from `useCoreloomI18n().messages`, add the key to both `en`
-  and `fr` in `src/lib/i18n.tsx`, and let a prop override it. Storybook's Language toolbar switches
-  the stories to French; the a11y tests run in French too.
-- Forms use [TanStack Form](https://tanstack.com/form) through `@coreloom/form`: `useAppForm` comes with
-  Coreloom field components (`field.TextField`, `SelectField`, `ComboboxField`, `DateField`,
-  `RadioGroupField`, `TextareaField`, `CheckboxField`, `SwitchField`, `OTPField`) and `form.SubmitButton` /
-  `form.FormErrors`. Validate with any Standard Schema (zod, valibot) on change; errors show once a field
-  has been left or the form submitted.
+- **No shadcn colour variables.** Coreloom already uses `--accent`, `--border` and `--radius-*` for its own
+  tokens, so `theme.css` maps the utilities in `@theme inline`. `bg-primary` is the cyan; `bg-accent` is
+  shadcn's hover surface.
+- **Layers** use the `z-*` ladder (`z-(--z-modal)`, `z-(--z-popover)`, `z-(--z-toast)`, `z-(--z-tooltip)`),
+  never a raw z-index.
+- **Focus** is always the 3 px `ring-ring` (3:1 on every surface). Invalid fields set `aria-invalid`. Inputs
+  outline in `border-input`. `text-faint-foreground` is for disabled text only.
+- **Motion** respects `prefers-reduced-motion`.
+- **Text** never hard-coded: read it from `useCoreloomI18n().messages`, add the key in every language, let
+  a prop override it.
+- **Variants** follow shadcn's names, plus `success` / `warning` on Badge and Alert and `accent` on Card.
+- **React 19** (refs as props), like current shadcn.
 
-Brand rules, token usage and per-component guidelines live in the Coreloom UI design system.
+## Develop
 
-## Develop and release
-
-The repo uses pnpm (version pinned in `package.json` → `packageManager`; `corepack enable` picks it up).
-`pnpm-workspace.yaml` allows the two install scripts the build needs (esbuild, @parcel/watcher) and
-only installs versions published at least 14 days ago.
-Renovate (`renovate.json`, once the Renovate app is installed on the repo) opens dependency PRs on
-Mondays with the same 14-day rule, for the registry and the starter.
+pnpm is pinned in `package.json` (`corepack enable`). `pnpm-workspace.yaml` only installs versions
+published at least 14 days ago; Renovate opens dependency PRs on Mondays with the same rule.
 
 ```bash
 pnpm install
-pnpm typecheck           # library, stories and tests
-pnpm storybook           # http://localhost:6006
-pnpm registry:build      # → public/r/*.json (not committed; CI builds it)
-pnpm storybook:build     # → public/storybook (not committed; CI builds it)
-pnpm tokens:dtcg         # → public/tokens/*.json, the tokens in the DTCG format (CI publishes them)
-pnpm test:unit           # Vitest: parsers, formatters, the DTCG export
-pnpm test:a11y           # axe on every story, dark and light (needs the Storybook build)
-pnpm test:visual         # screenshots of every story, compared with tests/__screenshots__
+pnpm storybook          # http://localhost:6006
+pnpm typecheck          # library, stories and tests
+pnpm test:unit          # Vitest
+pnpm storybook:build    # then: pnpm test (Playwright)
+pnpm --dir starter build   # include the starter in pnpm test
 ```
 
-### Tests
+Adding a component: its file in `src/components/ui/`, an item in `registry.json`, a story in `stories/`, its
+guide in `stories/guidelines/`, and a test when it has behaviour.
 
-Every push and pull request runs `pnpm test:unit`, then `pnpm test` in the Playwright container (`.github/workflows/registry.yml`);
-`main` only deploys when it passes.
+### CI
 
-- **Accessibility:** axe (WCAG 2.0–2.2 A / AA and best practices) on every story in both themes. A new
-  component or story must come with no violations.
-- **Unit:** `unit/*.test.ts` (Vitest) covers the pure functions edge case by edge case: money, phone and date
-  parsing, file sizes, emails, and the DTCG export (every colour checked against `tokens.css`).
-- **Visual:** a full-page screenshot of every story in both themes (blocks also at phone width, 390 px), with a frozen clock and no outside
-  network. Screenshots depend on the OS's font rendering, so the baselines in `tests/__screenshots__` come
-  from CI, not from a laptop: after an intended visual change (or to create them the first time), run the
-  **Visual baselines** workflow on your branch (Actions → Visual baselines → Run workflow). It commits the
-  new PNGs; review them in the PR diff. Until baselines exist, the visual tests are skipped.
-- **Interactions:** `tests/interactions.spec.ts` drives components and blocks with the keyboard and pointer
-  (focus traps, filtering, tags, file checks, form errors and busy states, URL state, theme). Add a case when a
-  component gains behaviour.
-- **Guidelines:** `tests/docs.spec.ts` opens every Guidelines page and checks its guide and example render.
-- **Starter:** `tests/starter.spec.ts` runs the built starter end to end (sign-in, sign-up, password reset,
-  navigation, filters, forms, notes, 404, language, theme and accent) and axe on every screen in both themes. CI builds the starter first; locally,
-  `pnpm --dir starter build` before `pnpm test`, or the starter tests are skipped.
-- A failed run uploads the Playwright report (diffs, traces) as the `playwright-report` artifact.
-- Tag a story `no-test` to leave it out (for stories that can't be deterministic).
+Every push and pull request runs the type check, the unit tests and Playwright on the built Storybook and
+starter:
 
-Push to `main` and the workflow republishes both to GitHub Pages: Storybook under `/storybook/`
-(https://eldenn.github.io/coreloom-ui/ redirects there), the registry under `/r/`, the design tokens under `/tokens/`. Add a story in `stories/` for
-every new component or block, and its guide in `stories/guidelines/` (copy the design system's); the Theme toolbar switches `data-theme`, and the Accessibility panel
-runs axe on the story.
+- **Accessibility:** axe on every story (dark, light, four languages, two accents) and every starter screen.
+- **Visual:** a screenshot of every story in both themes, blocks also at phone width, compared with
+  `tests/__screenshots__`. Baselines come from CI's container: after an intended visual change, run the
+  **Visual baselines** workflow; it commits the new PNGs and re-runs the CI.
+- **Interactions, guidelines and starter:** keyboard and pointer behaviour, every Guidelines page, and the
+  starter end to end.
 
-### Releases
+`main` deploys to GitHub Pages only when everything passes: Storybook, the registry (`/r/`), the design
+tokens in the DTCG format (`/tokens/`) and the starter demo (`/starter/`).
 
-1. Move the `[Unreleased]` notes in `CHANGELOG.md` under a new `## [x.y.z] - date` heading and set
-   `"version"` in `package.json` to match.
-2. Commit, push `main`, then `git tag vx.y.z && git push origin vx.y.z`.
+### Release
 
-The **Release** workflow checks that the tag, `package.json` and the CHANGELOG agree, then publishes a
-GitHub release with the notes and the registry's JSON files. Projects can pin it in `components.json`
-(`"@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/vx.y.z/{name}.json"`) and update
-with `pnpm dlx shadcn@latest add @coreloom/<name> --overwrite` (or `--diff` first to review).
+1. Move `[Unreleased]` in `CHANGELOG.md` under `## [x.y.z] - date` and set `version` in `package.json`.
+2. Push `main`, then `git tag vx.y.z && git push origin vx.y.z`.
+
+The **Release** workflow checks the tag against `package.json` and the changelog, then publishes a GitHub
+release with the notes, the registry and the tokens attached.
 
 ## License
 
-MIT — see `LICENSE`. The components are derived from shadcn/ui (MIT, © 2023 shadcn).
+MIT, see [`LICENSE`](./LICENSE). The components are derived from shadcn/ui (MIT, © 2023 shadcn). The
+Coreloom logo isn't covered by the license: see [`brand/logo/README.md`](./brand/logo/README.md).
