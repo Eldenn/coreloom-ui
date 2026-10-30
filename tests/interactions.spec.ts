@@ -382,6 +382,46 @@ test.describe("server-driven table", () => {
   })
 })
 
+test.describe("virtual lists", () => {
+  test("a virtual table keeps a few rows in the page, scrolls to the last, and still sorts and filters", async ({ page }) => {
+    await open(page, "components-tables--virtual")
+    const table = page.locator("[data-slot=data-table] table")
+    await expect(table).toHaveAttribute("aria-rowcount", "5001")
+    const rendered = table.locator("tbody tr[data-index]")
+    expect(await rendered.count()).toBeLessThan(40)
+    const region = page.getByRole("region", { name: "Deployments" })
+    // The scrolling box takes keyboard focus, so End scrolls it.
+    await region.focus()
+    await page.keyboard.press("End")
+    await expect(table.getByText("dpl_5000")).toBeVisible()
+    await expect(rendered.last()).toHaveAttribute("aria-rowindex", "5001")
+    await page.getByPlaceholder("Filter projects…").fill("docs")
+    await expect(page.locator("[data-slot=data-table-count]")).toHaveText("625 rows")
+    await page.getByRole("button", { name: "Sort by Deployment" }).click()
+    await page.getByRole("button", { name: "Sort by Deployment" }).click()
+    await region.evaluate((el) => (el.scrollTop = 0))
+    await expect(rendered.first()).toContainText("dpl_4999")
+  })
+
+  test("a virtual list loads more near the end and says when it is done", async ({ page }) => {
+    await open(page, "components-virtual-list--infinite-loading")
+    const region = page.getByRole("region", { name: "Build log" })
+    const last = page.locator("li[aria-posinset]").last()
+    await expect(last).toHaveAttribute("aria-setsize", "-1")
+    await expect
+      .poll(
+        async () => {
+          await region.evaluate((el) => (el.scrollTop = el.scrollHeight))
+          return Number(await last.getAttribute("aria-posinset"))
+        },
+        { timeout: 20_000, intervals: [400] }
+      )
+      .toBe(300)
+    await expect(region.getByText("End of the list")).toBeVisible()
+    await expect(last).toHaveAttribute("aria-setsize", "300")
+  })
+})
+
 test.describe("workspace blocks", () => {
   test("notifications: count, unread filter, mark one and all as read", async ({ page }) => {
     await open(page, "blocks-workspace--notifications")

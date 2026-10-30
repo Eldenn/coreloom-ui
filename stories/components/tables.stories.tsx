@@ -116,3 +116,30 @@ export const ServerDriven: Story = {
     )
   },
 }
+
+// 5,000 rows built from a fixed seed, so screenshots stay the same.
+const projects = ["coreloom-web", "coreloom-api", "docs", "cli", "marketing", "billing-service", "auth-gateway", "status-page"]
+const statuses = ["ready", "ready", "building", "ready", "failed"] as const
+const manyRows: Deployment[] = Array.from({ length: 5000 }, (_, i) => ({
+  id: `dpl_${(i + 1).toString().padStart(4, "0")}`,
+  project: projects[(i * 7) % projects.length],
+  status: statuses[(i * 3) % statuses.length],
+  secs: statuses[(i * 3) % statuses.length] === "building" ? undefined : 20 + ((i * 37) % 70),
+}))
+const idColumn: ColumnDef<Deployment> = { accessorKey: "id", header: ({ column }) => <DataTableColumnHeader column={column} title="Deployment" />, cell: ({ row }) => <span className="font-mono text-[12px]">{row.original.id}</span> }
+
+/** 5,000 rows in a 420 px box: only the visible rows are in the page. Sort, filter and select as usual; the header stays pinned. */
+export const Virtual: Story = {
+  name: "DataTable (virtual, 5,000 rows)",
+  args: { columns: columns as never, data },
+  render: () => (
+    <DataTable
+      columns={[columns[0], idColumn, ...columns.slice(1)]}
+      data={manyRows}
+      getRowId={(row) => row.id}
+      filterColumn="project"
+      filterPlaceholder="Filter projects…"
+      virtual={{ height: 420, rowHeight: 47, label: "Deployments" }}
+    />
+  ),
+}

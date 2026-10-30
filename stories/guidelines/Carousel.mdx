@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../components/data-viz.stories"
+import guide from "./Carousel.md?raw"
+
+<Meta title="Guidelines/Data display/Carousel" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.CarouselStory} />

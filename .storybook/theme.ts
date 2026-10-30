@@ -1,9 +1,12 @@
 import { create } from "storybook/theming"
 
+import { brandImage } from "./brand"
+
 /** Storybook's own UI (sidebar, toolbar, docs pages) in the Coreloom dark palette. */
 export const coreloomTheme = create({
   base: "dark",
   brandTitle: "Coreloom UI",
+  brandImage,
   brandUrl: "https://github.com/Eldenn/coreloom-ui",
   colorPrimary: "#1ce0d3",
   colorSecondary: "#14b5ab",

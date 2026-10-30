@@ -2,6 +2,7 @@
 //   tests/a11y.spec.ts          axe on every story, dark and light
 //   tests/visual.spec.ts        a screenshot of every story, dark and light, compared with tests/__screenshots__
 //   tests/interactions.spec.ts  keyboard and pointer behaviour of components and blocks
+//   tests/docs.spec.ts          every Guidelines page renders its guide and example
 // and against the built starter app (pnpm --dir starter build → starter/dist):
 //   tests/starter.spec.ts       sign-in, navigation, URL state, forms, 404, language, theme; axe on every screen
 // Screenshots depend on the OS's font rendering, so baselines come from CI's Playwright container

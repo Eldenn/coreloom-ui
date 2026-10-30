@@ -62,6 +62,7 @@ export * from "@/components/ui/money-input"
 export * from "@/components/ui/phone-input"
 export * from "@/components/ui/rich-text-editor"
 export * from "@/components/ui/rich-text-field"
+export * from "@/components/ui/virtual-list"
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from "recharts"
 // Blocks (registry:block parts)

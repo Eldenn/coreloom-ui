@@ -27,7 +27,8 @@ jobs:
       - name: Check the tag matches package.json and the CHANGELOG
         run: node build/release-notes.mjs "${GITHUB_REF_NAME}" > release-notes.md
       - run: pnpm registry:build
+      - run: pnpm tokens:dtcg
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" public/r/*.json --title "${GITHUB_REF_NAME}" --notes-file release-notes.md --verify-tag
+        run: gh release create "${GITHUB_REF_NAME}" public/r/*.json public/tokens/*.json --title "${GITHUB_REF_NAME}" --notes-file release-notes.md --verify-tag

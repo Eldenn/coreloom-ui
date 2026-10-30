@@ -1,6 +1,7 @@
 # Tests every push and pull request, then builds the shadcn registry (public/r/*.json), Storybook
-# (public/storybook) and the starter demo (public/starter) and publishes them to GitHub Pages from main:
-# https://eldenn.github.io/coreloom-ui/ (Storybook), …/r/ (registry), …/starter/ (demo app).
+# (public/storybook), the DTCG tokens (public/tokens) and the starter demo (public/starter) and publishes
+# them to GitHub Pages from main: https://eldenn.github.io/coreloom-ui/ (Storybook), …/r/ (registry),
+# …/tokens/ (design tokens), …/starter/ (demo app).
 # Consumers: pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
 name: Registry & Storybook
 
@@ -64,6 +65,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:build
       - run: pnpm storybook:build
+      # The tokens in the DTCG format, at /coreloom-ui/tokens/ (Figma, Style Dictionary, native apps).
+      - run: pnpm tokens:dtcg
       # The starter as a live demo at /coreloom-ui/starter/. GitHub Pages serves 404.html for any
       # unknown path, so deep links (/coreloom-ui/starter/projects) still boot the app.
       - run: pnpm --dir starter install --frozen-lockfile
