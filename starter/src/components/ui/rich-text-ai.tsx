@@ -5,6 +5,7 @@
 // it below. The app sends the request to its model through `onRequest`; nothing here calls an API.
 // The model's text is read as light Markdown and inserted as text nodes, never as HTML.
 // Typing "/" at the start of a line (or after a space) opens a small menu of AI commands at the caret.
+import { closeHistory } from '@tiptap/pm/history'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
@@ -25,7 +26,6 @@ import {
   WandSparklesIcon,
 } from 'lucide-react'
 import * as React from 'react'
-import { createPortal } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -971,8 +971,9 @@ function RichTextAi({
   const showResult = status !== 'idle'
   const blocks = React.useMemo(() => parseAnswer(answer), [answer])
   const continuing = last?.action === 'continue'
-  // Summaries and continuations are new text: inserting them is the main action.
-  const insertFirst = last?.action === 'summarise' || continuing
+  // Summaries and continuations are new text, and from the "/" menu the person is writing at that
+  // spot: inserting is the main (focused) action there; Replace all stays a deliberate second choice.
+  const insertFirst = last?.action === 'summarise' || continuing || atCaret
   const announcement = busy
     ? t.aiWriting
     : status === 'done'
@@ -1378,13 +1379,13 @@ function RichTextAiSlashMenu({
   const t = useCoreloomI18n().messages.editor
   const listId = React.useId()
   const optionId = React.useId()
-  const menuRef = React.useRef<HTMLDivElement>(null)
   const slash = useEditorState({
     editor,
     selector: ({ editor: e }) => slashKey.getState(e.state) ?? null,
   })
-  // The highlighted row belongs to one query: typing more starts again from the top.
-  const [picked, setPicked] = React.useState({ query: '', index: 0 })
+  // The highlighted row belongs to one query: typing more starts again from the top. `moved` says
+  // the person used the arrows (or the pointer), so Enter on a bare "/" means a choice, not a new line.
+  const [picked, setPicked] = React.useState({ query: '', index: 0, moved: false })
 
   const actions = Array.isArray(options.slashCommand)
     ? options.slashCommand
@@ -1411,15 +1412,36 @@ function RichTextAiSlashMenu({
       )
     : []
   const open = matches.length > 0
-  const index = picked.query === slash?.query ? Math.min(picked.index, matches.length - 1) : 0
+  const current = picked.query === slash?.query
+  const index = current ? Math.min(picked.index, matches.length - 1) : 0
+  const moved = current && picked.moved
   const activeId = open ? `${optionId}-${matches[index].key}` : undefined
+
+  const close = () => {
+    if (!editor.isDestroyed && slashKey.getState(editor.state))
+      editor.view.dispatch(editor.state.tr.setMeta(slashKey, null))
+  }
+
+  // Anchored at the slash. contextElement lets the popper follow the editor's scroll containers.
+  const anchor = React.useRef({
+    getBoundingClientRect: () => {
+      const state = editor.isDestroyed ? null : slashKey.getState(editor.state)
+      if (!state) return new DOMRect()
+      const at = editor.view.coordsAtPos(state.from)
+      return new DOMRect(at.left, at.top, 1, at.bottom - at.top)
+    },
+    get contextElement() {
+      return editor.isDestroyed ? undefined : editor.view.dom
+    },
+  })
 
   const choose = (item: SlashItem) => {
     if (!slash) return
     // The typed "/…" goes; the panel opens where it was.
     const { from } = slash
+    // closeHistory: removing the "/…" is its own undo step, so undo brings the typed text back.
     editor.view.dispatch(
-      editor.state.tr
+      closeHistory(editor.state.tr)
         .delete(from, editor.state.selection.from)
         .setMeta(slashKey, null)
         .setMeta(caretKey, from),
@@ -1430,9 +1452,15 @@ function RichTextAiSlashMenu({
   React.useLayoutEffect(() => {
     handlersRef.current = {
       onKeyDown: (event) => {
-        if (!open || !slash || event.isComposing) return false
+        // keyCode 229 is a key that an input method (IME) is still composing; Safari reports Enter that way.
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- the one signal Safari gives for an IME's Enter.
+        if (!open || !slash || event.isComposing || event.keyCode === 229) return false
         const move = (by: number) => {
-          setPicked({ query: slash.query, index: (index + by + matches.length) % matches.length })
+          setPicked({
+            query: slash.query,
+            index: (index + by + matches.length) % matches.length,
+            moved: true,
+          })
         }
         const modified = event.metaKey || event.ctrlKey || event.altKey || event.shiftKey
         switch (event.key) {
@@ -1445,10 +1473,15 @@ function RichTextAiSlashMenu({
           case 'Enter':
           case 'Tab':
             if (modified) return false
+            // A bare "/" then Enter is a slash at the end of a line ("Ratio 1 /"): close, let the key through.
+            if (!slash.query && !moved) {
+              close()
+              return false
+            }
             choose(matches[index])
             return true
           case 'Escape':
-            editor.view.dispatch(editor.state.tr.setMeta(slashKey, null))
+            close()
             return true
           default:
             return false
@@ -1466,18 +1499,18 @@ function RichTextAiSlashMenu({
     [editor, handlersRef],
   )
 
-  // The editor stays focused and points at the highlighted command (the combobox pattern on a textbox).
+  // While the menu is open, the editor stays focused and points at the highlighted command (the
+  // combobox pattern on a textbox); closed, it's a plain textbox again.
   React.useEffect(() => {
     if (editor.isDestroyed) return
     const dom = editor.view.dom
-    dom.setAttribute('aria-autocomplete', 'list')
     if (activeId) {
+      dom.setAttribute('aria-autocomplete', 'list')
       dom.setAttribute('aria-controls', listId)
       dom.setAttribute('aria-activedescendant', activeId)
-    } else {
-      dom.removeAttribute('aria-controls')
-      dom.removeAttribute('aria-activedescendant')
-    }
+    } else
+      for (const name of ['aria-autocomplete', 'aria-controls', 'aria-activedescendant'])
+        dom.removeAttribute(name)
   }, [editor, activeId, listId])
   React.useEffect(
     () => () => {
@@ -1488,85 +1521,99 @@ function RichTextAiSlashMenu({
     [editor],
   )
 
-  // Under the slash, or above it when there's no room below; kept inside the viewport.
+  // The popper follows the slash as things scroll; once the slash is scrolled out of sight (in the
+  // page or in a scrolling container), the menu closes instead of pointing at nothing.
   const from = slash?.from
-  React.useLayoutEffect(() => {
-    const menu = menuRef.current
-    if (!open || from === undefined || !menu) return
-    const place = () => {
+  React.useEffect(() => {
+    if (!open || from === undefined) return
+    const check = () => {
       if (editor.isDestroyed) return
       const at = editor.view.coordsAtPos(from)
-      const gap = 6
-      const pad = 8
-      const { offsetHeight: height, offsetWidth: width } = menu
-      // Above only when it doesn't fit below and there's more room above.
-      const below = window.innerHeight - at.bottom
-      const above = at.bottom + gap + height > window.innerHeight - pad && at.top > below
-      menu.style.top = `${above ? Math.max(pad, at.top - gap - height) : at.bottom + gap}px`
-      menu.style.left = `${Math.max(pad, Math.min(at.left, window.innerWidth - pad - width))}px`
-      menu.dataset.side = above ? 'top' : 'bottom'
+      let visible = at.bottom > 0 && at.top < window.innerHeight
+      for (let el = editor.view.dom.parentElement; el && visible; el = el.parentElement) {
+        if (!/(auto|scroll|hidden|clip)/.test(getComputedStyle(el).overflowY)) continue
+        const box = el.getBoundingClientRect()
+        visible = at.bottom > box.top && at.top < box.bottom
+      }
+      if (!visible) close()
     }
-    place()
-    window.addEventListener('scroll', place, true)
-    window.addEventListener('resize', place)
+    window.addEventListener('scroll', check, true)
     return () => {
-      window.removeEventListener('scroll', place, true)
-      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', check, true)
     }
-  }, [open, from, matches.length, editor])
+    // close reads the editor only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, from, editor])
 
   return (
     <>
       <p role="status" className="sr-only">
         {open ? t.slashResults(matches.length) : ''}
       </p>
-      {open &&
-        createPortal(
-          <div
-            ref={menuRef}
-            data-slot="rich-text-ai-slash-menu"
-            className="fixed top-0 left-0 z-(--z-popover) w-64 max-w-[calc(100vw-1rem)] rounded-md border border-border bg-popover p-1 font-sans shadow-lg"
+      {/* Radix layering: inside a modal Dialog or Sheet the menu takes pointer events and its own
+          Escape (the dialog stays open), and the popper flips and shifts at the window's edges. */}
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) close()
+        }}
+      >
+        <PopoverAnchor virtualRef={anchor} />
+        <PopoverContent
+          data-slot="rich-text-ai-slash-menu"
+          // A list the editor points at, not a dialog: no role on the wrapper, and focus stays in the editor.
+          role="presentation"
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          collisionPadding={8}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault()
+          }}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault()
+          }}
+          className="w-64 max-w-[calc(100vw-1rem)] p-1 data-[state=closed]:animate-none"
+        >
+          <p
+            aria-hidden
+            className="px-2.5 pt-1.5 pb-1 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
           >
-            <p
-              aria-hidden
-              className="px-2.5 pt-1.5 pb-1 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
-            >
-              {t.slashMenu}
-            </p>
-            <div role="listbox" id={listId} aria-label={t.slashMenu}>
-              {matches.map((item, i) => (
-                // The editor keeps focus and handles the keys (see above); the pointer picks here.
-                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus -- an aria-activedescendant option: the focused editor handles its keys.
-                <div
-                  key={item.key}
-                  id={`${optionId}-${item.key}`}
-                  role="option"
-                  aria-selected={i === index}
-                  // Keep focus (and the typed query) in the editor.
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                  }}
-                  onClick={() => {
-                    choose(item)
-                  }}
-                  onPointerMove={() => {
-                    if (slash && i !== index) setPicked({ query: slash.query, index: i })
-                  }}
-                  className={cn(
-                    'flex cursor-pointer items-center gap-3 rounded-sm px-2.5 py-2 text-[13.5px] text-fg-secondary select-none [&_svg]:size-4 [&_svg]:shrink-0',
-                    i === index
-                      ? 'bg-accent text-foreground [&_svg]:text-primary-text'
-                      : '[&_svg]:text-muted-foreground',
-                  )}
-                >
-                  <item.Icon aria-hidden />
-                  {item.label}
-                </div>
-              ))}
-            </div>
-          </div>,
-          document.body,
-        )}
+            {t.slashMenu}
+          </p>
+          <div role="listbox" id={listId} aria-label={t.slashMenu}>
+            {matches.map((item, i) => (
+              // The editor keeps focus and handles the keys (see above); the pointer picks here.
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus -- an aria-activedescendant option: the focused editor handles its keys.
+              <div
+                key={item.key}
+                id={`${optionId}-${item.key}`}
+                role="option"
+                aria-selected={i === index}
+                // Keep focus (and the typed query) in the editor.
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                }}
+                onClick={() => {
+                  choose(item)
+                }}
+                onPointerMove={() => {
+                  if (slash && i !== index) setPicked({ query: slash.query, index: i, moved: true })
+                }}
+                className={cn(
+                  'flex cursor-pointer items-center gap-3 rounded-sm px-2.5 py-2 text-[13.5px] text-fg-secondary select-none [&_svg]:size-4 [&_svg]:shrink-0',
+                  i === index
+                    ? 'bg-accent text-foreground [&_svg]:text-primary-text'
+                    : '[&_svg]:text-muted-foreground',
+                )}
+              >
+                <item.Icon aria-hidden />
+                {item.label}
+              </div>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
     </>
   )
 }
