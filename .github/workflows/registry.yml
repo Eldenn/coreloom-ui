@@ -19,12 +19,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
-    name: Format, lint, typecheck, unit tests, starter build, a11y, visual and interaction tests
+  checks:
+    name: Format, lint, typecheck, unit tests, registry and starter
     runs-on: ubuntu-24.04
-    # Same image as the "Visual baselines" workflow, so screenshots render identically.
-    # Keep the tag in step with @playwright/test in package.json.
-    container: mcr.microsoft.com/playwright:v1.63.0-noble
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6 # version from package.json "packageManager"
@@ -40,22 +37,45 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test:unit
       - run: pnpm registry:build
-      - run: pnpm storybook:build
       # The starter carries copies of the registry items: fail if they drifted, then build it.
       - run: node build/sync-starter.mjs --check
       - run: pnpm --dir starter build
-      - run: pnpm test
+
+  # The Playwright suite (a11y, visual, interactions, docs, starter) split in four: each shard
+  # builds Storybook and the starter (under 20 s) and runs a quarter of the tests.
+  test:
+    name: Playwright ${{ matrix.shard }}/4
+    runs-on: ubuntu-24.04
+    # Same image as the "Visual baselines" workflow, so screenshots render identically.
+    # Keep the tag in step with @playwright/test in package.json.
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir starter install --frozen-lockfile
+      - run: pnpm storybook:build
+      - run: pnpm --dir starter build
+      - run: pnpm test --shard=${{ matrix.shard }}/4
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: |
             playwright-report
             test-results
           retention-days: 14
 
   build:
-    needs: test
+    needs: [checks, test]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     steps:
