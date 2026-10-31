@@ -17,4 +17,4 @@
 ### Upgrading
 
 - Re-install `@coreloom/theme` with `--overwrite` for the new light accent and the `cyan` preset,
-  then run the **Visual baselines** workflow if you keep screenshots of your own.
+  then update your own visual baselines if you keep screenshots.
