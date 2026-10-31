@@ -214,6 +214,7 @@ function AgentEditor({
   })
   const instructions = useStore(form.store, (s) => s.values.instructions)
   const variables = promptVariables(instructions)
+  const uid = React.useId()
 
   return (
     <form
@@ -273,17 +274,17 @@ function AgentEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle id="agent-tools-title">{t.tools}</CardTitle>
+          <CardTitle id={`${uid}-tools`}>{t.tools}</CardTitle>
           <CardDescription>{t.toolsHint}</CardDescription>
         </CardHeader>
         <CardContent>
           <form.Subscribe selector={(s) => [s.values.tools, s.values.askFirst] as const}>
             {([enabled, askFirst]) => (
-              <ul aria-labelledby="agent-tools-title" className="m-0 flex list-none flex-col p-0">
+              <ul aria-labelledby={`${uid}-tools`} className="m-0 flex list-none flex-col p-0">
                 {tools.map((tool) => {
                   const on = enabled.includes(tool.id)
-                  const checkId = `agent-tool-${tool.id}`
-                  const askId = `agent-tool-${tool.id}-ask`
+                  const checkId = `${uid}-tool-${tool.id}`
+                  const askId = `${uid}-tool-${tool.id}-ask`
                   return (
                     <li key={tool.id} className="flex items-center gap-3 border-b border-border-subtle py-3 first:pt-0 last:border-b-0 last:pb-0">
                       <Checkbox

@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../blocks/ai-chat.stories"
+import guide from "./AiSdk.md?raw"
+
+<Meta title="Guidelines/AI/With the AI SDK" />
+
+{/* How the AI blocks map onto the AI SDK; kept in sync with the starter's README by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Answering} />

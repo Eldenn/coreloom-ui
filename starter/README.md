@@ -60,7 +60,7 @@ const onSend = ({ text, files }: { text: string; files: File[] }) => {
 //       onRegenerate={chat.regenerate} onToolApprovalResponse={chat.addToolApprovalResponse} … />
 ```
 
-The endpoint is yours (`streamText(…).toUIMessageStreamResponse()` on your server); the blocks
+The endpoint is yours (`streamText` on your server, returning its UI message stream); the blocks
 only render what it streams. Replace the functions in `ai-api.ts` with calls to your backend the
 same way as `api.ts`.
 

@@ -236,6 +236,7 @@ export const es: Messages = {
       documents: "Documentos",
       chunks: "Fragmentos",
       lastIndexed: "Última indexación",
+      empty: "Aún no hay documentos. Añade los archivos en los que deben buscar los agentes.",
       add: "Añadir documentos",
       status: { queued: "En cola", processing: "Procesando", indexed: "Indexado", failed: "Error" },
       name: "Documento",

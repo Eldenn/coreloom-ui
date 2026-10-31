@@ -55,6 +55,7 @@ function Playground({
   const [prompt, setPrompt] = React.useState(defaultPrompt)
   const [variants, setVariants] = React.useState(defaultVariants)
   const running = variants.some((v) => results[v.id]?.status === "running")
+  const uid = React.useId()
   const oneDecimal = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
   const update = (id: string, patch: Partial<PlaygroundVariant>) => setVariants((all) => all.map((v) => (v.id === id ? { ...v, ...patch } : v)))
 
@@ -68,13 +69,13 @@ function Playground({
         }}
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor="playground-system">{t.system}</Label>
-          <Textarea id="playground-system" value={system} onChange={(e) => setSystem(e.target.value)} placeholder={t.systemPlaceholder} className="min-h-28 font-mono text-[13px]" />
+          <Label htmlFor={`${uid}-system`}>{t.system}</Label>
+          <Textarea id={`${uid}-system`} value={system} onChange={(e) => setSystem(e.target.value)} placeholder={t.systemPlaceholder} className="min-h-28 font-mono text-[13px]" />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="playground-prompt">{t.prompt}</Label>
+          <Label htmlFor={`${uid}-prompt`}>{t.prompt}</Label>
           <Textarea
-            id="playground-prompt"
+            id={`${uid}-prompt`}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={t.promptPlaceholder}
@@ -107,7 +108,7 @@ function Playground({
       <div className={cn("grid gap-4", variants.length === 2 && "lg:grid-cols-2", variants.length >= 3 && "lg:grid-cols-3")}>
         {variants.map((v, i) => {
           const r = results[v.id]
-          const headingId = `playground-variant-${v.id}`
+          const headingId = `${uid}-variant-${v.id}`
           return (
             <section key={v.id} aria-labelledby={headingId} aria-busy={r?.status === "running" || undefined} className="flex min-w-0 flex-col rounded-lg border border-border bg-card">
               <header className="flex flex-col gap-3 border-b border-border-subtle p-4">

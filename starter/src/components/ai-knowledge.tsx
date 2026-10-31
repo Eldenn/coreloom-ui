@@ -107,70 +107,74 @@ function KnowledgeBase({
         )}
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t.name}</TableHead>
-            <TableHead>{messages.ai.runs.state}</TableHead>
-            <TableHead className="text-right">{t.chunks}</TableHead>
-            <TableHead className="text-right">{t.size}</TableHead>
-            <TableHead>{t.updated}</TableHead>
-            <TableHead className="w-10">
-              <span className="sr-only">{messages.common.menu}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {documents.map((d) => (
-            <TableRow key={d.id}>
-              <TableCell>
-                <span className="flex min-w-0 items-center gap-2">
-                  <FileTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                  <span className="truncate font-medium text-foreground">{d.name}</span>
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex flex-col gap-1">
-                  <Badge variant={STATUS_VARIANT[d.status]} className="w-fit">
-                    {d.status === "processing" ? <Spinner className="size-3 text-current" aria-hidden role="presentation" /> : <BadgeDot />}
-                    {t.status[d.status]}
-                    {d.status === "processing" && d.progress !== undefined && ` · ${d.progress} %`}
-                  </Badge>
-                  {d.status === "failed" && d.error && <span className="max-w-64 text-[12px] whitespace-normal text-destructive">{d.error}</span>}
-                </span>
-              </TableCell>
-              <TableCell className="text-right font-mono text-[12px]">{d.chunks !== undefined ? formatNumber(d.chunks) : "—"}</TableCell>
-              <TableCell className="text-right font-mono text-[12px]">{formatBytes(d.size, locale)}</TableCell>
-              <TableCell className="font-mono text-[12px]">{new Date(d.updatedAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}</TableCell>
-              <TableCell>
-                {(onReindex || onRemove) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-sm" aria-label={t.actions(d.name)}>
-                        <MoreHorizontalIcon />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {onReindex && (
-                        <DropdownMenuItem onSelect={() => onReindex(d.id)} disabled={d.status === "processing" || d.status === "queued"}>
-                          <RefreshCwIcon />
-                          {t.reindex}
-                        </DropdownMenuItem>
-                      )}
-                      {onRemove && (
-                        <DropdownMenuItem variant="destructive" onSelect={() => setRemoving(d)}>
-                          <Trash2Icon />
-                          {t.remove}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </TableCell>
+      {documents.length === 0 ? (
+        <p className="m-0 rounded-lg border border-dashed border-border px-4 py-10 text-center text-[13.5px] text-muted-foreground">{t.empty}</p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t.name}</TableHead>
+              <TableHead>{messages.ai.runs.state}</TableHead>
+              <TableHead className="text-right">{t.chunks}</TableHead>
+              <TableHead className="text-right">{t.size}</TableHead>
+              <TableHead>{t.updated}</TableHead>
+              <TableHead className="w-10">
+                <span className="sr-only">{messages.common.menu}</span>
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {documents.map((d) => (
+              <TableRow key={d.id}>
+                <TableCell>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <FileTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    <span className="truncate font-medium text-foreground">{d.name}</span>
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span className="flex flex-col gap-1">
+                    <Badge variant={STATUS_VARIANT[d.status]} className="w-fit">
+                      {d.status === "processing" ? <Spinner className="size-3 text-current" aria-hidden role="presentation" /> : <BadgeDot />}
+                      {t.status[d.status]}
+                      {d.status === "processing" && d.progress !== undefined && ` · ${d.progress} %`}
+                    </Badge>
+                    {d.status === "failed" && d.error && <span className="max-w-64 text-[12px] whitespace-normal text-destructive">{d.error}</span>}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right font-mono text-[12px]">{d.chunks !== undefined ? formatNumber(d.chunks) : "—"}</TableCell>
+                <TableCell className="text-right font-mono text-[12px]">{formatBytes(d.size, locale)}</TableCell>
+                <TableCell className="font-mono text-[12px]">{new Date(d.updatedAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}</TableCell>
+                <TableCell>
+                  {(onReindex || onRemove) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" aria-label={t.actions(d.name)}>
+                          <MoreHorizontalIcon />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {onReindex && (
+                          <DropdownMenuItem onSelect={() => onReindex(d.id)} disabled={d.status === "processing" || d.status === "queued"}>
+                            <RefreshCwIcon />
+                            {t.reindex}
+                          </DropdownMenuItem>
+                        )}
+                        {onRemove && (
+                          <DropdownMenuItem variant="destructive" onSelect={() => setRemoving(d)}>
+                            <Trash2Icon />
+                            {t.remove}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       <AlertDialog open={!!removing} onOpenChange={(o) => !o && setRemoving(undefined)}>
         <AlertDialogContent>
@@ -199,10 +203,11 @@ function RetrievalTest({ onSearch, className }: { onSearch: (query: string) => P
   const [query, setQuery] = React.useState("")
   const [state, setState] = React.useState<{ status: "idle" | "loading" | "done"; results: RetrievalResult[] }>({ status: "idle", results: [] })
   const pct = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 })
+  const uid = React.useId()
   return (
-    <section data-slot="retrieval-test" aria-labelledby="retrieval-test-title" className={cn("flex flex-col gap-4 rounded-lg border border-border bg-card p-4", className)}>
+    <section data-slot="retrieval-test" aria-labelledby={`${uid}-title`} className={cn("flex flex-col gap-4 rounded-lg border border-border bg-card p-4", className)}>
       <div className="flex flex-col gap-1">
-        <h3 id="retrieval-test-title" className="m-0 text-[14.5px] font-semibold text-foreground">
+        <h3 id={`${uid}-title`} className="m-0 text-[14.5px] font-semibold text-foreground">
           {t.test}
         </h3>
         <p className="m-0 text-[13px] text-muted-foreground">{t.testHint}</p>
@@ -218,8 +223,8 @@ function RetrievalTest({ onSearch, className }: { onSearch: (query: string) => P
         }}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Label htmlFor="retrieval-query">{t.query}</Label>
-          <Input id="retrieval-query" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Label htmlFor={`${uid}-query`}>{t.query}</Label>
+          <Input id={`${uid}-query`} value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <Button type="submit" variant="secondary" disabled={state.status === "loading"}>
           {state.status === "loading" ? <Spinner aria-hidden role="presentation" /> : <SearchIcon />}

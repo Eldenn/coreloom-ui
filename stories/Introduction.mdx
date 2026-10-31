@@ -20,6 +20,7 @@ the current story.
 pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
 pnpm dlx shadcn@latest add @coreloom/all            # theme, fonts, utils, every component
 pnpm dlx shadcn@latest add @coreloom/app-shell      # or auth, settings, marketing, docs
+pnpm dlx shadcn@latest add @coreloom/ai-chat        # or ai-agents, ai-runs, ai-playground, ai-knowledge
 ```
 
 Then, in your global CSS after `@import "tailwindcss";`:
@@ -33,6 +34,13 @@ Then, in your global CSS after `@import "tailwindcss";`:
 
 Mount `TooltipProvider` and one `Toaster` at the root. The full guide, the theming guide and the
 brand rules live in the Coreloom UI design system and the repository README.
+
+## AI
+
+**Components → AI** has the pieces (prompt input, Markdown output, reasoning, tool calls) and
+**Blocks → AI** the screens: chat with history, agents, runs and traces, a playground and a
+knowledge base. They read the AI SDK's `UIMessage` as it is — `useChat()` plugs straight in — but
+don't depend on it or call any model. **Guidelines → AI → With the AI SDK** shows the wiring.
 
 ## Conventions
 

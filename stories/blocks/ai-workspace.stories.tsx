@@ -110,3 +110,76 @@ export const Knowledge: Story = {
     )
   },
 }
+
+/** Nothing yet: no agents, no runs, no documents. Each says so in place of its list. */
+export const EmptyStates: Story = {
+  render: () => (
+    <div className="flex flex-col gap-8">
+      <AgentList agents={[]} href={(id) => `#${id}`} onNew={() => {}} />
+      <RunList runs={[]} href={(id) => `#${id}`} />
+      <KnowledgeBase documents={[]} onUpload={() => {}} />
+    </div>
+  ),
+}
+
+/** Before the first run: each variant waits for Run all. */
+export const PlaygroundBeforeRun: Story = {
+  render: () => (
+    <Playground
+      models={models}
+      defaultPrompt="Why did deployment dpl_8f2k fail?"
+      defaultVariants={[
+        { id: "a", model: "claude-haiku", temperature: 0.2 },
+        { id: "b", model: "claude-sonnet", temperature: 0.7 },
+      ]}
+      results={{}}
+      onRun={() => {}}
+    />
+  ),
+}
+
+/** One answer still streaming, one provider failing. Frozen, so it can be tested. */
+export const PlaygroundRunningAndError: Story = {
+  render: () => (
+    <div data-frozen>
+      <Playground
+        models={models}
+        defaultPrompt="Why did deployment dpl_8f2k fail?"
+        defaultVariants={[
+          { id: "a", model: "claude-haiku", temperature: 0.2 },
+          { id: "b", model: "gpt-mini", temperature: 0.7 },
+        ]}
+        results={{
+          a: { status: "running", text: "Your build failed on a **type error**: `Workspace.slug` was" },
+          b: { status: "error", error: "The provider returned 429: rate limit reached. Try again in 20 s." },
+        }}
+        onRun={() => {}}
+      />
+    </div>
+  ),
+}
+
+/** A run still going: its last step has no end yet. */
+export const TraceRunning: Story = {
+  render: () => (
+    <RunTrace
+      run={{ status: "running", durationMs: 6400, tokens: { input: 5360, output: 710 }, cost: 0.0271 }}
+      spans={[
+        ...spans.slice(0, 5).map((s) => (s.id === "s1" ? { ...s, durationMs: 6400, status: "running" as const } : s)),
+        { id: "s6", parentId: "s1", kind: "tool", name: "rollback", startMs: 6400, durationMs: 0, status: "running", input: { project: "coreloom-api", deployment: "dpl_5t3q" } },
+      ]}
+      defaultSelectedId="s6"
+    />
+  ),
+}
+
+/** The trace and the runs in French: longer labels, same layout. */
+export const French: Story = {
+  globals: { locale: "fr" },
+  render: () => (
+    <div className="flex flex-col gap-8">
+      <RunTrace run={traceRun} spans={spans} />
+      <RunList runs={runs} href={(id) => `#${id}`} />
+    </div>
+  ),
+}

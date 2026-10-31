@@ -5,7 +5,7 @@ One tool invocation in a conversation: its name, a status (preparing, running, d
 **The consumer provides** the AI SDK tool `part` as is (`tool-<name>` or `dynamic-tool`), plus optionally:
 
 - `label` — a human name ("Search the docs") instead of the tool's identifier;
-- `renderOutput(output)` to show a result as UI (a table, a card) instead of JSON;
+- `renderOutput(output)` to show a result as UI (a table, a card) instead of JSON — return `undefined` to keep the JSON; a drawn result shows unfolded;
 - `onApprovalResponse({ id, approved })` for tools that ask first — wire `addToolApprovalResponse` from `useChat`;
 - `defaultOpen`.
 
