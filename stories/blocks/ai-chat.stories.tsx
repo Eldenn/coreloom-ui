@@ -2,6 +2,8 @@ import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Chat, ChatMessages, ConversationList, type Conversation } from "@/components/ai-chat"
+import { Badge, BadgeDot } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { AiChatStatus, AiMessage } from "@/lib/ai"
 
 const answer = `Your last three deployments of **coreloom-api** failed at the same step: the type check.
@@ -76,8 +78,13 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-function Frame({ children }: { children: React.ReactNode }) {
-  return <div className="h-[760px] bg-background">{children}</div>
+/** `frozen`: a still of a streaming state, so the tests don't wait for it to settle. */
+function Frame({ children, frozen }: { children: React.ReactNode; frozen?: boolean }) {
+  return (
+    <div className="h-[760px] bg-background" data-frozen={frozen || undefined}>
+      {children}
+    </div>
+  )
 }
 
 export const ConversationStory: Story = {
@@ -168,6 +175,184 @@ export const ErrorState: Story = {
   ),
 }
 
+/** Sent, nothing back yet: the typing indicator. */
+export const Waiting: Story = {
+  render: () => (
+    <Frame>
+      <Chat autoFocus={false} messages={conversation.slice(0, 1)} status="submitted" onSend={() => {}} onStop={() => {}} />
+    </Frame>
+  ),
+}
+
+/** Still thinking: the reasoning is open and the composer offers Stop. Frozen, so it can be tested. */
+export const Thinking: Story = {
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        status="streaming"
+        onSend={() => {}}
+        onStop={() => {}}
+        messages={[
+          conversation[0],
+          { id: "m2", role: "assistant", parts: [{ type: "reasoning", text: "The user asks about failing deployments. Look up the latest builds of coreloom-api", state: "streaming" }] },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+/** Mid-answer: a tool has run, another is starting, and the text arrives with its caret. Frozen, so it can be tested. */
+export const Answering: Story = {
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        status="streaming"
+        onSend={() => {}}
+        onStop={() => {}}
+        toolLabels={toolLabels}
+        messages={[
+          conversation[0],
+          {
+            id: "m2",
+            role: "assistant",
+            parts: [
+              { type: "reasoning", text: "Look up the latest builds, then read the error.", state: "done" },
+              { type: "tool-searchDeployments", toolCallId: "call_1", state: "output-available", input: { project: "coreloom-api", status: "failed", limit: 3 }, output: { hits: 3 } },
+              { type: "tool-readLogs", toolCallId: "call_2", state: "input-streaming", input: { deployment: "dpl_8f2k" } },
+              { type: "text", text: "Your last three deployments of **coreloom-api** failed at the same step: the", state: "streaming" },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+// A small chart as an image attachment (an SVG data URL, so the story needs no network).
+const chart = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="0 0 320 160"><rect width="320" height="160" fill="#101418"/><polyline fill="none" stroke="#00c2b8" stroke-width="4" points="10,130 60,110 110,118 160,70 210,84 260,40 310,52"/></svg>'
+)}`
+
+/** A user's attachments (an image and a file) and an answer citing uploaded documents. */
+export const AttachmentsAndDocuments: Story = {
+  render: () => (
+    <Frame>
+      <Chat
+        autoFocus={false}
+        onSend={() => {}}
+        allowAttachments
+        messages={[
+          {
+            id: "u1",
+            role: "user",
+            parts: [
+              { type: "file", mediaType: "image/svg+xml", url: chart, filename: "error-rate.svg" },
+              { type: "file", mediaType: "application/pdf", url: "#", filename: "incident-42.pdf" },
+              { type: "text", text: "Does this spike match what the incident report says?" },
+            ],
+          },
+          {
+            id: "a1",
+            role: "assistant",
+            parts: [
+              { type: "text", text: "Yes. The error rate jumps at **10:42**, the minute `dpl_8f2k` went live, and falls back after the rollback at 11:05 — the report gives the same times.", state: "done" },
+              { type: "source-document", sourceId: "d1", title: "Incident 42 — postmortem", filename: "incident-42.pdf", mediaType: "application/pdf" },
+              { type: "source-document", sourceId: "d2", title: "Runbook — rollbacks", filename: "rollbacks.pdf", mediaType: "application/pdf" },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+type Deployment = { id: string; branch: string; status: "ready" | "failed" }
+
+/** A header with the agent, a model picker in the composer, and a tool result drawn as UI (`renderToolOutput`). */
+export const WithHeaderAndGenerativeUi: Story = {
+  render: () => {
+    const [model, setModel] = React.useState("claude-sonnet")
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          onSend={() => {}}
+          toolLabels={{ listDeployments: "Latest deployments" }}
+          header={
+            <div className="flex items-center gap-3 border-b border-border-subtle px-5 py-3">
+              <h2 className="m-0 text-[15px] font-semibold text-foreground">Deploy doctor</h2>
+              <Badge variant="success">
+                <BadgeDot />
+                Active
+              </Badge>
+            </div>
+          }
+          toolbar={
+            <Select value={model} onValueChange={setModel}>
+              <SelectTrigger size="sm" aria-label="Model" className="h-7 w-auto gap-1.5 border-transparent bg-transparent text-[12.5px] shadow-none">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="claude-sonnet">Claude Sonnet</SelectItem>
+                <SelectItem value="claude-haiku">Claude Haiku</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+          renderToolOutput={(name, output) =>
+            name === "listDeployments" ? (
+              <ul className="m-0 flex list-none flex-col divide-y divide-border-subtle rounded-md border border-border p-0">
+                {(output as Deployment[]).map((d) => (
+                  <li key={d.id} className="flex items-center gap-3 px-3 py-2">
+                    <span className="font-mono text-[12px] text-foreground">{d.id}</span>
+                    <span className="min-w-0 flex-1 truncate font-mono text-[12px] text-muted-foreground">{d.branch}</span>
+                    <Badge variant={d.status === "ready" ? "success" : "destructive"}>
+                      <BadgeDot />
+                      {d.status === "ready" ? "Ready" : "Failed"}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            ) : undefined
+          }
+          messages={[
+            { id: "u1", role: "user", parts: [{ type: "text", text: "Show me the latest deployments of coreloom-api." }] },
+            {
+              id: "a1",
+              role: "assistant",
+              parts: [
+                {
+                  type: "tool-listDeployments",
+                  toolCallId: "c1",
+                  state: "output-available",
+                  input: { project: "coreloom-api", limit: 3 },
+                  output: [
+                    { id: "dpl_8f2k", branch: "main", status: "failed" },
+                    { id: "dpl_5t3q", branch: "main", status: "ready" },
+                    { id: "dpl_4m1x", branch: "feature/auth", status: "ready" },
+                  ],
+                },
+                { type: "text", text: "The latest one failed; the two before it are ready. Want the logs of `dpl_8f2k`?", state: "done" },
+              ],
+            },
+          ]}
+        />
+      </Frame>
+    )
+  },
+}
+
+/** The same conversation in French: longer labels, same layout. */
+export const French: Story = {
+  globals: { locale: "fr" },
+  render: () => (
+    <Frame>
+      <Chat autoFocus={false} messages={conversation} onSend={() => {}} onRegenerate={() => {}} onFeedback={() => {}} toolLabels={toolLabels} onToolApprovalResponse={() => {}} />
+    </Frame>
+  ),
+}
+
 const NOW = new Date("2026-10-14T10:00:00+02:00")
 const daysAgo = (d: number) => new Date(NOW.getTime() - d * 86_400_000)
 const history: Conversation[] = [
@@ -203,4 +388,15 @@ export const WithHistory: Story = {
       </div>
     )
   },
+}
+
+/** No conversations yet. */
+export const EmptyHistory: Story = {
+  render: () => (
+    <div className="bg-background p-4">
+      <aside className="w-72">
+        <ConversationList conversations={[]} onNew={() => {}} onSelect={() => {}} />
+      </aside>
+    </div>
+  ),
 }

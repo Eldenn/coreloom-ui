@@ -530,7 +530,7 @@ test.describe("rich text editor", () => {
 
 test.describe("AI components", () => {
   test("the prompt sends on Enter, breaks lines on Shift + Enter, and turns Send into Stop", async ({ page }) => {
-    await open(page, "components-ai--prompt")
+    await open(page, "components-ai-prompt-input--default")
     const box = page.getByRole("textbox", { name: "Message" })
     await expect(box).toHaveAccessibleDescription(/Enter to send/)
     await box.click()
@@ -550,7 +550,7 @@ test.describe("AI components", () => {
   })
 
   test("a tool waiting for approval runs only once allowed", async ({ page }) => {
-    await open(page, "components-ai--tool-calls")
+    await open(page, "components-ai-tool-call--states")
     const card = page.locator('[data-slot="tool-call"]').filter({ hasText: "Roll back production" })
     await expect(card).toContainText("Needs your approval")
     await card.getByRole("button", { name: "Allow" }).click()
@@ -565,12 +565,25 @@ test.describe("AI components", () => {
   })
 
   test("reasoning folds and unfolds", async ({ page }) => {
-    await open(page, "components-ai--reasoning-story")
+    await open(page, "components-ai-reasoning--done")
     const done = page.getByRole("button", { name: "Thought for 6 s" })
     await expect(done).toHaveAttribute("aria-expanded", "false")
     await done.click()
     await expect(done).toHaveAttribute("aria-expanded", "true")
     await expect(page.getByText("a type error in settings.tsx")).toBeVisible()
+  })
+
+  test("a tool's output can be drawn as UI instead of JSON", async ({ page }) => {
+    await open(page, "components-ai-tool-call--custom-output")
+    const card = page.locator('[data-slot="tool-call"]')
+    await expect(card.getByRole("listitem")).toHaveCount(3)
+    await expect(card).not.toContainText('"branch"')
+  })
+
+  test("markdown drops raw HTML", async ({ page }) => {
+    await open(page, "components-ai-markdown--untrusted-html")
+    await expect(page.locator("#storybook-root img")).toHaveCount(0)
+    await expect(page.locator("#storybook-root b")).toHaveCount(0)
   })
 })
 
@@ -626,6 +639,23 @@ test.describe("AI blocks", () => {
     await page.getByRole("button", { name: /searchDeployments/ }).click()
     await expect(page.getByRole("button", { name: /searchDeployments/, pressed: true })).toBeVisible()
     await expect(page.getByText("TS2339").first()).toBeVisible()
+  })
+
+  test("chat: while thinking, the reasoning is open and Send is Stop", async ({ page }) => {
+    await open(page, "blocks-ai-chat--thinking")
+    await expect(page.getByRole("button", { name: "Thinking…" })).toHaveAttribute("aria-expanded", "true")
+    await expect(page.getByRole("button", { name: "Stop" })).toBeVisible()
+  })
+
+  test("chat: a tool result drawn as UI shows unfolded", async ({ page }) => {
+    await open(page, "blocks-ai-chat--with-header-and-generative-ui")
+    await expect(page.getByRole("log").getByRole("listitem")).toHaveCount(3)
+  })
+
+  test("empty lists say so", async ({ page }) => {
+    await open(page, "blocks-ai-workspace--empty-states")
+    await expect(page.getByText("No agents yet.")).toBeVisible()
+    await expect(page.getByText("No documents yet.", { exact: false })).toBeVisible()
   })
 
   test("playground: Run all streams into every variant; variants come and go", async ({ page }) => {

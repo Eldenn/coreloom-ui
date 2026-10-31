@@ -206,7 +206,7 @@ function ChatMessage({
                 key={tool.toolCallId}
                 part={tool}
                 label={toolLabels?.[name]}
-                renderOutput={renderToolOutput ? (output) => renderToolOutput(name, output) ?? null : undefined}
+                renderOutput={renderToolOutput ? (output) => renderToolOutput(name, output) : undefined}
                 onApprovalResponse={onToolApprovalResponse}
               />
             )

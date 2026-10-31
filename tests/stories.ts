@@ -29,6 +29,7 @@ export async function openStory(page: Page, id: string, theme: Theme, locale: Lo
   await page.locator("#storybook-root").waitFor()
   await page.evaluate(() => document.fonts.ready)
   await page.waitForLoadState("networkidle")
-  // Stories that submit a form or fetch on mount: wait for them to settle.
-  await page.waitForFunction(() => !document.querySelector("#storybook-root [data-submitting], #storybook-root [aria-busy=true]"), null, { timeout: 5000 })
+  // Stories that submit a form or fetch on mount: wait for them to settle. Stories frozen mid-stream
+  // (inside [data-frozen]) stay busy on purpose.
+  await page.waitForFunction(() => !document.querySelector("#storybook-root [data-submitting], #storybook-root [aria-busy=true]:not([data-frozen] *)"), null, { timeout: 5000 })
 }

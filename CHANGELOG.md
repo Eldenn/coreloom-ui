@@ -32,6 +32,9 @@ registry attached, so a project can pin one by pointing the namespace there in
   they are (checked against `ai` 7 in the unit tests); nothing depends on the SDK or calls an API.
 - Starter: Assistant, Agents, Runs, Playground and Knowledge pages on in-memory data, with a
   simulated `useChat` (`src/lib/use-demo-chat.ts`); the README shows the swap to `@ai-sdk/react`.
+- Storybook: a page per AI component with Controls, frozen streaming states (waiting, thinking,
+  answering), attachments and document sources, a tool result drawn as UI, empty states, a failing
+  playground variant, a running trace, French versions, and a "With the AI SDK" guide.
 - New logo: Coreloom's ginger cat, redrawn on a 256 grid from three shapes (head, eyes cut out, cyan
   slit pupils) so it holds at 16 px and in one colour; dark, light, one-colour, small-size and tile
   versions with lockups. Storybook's sidebar and tab and the starter's brand and favicon use it.
@@ -69,6 +72,12 @@ registry attached, so a project can pin one by pointing the namespace there in
 
 ### Fixed
 
+- AI blocks: `KnowledgeBase` with no documents says so instead of showing an empty table; ids in
+  `AgentEditor`, `RunTrace`, `Playground` and `RetrievalTest` come from `useId`, so two on a page
+  don't clash; a running trace step says "Running" to screen readers.
+- `ToolCall`: a `renderOutput` that returns `undefined` falls back to JSON (the chat used to show
+  nothing), a drawn result shows unfolded, long tool names wrap, and its Input / Output / Error
+  labels are no longer headings (they broke the page's heading order).
 - Starter: the French workspace URL hint was in English.
 
 ### Upgrading

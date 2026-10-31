@@ -35,8 +35,8 @@ function ToolCall({
   part: AiToolPart
   /** A human name for the tool ("Search the docs"); defaults to its id. */
   label?: React.ReactNode
-  /** Draw the output yourself (a chart, a card); JSON otherwise. */
-  renderOutput?: (output: unknown) => React.ReactNode
+  /** Draw the output yourself (a chart, a card); return undefined for JSON. A drawn output shows unfolded. */
+  renderOutput?: (output: unknown) => React.ReactNode | undefined
   /** Allow / Deny on calls that ask for approval. */
   onApprovalResponse?: (response: { id: string; approved: boolean }) => void
   defaultOpen?: boolean
@@ -44,10 +44,16 @@ function ToolCall({
 }) {
   const t = useCoreloomI18n().messages.ai.tool
   const asking = part.state === "approval-requested"
-  const [open, setOpen] = React.useState(defaultOpen ?? (asking || part.state === "output-error"))
+  const drawn = part.state === "output-available" && renderOutput ? renderOutput(part.output) : undefined
+  const isDrawn = drawn !== undefined && drawn !== null
+  const [open, setOpen] = React.useState(defaultOpen ?? (asking || part.state === "output-error" || isDrawn))
   React.useEffect(() => {
     if (asking) setOpen(true)
   }, [asking])
+  // A result drawn as UI is the answer: show it as soon as it arrives.
+  React.useEffect(() => {
+    if (isDrawn && defaultOpen === undefined) setOpen(true)
+  }, [isDrawn, defaultOpen])
 
   const status = {
     "input-streaming": { icon: <Spinner className="size-3.5" aria-hidden role="presentation" />, tone: "text-muted-foreground" },
@@ -73,8 +79,8 @@ function ToolCall({
     >
       <CollapsibleTrigger className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring">
         <WrenchIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-foreground">{label ?? part.title ?? toolName(part)}</span>
-        <span className={cn("inline-flex shrink-0 items-center gap-1.5 text-[12px]", status.tone)}>
+        <span className="min-w-0 flex-1 font-mono text-[12.5px] break-words text-foreground">{label ?? part.title ?? toolName(part)}</span>
+        <span className={cn("inline-flex shrink-0 items-center gap-1.5 text-right text-[12px]", status.tone)}>
           {status.icon}
           {t.states[part.state]}
         </span>
@@ -83,10 +89,10 @@ function ToolCall({
       <CollapsibleContent>
         <div className="flex flex-col gap-3 border-t border-border-subtle px-3 pt-2.5 pb-3">
           {part.input !== undefined && (
-            <section className="flex flex-col gap-1.5">
-              <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.input}</h4>
+            <div className="flex flex-col gap-1.5">
+              <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.input}</p>
               <Json value={part.input} />
-            </section>
+            </div>
           )}
           {asking && part.approval && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-warning-subtle px-3 py-2.5">
@@ -102,16 +108,16 @@ function ToolCall({
             </div>
           )}
           {part.state === "output-available" && (
-            <section className="flex flex-col gap-1.5">
-              <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.output}</h4>
-              {renderOutput ? renderOutput(part.output) : <Json value={part.output} />}
-            </section>
+            <div className="flex flex-col gap-1.5">
+              <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.output}</p>
+              {isDrawn ? drawn : <Json value={part.output} />}
+            </div>
           )}
           {part.state === "output-error" && (
-            <section className="flex flex-col gap-1.5">
-              <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-destructive uppercase">{t.error}</h4>
+            <div className="flex flex-col gap-1.5">
+              <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-destructive uppercase">{t.error}</p>
               <p className="m-0 rounded-md bg-destructive-subtle px-3 py-2 text-[13px] text-foreground">{part.errorText}</p>
-            </section>
+            </div>
           )}
         </div>
       </CollapsibleContent>

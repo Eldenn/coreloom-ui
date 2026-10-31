@@ -148,6 +148,7 @@ function RunTrace({
 }) {
   const { messages, locale, formatNumber } = useCoreloomI18n()
   const t = messages.ai.runs
+  const uid = React.useId()
   const [selected, setSelected] = React.useState(defaultSelectedId ?? spans.find((s) => s.error)?.id ?? spans.find((s) => s.status === "error")?.id ?? spans[0]?.id)
   const total = Math.max(run.durationMs, ...spans.map((s) => s.startMs + s.durationMs), 1)
 
@@ -178,9 +179,9 @@ function RunTrace({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <section aria-labelledby="run-trace-steps" className="flex min-w-0 flex-col rounded-lg border border-border bg-card">
+        <section aria-labelledby={`${uid}-steps`} className="flex min-w-0 flex-col rounded-lg border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
-            <h3 id="run-trace-steps" className="m-0 text-[13.5px] font-semibold text-foreground">
+            <h3 id={`${uid}-steps`} className="m-0 text-[13.5px] font-semibold text-foreground">
               {t.steps}
             </h3>
             <span className="font-mono text-[11px] text-muted-foreground">{t.timeline}</span>
@@ -212,7 +213,7 @@ function RunTrace({
                       <span className={cn("truncate font-mono text-[12px]", span.status === "error" ? "text-destructive" : "text-foreground")}>{span.name}</span>
                       <span className="sr-only">
                         {t.kinds[span.kind]}, {formatDuration(span.durationMs, locale)}
-                        {span.status === "error" ? `, ${t.error}` : ""}
+                        {span.status === "error" ? `, ${t.error}` : span.status === "running" ? `, ${t.status.running}` : ""}
                       </span>
                     </span>
                     <span aria-hidden className="relative h-5 flex-1">
