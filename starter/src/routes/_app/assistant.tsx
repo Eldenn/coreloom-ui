@@ -164,7 +164,7 @@ function Conversation({
   }
 
   const chat = useDemoChat({
-    initialMessages: initialMessages ?? [],
+    messages: initialMessages ?? [],
     script: {
       ...t.ai.script,
       tool: {
@@ -174,7 +174,7 @@ function Conversation({
       },
       source: { url: 'https://eldenn.github.io/coreloom-ui/', title: 'Deployments guide' },
     },
-    onFinish: (messages) => void save(messages),
+    onFinish: ({ messages }) => void save(messages),
   })
 
   // A question from the ⌘K palette is sent once, as soon as the conversation opens.

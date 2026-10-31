@@ -11,11 +11,11 @@ test.describe('theme generator', () => {
   test('a typed colour rebuilds the preview, the checks and brand.css', async ({ page }) => {
     await open(page, `${STORY}generator`)
     const status = page.getByRole('status')
-    await expect(status).toHaveText('All 10 contrast checks pass for #ff5a1f.')
+    await expect(status).toHaveText('All 10 contrast checks pass.')
 
     const hex = page.getByRole('textbox', { name: 'Brand colour', exact: true })
     await hex.fill('#7c3aed')
-    await expect(status).toHaveText('All 10 contrast checks pass for #7c3aed.')
+    await expect(status).toHaveText('All 10 contrast checks pass.')
     // A light-theme violet: kept as it is in light, so the light preview fills with it.
     // (toHaveCSS waits: the button eases from the old colour to the new one.)
     const deploy = (theme: string) =>
@@ -51,7 +51,7 @@ test.describe('theme generator', () => {
     await hex.fill('#ff5a')
     await expect(hex).toHaveAttribute('aria-invalid', 'true')
     await expect(hex).toHaveAccessibleDescription(/Enter a hex colour such as #ff5a1f/)
-    await expect(page.getByRole('status')).toHaveText('All 10 contrast checks pass for #ff5a1f.')
+    await expect(page.getByRole('status')).toHaveText('All 10 contrast checks pass.')
     await hex.fill('#ff5a1f')
     await expect(hex).not.toHaveAttribute('aria-invalid', 'true')
   })
@@ -64,7 +64,8 @@ test.describe('theme generator', () => {
     await expect(page.getByRole('textbox', { name: 'Brand colour', exact: true })).toHaveValue(
       '#00aa55',
     )
-    await expect(page.getByRole('status')).toContainText('#00aa55')
+    // The status reports the checks, not the colour, so dragging the picker doesn't re-announce it.
+    await expect(page.getByRole('status')).toHaveText(/All \d+ contrast checks pass\./)
   })
 
   test('dark text on the light fill switches the light theme over', async ({ page }) => {

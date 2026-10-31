@@ -9,9 +9,9 @@ A stand-in for the AI SDK's `useChat` that simulates a model in the browser: it 
 - `sensitive` (a RegExp), `sensitiveTool`, `approved` and `denied` for the approval path;
 - `speed` (`{ word, firstToken }` in ms) to stream faster or slower;
 
-plus optionally `initialMessages` and `onFinish(messages)` (called when a reply ends, to save the conversation).
+plus optionally `messages` (the conversation to start from) and `onFinish({ messages, isAbort })` (called when a reply ends or is stopped, to save the conversation) — the same option names as `useChat`.
 
-It returns `useChat`'s shape — `messages`, `status`, `error`, `sendMessage`, `stop`, `regenerate`, `addToolApprovalResponse` — plus `edit(messageId, text)` for `Chat`'s `onEdit`. So moving to a real model is a swap: replace `useDemoChat({ script })` with `useChat({ transport })` and keep the `Chat` props.
+It returns `useChat`'s shape — `messages`, `status`, `error`, `sendMessage`, `stop`, `regenerate`, `addToolApprovalResponse` — plus `edit(messageId, text)` for `Chat`'s `onEdit`. So moving to a real model is a swap: replace `useDemoChat({ script })` with `useChat({ transport })` and keep the other `Chat` props; `edit` has no `useChat` counterpart (truncate with `setMessages`, then `sendMessage`, as the Chat guide shows).
 
 - Stop cuts the stream and closes whatever was streaming, as an aborted request does.
 - Unmounting stops the simulation; no timer outlives the component.

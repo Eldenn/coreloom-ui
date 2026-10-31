@@ -6,6 +6,7 @@
 // Usage: node build/gen-llms.mjs [outDir]   (default: public)
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const SITE = 'https://eldenn.github.io/coreloom-ui'
 const root = path.resolve(import.meta.dirname, '..')
@@ -22,6 +23,7 @@ const GUIDE_FOR = {
   'theme-toggle': ['Accents'],
   'command-menu': ['Command'],
   i18n: ['Language'],
+  accent: ['ThemeGenerator'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */
@@ -132,7 +134,7 @@ Rules that hold everywhere: colours come from the semantic Tailwind tokens (\`bg
   return { index: index.join('\n') + '\n', full: full.join('\n') + '\n', guides: [...used].sort() }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const { index, full, guides } = build()
   fs.mkdirSync(path.join(out, 'guides'), { recursive: true })
   fs.writeFileSync(path.join(out, 'llms.txt'), index)

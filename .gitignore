@@ -3,6 +3,9 @@ dist
 public/r
 public/storybook
 public/tokens
+public/llms.txt
+public/llms-full.txt
+public/guides
 .env*
 .DS_Store
 *:Zone.Identifier
