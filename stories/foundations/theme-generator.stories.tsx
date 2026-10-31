@@ -255,8 +255,8 @@ function ThemeGenerator({ colour, name, darkTextOnLight }: GeneratorProps) {
 
       <p role="status" className="text-[14px] text-fg-secondary">
         {result.pass
-          ? `All ${result.checks.length} contrast checks pass for ${result.input}.`
-          : `${failing} of ${result.checks.length} contrast checks fail for ${result.input}: this accent can't ship.`}
+          ? `All ${result.checks.length} contrast checks pass.`
+          : `${failing} of ${result.checks.length} contrast checks fail: this accent can't ship.`}
       </p>
 
       <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3">

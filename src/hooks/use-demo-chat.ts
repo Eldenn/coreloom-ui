@@ -52,14 +52,18 @@ const ROLLBACK: DemoTool = {
 
 class Stopped extends Error {}
 
+/** Called when a reply ends, like useChat's onFinish: to save the conversation. */
+type DemoFinish = (event: { messages: AiMessage[]; isAbort: boolean }) => void
+
 function useDemoChat({
-  initialMessages = [],
+  messages: initialMessages = [],
   script,
   onFinish,
 }: {
-  initialMessages?: AiMessage[]
+  /** The conversation to start from (useChat's `messages`). */
+  messages?: AiMessage[]
   script: DemoScript
-  onFinish?: (messages: AiMessage[]) => void
+  onFinish?: DemoFinish
 }) {
   // eslint-disable-next-line @eslint-react/use-state -- setMessages (below) wraps this setter and also updates `latest`.
   const [messages, setMessagesState] = React.useState<AiMessage[]>(initialMessages)
@@ -78,13 +82,17 @@ function useDemoChat({
   }, [])
 
   // Every wait checks that this reply is still the current one: Stop (or a new message) ends it.
+  // Pending timers are kept so unmounting can clear them.
+  const timers = React.useRef(new Set<ReturnType<typeof setTimeout>>())
   const sleep = (ms: number, id: number) =>
-    new Promise<void>((resolve, reject) =>
-      setTimeout(() => {
+    new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        timers.current.delete(timer)
         if (run.current === id) resolve()
         else reject(new Stopped())
-      }, ms),
-    )
+      }, ms)
+      timers.current.add(timer)
+    })
 
   const update = (id: string, change: (parts: AiMessagePart[]) => AiMessagePart[]) => {
     setMessages(
@@ -169,7 +177,7 @@ function useDemoChat({
         ])
       await streamText(msgId, 'text', script.answer(question), id)
       setStatus('ready')
-      finish.current?.(latest.current)
+      finish.current?.({ messages: latest.current, isAbort: false })
     } catch (e) {
       if (!(e instanceof Stopped)) {
         setError(e as Error)
@@ -210,7 +218,7 @@ function useDemoChat({
       })),
     )
     setStatus('ready')
-    finish.current?.(latest.current)
+    finish.current?.({ messages: latest.current, isAbort: true })
   }
 
   const regenerate = () => {
@@ -253,21 +261,25 @@ function useDemoChat({
       }
       await streamText(msg.id, 'text', (approved ? script.approved : script.denied) ?? '', id)
       setStatus('ready')
-      finish.current?.(latest.current)
+      finish.current?.({ messages: latest.current, isAbort: false })
     } catch (e) {
       if (!(e instanceof Stopped)) throw e
     }
   }
 
-  // Stop the simulation when the conversation closes.
-  React.useEffect(
-    () => () => {
+  // Stop the simulation when the conversation closes: no timer outlives the component.
+  React.useEffect(() => {
+    const pending = timers.current
+    return () => {
+      // run is a reply counter, not a DOM node: bumping it here is what ends the reply.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       run.current++
-    },
-    [],
-  )
+      for (const timer of pending) clearTimeout(timer)
+      pending.clear()
+    }
+  }, [])
 
   return { messages, status, error, sendMessage, stop, regenerate, edit, addToolApprovalResponse }
 }
 
-export { type DemoScript, type DemoTool, useDemoChat }
+export { type DemoFinish, type DemoScript, type DemoTool, useDemoChat }
