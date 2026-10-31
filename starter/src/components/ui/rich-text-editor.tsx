@@ -3,8 +3,8 @@
 // Coreloom UI — RichTextEditor. Tiptap (ProseMirror) with a toolbar: bold, italic, underline,
 // strikethrough, inline code, two heading levels, lists, quote, code block, links, undo / redo.
 // Optional AI (`ai`): an "AI" button and ⌘J / Ctrl+J open a panel that edits the selection
-// through the app's own model call. The value is HTML. Sanitize it on the server before you
-// render it anywhere else.
+// through the app's own model call, and "/" at the start of a line opens a menu of AI commands.
+// The value is HTML. Sanitize it on the server before you render it anywhere else.
 import { Placeholder } from '@tiptap/extensions'
 import { type Editor, EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -33,11 +33,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import {
   AI_CONTENT,
   AiSelectionHighlight,
+  AiSlashCommand,
   RichTextAi,
   type RichTextAiAction,
   type RichTextAiCommand,
   type RichTextAiOptions,
   type RichTextAiRequest,
+  type RichTextAiSlashAction,
+  RichTextAiSlashMenu,
+  type SlashHandlers,
 } from '@/components/ui/rich-text-ai'
 import { Separator } from '@/components/ui/separator'
 import { Toggle } from '@/components/ui/toggle'
@@ -221,6 +225,10 @@ function RichTextEditor({
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
   const mod = mac ? '⌘' : 'Ctrl+'
   const [aiOpen, setAiOpen] = React.useState(Boolean(ai?.defaultOpen))
+  // The command chosen in the "/" menu, run as the panel opens.
+  const [aiStart, setAiStart] = React.useState<RichTextAiCommand | null>(null)
+  // Filled by the "/" menu while it's mounted; until then the slash extension lets "/" through.
+  const slashHandlersRef = React.useRef<SlashHandlers | null>(null)
 
   const editor = useEditor({
     // Render on the client after mount (no SSR mismatch in Next.js).
@@ -237,8 +245,11 @@ function RichTextEditor({
         },
       }),
       Placeholder.configure({ placeholder }),
-      // Always there (inert until the AI panel paints a selection), so `ai` can be turned on after mount.
+      // Always there (inert until the AI panel paints a selection, or the "/" menu mounts), so `ai`
+      // can be turned on after mount.
       AiSelectionHighlight,
+      // eslint-disable-next-line react-hooks/refs -- the getter runs in ProseMirror's key and input handlers, never during render.
+      AiSlashCommand.configure({ handlers: () => slashHandlersRef.current }),
     ],
     editorProps: {
       attributes: {
@@ -431,9 +442,13 @@ function RichTextEditor({
                     editor={editor}
                     options={ai}
                     open={aiOpen}
-                    onOpenChange={setAiOpen}
+                    onOpenChange={(next) => {
+                      setAiOpen(next)
+                      if (!next) setAiStart(null)
+                    }}
                     shortcut={`${mod}J`}
                     disabled={disabled}
+                    start={aiStart}
                   />
                   <Separator
                     orientation="vertical"
@@ -475,6 +490,17 @@ function RichTextEditor({
           ai && AI_CONTENT,
         )}
       />
+      {ai && editor && ai.slashCommand !== false && !disabled && (
+        <RichTextAiSlashMenu
+          editor={editor}
+          options={ai}
+          handlersRef={slashHandlersRef}
+          onChoose={(command) => {
+            setAiStart(command)
+            setAiOpen(true)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -484,5 +510,6 @@ export {
   type RichTextAiCommand,
   type RichTextAiOptions,
   type RichTextAiRequest,
+  type RichTextAiSlashAction,
   RichTextEditor,
 }

@@ -663,6 +663,13 @@ const en = {
     aiHint: 'AI can get things wrong. Read it before you keep it.',
     aiSelectionLost:
       'The selected text changed, so this suggestion has nowhere to go. Select the text again and ask again.',
+    aiContinue: 'Continue writing',
+    aiInsertHere: 'Insert here',
+    aiScopeBeforeCursor: 'Text before the cursor',
+    slashMenu: 'AI commands',
+    slashAsk: 'Ask AI…',
+    slashResults: (n: number) =>
+      `${n} ${n === 1 ? 'AI command' : 'AI commands'}. Up and down arrows to choose, Enter to run.`,
   },
 }
 
@@ -1324,6 +1331,13 @@ const fr: Messages = {
     aiHint: 'L’IA peut se tromper. Relisez avant de garder.',
     aiSelectionLost:
       'Le texte sélectionné a changé : la suggestion n’a plus d’endroit où aller. Sélectionnez-le de nouveau et redemandez.',
+    aiContinue: 'Continuer à écrire',
+    aiInsertHere: 'Insérer ici',
+    aiScopeBeforeCursor: 'Texte avant le curseur',
+    slashMenu: 'Commandes IA',
+    slashAsk: 'Demander à l’IA…',
+    slashResults: (n) =>
+      `${n} ${n > 1 ? 'commandes IA' : 'commande IA'}. Flèches haut et bas pour choisir, Entrée pour lancer.`,
   },
 }
 
