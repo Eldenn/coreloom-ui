@@ -13,6 +13,10 @@ test.skip(
 )
 test.use({ baseURL: `http://127.0.0.1:${STARTER_PORT}` })
 
+// The assistant's answers are simulated word by word with timers: on a busy CI machine running
+// several browsers they take far longer than on a laptop.
+const STREAM_TIMEOUT = 30_000
+
 async function signIn(page: Page, to = '/') {
   await page.goto(to)
   await page.getByLabel('Email').fill('ada.lovelace@acme.dev')
@@ -320,6 +324,7 @@ test('signing out protects the app again', async ({ page }) => {
 test('assistant: an answer streams in with its tool call; the conversation joins the list', async ({
   page,
 }) => {
+  test.slow()
   await signIn(page, '/assistant')
   await expect(page.getByRole('heading', { name: 'How can I help?' })).toBeVisible()
   const box = page.getByRole('textbox', { name: 'Message' })
@@ -327,7 +332,7 @@ test('assistant: an answer streams in with its tool call; the conversation joins
   await box.press('Enter')
   const log = page.getByRole('log', { name: 'Conversation' })
   await expect(page.getByRole('button', { name: 'Stop' })).toBeVisible()
-  await expect(log.getByText('Rename the property')).toBeVisible({ timeout: 10_000 })
+  await expect(log.getByText('Rename the property')).toBeVisible({ timeout: STREAM_TIMEOUT })
   await expect(log.getByText('searchDocs')).toBeVisible()
   await expect(page).toHaveURL(/\/assistant\?c=c/)
   await expect(
@@ -339,9 +344,9 @@ test('assistant: an answer streams in with its tool call; the conversation joins
   // A sensitive tool waits for approval, then the answer resumes.
   await box.fill('Roll back coreloom-api')
   await box.press('Enter')
-  await expect(log.getByText('Needs your approval')).toBeVisible({ timeout: 10_000 })
+  await expect(log.getByText('Needs your approval')).toBeVisible({ timeout: STREAM_TIMEOUT })
   await log.getByRole('button', { name: 'Allow' }).click()
-  await expect(log.getByText('is back on')).toBeVisible({ timeout: 10_000 })
+  await expect(log.getByText('is back on')).toBeVisible({ timeout: STREAM_TIMEOUT })
 })
 
 test("agents: a new agent opens its settings; saving and a run's trace", async ({ page }) => {
@@ -388,6 +393,7 @@ test('playground: every variant streams an answer with its metrics', async ({ pa
 })
 
 test('Ask AI in the palette opens the assistant with the question answered', async ({ page }) => {
+  test.slow()
   await signIn(page, '/')
   await page.getByRole('button', { name: /Search or jump to/ }).click()
   await page.keyboard.type('why did the build fail')
@@ -395,7 +401,7 @@ test('Ask AI in the palette opens the assistant with the question answered', asy
   await expect(page).toHaveURL(/\/assistant/)
   const log = page.getByRole('log', { name: 'Conversation' })
   await expect(log.getByText('why did the build fail', { exact: true })).toBeVisible()
-  await expect(log.getByText('Rename the property')).toBeVisible({ timeout: 10_000 })
+  await expect(log.getByText('Rename the property')).toBeVisible({ timeout: STREAM_TIMEOUT })
   // The answer cites its source inline, and the composer shows the model and the context used.
   await expect(log.getByRole('button', { name: /Source 1/ }).first()).toBeVisible()
   await expect(page.getByRole('combobox', { name: /Model: Claude Sonnet/ })).toBeVisible()

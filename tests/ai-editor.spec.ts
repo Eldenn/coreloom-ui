@@ -5,6 +5,9 @@ import { expect, type Page, test } from '@playwright/test'
 
 import { openStory } from './stories'
 
+// The fake model thinks for 1.5 s, then writes a word every 45 ms: allow for a busy machine.
+const SUGGESTION_TIMEOUT = 15_000
+
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
 const EDITOR = 'components-forms-rich-text-editor--'
@@ -42,7 +45,7 @@ test.describe('editor AI', () => {
     await expect(preview).toHaveAttribute('aria-busy', 'true')
     // Focus moved off the vanished quick action onto Stop, then onto the main action.
     await expect(panel.getByRole('button', { name: 'Stop' })).toBeFocused()
-    await expect(status).toHaveText('Suggestion ready.')
+    await expect(status).toHaveText('Suggestion ready.', { timeout: SUGGESTION_TIMEOUT })
     await expect(preview).not.toHaveAttribute('aria-busy')
     await expect(preview.locator('strong')).toHaveText('faster')
     const replace = panel.getByRole('button', { name: 'Replace selection' })
@@ -113,7 +116,9 @@ test.describe('editor AI', () => {
     await expect(panel).toContainText('Whole document')
     await panel.getByRole('textbox', { name: 'What should AI do?' }).fill('Release notes')
     await page.keyboard.press('Enter')
-    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.')
+    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.', {
+      timeout: SUGGESTION_TIMEOUT,
+    })
     await expect(panel.getByRole('region', { name: 'Suggestion' }).locator('ol li')).toHaveCount(3)
     await expect(page.getByTestId('ai-last-request')).toHaveText(/custom on the document/)
     await panel.getByRole('button', { name: 'Discard' }).click()
@@ -151,6 +156,8 @@ test.describe('editor AI', () => {
   })
 
   test('the open panel passes axe, in English and French', async ({ page }) => {
+    // Four stories × axe in one test: give it room on a busy machine.
+    test.slow()
     for (const [id, locale] of [
       ['ai-panel-open', 'en'],
       ['ai-error', 'en'],
@@ -181,7 +188,9 @@ test.describe('editor AI', () => {
     await page.keyboard.press('ControlOrMeta+j')
     const panel = page.getByRole('dialog', { name: 'AI assistant' })
     await panel.getByRole('button', { name: 'Fix spelling and grammar' }).click()
-    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.')
+    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.', {
+      timeout: SUGGESTION_TIMEOUT,
+    })
     await expect(
       panel.getByRole('region', { name: 'Suggestion' }).getByRole('link', { name: 'the beta' }),
     ).toHaveAttribute('href', 'https://eldenn.github.io/coreloom-ui/')
@@ -205,7 +214,9 @@ test.describe('editor AI', () => {
     await page.keyboard.press('ControlOrMeta+j')
     const panel = page.getByRole('dialog', { name: 'AI assistant' })
     await panel.getByRole('button', { name: 'Improve writing' }).click()
-    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.')
+    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.', {
+      timeout: SUGGESTION_TIMEOUT,
+    })
     // The app reloads the content while the panel is open (a controlled value, a collaborator).
     await page.evaluate(() => {
       // Tiptap puts the editor on its DOM node; the DOM types don't know it.
