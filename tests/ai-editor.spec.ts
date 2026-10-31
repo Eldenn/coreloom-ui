@@ -17,6 +17,12 @@ async function selectFirstParagraph(page: Page) {
   await open(page, `${EDITOR}with-ai`)
   const editor = page.getByRole('textbox', { name: 'Announcement' })
   await editor.locator('p').first().click({ clickCount: 3 })
+  // ⌘J acts on the editor's selection: on a busy machine the shortcut could otherwise land before
+  // the triple click has focused the editor and selected the paragraph.
+  await expect(editor).toBeFocused()
+  await expect
+    .poll(() => page.evaluate(() => window.getSelection()?.toString().trim().length ?? 0))
+    .toBeGreaterThan(0)
   return editor
 }
 

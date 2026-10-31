@@ -16,12 +16,12 @@ jobs:
   check:
     # The Version Packages pull request removes the changesets on purpose.
     if: github.head_ref != 'changeset-release/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # `changeset status --since` diffs against the base branch
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 22
