@@ -22,7 +22,12 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "llms": "node build/gen-llms.mjs"
+    "llms": "node build/gen-llms.mjs",
+    "brand": "node build/gen-brand.mjs",
+    "changeset": "changeset",
+    "changeset:check": "node build/changelog.mjs --check",
+    "version-packages": "changeset version && node build/changelog.mjs",
+    "release": "changeset git-tag"
   },
   "peerDependencies": {
     "react": "^19",
@@ -64,6 +69,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
+    "@changesets/cli": "^3.0.3",
     "@eslint-react/eslint-plugin": "5.28.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.63.0",
