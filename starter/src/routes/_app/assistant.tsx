@@ -1,5 +1,5 @@
 // A chat with an assistant, beside the history of conversations. The answers are simulated by
-// useDemoChat (src/lib/use-demo-chat.ts), which has useChat's shape: swap in @ai-sdk/react's
+// useDemoChat (@coreloom/demo-chat), which has useChat's shape: swap in @ai-sdk/react's
 // useChat with your own endpoint and the page stays the same. The URL holds the conversation
 // (/assistant?c=c1), so a conversation can be linked to and the Back button works. "Ask AI" in the
 // ⌘K palette lands here with ?q=…, which starts a new conversation with that question.
@@ -22,11 +22,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useDemoChat } from '@/hooks/use-demo-chat'
 import { type AiMessage, messageText } from '@/lib/ai'
 import { deleteConversation, models, renameConversation, saveConversation } from '@/lib/ai-api'
 import { useT } from '@/lib/locale'
 import { conversationsQuery, messagesQuery } from '@/lib/queries'
-import { useDemoChat } from '@/lib/use-demo-chat'
 
 export const Route = createFileRoute('/_app/assistant')({
   validateSearch: z.object({
@@ -165,7 +165,15 @@ function Conversation({
 
   const chat = useDemoChat({
     initialMessages: initialMessages ?? [],
-    script: t.ai.script,
+    script: {
+      ...t.ai.script,
+      tool: {
+        name: 'searchDocs',
+        input: (q) => ({ query: q.slice(0, 60) }),
+        output: { hits: 3, top: 'Deployments guide.md' },
+      },
+      source: { url: 'https://eldenn.github.io/coreloom-ui/', title: 'Deployments guide' },
+    },
     onFinish: (messages) => void save(messages),
   })
 

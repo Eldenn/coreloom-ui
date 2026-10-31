@@ -86,6 +86,23 @@ The namespace above follows `main`. To stay on one version, point it at a releas
 Each release in the [changelog](./CHANGELOG.md) says what to do under **Upgrading**. Review with
 `shadcn add … --diff` before `--overwrite`: installed files are yours.
 
+### With AI assistants
+
+[`llms.txt`](https://eldenn.github.io/coreloom-ui/llms.txt) lists every item with its install name and
+a link to its guide (when to use it, props, accessibility rules);
+[`llms-full.txt`](https://eldenn.github.io/coreloom-ui/llms-full.txt) has all the guides in one file.
+Give either to your assistant as context.
+
+To let Claude Code, Cursor or VS Code browse and install `@coreloom/*` items themselves, add the
+namespace to `components.json` (as above) and turn on shadcn's MCP server in the app:
+
+```bash
+pnpm dlx shadcn@latest mcp init --client claude   # or cursor, vscode
+```
+
+Then ask in plain words: "add the Coreloom chat block and wire it to useChat", "which Coreloom
+component is a date range picker?". The starter ships with the server configured (`.mcp.json`).
+
 ## What's in the repo
 
 | Path                     | What                                                                                                 |

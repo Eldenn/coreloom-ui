@@ -53,4 +53,4 @@ export function Assistant({ id, initialMessages }: { id: string; initialMessages
 
 - Tools that change things (send, delete, deploy, pay) should need approval on the server (the AI SDK's tool approval); the chat then shows Allow / Deny and waits for the user.
 - Keep provider keys on the server. The playground and agent screens edit settings; your backend decides what they may do.
-- No backend yet? The starter's `useDemoChat` (`src/lib/use-demo-chat.ts`) has `useChat`'s shape and simulates answers in the browser.
+- No backend yet? `useDemoChat` (`@coreloom/demo-chat`) has `useChat`'s shape and simulates answers in the browser.

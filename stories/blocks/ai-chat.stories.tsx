@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useDemoChat } from '@/hooks/use-demo-chat'
 import { type AiChatStatus, type AiMessage, messageText } from '@/lib/ai'
 
 import { catalog, usage } from './ai-models'
@@ -177,55 +178,35 @@ export const Empty: Story = {
 const reply =
   "Here's a short summary.\n\n- **3 deployments** failed this week, all on `coreloom-api`.\n- Build minutes are up **12%**, mostly from `docs`.\n- No open incidents.\n\nWant the details for one of them?"
 
-/** Try it: send a message — the reply streams in token by token, and Stop cuts it short. */
+/** Try it: a simulated model (useDemoChat) thinks, calls a tool, cites a source and streams its
+ *  answer; "roll back" asks for approval first. No backend involved. */
 export const Streaming: Story = {
   tags: ['no-test'],
-  render: () => {
-    const [messages, setMessages] = React.useState<AiMessage[]>([])
-    const [status, setStatus] = React.useState<AiChatStatus>('ready')
-    const timer = React.useRef<ReturnType<typeof setInterval>>(undefined)
-    const stop = () => {
-      clearInterval(timer.current)
-      setStatus('ready')
-    }
+  render: function StreamingChat() {
+    const chat = useDemoChat({
+      script: {
+        reasoning: 'Find the failed deployment, then read its build log.',
+        answer: () => reply,
+        source: { url: 'https://coreloom.dev/docs/deployments', title: 'Deployments guide' },
+        sensitive: /roll ?back/i,
+        approved: 'Done: **coreloom-api** is back on `dpl_5t3q`.',
+        denied: 'OK, nothing was rolled back.',
+      },
+    })
     return (
       <Frame>
         <Chat
           autoFocus={false}
-          messages={messages}
-          status={status}
-          onStop={stop}
-          suggestions={['Summarise this week']}
-          onSend={({ text }) => {
-            const id = String(Date.now())
-            setMessages((m) => [
-              ...m,
-              { id: `u${id}`, role: 'user', parts: [{ type: 'text', text }] },
-            ])
-            setStatus('submitted')
-            setTimeout(() => {
-              setStatus('streaming')
-              let i = 0
-              timer.current = setInterval(() => {
-                i += 3
-                setMessages((m) => [
-                  ...m.filter((x) => x.id !== `a${id}`),
-                  {
-                    id: `a${id}`,
-                    role: 'assistant',
-                    parts: [
-                      {
-                        type: 'text',
-                        text: reply.slice(0, i),
-                        state: i >= reply.length ? 'done' : 'streaming',
-                      },
-                    ],
-                  },
-                ])
-                if (i >= reply.length) stop()
-              }, 30)
-            }, 700)
-          }}
+          messages={chat.messages}
+          status={chat.status}
+          error={chat.error}
+          onSend={chat.sendMessage}
+          onStop={chat.stop}
+          onRegenerate={chat.regenerate}
+          onEdit={chat.edit}
+          onToolApprovalResponse={(r) => void chat.addToolApprovalResponse(r)}
+          suggestions={['Why did the last deployment fail?', 'Roll back coreloom-api']}
+          toolLabels={{ searchDocs: 'Search the docs', rollback: 'Roll back production' }}
         />
       </Frame>
     )

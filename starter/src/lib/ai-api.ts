@@ -1,7 +1,7 @@
 // AI demo data, in memory, like src/lib/api.ts: agents, their runs and traces, the knowledge base
 // and past conversations. Every function is async and waits a little; replace the bodies with
 // fetch() calls to your backend (or your AI provider's dashboard API) and the pages stay the same.
-// No model is called: the chat's answers are simulated in src/lib/use-demo-chat.ts.
+// No model is called: the chat's answers are simulated by useDemoChat (src/hooks/use-demo-chat.ts, the @coreloom/demo-chat item).
 import type { AgentSummary, AgentTool, AgentValues } from '@/components/ai-agents'
 import type { Conversation } from '@/components/ai-chat'
 import type { KnowledgeDocument, RetrievalResult } from '@/components/ai-knowledge'

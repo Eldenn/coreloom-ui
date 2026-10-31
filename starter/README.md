@@ -40,7 +40,7 @@ the TanStack devtools in development.
 ## AI pages
 
 Nothing calls a model: `src/lib/ai-api.ts` holds agents, runs, documents and conversations in
-memory, and `src/lib/use-demo-chat.ts` simulates an answer (it thinks, calls a tool, streams text).
+memory, and `src/hooks/use-demo-chat.ts` (the `@coreloom/demo-chat` registry item) simulates an answer (it thinks, calls a tool, streams text).
 That hook has the AI SDK's `useChat` shape, so moving to a real model is a swap in
 `src/routes/_app/assistant.tsx`:
 
@@ -100,6 +100,10 @@ pnpm dlx shadcn@latest add @coreloom/app-shell --overwrite   # read the CHANGELO
 ```
 
 Docs and live examples: https://eldenn.github.io/coreloom-ui/
+
+With an AI assistant: `.mcp.json` turns on shadcn's MCP server, so Claude Code (and other MCP
+clients) can list and install `@coreloom/*` items for you. For context, point it at
+https://eldenn.github.io/coreloom-ui/llms.txt.
 
 ## Scripts
 
