@@ -70,6 +70,9 @@ export function messageText(message: AiMessage) {
     .join("\n\n")
 }
 
+/** What a model can do, shown as badges in the model picker. Other strings show as they are. */
+export type AiModelCapability = "vision" | "tools" | "reasoning" | "fast" | "files" | "audio" | "web"
+
 /** A model a block can offer (agents, playground, prompt toolbar). */
 export type AiModel = {
   id: string
@@ -78,6 +81,61 @@ export type AiModel = {
   provider?: string
   /** Short note shown under the name: "Fast, cheap", "Best reasoning". */
   description?: string
+  /** How many tokens the context window holds (200_000). */
+  contextWindow?: number
+  /** Price per million tokens, in USD (or `pricing.currency`). */
+  pricing?: { input: number; output: number; currency?: string }
+  capabilities?: ReadonlyArray<AiModelCapability | (string & {})>
+  /** Shown but not choosable (not in the plan, unavailable). */
+  disabled?: boolean
+}
+
+/** Token counts for a conversation or a turn — the AI SDK's `LanguageModelUsage` fits (v5's flat fields and
+ *  v6+'s `…TokenDetails`). Reasoning tokens are part of the output, cached tokens part of the input. */
+export type AiUsage = {
+  inputTokens?: number | undefined
+  outputTokens?: number | undefined
+  totalTokens?: number | undefined
+  reasoningTokens?: number | undefined
+  cachedInputTokens?: number | undefined
+  inputTokenDetails?: { cacheReadTokens?: number | undefined }
+  outputTokenDetails?: { reasoningTokens?: number | undefined }
+}
+
+/** Reasoning and cached-input tokens, wherever the SDK version puts them. */
+export function usageDetails(usage: AiUsage) {
+  return {
+    reasoning: usage.outputTokenDetails?.reasoningTokens ?? usage.reasoningTokens,
+    cached: usage.inputTokenDetails?.cacheReadTokens ?? usage.cachedInputTokens,
+  }
+}
+
+/** 950 → "950", 1_500 → "1.5K", 200_000 → "200K", 1_000_000 → "1M" — in the locale's compact notation. */
+export function formatTokens(n: number, locale: string) {
+  return new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: n >= 1000 && n < 10_000 ? 1 : n < 1_000_000 ? 0 : 1 }).format(n)
+}
+
+/** A price per million tokens: whole amounts without decimals ("$3"), others with two or three ("$0.25", "$0.075"). */
+export function formatTokenPrice(value: number, locale: string, currency = "USD") {
+  const whole = Number.isInteger(value)
+  return new Intl.NumberFormat(locale, { style: "currency", currency, minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 3 }).format(value)
+}
+
+/** The tokens used: `totalTokens`, or input + output. */
+export function usageTotal(usage: AiUsage | number) {
+  if (typeof usage === "number") return usage
+  return usage.totalTokens ?? (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0)
+}
+
+/** What the tokens cost at a model's list price (cache discounts left out, so it's an upper estimate). */
+export function estimateCost(usage: AiUsage, pricing: { input: number; output: number }) {
+  return ((usage.inputTokens ?? 0) * pricing.input + (usage.outputTokens ?? 0) * pricing.output) / 1_000_000
+}
+
+/** How full a context window is: "ok", then "warning" from 80 %, "critical" from 95 %. */
+export function contextLevel(used: number, max: number): "ok" | "warning" | "critical" {
+  const ratio = max > 0 ? used / max : 0
+  return ratio >= 0.95 ? "critical" : ratio >= 0.8 ? "warning" : "ok"
 }
 
 /** Formats a cost in a currency (default USD) with enough decimals for fractions of a cent. */

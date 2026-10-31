@@ -16,6 +16,8 @@
     "ai-agents",
     "ai-runs",
     "ai-playground",
-    "ai-knowledge"
+    "ai-knowledge",
+    "model-picker",
+    "context-meter"
   ]
 }

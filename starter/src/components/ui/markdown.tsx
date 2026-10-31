@@ -3,14 +3,107 @@
 // Coreloom UI — Markdown. Renders model output (or any Markdown) in Coreloom type: headings,
 // lists, tables, quotes, links, inline code and code blocks with a copy button. GitHub-flavoured
 // (tables, task lists, strikethrough). Raw HTML in the text is dropped, never rendered, so output
-// from a model can't inject markup. Safe to re-render on every streamed token.
+// from a model can't inject markup. Safe to re-render on every streamed token. Given the message's
+// `sources`, the model's markers ("[1]", "[1][2]") become InlineCitation pills that show the source.
+// Footnotes ([^1]) are labelled in the reader's language and jump within the answer.
 import * as React from "react"
-import ReactMarkdown, { type Components } from "react-markdown"
+import ReactMarkdown, { type Components, type Options } from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { CheckIcon, CopyIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { InlineCitation, splitCitations, type CitationSource } from "@/components/ui/inline-citation"
 import { useCoreloomI18n } from "@/lib/i18n"
+
+// The sources the citations point at, read by the `sup` renderer (a context, so the renderers stay the
+// same objects from one streamed token to the next and nothing remounts).
+const SourcesContext = React.createContext<ReadonlyArray<CitationSource>>([])
+
+type Position = { start: { offset?: number }; end: { offset?: number } }
+type MdNode = { type: string; value?: string; children?: MdNode[]; position?: Position; referenceType?: string; data?: Record<string, unknown> }
+type HastNode = { type: string; tagName?: string; properties?: Record<string, unknown>; children?: HastNode[] }
+
+const citationNode = (n: number): MdNode => ({ type: "text", value: `[${n}]`, data: { hName: "sup", hProperties: { dataCitation: String(n) } } })
+const textNode = (value: string): MdNode => ({ type: "text", value })
+
+/**
+ * The citation pieces of one text node. The source text decides: a marker written escaped (`\[1\]`)
+ * or right after a letter or digit (`items[1]`) is not a citation. When the source and the text differ
+ * (escapes, entities) and the markers can't be paired one to one, nothing is cited: better plain than wrong.
+ */
+function citationPieces(node: MdNode, markdown: string, count: number): (string | number)[] {
+  const value = node.value ?? ""
+  const from = node.position?.start.offset
+  const to = node.position?.end.offset
+  if (from === undefined || to === undefined) return splitCitations(value, count)
+  const source = markdown.slice(from, to)
+  const before = markdown[from - 1] ?? ""
+  if (source === value) return splitCitations(value, count, before)
+  const written = [...source.matchAll(/(\\?)\[(\d{1,3})(\\?)\]/g)]
+  const shown = [...value.matchAll(/\[(\d{1,3})\]/g)]
+  if (written.length !== shown.length) return [value]
+  const out: (string | number)[] = []
+  let last = 0
+  shown.forEach((m, i) => {
+    const w = written[i]
+    const n = Number(m[1])
+    const previous = w.index > 0 ? source[w.index - 1] : before
+    if (w[1] || w[3] || w[2] !== m[1] || n < 1 || n > count || /[\w\\]/.test(previous)) return
+    if (m.index > last) out.push(value.slice(last, m.index))
+    out.push(n)
+    last = m.index + m[0].length
+  })
+  if (last < value.length) out.push(value.slice(last))
+  return out
+}
+
+/**
+ * A remark step: "[n]" in text, 1 ≤ n ≤ count, becomes a citation (<sup data-citation="n">). Code and
+ * links are left alone. "[1]" that a model-written definition (`[1]: https://…`) turned into a link
+ * becomes a citation too (or plain "[1]" without that source): a number in brackets never links elsewhere.
+ */
+function remarkCitations({ count }: { count: number }) {
+  return (tree: MdNode, file: { value: unknown }) => {
+    const markdown = String(file.value ?? "")
+    const walk = (node: MdNode) => {
+      if (!node.children || ["link", "linkReference", "inlineCode", "code"].includes(node.type)) return
+      node.children = node.children.flatMap((child): MdNode[] => {
+        if (child.type === "linkReference" && child.referenceType !== "full") {
+          const label = (child.children ?? []).map((c) => c.value ?? "").join("")
+          if (/^\d{1,3}$/.test(label)) {
+            const n = Number(label)
+            const from = child.position?.start.offset
+            const previous = from ? markdown[from - 1] : ""
+            return [n >= 1 && n <= count && !/[\w\\]/.test(previous ?? "") ? citationNode(n) : textNode(`[${label}]`)]
+          }
+        }
+        if (child.type !== "text" || !count || !child.value?.includes("[")) {
+          walk(child)
+          return [child]
+        }
+        return citationPieces(child, markdown, count).map((piece) => (typeof piece === "string" ? textNode(piece) : citationNode(piece)))
+      })
+    }
+    walk(tree)
+  }
+}
+
+/** A rehype step: footnotes get ids unique to this block (two answers with footnotes on one page don't collide). */
+function rehypeFootnoteIds({ prefix }: { prefix: string }) {
+  const walk = (node: HastNode) => {
+    const props = node.properties
+    if (props?.id === "footnote-label") props.id = `${prefix}footnote-label`
+    if (Array.isArray(props?.ariaDescribedBy)) props.ariaDescribedBy = props.ariaDescribedBy.map((id) => (id === "footnote-label" ? `${prefix}footnote-label` : id))
+    node.children?.forEach(walk)
+  }
+  return (tree: HastNode) => walk(tree)
+}
+
+function Citation({ n, fallback }: { n: number; fallback: React.ReactNode }) {
+  const sources = React.useContext(SourcesContext)
+  const source = sources[n - 1]
+  return source ? <InlineCitation index={n} source={source} /> : <>{fallback}</>
+}
 
 function CodeCopy({ code }: { code: string }) {
   const t = useCoreloomI18n().messages.ai.code
@@ -36,6 +129,33 @@ function CodeCopy({ code }: { code: string }) {
     >
       {copied ? <CheckIcon className="text-success" /> : <CopyIcon />}
     </button>
+  )
+}
+
+/** The code itself. Long lines scroll sideways; only then does the block take focus, so keyboard users can scroll it. */
+function CodeScroll({ code }: { code: string }) {
+  const ref = React.useRef<HTMLPreElement>(null)
+  const [overflows, setOverflows] = React.useState(false)
+  const measure = React.useCallback(() => {
+    const pre = ref.current
+    if (pre) setOverflows(pre.scrollWidth > pre.clientWidth + 1)
+  }, [])
+  React.useLayoutEffect(measure, [code, measure])
+  React.useEffect(() => {
+    const pre = ref.current
+    if (!pre) return
+    const observer = new ResizeObserver(measure)
+    observer.observe(pre)
+    return () => observer.disconnect()
+  }, [measure])
+  return (
+    <pre
+      ref={ref}
+      tabIndex={overflows ? 0 : undefined}
+      className="m-0 overflow-x-auto px-3.5 py-3 font-mono text-[12.5px] leading-[1.65] text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-inset"
+    >
+      <code>{code}</code>
+    </pre>
   )
 }
 
@@ -67,12 +187,24 @@ function useComponents(): Components {
         ) : (
           <input type={type} {...p} />
         ),
-      a: ({ node: _n, href, ...p }) => (
-        <a href={href} target="_blank" rel="noreferrer noopener" className="text-primary-text underline underline-offset-4 hover:no-underline" {...p} />
+      // Links leave in a new tab; jumps within the answer (footnotes) stay here.
+      a: ({ node: _n, href, ...p }) =>
+        href?.startsWith("#") ? (
+          <a href={href} className="text-primary-text underline underline-offset-4 hover:no-underline" {...p} />
+        ) : (
+          <a href={href} target="_blank" rel="noreferrer noopener" className="text-primary-text underline underline-offset-4 hover:no-underline" {...p} />
+        ),
+      section: ({ node: _n, className, ...p }) => (
+        <section className={cn(className?.includes("footnotes") && "mt-4 border-t border-border-subtle pt-3 text-[13px] [&_ol]:my-1", className)} {...p} />
       ),
       blockquote: ({ node: _n, ...p }) => <blockquote className="my-3 border-l-2 border-border-strong pl-4 text-muted-foreground" {...p} />,
       hr: () => <hr className="my-4 border-border-subtle" />,
       strong: ({ node: _n, ...p }) => <strong className="font-semibold text-foreground" {...p} />,
+      // Citation markers (see remarkCitations); any other <sup> (GFM footnotes) renders as is.
+      sup: ({ node, children, ...p }) => {
+        const n = Number(node?.properties?.dataCitation)
+        return n ? <Citation n={n} fallback={children} /> : <sup {...p}>{children}</sup>
+      },
       table: ({ node: _n, ...p }) => (
         <div className="my-3 overflow-x-auto rounded-md border border-border-subtle">
           <table className="w-full text-[13px]" {...p} />
@@ -92,9 +224,7 @@ function useComponents(): Components {
               <span className="font-mono text-[11.5px] text-muted-foreground">{lang ? t.language(lang) : " "}</span>
               <CodeCopy code={code} />
             </figcaption>
-            <pre className="m-0 overflow-x-auto px-3.5 py-3 font-mono text-[12.5px] leading-[1.65] text-foreground">
-              <code>{code}</code>
-            </pre>
+            <CodeScroll code={code} />
           </figure>
         )
       },
@@ -109,15 +239,34 @@ function useComponents(): Components {
 function Markdown({
   children,
   streaming = false,
+  sources,
   className,
 }: {
   /** The Markdown text. */
   children: string
   /** Shows a blinking caret after the text while a model is still writing it. */
   streaming?: boolean
+  /** The message's sources, in order (AI SDK `source-url` / `source-document` parts): "[1]" in the text cites the first. */
+  sources?: ReadonlyArray<CitationSource>
   className?: string
 }) {
   const components = useComponents()
+  const t = useCoreloomI18n().messages.ai.chat
+  const prefix = `${React.useId()}-`
+  const count = sources?.length ?? 0
+  const remarkPlugins = React.useMemo<Options["remarkPlugins"]>(() => [remarkGfm, [remarkCitations, { count }]], [count])
+  const rehypePlugins = React.useMemo<Options["rehypePlugins"]>(() => [[rehypeFootnoteIds, { prefix }]], [prefix])
+  // Footnotes: a translated label as a <p> (a heading would break the page's outline), in-block ids.
+  const remarkRehypeOptions = React.useMemo<Options["remarkRehypeOptions"]>(
+    () => ({
+      clobberPrefix: prefix,
+      footnoteLabel: t.footnotes,
+      footnoteLabelTagName: "p",
+      footnoteLabelProperties: { className: ["m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"] },
+      footnoteBackLabel: (reference: number, rereference: number) => t.backToReference(rereference > 1 ? `${reference + 1}-${rereference}` : String(reference + 1)),
+    }),
+    [prefix, t]
+  )
   return (
     <div
       data-slot="markdown"
@@ -129,9 +278,11 @@ function Markdown({
         className
       )}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components} skipHtml>
-        {children}
-      </ReactMarkdown>
+      <SourcesContext.Provider value={sources ?? []}>
+        <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins} remarkRehypeOptions={remarkRehypeOptions} components={components} skipHtml>
+          {children}
+        </ReactMarkdown>
+      </SourcesContext.Provider>
     </div>
   )
 }

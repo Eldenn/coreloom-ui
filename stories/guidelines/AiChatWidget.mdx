@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../blocks/ai-chat-widget.stories"
+import guide from "./AiChatWidget.md?raw"
+
+<Meta title="Guidelines/AI/Chat Widget" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Closed} />

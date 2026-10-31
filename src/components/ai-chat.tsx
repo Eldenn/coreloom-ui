@@ -8,10 +8,11 @@
 //     onRegenerate={() => regenerate()} onToolApprovalResponse={addToolApprovalResponse} />
 //
 // Parts: Chat (the whole thing), ChatMessages (the scrolling log), ChatMessage (one message: text in
-// Markdown, reasoning, tool calls, files, sources), ChatEmpty (suggestions) and ConversationList (the
+// Markdown with inline citations, reasoning, tool calls, files, sources; a user's message can be edited,
+// and a message with other versions shows "‹ 2 / 3 ›"), ChatEmpty (suggestions) and ConversationList (the
 // history beside it).
 import * as React from "react"
-import { ArrowDownIcon, CheckIcon, CopyIcon, FileIcon, LinkIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, SparklesIcon, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react"
+import { ArrowDownIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CopyIcon, FileIcon, LinkIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, SparklesIcon, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -42,14 +43,31 @@ import {
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { safeSourceUrl, sourceTitle } from "@/components/ui/inline-citation"
 import { Markdown } from "@/components/ui/markdown"
 import { PromptInput } from "@/components/ui/prompt-input"
 import { Reasoning } from "@/components/ui/reasoning"
 import { ToolCall } from "@/components/ui/tool-call"
+import { Textarea } from "@/components/ui/textarea"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useCoreloomI18n } from "@/lib/i18n"
 
 type Feedback = "good" | "bad"
+
+/**
+ * Where a message stands among its versions (other answers after Regenerate, other wordings after an
+ * edit): `index` is the version shown, from 0, out of `count`.
+ */
+type Branch = { index: number; count: number }
+
+type MessageOptions = {
+  /** A user message was edited (Save). The app keeps the messages before it, replaces it, and asks again. */
+  onEdit?: (messageId: string, text: string) => void
+  /** Versions by message id: those with `count` > 1 show "‹ 2 / 3 ›". */
+  branches?: Record<string, Branch | undefined>
+  /** Show another version (`index` from 0) of the message with this id. */
+  onBranchChange?: (messageId: string, index: number) => void
+}
 
 type ToolOptions = {
   /** Human names for tools, by id: { searchDocs: "Search the docs" }. */
@@ -59,18 +77,42 @@ type ToolOptions = {
   onToolApprovalResponse?: (response: { id: string; approved: boolean }) => void
 }
 
-function IconAction({ label, onClick, pressed, children }: { label: string; onClick: () => void; pressed?: boolean; children: React.ReactNode }) {
+function IconAction({
+  label,
+  onClick,
+  pressed,
+  disabled,
+  buttonRef,
+  action,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  pressed?: boolean
+  /** aria-disabled, not disabled: the button keeps focus when it runs out (the last version). */
+  disabled?: boolean
+  buttonRef?: React.Ref<HTMLButtonElement>
+  /** data-action, to find the button again (focus after a swap). */
+  action?: string
+  children: React.ReactNode
+}) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          ref={buttonRef}
+          data-action={action}
           type="button"
           variant="ghost"
           size="icon-sm"
           aria-label={label}
           aria-pressed={pressed}
-          onClick={onClick}
-          className={cn("text-muted-foreground aria-pressed:text-primary-text", pressed && "bg-primary-subtle")}
+          aria-disabled={disabled || undefined}
+          onClick={() => !disabled && onClick()}
+          className={cn(
+            "text-muted-foreground aria-pressed:text-primary-text aria-disabled:cursor-not-allowed aria-disabled:opacity-45 aria-disabled:hover:bg-transparent",
+            pressed && "bg-primary-subtle"
+          )}
         >
           {children}
         </Button>
@@ -80,33 +122,121 @@ function IconAction({ label, onClick, pressed, children }: { label: string; onCl
   )
 }
 
+/** "‹ 2 / 3 ›": the versions of a message. ChatMessages announces the change and keeps focus on the arrow. */
+function BranchPicker({ branch, disabled, onChange }: { branch: Branch; disabled?: boolean; onChange: (index: number) => void }) {
+  const t = useCoreloomI18n().messages.ai.chat
+  const { index, count } = branch
+  return (
+    <div role="group" aria-label={t.versions} data-slot="chat-branches" className="flex items-center">
+      <IconAction label={t.previousVersion} action="previous" disabled={disabled || index <= 0} onClick={() => onChange(index - 1)}>
+        <ChevronLeftIcon />
+      </IconAction>
+      <span className="min-w-9 text-center font-mono text-[12px] text-muted-foreground tabular-nums">
+        <span aria-hidden>
+          {index + 1} / {count}
+        </span>
+        <span className="sr-only">{t.version(index + 1, count)}</span>
+      </span>
+      <IconAction label={t.nextVersion} action="next" disabled={disabled || index >= count - 1} onClick={() => onChange(index + 1)}>
+        <ChevronRightIcon />
+      </IconAction>
+    </div>
+  )
+}
+
+/** A user message in place: the text in a box, Save (Ctrl / ⌘ + Enter) and Cancel (Escape). */
+function EditMessage({ text, onSave, onCancel }: { text: string; onSave: (text: string) => void; onCancel: () => void }) {
+  const t = useCoreloomI18n().messages.ai.chat
+  const [value, setValue] = React.useState(text)
+  const hintId = React.useId()
+  const ref = React.useRef<HTMLTextAreaElement>(null)
+  React.useEffect(() => {
+    const box = ref.current
+    if (!box) return
+    box.focus()
+    box.setSelectionRange(box.value.length, box.value.length)
+  }, [])
+  const trimmed = value.trim()
+  const save = () => {
+    if (!trimmed) return
+    if (trimmed === text.trim()) onCancel()
+    else onSave(trimmed)
+  }
+  return (
+    <form
+      data-slot="chat-edit"
+      className="flex w-full max-w-[85%] flex-col gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        save()
+      }}
+    >
+      <Textarea
+        ref={ref}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        aria-label={t.editLabel}
+        aria-describedby={hintId}
+        className="max-h-80 min-h-[72px] text-[14.5px] leading-[1.6]"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.preventDefault()
+            e.stopPropagation()
+            onCancel()
+          }
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
+            e.preventDefault()
+            save()
+          }
+        }}
+      />
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <span id={hintId} className="mr-auto text-[12px] text-muted-foreground">
+          {t.editHint}
+        </span>
+        <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+          {t.cancelEdit}
+        </Button>
+        <Button type="submit" size="sm" disabled={!trimmed}>
+          {t.save}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
 function Sources({ sources }: { sources: (AiSourceUrlPart | AiSourceDocumentPart)[] }) {
   const t = useCoreloomI18n().messages.ai.chat
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5" data-slot="chat-sources">
       <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.sources}</span>
       <ol className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-        {sources.map((s, i) => (
-          <li key={s.sourceId}>
-            {s.type === "source-url" ? (
+        {sources.map((s, i) => {
+          // Only http(s) and mailto addresses become links; anything else (javascript:, data:) is shown, not linked.
+          const href = s.type === "source-url" ? safeSourceUrl(s.url) : undefined
+          return (
+          <li key={s.sourceId} data-citation={i + 1}>
+            {href ? (
               <a
-                href={s.url}
+                href={href}
                 target="_blank"
                 rel="noreferrer noopener"
+                aria-label={t.citation(i + 1, sourceTitle(s))}
                 className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground outline-none hover:border-border-strong focus-visible:ring-[3px] focus-visible:ring-ring"
               >
                 <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
-                <span className="truncate">{s.title ?? new URL(s.url).hostname}</span>
+                <span className="truncate">{sourceTitle(s)}</span>
                 <LinkIcon className="size-3 shrink-0 text-muted-foreground" aria-hidden />
               </a>
             ) : (
               <span className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground">
                 <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
-                <span className="truncate">{s.title}</span>
+                <span className="truncate">{sourceTitle(s)}</span>
               </span>
             )}
           </li>
-        ))}
+          )
+        })}
       </ol>
     </div>
   )
@@ -136,6 +266,10 @@ function ChatMessage({
   feedback,
   onFeedback,
   onRegenerate,
+  onEdit,
+  branch,
+  onBranchChange,
+  busy = false,
   toolLabels,
   renderToolOutput,
   onToolApprovalResponse,
@@ -149,21 +283,48 @@ function ChatMessage({
   feedback?: Feedback
   onFeedback?: (messageId: string, feedback: Feedback | undefined) => void
   onRegenerate?: () => void
+  /** Offers Edit on a user message; called with the new text on Save. */
+  onEdit?: (messageId: string, text: string) => void
+  /** This message's versions: "‹ 2 / 3 ›" when `count` > 1. */
+  branch?: Branch
+  onBranchChange?: (messageId: string, index: number) => void
+  /** A reply is on its way: Edit hides and the versions wait. */
+  busy?: boolean
   className?: string
 } & ToolOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   const [copied, setCopied] = React.useState(false)
+  // Editing belongs to one message: if another takes this place, the box doesn't carry over.
+  const [editingId, setEditingId] = React.useState<string>()
+  const editing = editingId === message.id
+  const setEditing = (on: boolean) => setEditingId(on ? message.id : undefined)
+  const editButton = React.useRef<HTMLButtonElement>(null)
+  const wasEditing = React.useRef(false)
   React.useEffect(() => {
     if (!copied) return
     const timer = setTimeout(() => setCopied(false), 1400)
     return () => clearTimeout(timer)
   }, [copied])
+  // Back from editing with Cancel: the cursor returns to Edit (after Save, ChatMessages moves it to the message).
+  const cancelled = React.useRef(false)
+  React.useEffect(() => {
+    if (wasEditing.current && !editing && cancelled.current) editButton.current?.focus()
+    cancelled.current = false
+    wasEditing.current = editing
+  }, [editing])
 
   if (message.role === "system") return null
 
+  const branches =
+    branch && branch.count > 1 && onBranchChange ? (
+      <BranchPicker branch={branch} disabled={busy} onChange={(index) => onBranchChange(message.id, index)} />
+    ) : null
+
   if (message.role === "user") {
+    const text = messageText(message)
+    const canEdit = !!onEdit && !!text && !busy
     return (
-      <article data-slot="chat-message" data-role="user" aria-label={t.you} className={cn("flex flex-col items-end gap-2", className)}>
+      <article data-slot="chat-message" data-role="user" aria-label={t.you} className={cn("group/message flex flex-col items-end gap-2 outline-none", className)}>
         {message.parts.filter(isFilePart).length > 0 && (
           <div className="flex flex-wrap justify-end gap-2">
             {message.parts.filter(isFilePart).map((p, i) => (
@@ -171,9 +332,36 @@ function ChatMessage({
             ))}
           </div>
         )}
-        {messageText(message) && (
-          <div className="max-w-[85%] rounded-2xl rounded-br-md bg-secondary px-4 py-2.5 text-[14.5px] leading-[1.6] whitespace-pre-wrap text-foreground">
-            {messageText(message)}
+        {editing ? (
+          <EditMessage
+            text={text}
+            onCancel={() => {
+              cancelled.current = true
+              setEditing(false)
+            }}
+            onSave={(next) => {
+              setEditing(false)
+              onEdit?.(message.id, next)
+            }}
+          />
+        ) : (
+          text && (
+            <div className="max-w-[85%] rounded-2xl rounded-br-md bg-secondary px-4 py-2.5 text-[14.5px] leading-[1.6] break-words whitespace-pre-wrap text-foreground">
+              {text}
+            </div>
+          )
+        )}
+        {!editing && (canEdit || branches) && (
+          <div className="-mr-1.5 -mt-1 flex items-center gap-0.5">
+            {branches}
+            {canEdit && (
+              // Shown on hover and focus; always on touch screens, which can't hover.
+              <div className="opacity-0 transition-opacity duration-120 group-focus-within/message:opacity-100 group-hover/message:opacity-100 pointer-coarse:opacity-100">
+                <IconAction label={t.edit} buttonRef={editButton} onClick={() => setEditing(true)}>
+                  <PencilIcon />
+                </IconAction>
+              </div>
+            )}
           </div>
         )}
       </article>
@@ -184,7 +372,7 @@ function ChatMessage({
   const lastText = textParts[textParts.length - 1]
   const sources = message.parts.filter(isSourcePart)
   return (
-    <article data-slot="chat-message" data-role="assistant" aria-label={t.assistant} aria-busy={streaming || undefined} className={cn("flex gap-3", className)}>
+    <article data-slot="chat-message" data-role="assistant" aria-label={t.assistant} aria-busy={streaming || undefined} className={cn("flex gap-3 outline-none", className)}>
       <div aria-hidden className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
         <SparklesIcon className="size-3.5" />
       </div>
@@ -192,7 +380,7 @@ function ChatMessage({
         {message.parts.map((part, i) => {
           if (isTextPart(part))
             return part.text ? (
-              <Markdown key={i} streaming={streaming && part === lastText && part.state !== "done"}>
+              <Markdown key={i} streaming={streaming && part === lastText && part.state !== "done"} sources={sources}>
                 {part.text}
               </Markdown>
             ) : null
@@ -217,6 +405,7 @@ function ChatMessage({
         {sources.length > 0 && <Sources sources={sources} />}
         {!streaming && (
           <div className="-ml-1.5 flex items-center gap-0.5">
+            {branches}
             <IconAction
               label={t.copy}
               onClick={async () => {
@@ -315,6 +504,9 @@ function ChatMessages({
   onRegenerate,
   feedback,
   onFeedback,
+  onEdit,
+  branches,
+  onBranchChange,
   className,
   ...tools
 }: {
@@ -328,15 +520,52 @@ function ChatMessages({
   feedback?: Record<string, Feedback | undefined>
   onFeedback?: (messageId: string, feedback: Feedback | undefined) => void
   className?: string
-} & ToolOptions) {
+} & MessageOptions & ToolOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   const { ref, pinned, scrollToBottom } = useStickToBottom<HTMLDivElement>()
   const last = messages[messages.length - 1]
   const streaming = status === "streaming"
   const visible = messages.filter((m) => m.role !== "system")
+  const busy = status === "submitted" || streaming
+
+  // Switching versions or saving an edit usually swaps the message for another (another id, so it
+  // remounts) and the button the reader pressed goes with it. Remember where focus should land — the
+  // same arrow, or the edited message — and put it back once the new messages are in.
+  const pending = React.useRef<{ position: number; target: "previous" | "next" | "message"; from: ReadonlyArray<AiMessage> }>(undefined)
+  const [announcement, setAnnouncement] = React.useState("")
+  React.useLayoutEffect(() => {
+    const want = pending.current
+    const box = ref.current
+    if (!want || !box) return
+    if (!document.activeElement || document.activeElement === document.body) {
+      const article = box.querySelectorAll<HTMLElement>("[data-slot=chat-message]")[want.position]
+      const target = want.target === "message" ? article : article?.querySelector<HTMLElement>(`[data-slot=chat-branches] [data-action=${want.target}]`)
+      if (target) {
+        if (want.target === "message") target.tabIndex = -1
+        target.focus()
+      }
+    }
+    if (messages !== want.from) pending.current = undefined
+  })
+
+  const changeBranch = (position: number) => (id: string, index: number) => {
+    const branch = branches?.[id]
+    if (!branch || !onBranchChange) return
+    pending.current = { position, target: index < branch.index ? "previous" : "next", from: messages }
+    // One live region for the whole log, saying only what changed; a no-break space makes a repeat announce again.
+    setAnnouncement((before) => t.version(index + 1, branch.count) + (before.endsWith("\u00a0") ? "" : "\u00a0"))
+    onBranchChange(id, index)
+  }
+  const edit = (position: number) => (id: string, text: string) => {
+    pending.current = { position, target: "message", from: messages }
+    onEdit?.(id, text)
+  }
 
   return (
     <div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
+      <p data-slot="chat-announcer" className="sr-only" role="status" aria-live="polite" aria-atomic>
+        {announcement}
+      </p>
       <div
         ref={ref}
         data-slot="chat-messages"
@@ -348,7 +577,7 @@ function ChatMessages({
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-inset"
       >
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
-          {visible.map((m) => (
+          {visible.map((m, i) => (
             <ChatMessage
               key={m.id}
               message={m}
@@ -357,6 +586,10 @@ function ChatMessages({
               feedback={feedback?.[m.id]}
               onFeedback={onFeedback}
               onRegenerate={onRegenerate}
+              onEdit={onEdit && edit(i)}
+              branch={branches?.[m.id]}
+              onBranchChange={onBranchChange && changeBranch(i)}
+              busy={busy}
               {...tools}
             />
           ))}
@@ -445,6 +678,9 @@ function Chat({
   onRegenerate,
   feedback,
   onFeedback,
+  onEdit,
+  branches,
+  onBranchChange,
   suggestions,
   emptyTitle,
   emptyDescription,
@@ -480,7 +716,7 @@ function Chat({
   /** Put the cursor in the prompt on mount (default true: a chat page is for writing). */
   autoFocus?: boolean
   className?: string
-} & ToolOptions) {
+} & MessageOptions & ToolOptions) {
   const empty = messages.filter((m) => m.role !== "system").length === 0
   return (
     <section data-slot="chat" className={cn("flex h-full min-h-0 flex-col", className)}>
@@ -501,6 +737,9 @@ function Chat({
           onRegenerate={onRegenerate}
           feedback={feedback}
           onFeedback={onFeedback}
+          onEdit={onEdit}
+          branches={branches}
+          onBranchChange={onBranchChange}
           {...tools}
         />
       )}
@@ -676,4 +915,4 @@ function ConversationList({
   )
 }
 
-export { Chat, ChatEmpty, ChatMessage, ChatMessages, ConversationList, type Conversation, type Feedback }
+export { Chat, ChatEmpty, ChatMessage, ChatMessages, ConversationList, type Branch, type Conversation, type Feedback }

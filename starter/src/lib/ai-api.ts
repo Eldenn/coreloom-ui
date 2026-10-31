@@ -12,10 +12,10 @@ const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString()
 
 export const models: AiModel[] = [
-  { id: "claude-sonnet", name: "Claude Sonnet", provider: "Anthropic" },
-  { id: "claude-haiku", name: "Claude Haiku", provider: "Anthropic" },
-  { id: "gpt-mini", name: "GPT mini", provider: "OpenAI" },
-  { id: "mistral-large", name: "Mistral Large", provider: "Mistral" },
+  { id: "claude-sonnet", name: "Claude Sonnet", provider: "Anthropic", description: "Balanced: strong at code and agents.", contextWindow: 200_000, pricing: { input: 3, output: 15 }, capabilities: ["vision", "tools", "reasoning"] },
+  { id: "claude-haiku", name: "Claude Haiku", provider: "Anthropic", description: "Quick answers at a low price.", contextWindow: 200_000, pricing: { input: 1, output: 5 }, capabilities: ["vision", "tools", "fast"] },
+  { id: "gpt-mini", name: "GPT mini", provider: "OpenAI", description: "Small and cheap, for classification.", contextWindow: 128_000, pricing: { input: 0.15, output: 0.6 }, capabilities: ["tools", "fast"] },
+  { id: "mistral-large", name: "Mistral Large", provider: "Mistral", description: "Hosted in Europe.", contextWindow: 128_000, pricing: { input: 2, output: 6 }, capabilities: ["tools"] },
 ]
 const modelName = (id: string) => models.find((m) => m.id === id)?.name ?? id
 

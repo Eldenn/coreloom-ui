@@ -37,12 +37,15 @@ function CommandDialog({
   children,
   className,
   showCloseButton = true,
+  filter,
   ...props
 }: React.ComponentProps<typeof Dialog> & {
   title?: string
   description?: string
   className?: string
   showCloseButton?: boolean
+  /** cmdk's ranking (0 hides an item, higher comes first), passed to the inner Command. */
+  filter?: React.ComponentProps<typeof CommandPrimitive>["filter"]
 }) {
   const t = useCoreloomI18n().messages
   title ??= t.command.title
@@ -57,7 +60,7 @@ function CommandDialog({
         className={cn("top-[12vh] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-[560px] data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2", className)}
         showCloseButton={showCloseButton}
       >
-        <Command className="**:data-[slot=command-input-wrapper]:h-14 [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input]]:h-14 [&_[cmdk-input]]:text-[15px] [&_[cmdk-item]]:py-2.5">
+        <Command filter={filter} className="**:data-[slot=command-input-wrapper]:h-14 [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input]]:h-14 [&_[cmdk-input]]:text-[15px] [&_[cmdk-item]]:py-2.5">
           {children}
         </Command>
       </DialogContent>

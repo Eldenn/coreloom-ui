@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks"
+import * as Stories from "../components/rich-text-editor.stories"
+import guide from "./EditorAi.md?raw"
+
+<Meta title="Guidelines/AI/Editor AI" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.WithAi} />
