@@ -3,6 +3,15 @@ import * as React from 'react'
 import { userEvent, within } from 'storybook/test'
 import { z } from 'zod'
 
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { useAppForm } from '@/components/ui/form'
 import {
@@ -363,5 +372,34 @@ export const SlashMenuOpen: Story = {
     const line = editor.querySelector('p:last-child')
     if (line) await userEvent.click(line)
     await userEvent.keyboard('/')
+  },
+}
+
+/** The editor inside a modal Dialog: the "/" menu takes clicks, and Escape closes the menu first, then the dialog. */
+export const SlashInDialog: Story = {
+  name: 'Slash command in a dialog',
+  tags: ['!autodocs'],
+  render: () => {
+    const [html, setHtml] = React.useState(slashDraft)
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Edit announcement</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Edit announcement</DialogTitle>
+            <DialogDescription>Type / on the empty last line for AI commands.</DialogDescription>
+          </DialogHeader>
+          <RichTextEditor
+            value={html}
+            onValueChange={setHtml}
+            aria-label="Announcement"
+            minHeight={100}
+            ai={{ onRequest: (request) => Promise.resolve(cannedAnswer(request)) }}
+          />
+        </DialogContent>
+      </Dialog>
+    )
   },
 }
