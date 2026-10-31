@@ -650,5 +650,12 @@ export const de: Messages = {
     aiHint: 'KI kann sich irren. Lies es, bevor du es übernimmst.',
     aiSelectionLost:
       'Der markierte Text hat sich geändert, der Vorschlag kann nirgends mehr hin. Markier den Text erneut und frag noch einmal.',
+    aiContinue: 'Weiterschreiben',
+    aiInsertHere: 'Hier einfügen',
+    aiScopeBeforeCursor: 'Text vor dem Cursor',
+    slashMenu: 'KI-Befehle',
+    slashAsk: 'KI fragen…',
+    slashResults: (n) =>
+      `${n} ${n === 1 ? 'KI-Befehl' : 'KI-Befehle'}. Mit den Pfeiltasten nach oben und unten wählen, mit Eingabe ausführen.`,
   },
 }

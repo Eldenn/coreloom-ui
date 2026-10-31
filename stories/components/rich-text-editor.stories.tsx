@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
+import { userEvent, within } from 'storybook/test'
 import { z } from 'zod'
 
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -23,7 +24,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Formatted text with a Coreloom toolbar; the value is HTML. With `ai`, an AI button and ⌘J / Ctrl+J open a panel that rewrites the selection (or the whole document) through your own `onRequest`.',
+          'Formatted text with a Coreloom toolbar; the value is HTML. With `ai`, an AI button and ⌘J / Ctrl+J open a panel that rewrites the selection (or the whole document) through your own `onRequest`, and "/" at the start of a line opens a menu of AI commands (Ask AI…, Continue writing, the quick actions).',
       },
     },
   },
@@ -127,6 +128,8 @@ const CANNED: Record<RichTextAiAction, string> = {
   lengthen:
     'Our new release makes builds noticeably faster. It also fixes a long list of small bugs that you reported over the past month:\n\n- flaky date pickers\n- toasts stacking off screen\n- a focus ring that went missing in dark mode',
   summarise: '**In short:** faster builds and many small fixes.',
+  continue:
+    'Next up: the same speed-up for the test runner, and a **dark mode** audit of every chart.',
   translate: '',
   custom: '',
 }
@@ -298,5 +301,67 @@ export const AiAddedLater: Story = {
         </Field>
       </div>
     )
+  },
+}
+
+// ——— The "/" menu.
+
+const slashDraft = `${draft}<p></p>`
+
+/** Type "/" on the empty last line (or after a space): pick Ask AI…, Continue writing or a quick action with the arrows and Enter, or keep typing to filter ("/sum"). Escape keeps the text as typed. */
+export const SlashCommand: Story = {
+  name: 'Slash command',
+  render: () => {
+    const [html, setHtml] = React.useState(slashDraft)
+    const [last, setLast] = React.useState<RichTextAiRequest | null>(null)
+    return (
+      <div className="min-h-[560px]">
+        <Field className="max-w-2xl">
+          <FieldLabel id="slash-label">Announcement</FieldLabel>
+          <RichTextEditor
+            value={html}
+            onValueChange={setHtml}
+            aria-labelledby="slash-label"
+            ai={{
+              onRequest: (request) => {
+                setLast(request)
+                return fakeStream(request)
+              },
+            }}
+          />
+          <FieldDescription data-testid="slash-last-request">
+            {last
+              ? `Last request: ${last.action} on the ${last.scope}, ${last.text.length} characters.`
+              : 'Type / on the empty last line.'}
+          </FieldDescription>
+        </Field>
+      </div>
+    )
+  },
+}
+
+/** The "/" menu open on an empty line, every command listed, the first one highlighted. */
+export const SlashMenuOpen: Story = {
+  name: 'Slash menu open',
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="min-h-[480px]">
+      <Field className="max-w-2xl">
+        <FieldLabel id="slash-open-label">Announcement</FieldLabel>
+        <RichTextEditor
+          defaultValue={slashDraft}
+          aria-labelledby="slash-open-label"
+          minHeight={100}
+          ai={{ onRequest: (request) => Promise.resolve(cannedAnswer(request)) }}
+        />
+      </Field>
+    </div>
+  ),
+  // Puts the caret on the empty last line and types "/", as a person would.
+  play: async ({ canvasElement }) => {
+    const editor = await within(canvasElement).findByRole('textbox', { name: 'Announcement' })
+    const line = editor.querySelector('p:last-child')
+    if (line) await userEvent.click(line)
+    await userEvent.keyboard('/')
   },
 }

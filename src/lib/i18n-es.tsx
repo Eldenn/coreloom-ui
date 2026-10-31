@@ -646,5 +646,12 @@ export const es: Messages = {
     aiHint: 'La IA puede equivocarse. Léelo antes de quedártelo.',
     aiSelectionLost:
       'El texto seleccionado ha cambiado y la sugerencia ya no tiene dónde ir. Vuelve a seleccionarlo y pregunta de nuevo.',
+    aiContinue: 'Seguir escribiendo',
+    aiInsertHere: 'Insertar aquí',
+    aiScopeBeforeCursor: 'Texto antes del cursor',
+    slashMenu: 'Comandos de IA',
+    slashAsk: 'Preguntar a la IA…',
+    slashResults: (n) =>
+      `${n} ${n === 1 ? 'comando de IA' : 'comandos de IA'}. Flechas arriba y abajo para elegir, Intro para ejecutar.`,
   },
 }
