@@ -35,12 +35,17 @@ const END = '<!-- changesets: end -->'
 
 const VERSION = String.raw`\d+\.\d+\.\d+(?:-[\w.]+)?`
 
+// Files written on Windows (or with core.autocrlf) read the same as the others.
+const toLf = (text) => text.replace(/\r\n?/g, '\n')
+
+const FENCE = /^\s*(```|~~~)/
+
 /** Problems in one changeset's text: headings other than `### <Section>`. Empty when it's fine. */
 export function checkSummary(summary) {
   const problems = []
   let inCode = false
-  for (const line of summary.split('\n')) {
-    if (/^\s*(```|~~~)/.test(line)) inCode = !inCode
+  for (const line of toLf(summary).split('\n')) {
+    if (FENCE.test(line)) inCode = !inCode
     if (inCode || !/^#{1,6}\s/.test(line)) continue
     const match = /^### (.+?)\s*$/.exec(line)
     if (!match || !SECTIONS.includes(match[1]))
@@ -51,7 +56,7 @@ export function checkSummary(summary) {
 
 /** A changeset's text with its first section heading made explicit. Throws on unknown headings. */
 export function normalizeSummary(summary, type) {
-  const text = summary.trim()
+  const text = toLf(summary).trim()
   const problems = checkSummary(text)
   if (problems.length > 0) throw new Error(problems.join('\n'))
   if (!text) return ''
@@ -98,7 +103,15 @@ function mergeSections(lines, version) {
   const sections = new Map()
   let id = ''
   let part
+  let inCode = false
   for (const line of lines) {
+    // Code blocks are copied as they are: a "### " line inside one is not a heading.
+    if (FENCE.test(line)) inCode = !inCode
+    if (inCode || FENCE.test(line)) {
+      if (!part) throw new Error(`The ${version} entry has a code block outside a section.`)
+      part.lines.push(line)
+      continue
+    }
     if (BUMP_HEADING.test(line)) continue
     const marker = MARKER.exec(line.trim())
     if (marker) {
@@ -137,7 +150,8 @@ function mergeSections(lines, version) {
  * Rewrites the entry `changeset version` just wrote into the house style. Returns the new
  * changelog and the version, or null when there is no Changesets entry to rewrite.
  */
-export function formatRelease(changelog, { date = releaseDate() } = {}) {
+export function formatRelease(file, { date = releaseDate() } = {}) {
+  const changelog = toLf(file)
   const heading = new RegExp(`^## (${VERSION})[ \\t]*$`, 'm')
   const match = heading.exec(changelog)
   if (!match) return null
@@ -186,7 +200,7 @@ export function formatRelease(changelog, { date = releaseDate() } = {}) {
 export function checkChangesets(dir) {
   const problems = []
   for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md') && f !== 'README.md')) {
-    const text = fs.readFileSync(path.join(dir, name), 'utf8')
+    const text = toLf(fs.readFileSync(path.join(dir, name), 'utf8'))
     const body = text.replace(/^---\n[\s\S]*?\n---\n/, '')
     if (body === text)
       problems.push(`${name}: no front matter ("---" / '@coreloom/ui': minor / "---").`)

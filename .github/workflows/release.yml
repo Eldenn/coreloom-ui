@@ -1,11 +1,14 @@
-# Releases with Changesets, on every push to main:
-#   - While changesets are pending (.changeset/*.md), opens or updates the "Version Packages" pull
-#     request: `pnpm version-packages` bumps package.json and writes the CHANGELOG section.
-#   - Once that pull request is merged (no changesets left, and no GitHub release for the version
-#     yet), tags vX.Y.Z and publishes a GitHub release with the CHANGELOG section as notes and the
-#     built registry (public/r/*.json) and tokens (public/tokens/*.json) attached, so projects can pin it:
+# Releases with Changesets, on every push to main (and "Run workflow" on main, to retry):
+#   - version: while changesets are pending (.changeset/*.md), opens or updates the "Version
+#     Packages" pull request; `pnpm version-packages` bumps package.json and writes the CHANGELOG.
+#   - plan + release: when package.json's version has no tag yet (the Version Packages pull request
+#     was merged), or has a tag but no GitHub release (a failed or deleted release), tags vX.Y.Z and
+#     publishes a GitHub release with the CHANGELOG section as notes and the built registry
+#     (public/r/*.json) and tokens (public/tokens/*.json) attached, so projects can pin it:
 #       "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.8.0/{name}.json"
-# Tagging and releasing happen in this one job on purpose: a tag pushed with the workflow's token
+#     The release is built from the commit the tag points at (or will point at: the one that set the
+#     version), never from whatever main holds now. A version with a release is left alone.
+# Tagging and releasing happen in this workflow on purpose: a tag pushed with the workflow's token
 # doesn't start other workflows, so a separate "on: push: tags" workflow would never run.
 name: Release
 
@@ -15,28 +18,33 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  version:
+    name: Version Packages pull request
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          # The action pushes changeset-release/main with the checkout's credentials: the same
+          # token, so CI runs on the pull request's updates too when CHANGESETS_TOKEN is set.
+          token: ${{ secrets.CHANGESETS_TOKEN || github.token }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-
-      - name: Open or update the Version Packages pull request
-        id: changesets
-        uses: changesets/action@v2
+      - uses: changesets/action@v2
         with:
           version-script: pnpm version-packages
           commit-message: Version Packages
@@ -45,47 +53,79 @@ jobs:
           # CHANGESETS_TOKEN secret (fine-grained token or GitHub App) makes CI run there too.
           github-token: ${{ secrets.CHANGESETS_TOKEN || github.token }}
 
-      - name: Find the version to release
-        id: version
-        if: steps.changesets.outputs.has-changesets == 'false'
+  plan:
+    name: Find a version to release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      ref: ${{ steps.plan.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # tags, and the history to find the commit that set the version
+      - id: plan
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="v$(node -p "require('./package.json').version")"
+          version="$(node -p "require('./package.json').version")"
+          tag="v$version"
           if gh release view "$tag" > /dev/null 2>&1; then
             echo "$tag is already released."
-          else
-            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+            ref="$tag"
+            echo "$tag is tagged but has no release: releasing the tagged commit."
+          else
+            # The last commit that changed the version line: the Version Packages commit.
+            ref="$(git log -1 --format=%H -G'"version":' -- package.json)"
+            set_version="$(git show "$ref:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).version')"
+            if [ "$set_version" != "$version" ]; then
+              echo "::error::Could not find the commit that set version $version (found $ref at $set_version)."
+              exit 1
+            fi
+            echo "$tag is not tagged yet: tagging $ref, which set the version."
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
+  release:
+    name: Tag and publish the release
+    needs: plan
+    if: needs.plan.outputs.tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.plan.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.plan.outputs.ref }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Check the version against the CHANGELOG
-        if: steps.version.outputs.tag
-        env:
-          TAG: ${{ steps.version.outputs.tag }}
         run: node build/release-notes.mjs "$TAG" > release-notes.md
-      - if: steps.version.outputs.tag
-        run: pnpm registry:build
-      - if: steps.version.outputs.tag
-        run: pnpm tokens:dtcg
-
+      - run: pnpm registry:build
+      - run: pnpm tokens:dtcg
       - name: Tag the release
-        if: steps.version.outputs.tag
-        env:
-          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # A re-run after a failed release finds the tag already pushed: keep it.
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
             echo "$TAG is already pushed."
           else
-            pnpm release
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            # What `pnpm release` (changeset git-tag) does, without needing it in this commit: the
+            # one that set the version may predate the Changesets setup (v0.7.0 and older).
+            git tag "$TAG" -m "$TAG"
             git push origin "refs/tags/$TAG"
           fi
-
       - name: Create the release
-        if: steps.version.outputs.tag
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
         run: gh release create "$TAG" public/r/*.json public/tokens/*.json --title "$TAG" --notes-file release-notes.md --verify-tag
