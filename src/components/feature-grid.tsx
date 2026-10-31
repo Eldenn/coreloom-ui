@@ -62,7 +62,7 @@ function FeatureGrid({
           <h2 className="mt-2.5 mb-0 font-display text-[32px] leading-[1.15] font-semibold tracking-[-0.02em] text-foreground">
             {title}
           </h2>
-          {description && (
+          {!!description && (
             <p className="mt-3 mb-0 text-[16px] leading-[1.6] text-fg-secondary">{description}</p>
           )}
         </div>

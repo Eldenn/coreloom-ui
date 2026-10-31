@@ -93,7 +93,7 @@ function SignupForm({
                 </FieldSeparator>
               </>
             )}
-            {error && (
+            {!!error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -140,7 +140,7 @@ function SignupForm({
                 {l.submit}
               </form.SubmitButton>
             </form.AppForm>
-            {terms && (
+            {!!terms && (
               <p className="m-0 text-center text-[12px] leading-[1.5] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">
                 {terms}
               </p>

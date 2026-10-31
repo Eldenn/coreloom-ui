@@ -105,7 +105,7 @@ function DateRangePicker({
 
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState<DateRange | undefined>(defaultValue)
-  const current = value !== undefined ? value : inner
+  const current = value ?? inner
 
   const set = (next: DateRange | undefined) => {
     if (value === undefined) setInner(next)
@@ -127,6 +127,7 @@ function DateRangePicker({
       }}
     >
       <PopoverTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- the trigger stands in for the field's control; aria-invalid drives its error styling and is a global attribute in ARIA 1.1. */}
         <button
           type="button"
           id={id}

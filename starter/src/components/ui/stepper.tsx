@@ -77,11 +77,11 @@ function Stepper({
                 >
                   {step.title}
                 </span>
-                {step.description && (
+                {step.description ? (
                   <span className="text-[13px] leading-snug text-muted-foreground">
                     {step.description}
                   </span>
-                )}
+                ) : null}
                 <span className="sr-only">
                   {t.step(i + 1, steps.length)}
                   {state === 'complete'
@@ -101,6 +101,7 @@ function Stepper({
           )
           return (
             <li
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- the index is the step's number in a fixed sequence; steps have no id.
               key={i}
               data-state={state}
               aria-current={state === 'current' ? 'step' : undefined}

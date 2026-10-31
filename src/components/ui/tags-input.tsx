@@ -78,9 +78,10 @@ function TagsInput({
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- a click on the empty space focuses the input, a mouse convenience; keyboard users tab to the input.
     <div
       data-slot="tags-input"
-      aria-disabled={disabled || undefined}
+      aria-disabled={disabled ? true : undefined}
       className={cn(
         'flex min-h-[42px] w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-inset px-[7px] py-[6px] font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-55',
         ariaInvalid &&
@@ -95,6 +96,7 @@ function TagsInput({
       <ul className="contents">
         {tags.map((tag, i) => (
           <li
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- tags have no id and may repeat (allowDuplicates); the index tells them apart.
             key={`${tag}-${i}`}
             data-slot="tags-input-tag"
             className="inline-flex h-7 items-center gap-1 rounded-sm border border-border bg-secondary pr-0.5 pl-2 text-[13px] font-medium text-foreground"
@@ -118,7 +120,7 @@ function TagsInput({
         ref={inputRef}
         id={id}
         value={draft}
-        disabled={disabled || full}
+        disabled={!!disabled || full}
         placeholder={tags.length ? undefined : (placeholder ?? t.placeholder)}
         aria-invalid={ariaInvalid}
         aria-label={ariaLabel}

@@ -125,7 +125,7 @@ function PricingPlans({
                   <CardTitle className="text-[18px]">{plan.name}</CardTitle>
                   {plan.featured && <Badge variant="default">{plan.badge ?? t.popular}</Badge>}
                 </div>
-                {plan.description && <CardDescription>{plan.description}</CardDescription>}
+                {!!plan.description && <CardDescription>{plan.description}</CardDescription>}
               </CardHeader>
               <CardContent className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1">
@@ -143,6 +143,7 @@ function PricingPlans({
                 </div>
                 <ul className="flex flex-col gap-2.5">
                   {plan.features.map((f, i) => (
+                    // eslint-disable-next-line @eslint-react/no-array-index-key -- a plan's features are a static list that never reorders
                     <li key={i} className="flex gap-2.5 text-[14px] leading-snug text-fg-secondary">
                       <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary-text" aria-hidden />
                       <span>{f}</span>

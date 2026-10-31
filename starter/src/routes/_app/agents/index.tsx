@@ -8,7 +8,7 @@ import { useT } from '@/lib/locale'
 import { agentsQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/agents/')({
-  loader: ({ context }) => context.queryClient.ensureQueryData(agentsQuery),
+  loader: ({ context }) => context.queryClient.query({ ...agentsQuery, staleTime: 'static' }),
   component: AgentsPage,
 })
 

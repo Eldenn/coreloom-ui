@@ -94,6 +94,7 @@ function MultiSelect({
       <PopoverTrigger asChild>
         <button
           type="button"
+          // eslint-disable-next-line jsx-a11y/role-has-required-aria-props -- PopoverTrigger adds aria-controls.
           role="combobox"
           id={id}
           aria-expanded={open}
@@ -143,7 +144,7 @@ function MultiSelect({
                     key={option.value}
                     value={option.value}
                     keywords={[option.label, ...(option.keywords ?? [])]}
-                    disabled={option.disabled || (full && !isSelected)}
+                    disabled={!!option.disabled || (full && !isSelected)}
                     aria-selected={isSelected}
                     data-checked={isSelected || undefined}
                     onSelect={() => {

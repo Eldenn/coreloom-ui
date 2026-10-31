@@ -73,10 +73,10 @@ function CardBody({ card }: { card: KanbanCard }) {
   return (
     <>
       <span className="text-[14px] leading-snug font-medium text-foreground">{card.title}</span>
-      {card.description && (
+      {!!card.description && (
         <span className="text-[12px] leading-snug text-muted-foreground">{card.description}</span>
       )}
-      {(card.labels?.length || card.assignee) && (
+      {(!!card.labels?.length || !!card.assignee) && (
         <span className="mt-1 flex items-center gap-1.5">
           {card.labels?.map((l) => (
             <Badge key={l.label} variant={l.tone ?? 'secondary'}>
@@ -278,6 +278,7 @@ function KanbanBoard({
   const [activeId, setActiveId] = React.useState<UniqueIdentifier | null>(null)
   const [announcement, setAnnouncement] = React.useState('')
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the working copy from props when no drag is in progress
     if (activeId === null) setItems(cards)
   }, [cards, activeId])
 

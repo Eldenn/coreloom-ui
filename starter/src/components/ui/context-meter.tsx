@@ -182,6 +182,7 @@ function ContextMeter({
       <HoverCardTrigger asChild>
         <div
           role="meter"
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- the meter opens its details card on focus, so it must be keyboard-reachable.
           tabIndex={0}
           aria-label={t.label}
           aria-valuemin={0}

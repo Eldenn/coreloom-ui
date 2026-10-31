@@ -109,7 +109,7 @@ function LoginForm({
                 </FieldSeparator>
               </>
             )}
-            {error && (
+            {!!error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>

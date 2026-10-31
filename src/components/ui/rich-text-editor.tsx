@@ -257,7 +257,8 @@ function RichTextEditor({
     if (!editor) return
     const dom = editor.view.dom
     const set = (name: string, v?: string) => {
-      v ? dom.setAttribute(name, v) : dom.removeAttribute(name)
+      if (v) dom.setAttribute(name, v)
+      else dom.removeAttribute(name)
     }
     set('id', id)
     set('aria-label', ariaLabel)
@@ -298,6 +299,7 @@ function RichTextEditor({
   const run = (fn: (e: Editor) => void) => () => editor && fn(editor)
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- not a control: it catches the ⌘J shortcut as it bubbles up from the writing area and the toolbar.
     <div
       data-slot="rich-text-editor"
       data-disabled={disabled || undefined}

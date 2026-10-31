@@ -5,7 +5,7 @@
 //   <form.AppField name="model">{() => <ModelField label="Model" models={models} />}</form.AppField>
 //
 // It lives apart from form.tsx so the form kit doesn't pull in the picker. The value is the model's id.
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import * as React from 'react'
 
 import {
@@ -39,7 +39,7 @@ function ModelField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <VerticalShell
       meta={meta}

@@ -28,9 +28,9 @@ function AuthLayout({
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[360px] bg-[radial-gradient(ellipse_at_50%_0,var(--accent-subtle),transparent_70%)]"
       />
-      {brand && <div className="relative flex items-center justify-center">{brand}</div>}
+      {!!brand && <div className="relative flex items-center justify-center">{brand}</div>}
       <div className="relative w-full max-w-[400px]">{children}</div>
-      {footer && (
+      {!!footer && (
         <div className="relative max-w-[400px] text-center text-[12px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">
           {footer}
         </div>

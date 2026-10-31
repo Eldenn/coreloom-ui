@@ -39,7 +39,8 @@ function safeSourceUrl(url: string | undefined) {
 function sourceTitle(source: CitationSource) {
   return source.type === 'source-url'
     ? (source.title ?? hostOf(source.url))
-    : source.title || source.filename || source.sourceId
+    : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty title or file name falls through to the next one.
+      source.title || source.filename || source.sourceId
 }
 
 /** Where the source comes from: the site for a web page, the file name (or type) for a document. */
@@ -83,6 +84,7 @@ function InlineCitation({
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.chat
+  // eslint-disable-next-line @eslint-react/use-state -- setOpen below wraps this setter and keeps openRef in step.
   const [open, setOpenState] = React.useState(false)
   // The handlers read the latest value, not the one from their render: timers and keys can outrun React.
   const openRef = React.useRef(false)

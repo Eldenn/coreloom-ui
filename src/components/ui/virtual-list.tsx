@@ -59,6 +59,7 @@ function VirtualList<T>({
   const t = useCoreloomI18n().messages.virtualList
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const showFooter = !!onEndReached && (hasMore || loadingMore || items.length > 0)
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual's API; this component isn't memoized by the compiler, as the rule warns.
   const virtualizer = useVirtualizer({
     count: items.length + (showFooter ? 1 : 0),
     getScrollElement: () => scrollRef.current,
@@ -80,6 +81,7 @@ function VirtualList<T>({
       ref={scrollRef}
       data-slot="virtual-list"
       // A scrolling box must be reachable with the keyboard to scroll it.
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be keyboard-reachable; axe requires it.
       tabIndex={0}
       role="region"
       aria-label={ariaLabel}
@@ -96,6 +98,7 @@ function VirtualList<T>({
           {empty}
         </div>
       ) : (
+        // eslint-disable-next-line jsx-a11y/no-redundant-roles -- Safari drops the list role from a list styled list-none; this puts it back.
         <ul
           role="list"
           className="relative m-0 list-none p-0"

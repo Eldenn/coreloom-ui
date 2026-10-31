@@ -6,7 +6,7 @@
 //
 // It lives apart from form.tsx so the form kit doesn't pull in the editor. The value is HTML ("" when
 // empty); sanitize it on the server.
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import * as React from 'react'
 
 import {
@@ -39,7 +39,7 @@ function RichTextField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <VerticalShell
       meta={meta}

@@ -174,10 +174,10 @@ function NotificationRow({
         >
           {item.title}
         </span>
-        {item.description && (
+        {!!item.description && (
           <span className="text-[12px] leading-snug text-muted-foreground">{item.description}</span>
         )}
-        {item.time && (
+        {!!item.time && (
           <span className="font-mono text-[11px] text-muted-foreground">{item.time}</span>
         )}
       </span>

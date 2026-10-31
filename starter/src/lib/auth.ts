@@ -111,7 +111,8 @@ export const auth = {
   signOut() {
     set(null)
   },
-  subscribe(listener: () => void) {
+  // An arrow function: useSyncExternalStore gets it unbound (auth.subscribe).
+  subscribe: (listener: () => void) => {
     listeners.add(listener)
     return () => listeners.delete(listener)
   },

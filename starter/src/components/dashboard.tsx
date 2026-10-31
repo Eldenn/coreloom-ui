@@ -74,8 +74,8 @@ function ChartCard({
     <Card className={cn('gap-4', className)}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-        {actions && <CardAction className="flex items-center gap-2">{actions}</CardAction>}
+        {!!description && <CardDescription>{description}</CardDescription>}
+        {!!actions && <CardAction className="flex items-center gap-2">{actions}</CardAction>}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -241,13 +241,13 @@ function ActivityFeed({
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-[14px] leading-snug text-foreground">{item.title}</span>
-                  {item.description && (
+                  {!!item.description && (
                     <span className="text-[13px] leading-snug text-muted-foreground">
                       {item.description}
                     </span>
                   )}
                 </div>
-                {item.time && (
+                {!!item.time && (
                   <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
                     {item.time}
                   </span>

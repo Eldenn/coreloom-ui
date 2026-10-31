@@ -37,8 +37,8 @@ export const Route = createFileRoute('/_app/assistant')({
   loaderDeps: ({ search }) => ({ c: search.c }),
   loader: ({ context, deps }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(conversationsQuery),
-      deps.c ? context.queryClient.ensureQueryData(messagesQuery(deps.c)) : null,
+      context.queryClient.query({ ...conversationsQuery, staleTime: 'static' }),
+      deps.c ? context.queryClient.query({ ...messagesQuery(deps.c), staleTime: 'static' }) : null,
     ]),
   component: AssistantPage,
 })
@@ -153,19 +153,20 @@ function Conversation({
   const [feedback, setFeedback] = React.useState<Record<string, Feedback | undefined>>({})
   const [model, setModel] = React.useState('claude-sonnet')
 
+  const save = async (messages: AiMessage[]) => {
+    const first = messages.find((m) => m.role === 'user')?.parts.find((p) => p.type === 'text') as
+      { text: string } | undefined
+    const title = first ? first.text.slice(0, 60) : t.ai.assistant.newTitle
+    await saveConversation(id, title, messages)
+    queryClient.setQueryData(messagesQuery(id).queryKey, messages)
+    await queryClient.invalidateQueries({ queryKey: conversationsQuery.queryKey, exact: true })
+    onSaved()
+  }
+
   const chat = useDemoChat({
     initialMessages: initialMessages ?? [],
     script: t.ai.script,
-    onFinish: async (messages: AiMessage[]) => {
-      const first = messages
-        .find((m) => m.role === 'user')
-        ?.parts.find((p) => p.type === 'text') as { text: string } | undefined
-      const title = first ? first.text.slice(0, 60) : t.ai.assistant.newTitle
-      await saveConversation(id, title, messages)
-      queryClient.setQueryData(messagesQuery(id).queryKey, messages)
-      await queryClient.invalidateQueries({ queryKey: conversationsQuery.queryKey, exact: true })
-      onSaved()
-    },
+    onFinish: (messages) => void save(messages),
   })
 
   // A question from the ⌘K palette is sent once, as soon as the conversation opens.

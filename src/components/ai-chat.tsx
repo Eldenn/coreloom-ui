@@ -132,7 +132,7 @@ function IconAction({
           size="icon-sm"
           aria-label={label}
           aria-pressed={pressed}
-          aria-disabled={disabled || undefined}
+          aria-disabled={disabled ? true : undefined}
           onClick={() => !disabled && onClick()}
           className={cn(
             'text-muted-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-45 aria-disabled:hover:bg-transparent aria-pressed:text-primary-text',
@@ -169,7 +169,7 @@ function BranchPicker({
       <IconAction
         label={t.previousVersion}
         action="previous"
-        disabled={disabled || index <= 0}
+        disabled={!!disabled || index <= 0}
         onClick={() => {
           onChange(index - 1)
         }}
@@ -185,7 +185,7 @@ function BranchPicker({
       <IconAction
         label={t.nextVersion}
         action="next"
-        disabled={disabled || index >= count - 1}
+        disabled={!!disabled || index >= count - 1}
         onClick={() => {
           onChange(index + 1)
         }}
@@ -415,6 +415,7 @@ function ChatMessage({
         {message.parts.filter(isFilePart).length > 0 && (
           <div className="flex flex-wrap justify-end gap-2">
             {message.parts.filter(isFilePart).map((p, i) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- a sent message's attachments never reorder
               <Attachment key={i} part={p} />
             ))}
           </div>
@@ -483,6 +484,7 @@ function ChatMessage({
           if (isTextPart(part))
             return part.text ? (
               <Markdown
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- parts only get appended, never reordered
                 key={i}
                 streaming={streaming && part === lastText && part.state !== 'done'}
                 sources={sources}
@@ -493,6 +495,7 @@ function ChatMessage({
           if (isReasoningPart(part))
             return (
               <Reasoning
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- parts only get appended, never reordered
                 key={i}
                 text={part.text}
                 streaming={streaming && part.state === 'streaming'}
@@ -514,6 +517,7 @@ function ChatMessage({
               />
             )
           }
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- parts only get appended, never reordered
           if (isFilePart(part)) return <Attachment key={i} part={part} />
           return null
         })}
@@ -680,7 +684,9 @@ function ChatMessages({
     const box = ref.current
     if (!want || !box) return
     if (!document.activeElement || document.activeElement === document.body) {
-      const article = box.querySelectorAll<HTMLElement>('[data-slot=chat-message]')[want.position]
+      const article = box.querySelectorAll<HTMLElement>('[data-slot=chat-message]')[
+        want.position
+      ] as HTMLElement | undefined
       const target =
         want.target === 'message'
           ? article
@@ -732,6 +738,7 @@ function ChatMessages({
         aria-label={t.log}
         aria-live="polite"
         aria-relevant="additions"
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable/region must be keyboard-reachable; axe requires it
         tabIndex={0}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
       >
@@ -1035,7 +1042,7 @@ function ConversationList({
                 <span className="truncate pr-6">{c.title}</span>
               </button>
             )}
-            {(onRename || onDelete) && (
+            {(!!onRename || !!onDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

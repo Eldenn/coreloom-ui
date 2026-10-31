@@ -51,6 +51,7 @@ function ToolCall({
 }) {
   const t = useCoreloomI18n().messages.ai.tool
   const asking = part.state === 'approval-requested'
+  const { approval } = part
   const drawn =
     part.state === 'output-available' && renderOutput ? renderOutput(part.output) : undefined
   const isDrawn = drawn !== undefined && drawn !== null
@@ -58,10 +59,12 @@ function ToolCall({
     defaultOpen ?? (asking || part.state === 'output-error' || isDrawn),
   )
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when the call starts asking for approval.
     if (asking) setOpen(true)
   }, [asking])
   // A result drawn as UI is the answer: show it as soon as it arrives.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when a drawn result arrives.
     if (isDrawn && defaultOpen === undefined) setOpen(true)
   }, [isDrawn, defaultOpen])
 
@@ -128,22 +131,22 @@ function ToolCall({
               <Json value={part.input} />
             </div>
           )}
-          {asking && part.approval && (
+          {asking && approval && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-warning-subtle px-3 py-2.5">
               <p className="m-0 text-[13px] text-foreground">
-                {part.approval.requestReason ?? t.approvalHint}
+                {approval.requestReason ?? t.approvalHint}
               </p>
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => onApprovalResponse?.({ id: part.approval!.id, approved: false })}
+                  onClick={() => onApprovalResponse?.({ id: approval.id, approved: false })}
                 >
                   {t.deny}
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => onApprovalResponse?.({ id: part.approval!.id, approved: true })}
+                  onClick={() => onApprovalResponse?.({ id: approval.id, approved: true })}
                 >
                   {t.approve}
                 </Button>

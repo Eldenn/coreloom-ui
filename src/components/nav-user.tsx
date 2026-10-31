@@ -79,7 +79,7 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
                 <span className="truncate text-[14px] font-medium text-foreground">
                   {user.name}
                 </span>
-                {(user.role || user.email) && (
+                {(!!user.role || !!user.email) && (
                   <span className="truncate text-[12px] text-muted-foreground">
                     {user.role ?? user.email}
                   </span>

@@ -11,7 +11,10 @@ import { runQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/runs/$runId')({
   loader: async ({ context, params }) => {
-    const detail = await context.queryClient.ensureQueryData(runQuery(params.runId))
+    const detail = await context.queryClient.query({
+      ...runQuery(params.runId),
+      staleTime: 'static',
+    })
     if (!detail) throw notFound()
     return { crumb: detail.run.id }
   },

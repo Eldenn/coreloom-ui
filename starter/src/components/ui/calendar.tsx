@@ -127,9 +127,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        // eslint-disable-next-line @eslint-react/no-nested-component-definitions -- shadcn's react-day-picker slot overrides, as upstream; they hold no state.
         Root: ({ className, rootRef, ...props }) => {
           return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />
         },
+        // eslint-disable-next-line @eslint-react/no-nested-component-definitions -- shadcn's react-day-picker slot overrides, as upstream; they hold no state.
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === 'left') {
             return <ChevronLeftIcon className={cn('size-4', className)} {...props} />
@@ -142,6 +144,7 @@ function Calendar({
           return <ChevronDownIcon className={cn('size-4', className)} {...props} />
         },
         DayButton: CalendarDayButton,
+        // eslint-disable-next-line @eslint-react/no-nested-component-definitions -- shadcn's react-day-picker slot overrides, as upstream; they hold no state.
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>

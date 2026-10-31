@@ -143,10 +143,12 @@ function Demo({
   // The app may hold the open state itself (see Controlled).
   const open = props.open ?? ownOpen
   const setOpen = (o: boolean) => {
-    props.onOpenChange ? props.onOpenChange(o) : setOwnOpen(o)
+    if (props.onOpenChange) props.onOpenChange(o)
+    else setOwnOpen(o)
   }
   const [unread, setUnread] = React.useState(initialUnread)
   const openRef = React.useRef(open)
+  // eslint-disable-next-line react-hooks/refs -- the latest open state, read by the reply timer.
   openRef.current = open
   const timer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
   React.useEffect(

@@ -33,6 +33,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The linter type-checks the starter too, so its dependencies come first.
+      - run: pnpm --dir starter install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -41,7 +43,6 @@ jobs:
       - run: pnpm storybook:build
       # The starter carries copies of the registry items: fail if they drifted, then build it.
       - run: node build/sync-starter.mjs --check
-      - run: pnpm --dir starter install --frozen-lockfile
       - run: pnpm --dir starter build
       - run: pnpm test
       - if: failure()

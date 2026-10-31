@@ -17,7 +17,8 @@ export function RouterLink({ href, onClick, onMouseEnter, onFocus, target, ...pr
   const target_ = { href } as unknown as Parameters<typeof router.navigate>[0]
   const base = router.basepath === '/' ? '' : router.basepath.replace(/\/$/, '')
   const preload = () => {
-    void router.preloadRoute(target_ as never).catch(() => {})
+    // Preloading is a hint: a failure is ignored, the click still navigates.
+    void router.preloadRoute(target_ as never).catch(() => undefined)
   }
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -37,6 +38,7 @@ export function RouterLink({ href, onClick, onMouseEnter, onFocus, target, ...pr
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/anchor-has-content -- content comes through props.
     <a
       href={href.startsWith('/') ? base + href : href}
       target={target}

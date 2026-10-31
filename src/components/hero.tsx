@@ -36,7 +36,7 @@ function Hero({
         className="pointer-events-none absolute inset-x-[15%] -top-10 h-[420px] bg-[radial-gradient(ellipse_at_50%_0,var(--accent-subtle),transparent_70%)]"
       />
       <div className="relative mx-auto max-w-[1120px]">
-        {announcement && (
+        {!!announcement && (
           <Badge variant="default">
             <BadgeDot />
             {announcement}
@@ -44,7 +44,7 @@ function Hero({
         )}
         <h1 className="mx-auto mt-6 mb-0 max-w-[18ch] font-display text-[clamp(40px,6vw,72px)] leading-[1.02] font-semibold tracking-[-0.035em] text-foreground">
           {title}
-          {highlight && (
+          {!!highlight && (
             <>
               {' '}
               <span className="bg-[linear-gradient(120deg,var(--cyan-200),var(--accent))] bg-clip-text text-transparent">
@@ -53,12 +53,12 @@ function Hero({
             </>
           )}
         </h1>
-        {description && (
+        {!!description && (
           <p className="mx-auto mt-5 mb-0 max-w-[60ch] text-[19px] leading-[1.6] text-fg-secondary">
             {description}
           </p>
         )}
-        {actions && <div className="mt-8 flex flex-wrap justify-center gap-3">{actions}</div>}
+        {!!actions && <div className="mt-8 flex flex-wrap justify-center gap-3">{actions}</div>}
         {command && (
           <div className="mx-auto mt-8 flex max-w-[460px] items-center justify-between gap-4 rounded-md border border-border bg-inset py-2 pr-2 pl-4 font-mono text-[14px] text-foreground">
             <span className="truncate">
@@ -67,7 +67,7 @@ function Hero({
             <CopyButton value={command} />
           </div>
         )}
-        {children && <div className="mt-14">{children}</div>}
+        {!!children && <div className="mt-14">{children}</div>}
       </div>
     </section>
   )

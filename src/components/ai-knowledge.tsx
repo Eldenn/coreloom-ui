@@ -196,7 +196,7 @@ function KnowledgeBase({
                   })}
                 </TableCell>
                 <TableCell>
-                  {(onReindex || onRemove) && (
+                  {(!!onReindex || !!onRemove) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon-sm" aria-label={t.actions(d.name)}>
@@ -280,15 +280,15 @@ function RetrievalTest({
     results: RetrievalResult[]
   }>({ status: 'idle', results: [] })
   const pct = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 })
-  const uid = React.useId()
+  const baseId = React.useId()
   return (
     <section
       data-slot="retrieval-test"
-      aria-labelledby={`${uid}-title`}
+      aria-labelledby={`${baseId}-title`}
       className={cn('flex flex-col gap-4 rounded-lg border border-border bg-card p-4', className)}
     >
       <div className="flex flex-col gap-1">
-        <h3 id={`${uid}-title`} className="m-0 text-[14.5px] font-semibold text-foreground">
+        <h3 id={`${baseId}-title`} className="m-0 text-[14.5px] font-semibold text-foreground">
           {t.test}
         </h3>
         <p className="m-0 text-[13px] text-muted-foreground">{t.testHint}</p>
@@ -304,9 +304,9 @@ function RetrievalTest({
         }}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Label htmlFor={`${uid}-query`}>{t.query}</Label>
+          <Label htmlFor={`${baseId}-query`}>{t.query}</Label>
           <Input
-            id={`${uid}-query`}
+            id={`${baseId}-query`}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)

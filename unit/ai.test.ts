@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest'
 import { promptVariables } from '@/components/ai-agents'
 import {
   type AiMessage,
-  type AiToolPart,
   formatCost,
   formatDuration,
   isToolPart,

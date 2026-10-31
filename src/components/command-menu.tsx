@@ -101,6 +101,7 @@ function CommandMenu({
 
   // Each opening starts from an empty search, as the uncontrolled input did.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- `open` can be controlled by the app, so the reset follows it here
     if (!open) setSearch('')
   }, [open])
 

@@ -73,7 +73,7 @@ function ProjectForm({
           : undefined
       },
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
       toast.success(`Created ${value.name}`)
     },
   })

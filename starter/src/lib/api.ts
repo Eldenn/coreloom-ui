@@ -288,6 +288,7 @@ export async function updateProject(
   projects = projects.map((p) =>
     p.id === id ? { ...p, ...input, updatedAt: new Date().toISOString() } : p,
   )
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the project was just updated in the list.
   return projects.find((p) => p.id === id)!
 }
 

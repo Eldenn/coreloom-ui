@@ -22,10 +22,10 @@ type Story = StoryObj<typeof meta>
 export const DateRangePickerStory: Story = {
   name: 'DateRangePicker',
   render: () => {
-    const [range, setRange] = React.useState<DateRange | undefined>({
+    const [range, setRange] = React.useState<DateRange | undefined>(() => ({
       from: new Date(2026, 9, 1),
       to: new Date(2026, 9, 14),
-    })
+    }))
     return (
       <Field className="max-w-xs">
         <FieldLabel htmlFor="range">Report period</FieldLabel>

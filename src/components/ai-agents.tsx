@@ -4,7 +4,7 @@
 // tools, last run), searchable. AgentEditor: one agent's settings on the form kit (TanStack Form):
 // name and description, instructions with their {{variables}}, model, temperature, maximum steps,
 // the tools it may call (and which ask first), the knowledge it searches.
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { BotIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import * as React from 'react'
 
@@ -209,7 +209,7 @@ function SliderField({
 }) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as number
+  const value = useSelector(field.store, (s) => s.value) as number
   return (
     <VerticalShell
       meta={meta}
@@ -269,9 +269,9 @@ function AgentEditor({
       await onSubmit(value)
     },
   })
-  const instructions = useStore(form.store, (s) => s.values.instructions)
+  const instructions = useSelector(form.store, (s) => s.values.instructions)
   const variables = promptVariables(instructions)
-  const uid = React.useId()
+  const baseId = React.useId()
 
   return (
     <form
@@ -379,17 +379,17 @@ function AgentEditor({
 
       <Card>
         <CardHeader>
-          <CardTitle id={`${uid}-tools`}>{t.tools}</CardTitle>
+          <CardTitle id={`${baseId}-tools`}>{t.tools}</CardTitle>
           <CardDescription>{t.toolsHint}</CardDescription>
         </CardHeader>
         <CardContent>
           <form.Subscribe selector={(s) => [s.values.tools, s.values.askFirst] as const}>
             {([enabled, askFirst]) => (
-              <ul aria-labelledby={`${uid}-tools`} className="m-0 flex list-none flex-col p-0">
+              <ul aria-labelledby={`${baseId}-tools`} className="m-0 flex list-none flex-col p-0">
                 {tools.map((tool) => {
                   const on = enabled.includes(tool.id)
-                  const checkId = `${uid}-tool-${tool.id}`
-                  const askId = `${uid}-tool-${tool.id}-ask`
+                  const checkId = `${baseId}-tool-${tool.id}`
+                  const askId = `${baseId}-tool-${tool.id}-ask`
                   return (
                     <li
                       key={tool.id}

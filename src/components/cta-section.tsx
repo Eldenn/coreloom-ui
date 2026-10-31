@@ -21,12 +21,12 @@ function CtaSection({
         <h2 className="m-0 font-display text-[30px] leading-[1.15] font-semibold tracking-[-0.02em] text-foreground">
           {title}
         </h2>
-        {description && (
+        {!!description && (
           <p className="m-0 max-w-[52ch] text-[16px] leading-[1.6] text-fg-secondary">
             {description}
           </p>
         )}
-        {actions && <div className="flex flex-wrap justify-center gap-3">{actions}</div>}
+        {!!actions && <div className="flex flex-wrap justify-center gap-3">{actions}</div>}
       </Card>
     </section>
   )

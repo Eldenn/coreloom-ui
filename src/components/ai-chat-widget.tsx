@@ -121,6 +121,7 @@ function ChatWidget({
   // when focus was in the panel (read here, before the panel hides and focus falls to <body>).
   const prevOpen = React.useRef(open)
   const focusNext = React.useRef<'composer' | 'launcher' | null>(null)
+  /* eslint-disable react-hooks/refs -- focus must be read during the render that hides the panel, before it falls to <body> */
   if (prevOpen.current !== open) {
     prevOpen.current = open
     focusNext.current = open
@@ -129,6 +130,7 @@ function ChatWidget({
         ? 'launcher'
         : null
   }
+  /* eslint-enable react-hooks/refs */
   // Whether a popover, hover card or menu was open when Escape went down (before it closed itself).
   const layerOpen = React.useRef(false)
 
@@ -253,6 +255,7 @@ function ChatWidget({
       )}
       style={{ bottom: y, [side]: x, zIndex }}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- a dialog handles Escape and traps Tab, like Radix's */}
       <div
         ref={panel}
         id={panelId}

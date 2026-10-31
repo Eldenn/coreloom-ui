@@ -65,7 +65,7 @@ function Playground({
   const [prompt, setPrompt] = React.useState(defaultPrompt)
   const [variants, setVariants] = React.useState(defaultVariants)
   const running = variants.some((v) => results[v.id]?.status === 'running')
-  const uid = React.useId()
+  const baseId = React.useId()
   const oneDecimal = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
@@ -84,9 +84,9 @@ function Playground({
         }}
       >
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`${uid}-system`}>{t.system}</Label>
+          <Label htmlFor={`${baseId}-system`}>{t.system}</Label>
           <Textarea
-            id={`${uid}-system`}
+            id={`${baseId}-system`}
             value={system}
             onChange={(e) => {
               setSystem(e.target.value)
@@ -96,9 +96,9 @@ function Playground({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor={`${uid}-prompt`}>{t.prompt}</Label>
+          <Label htmlFor={`${baseId}-prompt`}>{t.prompt}</Label>
           <Textarea
-            id={`${uid}-prompt`}
+            id={`${baseId}-prompt`}
             value={prompt}
             onChange={(e) => {
               setPrompt(e.target.value)
@@ -117,12 +117,12 @@ function Playground({
             variant="outline"
             disabled={variants.length >= maxVariants}
             onClick={() => {
-              const last = variants[variants.length - 1]
+              const last = variants.at(-1)
               setVariants([
                 ...variants,
                 {
                   id: `v${Date.now()}`,
-                  model: last?.model ?? models[0]?.id ?? '',
+                  model: last?.model ?? models.at(0)?.id ?? '',
                   temperature: last?.temperature ?? 0.7,
                 },
               ])
@@ -151,7 +151,7 @@ function Playground({
       >
         {variants.map((v, i) => {
           const r = results[v.id]
-          const headingId = `${uid}-variant-${v.id}`
+          const headingId = `${baseId}-variant-${v.id}`
           return (
             <section
               key={v.id}

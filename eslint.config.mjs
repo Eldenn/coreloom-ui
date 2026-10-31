@@ -139,6 +139,26 @@ export default defineConfig(
     },
   },
   {
+    // TanStack Router: a route file exports `Route` next to its page components, and
+    // `throw redirect()` / `throw notFound()` is how loaders leave — the router's API, not errors.
+    files: ['starter/src/routes/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      '@typescript-eslint/only-throw-error': [
+        'error',
+        {
+          allow: [
+            {
+              from: 'package',
+              package: '@tanstack/router-core',
+              name: ['Redirect', 'NotFoundError'],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Tests assert on what they just set up: a non-null assertion is the check.
     files: ['tests/**/*.ts', 'unit/**/*.ts'],
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },

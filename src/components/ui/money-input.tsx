@@ -30,7 +30,7 @@ function moneyFormat(locale: string, currency: string) {
 /** Reads "1 234,5", "1,234.50", "1234.5" or "-12" in the given locale; null when it isn't a number. */
 function parseMoney(text: string, locale: string, currency = 'EUR'): number | null {
   const { decimal, group } = moneyFormat(locale, currency)
-  let s = text.trim().replace(/[\s  ]/g, '')
+  let s = text.trim().replace(/[\s\u00a0\u202f]/g, '')
   if (!s) return null
   if (group.trim()) s = s.split(group).join('')
   // Accept "." as the decimal point too when the locale uses ",", unless it was a group separator.
@@ -98,6 +98,7 @@ function MoneyInput({
 
   // Follow outside changes (a reset, a new locale) while the field isn't being typed in.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft text from the value while the field isn't focused.
     if (!focused) setText(display(current))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, locale, currency])
@@ -110,7 +111,7 @@ function MoneyInput({
   return (
     <div
       data-slot="money-input"
-      data-disabled={disabled || undefined}
+      data-disabled={disabled ? true : undefined}
       className={cn(
         'flex h-[42px] w-full items-center gap-2 rounded-md border border-input bg-inset px-[13px] font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55',
         className,

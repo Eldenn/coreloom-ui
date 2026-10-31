@@ -77,7 +77,7 @@ function OnboardingLayout({
       data-slot="onboarding"
       className={cn('mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10', className)}
     >
-      {brand && <div className="flex justify-center">{brand}</div>}
+      {!!brand && <div className="flex justify-center">{brand}</div>}
       <Stepper steps={steps} current={current} onStepChange={onStepChange} />
       <Card className="gap-6 px-6 py-6">
         <CardHeader>
@@ -90,7 +90,9 @@ function OnboardingLayout({
           >
             {title}
           </CardTitle>
-          {description && <CardDescription className="text-[14px]">{description}</CardDescription>}
+          {!!description && (
+            <CardDescription className="text-[14px]">{description}</CardDescription>
+          )}
         </CardHeader>
         <CardContent>{children}</CardContent>
         <CardFooter className="flex items-center justify-between gap-3 border-t border-border-subtle pt-5">
