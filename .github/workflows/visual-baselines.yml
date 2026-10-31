@@ -36,6 +36,10 @@ jobs:
             echo "Screenshots unchanged."
           else
             git commit -m "Update visual baselines"
+            # Someone may have pushed while the screenshots were taken (they take minutes): put
+            # this commit on top. It only touches tests/__screenshots__, so it can't conflict
+            # with code; if the code changed what renders, run the workflow again.
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git push
           fi
       - name: Test and deploy with the new screenshots
