@@ -70,6 +70,8 @@ jobs:
       - run: pnpm storybook:build
       # The tokens in the DTCG format, at /coreloom-ui/tokens/ (Figma, Style Dictionary, native apps).
       - run: pnpm tokens:dtcg
+      # What AI assistants read (https://llmstxt.org): /coreloom-ui/llms.txt, llms-full.txt, guides/.
+      - run: pnpm llms
       # The starter as a live demo at /coreloom-ui/starter/. GitHub Pages serves 404.html for any
       # unknown path, so deep links (/coreloom-ui/starter/projects) still boot the app.
       - run: pnpm --dir starter install --frozen-lockfile

@@ -18,6 +18,7 @@
     "ai-playground",
     "ai-knowledge",
     "model-picker",
-    "context-meter"
+    "context-meter",
+    "demo-chat"
   ]
 }

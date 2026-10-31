@@ -113,6 +113,19 @@
       ]
     },
     {
+      "name": "demo-chat",
+      "type": "registry:hook",
+      "title": "useDemoChat",
+      "description": "A stand-in for the AI SDK's useChat that simulates a model in the browser (reasoning, a tool call, an approval, a streamed answer with a source), to prototype AI screens with the Chat block before there is a backend.",
+      "registryDependencies": ["@coreloom/ai"],
+      "files": [
+        {
+          "path": "src/hooks/use-demo-chat.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
