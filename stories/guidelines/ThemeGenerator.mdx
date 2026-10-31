@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../foundations/theme-generator.stories'
+import guide from './ThemeGenerator.md?raw'
+
+<Meta title="Guidelines/Foundations/Theme Generator" />
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Generator} />
