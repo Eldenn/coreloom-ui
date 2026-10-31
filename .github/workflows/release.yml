@@ -1,17 +1,26 @@
-# Publishes a GitHub release when a version tag is pushed:
-#   1. bump "version" in package.json, add the release to CHANGELOG.md, commit, push main
-#   2. git tag v0.6.0 && git push origin v0.6.0
-# The release gets the CHANGELOG section as notes and the built registry (public/r/*.json)
-# as assets, so projects can pin it:
-#   "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.6.0/{name}.json"
+# Releases with Changesets, on every push to main:
+#   - While changesets are pending (.changeset/*.md), opens or updates the "Version Packages" pull
+#     request: `pnpm version-packages` bumps package.json and writes the CHANGELOG section.
+#   - Once that pull request is merged (no changesets left, and no GitHub release for the version
+#     yet), tags vX.Y.Z and publishes a GitHub release with the CHANGELOG section as notes and the
+#     built registry (public/r/*.json) and tokens (public/tokens/*.json) attached, so projects can pin it:
+#       "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.8.0/{name}.json"
+# Tagging and releasing happen in this one job on purpose: a tag pushed with the workflow's token
+# doesn't start other workflows, so a separate "on: push: tags" workflow would never run.
 name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -24,11 +33,59 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Check the tag matches package.json and the CHANGELOG
-        run: node build/release-notes.mjs "${GITHUB_REF_NAME}" > release-notes.md
-      - run: pnpm registry:build
-      - run: pnpm tokens:dtcg
-      - name: Create the release
+
+      - name: Open or update the Version Packages pull request
+        id: changesets
+        uses: changesets/action@v2
+        with:
+          version-script: pnpm version-packages
+          commit-message: Version Packages
+          pr-title: Version Packages
+          # A pull request opened with the workflow's own token doesn't start CI on it; a
+          # CHANGESETS_TOKEN secret (fine-grained token or GitHub App) makes CI run there too.
+          github-token: ${{ secrets.CHANGESETS_TOKEN || github.token }}
+
+      - name: Find the version to release
+        id: version
+        if: steps.changesets.outputs.has-changesets == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" public/r/*.json public/tokens/*.json --title "${GITHUB_REF_NAME}" --notes-file release-notes.md --verify-tag
+        run: |
+          tag="v$(node -p "require('./package.json').version")"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "$tag is already released."
+          else
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check the version against the CHANGELOG
+        if: steps.version.outputs.tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: node build/release-notes.mjs "$TAG" > release-notes.md
+      - if: steps.version.outputs.tag
+        run: pnpm registry:build
+      - if: steps.version.outputs.tag
+        run: pnpm tokens:dtcg
+
+      - name: Tag the release
+        if: steps.version.outputs.tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # A re-run after a failed release finds the tag already pushed: keep it.
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "$TAG is already pushed."
+          else
+            pnpm release
+            git push origin "refs/tags/$TAG"
+          fi
+
+      - name: Create the release
+        if: steps.version.outputs.tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh release create "$TAG" public/r/*.json public/tokens/*.json --title "$TAG" --notes-file release-notes.md --verify-tag

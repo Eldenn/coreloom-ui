@@ -148,7 +148,32 @@ pnpm typecheck          # library, stories and tests
 pnpm test:unit          # Vitest
 pnpm storybook:build    # then: pnpm test (Playwright)
 pnpm --dir starter build   # include the starter in pnpm test
+pnpm changeset          # describe a change for the CHANGELOG (see Release)
 ```
+
+Every user-facing change comes with a **changeset**: run `pnpm changeset`, pick the bump (`minor` for a
+feature or an API change while we're below 1.0, `patch` for a fix) and write the entry for someone who
+installed the item, under the CHANGELOG's sections. Commit the file it creates in `.changeset/` with
+the change:
+
+```md
+---
+'@coreloom/ui': minor
+---
+
+### Added
+
+- `MultiSelect`: several values from a list, chips in the trigger…
+
+### Upgrading
+
+- Re-install `@coreloom/i18n` with `--overwrite` first.
+```
+
+The sections are `### Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` and `Upgrading`;
+without one, a `patch` goes under Fixed and a `minor` under Changed. A pull request that changes what
+ships (`src/`, `registry.json`) fails the **Changesets** check without a changeset; for a change there
+that nobody installing the item would notice, add an empty one with `pnpm changeset --empty`.
 
 Adding a component: its file in `src/components/ui/`, an item in `registry.json`, a story in `stories/`, its
 guide in `stories/guidelines/`, and a test when it has behaviour.
@@ -170,11 +195,29 @@ tokens in the DTCG format (`/tokens/`) and the starter demo (`/starter/`).
 
 ### Release
 
-1. Move `[Unreleased]` in `CHANGELOG.md` under `## [x.y.z] - date` and set `version` in `package.json`.
-2. Push `main`, then `git tag vx.y.z && git push origin vx.y.z`.
+Releases are made with [Changesets](https://changesets.dev) by the **Release** workflow; nobody edits
+`version` or the CHANGELOG by hand.
 
-The **Release** workflow checks the tag against `package.json` and the changelog, then publishes a GitHub
-release with the notes, the registry and the tokens attached.
+1. Pull requests merge into `main` with their changesets (`.changeset/*.md`).
+2. On every push to `main` with changesets pending, the workflow opens or updates a **Version Packages**
+   pull request: `pnpm version-packages` (`changeset version`, then `build/changelog.mjs`) bumps
+   `version` in `package.json`, writes the `## [x.y.z] - date` section of `CHANGELOG.md` from the
+   changesets — their sections merged in the house order — and deletes them. Review its wording there.
+3. Merge it. The workflow then tags `vx.y.z` (`pnpm release`, which runs `changeset git-tag`),
+   checks the tag against `package.json` and the CHANGELOG (`build/release-notes.mjs`) and publishes a
+   GitHub release with that section as notes and the registry (`public/r/*.json`) and the tokens
+   (`public/tokens/*.json`) attached. A pushed tag doesn't start other workflows, so this all happens in
+   that one job; it does nothing for a version that already has a release, so it is safe to re-run.
+
+`pnpm changeset status --verbose` shows the next version and the changesets that will go into it. Run
+`pnpm version-packages` yourself only to preview the CHANGELOG, and don't commit the result: the
+Version Packages pull request is where the version is bumped.
+
+The repository needs, in **Settings → Actions → General → Workflow permissions**, "Read and write
+permissions" and **Allow GitHub Actions to create and approve pull requests**. Pull requests opened with
+the workflow's own token don't run CI; to have CI on the Version Packages pull request (needed if `main`
+requires status checks), add a `CHANGESETS_TOKEN` secret: a fine-grained token (or a GitHub App's) with
+Contents and Pull requests read and write on this repository.
 
 ## License
 

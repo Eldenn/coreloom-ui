@@ -1,0 +1,35 @@
+# Checks on pull requests that the CHANGELOG will have what changed:
+#   - a pull request that changes what ships (src/**, registry.json — "changedFilePatterns" in
+#     .changeset/config.json) adds a changeset (`pnpm changeset`). Stories, tests, the starter and CI
+#     don't need one; a change to src/ that users can't notice uses `pnpm changeset --empty`.
+#   - every pending changeset uses the CHANGELOG's sections (### Added / Changed / Fixed / Upgrading…),
+#     so the Version Packages pull request can't fail on a typo after merging.
+name: Changesets
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # The Version Packages pull request removes the changesets on purpose.
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # `changeset status --since` diffs against the base branch
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: A changeset for changes to what ships
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: pnpm changeset status --since="origin/$BASE_REF"
+      - name: Changesets use the CHANGELOG sections
+        run: pnpm changeset:check
