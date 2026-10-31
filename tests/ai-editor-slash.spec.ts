@@ -34,9 +34,11 @@ test.describe('editor slash command', () => {
     page,
   }) => {
     const editor = await onEmptyLine(page)
-    await expect(editor).toHaveAttribute('aria-autocomplete', 'list')
+    // Closed, the editor is a plain textbox.
+    await expect(editor).not.toHaveAttribute('aria-autocomplete')
     await expect(editor).not.toHaveAttribute('aria-activedescendant')
     await page.keyboard.type('/')
+    await expect(editor).toHaveAttribute('aria-autocomplete', 'list')
     const menu = page.getByRole('listbox', { name: 'AI commands' })
     await expect(menu).toBeVisible()
     await expect(menu.getByRole('option')).toHaveText(ALL)
@@ -206,6 +208,8 @@ test.describe('editor slash command', () => {
     await expect(menu).toHaveCount(0)
     await expect(editor).toBeFocused()
     await expect(editor).not.toHaveAttribute('aria-activedescendant')
+    await expect(editor).not.toHaveAttribute('aria-controls')
+    await expect(editor).not.toHaveAttribute('aria-autocomplete')
     await expect(editor.locator('p').last()).toHaveText('/imp')
     await expect(page.getByRole('dialog')).toHaveCount(0)
     // Closed, Enter is a new line again.
@@ -267,5 +271,115 @@ test.describe('editor slash command', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0)
     await expect(editor.locator('p')).toHaveText(['/ai', 'x'])
     await expect(editor).not.toHaveAttribute('aria-autocomplete')
+  })
+  test('Enter right after a lone "/" is a new line; after the arrows it chooses', async ({
+    page,
+  }) => {
+    const editor = await onEmptyLine(page)
+    const menu = page.getByRole('listbox', { name: 'AI commands' })
+    await page.keyboard.type('Ratio 1 /')
+    await expect(menu).toBeVisible()
+    await page.keyboard.press('Enter')
+    await expect(menu).toHaveCount(0)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(editor.locator('p').nth(-2)).toHaveText('Ratio 1 /')
+    await expect(editor.locator('p').last()).toHaveText('')
+    await expect(editor).toBeFocused()
+    // Tab on a lone "/" doesn't choose either.
+    await page.keyboard.type('/')
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(editor.locator('p').last()).toHaveText('/')
+    // Once the person moves with the arrows, Enter chooses.
+    await editor.locator('p').last().click()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('/')
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowUp')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog', { name: 'AI assistant' })).toBeVisible()
+    await expect(editor.locator('p').last()).toHaveText('')
+  })
+
+  test('a quick action from "/" makes Insert here the focused action; Enter keeps the rest of the document', async ({
+    page,
+  }) => {
+    const editor = await onEmptyLine(page)
+    await page.keyboard.type('/imp')
+    await page.keyboard.press('Enter')
+    const panel = page.getByRole('dialog', { name: 'AI assistant' })
+    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.', {
+      timeout: SUGGESTION_TIMEOUT,
+    })
+    await expect(panel.getByRole('button', { name: 'Insert here' })).toBeFocused()
+    await expect(panel.getByRole('button', { name: 'Replace all' })).toBeVisible()
+    await page.keyboard.press('Enter')
+    await expect(panel).toBeHidden()
+    await expect(editor.locator('p')).toHaveCount(3)
+    await expect(editor.locator('p').first()).toContainText('our new release make the build')
+    await expect(editor.locator('p').nth(1)).toContainText('Thanks to everyone')
+    await expect(editor.locator('p').last()).toHaveText(
+      'Our new release makes builds faster and fixes the small bugs you reported over the past month.',
+    )
+  })
+
+  test('undo after Discard brings the typed "/…" back', async ({ page }) => {
+    const editor = await onEmptyLine(page)
+    await page.keyboard.type('/imp')
+    await page.keyboard.press('Enter')
+    const panel = page.getByRole('dialog', { name: 'AI assistant' })
+    await expect(editor.locator('p').last()).toHaveText('')
+    await panel.getByRole('button', { name: 'Stop' }).click()
+    await page.keyboard.press('Escape')
+    await expect(panel).toBeHidden()
+    await expect(editor).toBeFocused()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(editor.locator('p').last()).toHaveText('/imp')
+  })
+
+  test('inside a modal dialog the menu takes clicks, and Escape closes the menu before the dialog', async ({
+    page,
+  }) => {
+    await open(page, `${EDITOR}slash-in-dialog`)
+    await page.getByRole('button', { name: 'Edit announcement' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Edit announcement' })
+    const editor = dialog.getByRole('textbox', { name: 'Announcement' })
+    await editor.locator('p').last().click()
+    const menu = page.getByRole('listbox', { name: 'AI commands' })
+    await page.keyboard.type('/')
+    await expect(menu).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(menu).toHaveCount(0)
+    await expect(dialog).toBeVisible()
+    await expect(editor).toBeFocused()
+    await expect(editor.locator('p').last()).toHaveText('/')
+
+    await page.keyboard.press('Backspace')
+    await page.keyboard.type('/')
+    await menu.getByRole('option', { name: 'Summarise' }).click()
+    const panel = page.getByRole('dialog', { name: 'AI assistant' })
+    await expect(panel.getByRole('status')).toHaveText('Suggestion ready.')
+    await panel.getByRole('button', { name: 'Insert here' }).click()
+    await expect(panel).toBeHidden()
+    await expect(dialog).toBeVisible()
+    await expect(editor.locator('p').last()).toHaveText(
+      'In short: faster builds and many small fixes.',
+    )
+    // With nothing else open, Escape closes the dialog.
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+  })
+
+  test('the menu closes when the "/" scrolls out of view', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 320 })
+    const editor = await onEmptyLine(page)
+    const menu = page.getByRole('listbox', { name: 'AI commands' })
+    await page.keyboard.type('/s')
+    await expect(menu).toBeVisible()
+    await page.mouse.move(640, 100)
+    await page.mouse.wheel(0, 600)
+    await expect(menu).toHaveCount(0)
+    await expect(editor.locator('p').last()).toHaveText('/s')
   })
 })
