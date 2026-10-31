@@ -88,6 +88,7 @@ function PromptInput({
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0 px-1 pt-1">
           {files.map((file, i) => (
             <li
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- File objects have no id and two may share a name; the index tells them apart.
               key={`${file.name}-${i}`}
               className="flex items-center gap-1.5 rounded-md border border-border bg-card py-1 pr-1 pl-2 text-[12.5px] text-foreground"
             >

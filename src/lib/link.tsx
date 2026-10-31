@@ -13,6 +13,7 @@ export type LinkProps = React.ComponentProps<'a'> & { href: string }
 export type LinkComponent = React.ComponentType<LinkProps>
 
 function PlainLink(props: LinkProps) {
+  // eslint-disable-next-line jsx-a11y/anchor-has-content -- content comes through props
   return <a {...props} />
 }
 
@@ -25,12 +26,12 @@ export function CoreloomLinkProvider({
   component: LinkComponent
   children: React.ReactNode
 }) {
-  return <LinkContext.Provider value={component}>{children}</LinkContext.Provider>
+  return <LinkContext value={component}>{children}</LinkContext>
 }
 
 /** The link component blocks use, from the nearest CoreloomLinkProvider. */
 export function useLinkComponent() {
-  return React.useContext(LinkContext)
+  return React.use(LinkContext)
 }
 
 /** true for "#section", "https://…", "mailto:…": those never go through the router. */
@@ -41,6 +42,8 @@ export function isExternalHref(href: string) {
 /** An <a> that navigates with the app's router when the href is in-app. Works with `asChild`. */
 export function AppLink({ href, ...props }: LinkProps) {
   const Component = useLinkComponent()
+  // eslint-disable-next-line jsx-a11y/anchor-has-content -- content comes through props
   if (isExternalHref(href)) return <a href={href} {...props} />
+  // eslint-disable-next-line react-hooks/static-components -- the app's link component, read from context, not created here
   return <Component href={href} {...props} />
 }

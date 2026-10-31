@@ -180,6 +180,7 @@ export async function createAgent(name: string): Promise<Agent> {
 export async function updateAgent(id: string, values: AgentValues): Promise<Agent> {
   await wait(600)
   agents = agents.map((a) => (a.id === id ? { ...a, ...values } : a))
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the agent was just updated in the list.
   return agents.find((a) => a.id === id)!
 }
 
@@ -226,6 +227,7 @@ export async function getRun(id: string): Promise<RunDetail | null> {
   await wait()
   const run = runs.find((r) => r.id === id)
   if (!run) return null
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- every demo run belongs to a demo agent.
   const agent = agents.find((a) => a.id === run.agentId)!
   const total = run.durationMs ?? 6000
   const at = (f: number) => Math.round(total * f)
@@ -513,6 +515,7 @@ export async function getMessages(id: string): Promise<AiMessage[]> {
   return threads.get(id) ?? []
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await -- async like the real API it stands in for (no simulated delay here).
 export async function saveConversation(
   id: string,
   title: string,

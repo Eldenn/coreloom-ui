@@ -84,8 +84,9 @@ function parsePhone(value: string, prefer?: string): { country?: PhoneCountry; n
   const matches = PHONE_COUNTRIES.filter((c) => all.startsWith(c.dial)).sort(
     (a, b) => b.dial.length - a.dial.length,
   )
-  const country =
-    matches.find((c) => c.code === prefer && c.dial === matches[0]?.dial) ?? matches[0]
+  // undefined when no known country code matches.
+  const first = matches.at(0)
+  const country = matches.find((c) => c.code === prefer && c.dial === first?.dial) ?? first
   return { country, national: country ? all.slice(country.dial.length) : all }
 }
 
@@ -153,7 +154,7 @@ function PhoneInput({
     [i18n.locale],
   )
   const [inner, setInner] = React.useState(defaultValue)
-  const current = value !== undefined ? value : inner
+  const current = value ?? inner
   const [picked, setPicked] = React.useState(
     () => parsePhone(current, defaultCountry).country?.code ?? defaultCountry,
   )
@@ -167,6 +168,7 @@ function PhoneInput({
   const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft text from the value while the field isn't focused.
     if (!focused) setText(parsed.national ? formatNational(parsed.national, country) : '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, country.code])
@@ -195,7 +197,7 @@ function PhoneInput({
   return (
     <div
       data-slot="phone-input"
-      data-disabled={disabled || undefined}
+      data-disabled={disabled ? true : undefined}
       className={cn(
         'flex h-[42px] w-full items-stretch rounded-md border border-input bg-inset font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:cursor-not-allowed data-[disabled]:opacity-55',
         className,

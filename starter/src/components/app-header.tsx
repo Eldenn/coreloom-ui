@@ -37,7 +37,8 @@ function AppHeader({
           <Breadcrumb className="hidden min-w-0 sm:block">
             <BreadcrumbList>
               {breadcrumbs.map((crumb, i) => (
-                <React.Fragment key={crumb.label + i}>
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- breadcrumbs are positional; the label tells same-index crumbs apart
+                <React.Fragment key={`${crumb.label}-${i}`}>
                   {i > 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem>
                     {i === breadcrumbs.length - 1 || !crumb.href ? (
@@ -54,7 +55,7 @@ function AppHeader({
           </Breadcrumb>
         </>
       )}
-      {actions && <div className="ml-auto flex items-center gap-1.5">{actions}</div>}
+      {!!actions && <div className="ml-auto flex items-center gap-1.5">{actions}</div>}
     </header>
   )
 }

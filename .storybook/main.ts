@@ -1,8 +1,12 @@
 import path from 'node:path'
 
 import type { StorybookConfig } from '@storybook/react-vite'
+import type { Alias, AliasOptions } from 'vite'
 
 import { favicon } from './brand'
+
+// Array.isArray doesn't narrow a readonly array type; this does.
+const isAliasList = (alias: AliasOptions): alias is readonly Alias[] => Array.isArray(alias)
 
 const config: StorybookConfig = {
   stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(ts|tsx)'],
@@ -13,9 +17,14 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     const { default: tailwindcss } = await import('@tailwindcss/vite')
     config.plugins = [...(config.plugins ?? []), tailwindcss()]
+    // Vite takes aliases as an object or as an array of { find, replacement }.
+    const alias = config.resolve?.alias ?? {}
+    const src = path.resolve(import.meta.dirname, '../src')
     config.resolve = {
       ...config.resolve,
-      alias: { ...(config.resolve?.alias ?? {}), '@': path.resolve(import.meta.dirname, '../src') },
+      alias: isAliasList(alias)
+        ? [...alias, { find: '@', replacement: src }]
+        : { ...alias, '@': src },
     }
     // Served from https://eldenn.github.io/coreloom-ui/storybook/ — relative asset URLs.
     config.base = './'

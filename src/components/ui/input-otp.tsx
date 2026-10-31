@@ -39,6 +39,7 @@ function InputOTPSlot({
   index: number
 }) {
   const inputOTPContext = React.useContext(OTPInputContext)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- shadcn's guard: the index can be past the slots while maxLength changes.
   const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {}
 
   return (

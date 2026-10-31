@@ -29,6 +29,7 @@ function Reasoning({
 }) {
   const t = useCoreloomI18n().messages.ai.reasoning
   const [open, setOpen] = React.useState(defaultOpen ?? streaming)
+  // eslint-disable-next-line react-hooks/purity -- only the first render's value is kept: when the stream started.
   const started = React.useRef<number | null>(streaming ? Date.now() : null)
   const [measured, setMeasured] = React.useState<number>()
   const wasStreaming = React.useRef(streaming)

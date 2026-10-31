@@ -86,7 +86,7 @@ export const Team: Story = {
       { id: 'u3', name: 'Grace Hopper', email: 'grace@coreloom.dev', role: 'developer' },
       { id: 'u4', name: 'Alan Turing', email: 'alan@coreloom.dev', role: 'viewer' },
     ])
-    const [invites, setInvites] = React.useState<TeamInvite[]>([
+    const [invites, setInvites] = React.useState<TeamInvite[]>(() => [
       { id: 'i1', email: 'linus@acme.dev', role: 'developer', invitedAt: new Date(2026, 9, 12) },
     ])
     return (

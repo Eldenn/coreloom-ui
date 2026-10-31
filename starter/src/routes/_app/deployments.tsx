@@ -47,6 +47,8 @@ const toSearch = (q: DataTableQuery): Search => ({
     q.sort && (SORTABLE as readonly string[]).includes(q.sort.id)
       ? (q.sort.id as Search['sort'])
       : undefined,
+  // `false` drops the param from the URL, so `||` and not `??`.
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- see above.
   desc: q.sort?.desc || undefined,
   q: q.search || undefined,
 })
@@ -56,7 +58,8 @@ export const Route = createFileRoute('/_app/deployments')({
   staticData: { crumb: (t) => t.nav.deployments },
   loaderDeps: ({ search }) => toQuery(search),
   // Prefetch on navigation and hover; the page reads the same cache entry.
-  loader: ({ context, deps }) => context.queryClient.ensureQueryData(deploymentSearchQuery(deps)),
+  loader: ({ context, deps }) =>
+    context.queryClient.query({ ...deploymentSearchQuery(deps), staleTime: 'static' }),
   component: DeploymentsPage,
 })
 

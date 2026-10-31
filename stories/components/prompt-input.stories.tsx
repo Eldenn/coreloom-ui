@@ -57,6 +57,7 @@ export const Default: Story = {
         />
         <ul aria-label="Sent" className="m-0 list-none p-0 text-[13px] text-muted-foreground">
           {sent.map((s, i) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- append-only list; the same text can be sent twice.
             <li key={i}>{s}</li>
           ))}
         </ul>

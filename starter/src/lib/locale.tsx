@@ -15,7 +15,9 @@ function initialLocale(): Locale {
   try {
     const saved = localStorage.getItem('locale')
     if (saved === 'en' || saved === 'fr') return saved
-  } catch {}
+  } catch {
+    // Storage can be blocked (private mode…): fall back to the browser's language.
+  }
   return navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en'
 }
 
@@ -26,29 +28,32 @@ const LocaleContext = React.createContext<{
 } | null>(null)
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line @eslint-react/use-state -- setLocale (below) wraps this setter and also saves the choice.
   const [locale, setLocaleState] = React.useState(initialLocale)
   const setLocale = React.useCallback((next: Locale) => {
     setLocaleState(next)
     document.documentElement.lang = next
     try {
       localStorage.setItem('locale', next)
-    } catch {}
+    } catch {
+      // Storage can be blocked: the choice then lasts until the page reloads.
+    }
   }, [])
   const value = React.useMemo(
     () => ({ locale, setLocale, t: dictionaries[locale] }),
     [locale, setLocale],
   )
   return (
-    <LocaleContext.Provider value={value}>
+    <LocaleContext value={value}>
       <CoreloomI18nProvider locale={locale} dateLocale={dateLocales[locale]}>
         {children}
       </CoreloomI18nProvider>
-    </LocaleContext.Provider>
+    </LocaleContext>
   )
 }
 
 export function useLocale() {
-  const value = React.useContext(LocaleContext)
+  const value = React.use(LocaleContext)
   if (!value) throw new Error('useLocale must be used inside <LocaleProvider>.')
   return value
 }

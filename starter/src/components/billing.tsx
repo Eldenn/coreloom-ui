@@ -118,7 +118,7 @@ function PlanCard({
           </ul>
         )}
       </CardContent>
-      {(onChangePlan || onCancel) && (
+      {(!!onChangePlan || !!onCancel) && (
         <CardFooter className="gap-2">
           {onChangePlan && (
             <Button size="sm" onClick={onChangePlan}>

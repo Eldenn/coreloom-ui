@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useStore } from '@tanstack/react-form'
+import { useSelector } from '@tanstack/react-form'
 import { GlobeIcon } from 'lucide-react'
 import * as React from 'react'
 import { z } from 'zod'
@@ -58,7 +58,7 @@ function Wizard() {
       toast.success('Workspace created')
     },
   })
-  const pending = useStore(form.store, (s) => s.isSubmitting)
+  const pending = useSelector(form.store, (s) => s.isSubmitting)
   return (
     <OnboardingLayout
       brand={

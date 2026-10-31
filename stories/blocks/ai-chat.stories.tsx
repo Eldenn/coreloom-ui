@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-autofocus -- every autoFocus here is autoFocus={false}: it turns Chat's own focus off. */
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
@@ -123,7 +124,7 @@ type Story = StoryObj<typeof meta>
 /** `frozen`: a still of a streaming state, so the tests don't wait for it to settle. */
 function Frame({ children, frozen }: { children: React.ReactNode; frozen?: boolean }) {
   return (
-    <div className="h-[760px] bg-background" data-frozen={frozen || undefined}>
+    <div className="h-[760px] bg-background" data-frozen={frozen ? true : undefined}>
       {children}
     </div>
   )
@@ -711,7 +712,7 @@ export const EditAndBranches: Story = {
             add(tree[id].parent!, text)
           }}
           onRegenerate={() => {
-            const last = thread[thread.length - 1]
+            const last = thread.at(-1)
             if (last?.message.role === 'assistant')
               answer(
                 last.parent!,

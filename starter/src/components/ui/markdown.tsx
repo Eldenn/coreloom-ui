@@ -86,7 +86,7 @@ function citationPieces(node: MdNode, markdown: string, count: number): (string 
  * becomes a citation too (or plain "[1]" without that source): a number in brackets never links elsewhere.
  */
 function remarkCitations({ count }: { count: number }) {
-  return (tree: MdNode, file: { value: unknown }) => {
+  return (tree: MdNode, file: { value?: string | Uint8Array | null }) => {
     const markdown = String(file.value ?? '')
     const walk = (node: MdNode) => {
       if (!node.children || ['link', 'linkReference', 'inlineCode', 'code'].includes(node.type))
@@ -97,9 +97,9 @@ function remarkCitations({ count }: { count: number }) {
           if (/^\d{1,3}$/.test(label)) {
             const n = Number(label)
             const from = child.position?.start.offset
-            const previous = from ? markdown[from - 1] : ''
+            const previous = from ? markdown.charAt(from - 1) : ''
             return [
-              n >= 1 && n <= count && !/[\w\\]/.test(previous ?? '')
+              n >= 1 && n <= count && !/[\w\\]/.test(previous)
                 ? citationNode(n)
                 : textNode(`[${label}]`),
             ]
@@ -124,7 +124,7 @@ function rehypeFootnoteIds({ prefix }: { prefix: string }) {
     const props = node.properties
     if (props?.id === 'footnote-label') props.id = `${prefix}footnote-label`
     if (Array.isArray(props?.ariaDescribedBy))
-      props.ariaDescribedBy = props.ariaDescribedBy.map((id) =>
+      props.ariaDescribedBy = props.ariaDescribedBy.map((id: unknown) =>
         id === 'footnote-label' ? `${prefix}footnote-label` : id,
       )
     node.children?.forEach(walk)
@@ -135,8 +135,9 @@ function rehypeFootnoteIds({ prefix }: { prefix: string }) {
 }
 
 function Citation({ n, fallback }: { n: number; fallback: React.ReactNode }) {
-  const sources = React.useContext(SourcesContext)
-  const source = sources[n - 1]
+  const sources = React.use(SourcesContext)
+  // Out of range when the text cites a source the message doesn't have.
+  const source = sources[n - 1] as CitationSource | undefined
   return source ? <InlineCitation index={n} source={source} /> : <>{fallback}</>
 }
 
@@ -192,6 +193,7 @@ function CodeScroll({ code }: { code: string }) {
   return (
     <pre
       ref={ref}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be keyboard-reachable; axe requires it.
       tabIndex={overflows ? 0 : undefined}
       className="m-0 overflow-x-auto px-3.5 py-3 font-mono text-[12.5px] leading-[1.65] text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
     >
@@ -212,21 +214,25 @@ function useComponents(): Components {
   return React.useMemo<Components>(
     () => ({
       h1: ({ node: _n, ...p }) => (
+        // eslint-disable-next-line jsx-a11y/heading-has-content -- content comes through props.
         <h3
           className="mt-5 mb-2 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground first:mt-0"
           {...p}
         />
       ),
       h2: ({ node: _n, ...p }) => (
+        // eslint-disable-next-line jsx-a11y/heading-has-content -- content comes through props.
         <h4
           className="mt-5 mb-2 font-display text-[17px] font-semibold text-foreground first:mt-0"
           {...p}
         />
       ),
       h3: ({ node: _n, ...p }) => (
+        // eslint-disable-next-line jsx-a11y/heading-has-content -- content comes through props.
         <h5 className="mt-4 mb-1.5 text-[15px] font-semibold text-foreground first:mt-0" {...p} />
       ),
       h4: ({ node: _n, ...p }) => (
+        // eslint-disable-next-line jsx-a11y/heading-has-content -- content comes through props.
         <h6 className="mt-4 mb-1.5 text-[14px] font-semibold text-foreground first:mt-0" {...p} />
       ),
       p: ({ node: _n, ...p }) => <p className="my-2.5 first:mt-0 last:mb-0" {...p} />,
@@ -262,12 +268,14 @@ function useComponents(): Components {
       // Links leave in a new tab; jumps within the answer (footnotes) stay here.
       a: ({ node: _n, href, ...p }) =>
         href?.startsWith('#') ? (
+          // eslint-disable-next-line jsx-a11y/anchor-has-content -- content comes through props.
           <a
             href={href}
             className="text-primary-text underline underline-offset-4 hover:no-underline"
             {...p}
           />
         ) : (
+          // eslint-disable-next-line jsx-a11y/anchor-has-content -- content comes through props.
           <a
             href={href}
             target="_blank"
@@ -296,7 +304,7 @@ function useComponents(): Components {
       strong: ({ node: _n, ...p }) => <strong className="font-semibold text-foreground" {...p} />,
       // Citation markers (see remarkCitations); any other <sup> (GFM footnotes) renders as is.
       sup: ({ node, children, ...p }) => {
-        const n = Number(node?.properties?.dataCitation)
+        const n = Number(node?.properties.dataCitation)
         return n ? <Citation n={n} fallback={children} /> : <sup {...p}>{children}</sup>
       },
       table: ({ node: _n, ...p }) => (
@@ -319,6 +327,7 @@ function useComponents(): Components {
       ),
       // Fenced blocks arrive as <pre><code class="language-x">; inline code as <code> alone.
       pre: ({ node: _n, children }) => {
+        // eslint-disable-next-line @eslint-react/no-children-only -- react-markdown always gives <pre> exactly one <code> child.
         const child = React.Children.only(children) as React.ReactElement<{
           className?: string
           children?: React.ReactNode
@@ -409,7 +418,7 @@ function Markdown({
         className,
       )}
     >
-      <SourcesContext.Provider value={sources ?? []}>
+      <SourcesContext value={sources ?? []}>
         <ReactMarkdown
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}
@@ -419,7 +428,7 @@ function Markdown({
         >
           {children}
         </ReactMarkdown>
-      </SourcesContext.Provider>
+      </SourcesContext>
     </div>
   )
 }

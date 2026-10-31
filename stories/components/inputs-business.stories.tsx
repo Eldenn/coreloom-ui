@@ -52,7 +52,7 @@ export const MoneyInputStory: Story = {
         <Field>
           <FieldLabel htmlFor="budget">Monthly budget</FieldLabel>
           <MoneyInput id="budget" value={eur} onValueChange={setEur} min={0} />
-          <FieldDescription>Value: {eur === null ? 'empty' : eur}</FieldDescription>
+          <FieldDescription>Value: {eur ?? 'empty'}</FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="usd">Invoice total</FieldLabel>
@@ -83,7 +83,7 @@ export const PhoneInputStory: Story = {
 export const TypedDate: Story = {
   name: 'DatePicker (typing)',
   render: () => {
-    const [date, setDate] = React.useState<Date | undefined>(new Date(2026, 10, 3))
+    const [date, setDate] = React.useState<Date | undefined>(() => new Date(2026, 10, 3))
     return (
       <Field className="max-w-xs">
         <FieldLabel htmlFor="due">Due date</FieldLabel>

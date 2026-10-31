@@ -64,7 +64,7 @@ function SettingsLayout({
         <h1 className="m-0 font-display text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] text-foreground">
           {title}
         </h1>
-        {description && (
+        {!!description && (
           <p className="mt-1 mb-0 text-[14px] text-muted-foreground">{description}</p>
         )}
       </div>

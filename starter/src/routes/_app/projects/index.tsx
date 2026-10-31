@@ -41,7 +41,7 @@ const LIST_KEYS = ['q', 'status', 'region', 'page'] as const
 
 export const Route = createFileRoute('/_app/projects/')({
   validateSearch: search,
-  loader: ({ context }) => context.queryClient.ensureQueryData(projectsQuery),
+  loader: ({ context }) => context.queryClient.query({ ...projectsQuery, staleTime: 'static' }),
   component: ProjectsPage,
 })
 

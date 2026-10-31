@@ -146,6 +146,7 @@ function Icon({
   ...props
 }: Omit<LucideProps, 'ref'> & { name: IconName; size?: number }) {
   const Glyph = icons[name]
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- the name can come from data at runtime; an unknown one renders nothing.
   if (!Glyph) return null
   return <Glyph data-slot="icon" aria-hidden size={size} strokeWidth={strokeWidth} {...props} />
 }

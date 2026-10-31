@@ -73,7 +73,7 @@ function VerifyForm({
             void form.handleSubmit()
           }}
         >
-          {error && (
+          {!!error && (
             <Alert variant="destructive" className="w-full">
               <AlertDescription>{error}</AlertDescription>
             </Alert>

@@ -52,7 +52,9 @@ function formatBytes(bytes: number, locale: string) {
   })
     .formatToParts(n)
     .map((part, index, parts) =>
-      part.type === 'unit' && parts[index - 1]?.type !== 'literal' ? ` ${part.value}` : part.value,
+      part.type === 'unit' && parts[index - 1]?.type !== 'literal'
+        ? `\u00a0${part.value}`
+        : part.value,
     )
     .join('')
 }
@@ -66,6 +68,7 @@ function Thumbnail({ file }: { file: File }) {
   React.useEffect(() => {
     if (!file.type.startsWith('image/') || typeof URL.createObjectURL !== 'function') return
     const u = URL.createObjectURL(file)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the object URL is created and revoked with the effect.
     setUrl(u)
     return () => {
       URL.revokeObjectURL(u)
@@ -159,13 +162,13 @@ function FileUpload({
     if (ok.length) commit(next)
   }
 
-  const invalid = (ariaInvalid && ariaInvalid !== 'false') || errors.length > 0
+  const invalid = !!(ariaInvalid && ariaInvalid !== 'false') || errors.length > 0
 
   return (
     <div data-slot="file-upload" className={cn('flex w-full flex-col gap-2.5', className)}>
       <label
         data-dragging={dragging || undefined}
-        data-disabled={disabled || undefined}
+        data-disabled={disabled ? true : undefined}
         className={cn(
           'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-input bg-inset px-4 py-7 text-center font-sans text-[14px] text-muted-foreground transition-[border-color,background-color,box-shadow] duration-180 ease-out hover:border-primary has-[input:focus-visible]:border-primary has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring data-disabled:pointer-events-none data-disabled:opacity-55 data-dragging:border-primary data-dragging:bg-primary-subtle',
           invalid && 'border-destructive',

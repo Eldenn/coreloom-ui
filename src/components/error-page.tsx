@@ -40,9 +40,9 @@ function ErrorPage({
         className,
       )}
     >
-      {brand && <div className="relative">{brand}</div>}
+      {!!brand && <div className="relative">{brand}</div>}
       <div className="relative flex max-w-md flex-col items-center gap-3">
-        {code && (
+        {!!code && (
           <p
             aria-hidden
             className="m-0 font-mono text-[64px] leading-none font-semibold tracking-[-0.04em] text-primary-text sm:text-[88px]"
@@ -53,14 +53,14 @@ function ErrorPage({
         <h1 className="m-0 font-display text-[26px] leading-tight font-semibold tracking-[-0.02em] text-foreground sm:text-[30px]">
           {title}
         </h1>
-        {description && (
+        {!!description && (
           <p className="m-0 text-[15px] leading-relaxed text-muted-foreground">{description}</p>
         )}
       </div>
-      {actions && (
+      {!!actions && (
         <div className="relative flex flex-wrap items-center justify-center gap-2.5">{actions}</div>
       )}
-      {footer && (
+      {!!footer && (
         <div className="relative font-mono text-[12px] text-muted-foreground">{footer}</div>
       )}
     </main>
@@ -142,7 +142,7 @@ function ServerErrorPage({
       }
       footer={
         footer ??
-        ((reference || statusHref) && (
+        ((!!reference || !!statusHref) && (
           <span className="flex flex-wrap items-center justify-center gap-3">
             {reference && <span>{t.reference(reference)}</span>}
             {statusHref && (

@@ -59,7 +59,10 @@ const sources: CitationSource[] = [
   },
 ]
 const render = (text: string, withSources = sources) =>
-  renderToStaticMarkup(React.createElement(Markdown, { sources: withSources, children: text }))
+  renderToStaticMarkup(
+    // eslint-disable-next-line @eslint-react/jsx-no-children-prop -- Markdown types children as a required prop, which createElement's third argument doesn't satisfy.
+    React.createElement(Markdown, { sources: withSources, children: text }),
+  )
 const citations = (html: string) =>
   [...html.matchAll(/aria-label="(Source \d[^"]*)"/g)].map((m) => m[1])
 

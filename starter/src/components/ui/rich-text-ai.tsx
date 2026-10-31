@@ -126,10 +126,10 @@ const withMark = (marks: Mark[], mark: Mark) => (marks.includes(mark) ? marks : 
 // bracket, not a slash or a dot, so globs like src/*/x.ts stay as written); a closer mirrors it.
 const OPENS_ON = /[\p{L}\p{N}*_~`'"([{“‘<]/u
 const canOpen = (s: string, i: number, n: number) =>
-  !isWord(s[i - 1]) && s[i + n] !== undefined && OPENS_ON.test(s[i + n])
+  !isWord(s[i - 1]) && i + n < s.length && OPENS_ON.test(s[i + n])
 // A closer followed by a dot or slash and more word (__init__.py, *x*/y) is part of a name, not a closer.
 const canClose = (s: string, i: number, n: number) =>
-  s[i - 1] !== undefined &&
+  i > 0 &&
   !SPACE.test(s[i - 1]) &&
   !isWord(s[i + n]) &&
   !(/[./]/.test(s[i + n] ?? '') && isWord(s[i + n + 1]))
@@ -257,11 +257,11 @@ function parseAnswer(answer: string): Block[] {
       const entry: ListItem = { inline: parseInline(item[3]), lists: [] }
       while (open.length && open[open.length - 1].indent > indent) open.pop()
       let top = open.at(-1)
-      if (top && top.indent === indent && top.list.type !== type) {
+      if (top?.indent === indent && top.list.type !== type) {
         open.pop()
         top = open.at(-1)
       }
-      if (top && top.indent === indent) top.list.items.push(entry)
+      if (top?.indent === indent) top.list.items.push(entry)
       else {
         const list: ListBlock = { type, start: item[2] ? Number(item[2]) : 1, items: [entry] }
         if (top) top.list.items[top.list.items.length - 1].lists.push(list)
@@ -296,7 +296,7 @@ function parseAnswer(answer: string): Block[] {
     } else if (quote) {
       flush()
       const last = blocks.at(-1)
-      if (last && last.type === 'quote')
+      if (last?.type === 'quote')
         last.inline.push({ text: ' ', marks: [] }, ...parseInline(quote[1]))
       else blocks.push({ type: 'quote', inline: parseInline(quote[1]) })
     } else {
@@ -377,6 +377,7 @@ function inlineMarkdown(node: ProseMirrorNode) {
     const raw = child.text ?? ''
     const names = child.marks.map((m) => m.type.name)
     // Spaces stay outside the markers: "**bold **" wouldn't close.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- the pattern matches any string.
     const [, lead, core, trail] = /^(\s*)([\s\S]*?)(\s*)$/.exec(raw)!
     if (!core) {
       out += raw
@@ -491,6 +492,7 @@ function currentRange(editor: Editor): Range | null {
 
 function InlineText({ inline }: { inline: Inline[] }) {
   return inline.map((i, k) => {
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- runs parsed from the text: no ids, rebuilt from the text on every render.
     if (i.text === '\n') return <br key={k} />
     let node: React.ReactNode = i.text
     if (i.marks.includes('code'))
@@ -514,6 +516,7 @@ function InlineText({ inline }: { inline: Inline[] }) {
           {node}
         </a>
       )
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- see the <br> above.
     return <React.Fragment key={k}>{node}</React.Fragment>
   })
 }
@@ -535,11 +538,13 @@ function PreviewList({ list, caret }: { list: ListBlock; caret: React.ReactNode 
       {list.items.map((item, j) => {
         const last = j === list.items.length - 1
         return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- items parsed from the text: no ids, rebuilt from the text on every render.
           <li key={j}>
             <InlineText inline={item.inline} />
             {last && !item.lists.length && caret}
             {item.lists.map((nested, n) => (
               <PreviewList
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- nested lists parsed from the text: no ids.
                 key={n}
                 list={nested}
                 caret={last && n === item.lists.length - 1 ? caret : null}
@@ -559,53 +564,57 @@ function Preview({ blocks, streaming }: { blocks: Block[]; streaming: boolean })
         <Caret />
       </p>
     ) : null
-  return blocks.map((b, k) => {
-    const caret = streaming && k === blocks.length - 1 ? <Caret /> : null
-    switch (b.type) {
-      case 'heading':
-        return (
-          <p
-            key={k}
-            className={cn(
-              'font-display font-semibold text-foreground',
-              b.level === 2 ? 'text-[16px]' : 'text-[14.5px]',
-            )}
-          >
-            <InlineText inline={b.inline} />
-            {caret}
-          </p>
-        )
-      case 'quote':
-        return (
-          <blockquote key={k} className="border-l-2 border-primary pl-3 text-fg-secondary">
-            <InlineText inline={b.inline} />
-            {caret}
-          </blockquote>
-        )
-      case 'bullets':
-      case 'numbers':
-        return <PreviewList key={k} list={b} caret={caret} />
-      case 'rule':
-        return <hr key={k} className="border-border" />
-      case 'code':
-        return (
-          <pre
-            key={k}
-            className="overflow-x-auto rounded-md bg-surface p-2.5 font-mono text-[12.5px]"
-          >
-            {b.text}
-            {caret}
-          </pre>
-        )
-      default:
-        return (
-          <p key={k}>
-            <InlineText inline={b.inline} />
-            {caret}
-          </p>
-        )
-    }
-  })
+  return blocks.map((b, k) => (
+    <PreviewBlock
+      // eslint-disable-next-line @eslint-react/no-array-index-key -- blocks parsed from the text: no ids, and a stream only adds to the end.
+      key={k}
+      block={b}
+      caret={streaming && k === blocks.length - 1 ? <Caret /> : null}
+    />
+  ))
+}
+
+function PreviewBlock({ block: b, caret }: { block: Block; caret: React.ReactNode }) {
+  switch (b.type) {
+    case 'heading':
+      return (
+        <p
+          className={cn(
+            'font-display font-semibold text-foreground',
+            b.level === 2 ? 'text-[16px]' : 'text-[14.5px]',
+          )}
+        >
+          <InlineText inline={b.inline} />
+          {caret}
+        </p>
+      )
+    case 'quote':
+      return (
+        <blockquote className="border-l-2 border-primary pl-3 text-fg-secondary">
+          <InlineText inline={b.inline} />
+          {caret}
+        </blockquote>
+      )
+    case 'bullets':
+    case 'numbers':
+      return <PreviewList list={b} caret={caret} />
+    case 'rule':
+      return <hr className="border-border" />
+    case 'code':
+      return (
+        <pre className="overflow-x-auto rounded-md bg-surface p-2.5 font-mono text-[12.5px]">
+          {b.text}
+          {caret}
+        </pre>
+      )
+    default:
+      return (
+        <p>
+          <InlineText inline={b.inline} />
+          {caret}
+        </p>
+      )
+  }
 }
 
 // ——— The toolbar button and its panel.
@@ -776,6 +785,7 @@ function RichTextAi({
       const { from, to, empty } = editor.state.selection
       const range = empty ? null : { from, to }
       editor.view.dispatch(editor.state.tr.setMeta(highlightKey, range))
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the editor's selection (an external system) when the panel opens.
       setScope(range ? 'selection' : 'document')
       scopeRef.current = range ? 'selection' : 'document'
       setLost(false)
@@ -786,6 +796,7 @@ function RichTextAi({
       // so a Strict Mode remount runs it again instead of leaving it aborted.)
       return () => {
         controller.current?.abort()
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- a run counter, not a DOM ref: bumping its latest value is what cancels the run.
         runId.current++
       }
     }
@@ -1054,6 +1065,7 @@ function RichTextAi({
                 role="region"
                 aria-label={stopped ? `${t.aiSuggestion} · ${t.aiStopped}` : t.aiSuggestion}
                 aria-busy={busy || undefined}
+                // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a scrollable region must be keyboard-reachable; axe requires it.
                 tabIndex={0}
                 data-slot="rich-text-ai-preview"
                 className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded-md border border-border-subtle bg-inset px-3 py-2.5 text-[13.5px] leading-[1.6] break-words text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring"

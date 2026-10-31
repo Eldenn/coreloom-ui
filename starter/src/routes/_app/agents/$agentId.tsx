@@ -15,8 +15,8 @@ import { agentQuery, agentsQuery, runsQuery } from '@/lib/queries'
 export const Route = createFileRoute('/_app/agents/$agentId')({
   loader: async ({ context, params }) => {
     const [agent] = await Promise.all([
-      context.queryClient.ensureQueryData(agentQuery(params.agentId)),
-      context.queryClient.ensureQueryData(runsQuery(params.agentId)),
+      context.queryClient.query({ ...agentQuery(params.agentId), staleTime: 'static' }),
+      context.queryClient.query({ ...runsQuery(params.agentId), staleTime: 'static' }),
     ])
     if (!agent) throw notFound()
     return { crumb: agent.name }

@@ -32,7 +32,7 @@ function parseTypedDate(text: string, locale?: Locale): Date | undefined {
   const parts = iso ? null : s.split(/[^\d]+/).filter(Boolean)
   let y: number, m: number, d: number
   if (iso) [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])]
-  else if (parts && parts.length === 3 && /^[\d\s./-]+$/.test(s)) {
+  else if (parts?.length === 3 && /^[\d\s./-]+$/.test(s)) {
     const order = dateOrder(locale)
     const get = (k: 'd' | 'm' | 'y') => Number(parts[order.indexOf(k)])
     ;[y, m, d] = [get('y'), get('m'), get('d')]
@@ -93,7 +93,7 @@ function DatePicker({
   locale ??= i18n.dateLocale as Locale | undefined
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState<Date | undefined>(defaultValue)
-  const current = value !== undefined ? value : inner
+  const current = value ?? inner
 
   const pick = (next: Date | undefined) => {
     if (value === undefined) setInner(next)
@@ -127,6 +127,7 @@ function DatePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- the trigger stands in for the field's control; aria-invalid drives its error styling and is a global attribute in ARIA 1.1. */}
         <button
           type="button"
           id={id}
@@ -219,14 +220,14 @@ function TypedDatePicker({
     if (sent.current !== null && sent.current?.getTime() === current?.getTime()) return
     setText(show(current))
     setUnreadable(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dates compare by time, not identity; show() is recreated each render.
   }, [current?.getTime(), locale])
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <div
         data-slot="date-picker-input"
-        data-disabled={disabled || undefined}
+        data-disabled={disabled ? true : undefined}
         className="flex h-[42px] w-full items-center rounded-md border border-input bg-inset font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:opacity-55"
       >
         <input

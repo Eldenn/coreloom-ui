@@ -62,7 +62,7 @@ function Combobox({
   emptyText ??= t.combobox.empty
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState(defaultValue ?? '')
-  const current = value !== undefined ? value : inner
+  const current = value ?? inner
   const selected = options.find((o) => o.value === current)
 
   const pick = (next: string) => {
@@ -76,6 +76,7 @@ function Combobox({
       <PopoverTrigger asChild>
         <button
           type="button"
+          // eslint-disable-next-line jsx-a11y/role-has-required-aria-props -- aria-controls is added by PopoverTrigger.
           role="combobox"
           id={id}
           aria-expanded={open}

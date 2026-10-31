@@ -13,7 +13,7 @@ import { overviewQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/')({
   staticData: { crumb: (t) => t.nav.overview },
-  loader: ({ context }) => context.queryClient.ensureQueryData(overviewQuery),
+  loader: ({ context }) => context.queryClient.query({ ...overviewQuery, staleTime: 'static' }),
   component: OverviewPage,
 })
 

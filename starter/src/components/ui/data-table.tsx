@@ -137,6 +137,7 @@ function DataTable<TData, TValue>({
     sorting: server.query.sort ? [server.query.sort] : [],
     pagination: { pageIndex: server.query.page - 1, pageSize: server.query.pageSize },
   }
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table's API is what this component is built on; the compiler skips it.
   const table = useReactTable({
     data,
     columns,
@@ -145,12 +146,14 @@ function DataTable<TData, TValue>({
     initialState: { pagination: { pageSize } },
     onSortingChange: server
       ? (updater) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- serverState is set whenever server is.
           const next = typeof updater === 'function' ? updater(serverState!.sorting) : updater
           server.onQueryChange({ ...server.query, sort: next[0], page: 1 })
         }
       : setSorting,
     onPaginationChange: server
       ? (updater) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- serverState is set whenever server is.
           const next = typeof updater === 'function' ? updater(serverState!.pagination) : updater
           const sizeChanged = next.pageSize !== server.query.pageSize
           server.onQueryChange({
@@ -213,7 +216,7 @@ function DataTable<TData, TValue>({
   // A new page from the server starts with nothing selected.
   React.useEffect(() => {
     if (server) setRowSelection({})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs when the query's values change, not when the server object is recreated.
   }, [
     server?.query.page,
     server?.query.pageSize,
@@ -224,7 +227,7 @@ function DataTable<TData, TValue>({
 
   React.useEffect(() => {
     onRowSelectionChange?.(table.getSelectedRowModel().rows.map((r) => r.original))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reports only selection changes; the callback and the table object change every render.
   }, [rowSelection])
 
   const filter = !server && filterColumn ? table.getColumn(filterColumn) : undefined
@@ -241,7 +244,7 @@ function DataTable<TData, TValue>({
             <div className="relative w-full max-w-72">
               <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                value={(filter.getFilterValue() as string) ?? ''}
+                value={(filter.getFilterValue() as string | undefined) ?? ''}
                 onChange={(e) => {
                   filter.setFilterValue(e.target.value)
                 }}
@@ -260,7 +263,7 @@ function DataTable<TData, TValue>({
       )}
 
       <Table
-        aria-busy={server?.loading || undefined}
+        aria-busy={server?.loading ? true : undefined}
         aria-rowcount={isVirtual ? rows.length + 1 : undefined}
         className={cn(server?.loading && '[&_tbody]:opacity-60 [&_tbody]:transition-opacity')}
         container={
@@ -344,9 +347,11 @@ function DataTable<TData, TValue>({
 function ServerSearch({ server, placeholder }: { server: DataTableServer; placeholder?: string }) {
   const [text, setText] = React.useState(server.query.search)
   const latest = React.useRef(server)
+  // eslint-disable-next-line react-hooks/refs -- latest-value ref: the debounced effect below reads the current query without restarting.
   latest.current = server
   // Follow the query when it changes from outside (back button, a link).
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft text from the query when it changes from outside.
     setText(server.query.search)
   }, [server.query.search])
   React.useEffect(() => {

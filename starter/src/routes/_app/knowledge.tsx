@@ -11,7 +11,7 @@ import { documentsQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/knowledge')({
   staticData: { crumb: (t) => t.nav.knowledge },
-  loader: ({ context }) => context.queryClient.ensureQueryData(documentsQuery),
+  loader: ({ context }) => context.queryClient.query({ ...documentsQuery, staleTime: 'static' }),
   component: KnowledgePage,
 })
 

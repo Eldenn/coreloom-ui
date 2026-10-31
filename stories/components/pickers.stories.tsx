@@ -47,7 +47,7 @@ export const Default: Story = {
 export const DatePickerStory: Story = {
   name: 'DatePicker',
   render: () => {
-    const [date, setDate] = React.useState<Date | undefined>(new Date(2026, 10, 3))
+    const [date, setDate] = React.useState<Date | undefined>(() => new Date(2026, 10, 3))
     return (
       <Field className="max-w-xs">
         <FieldLabel htmlFor="release">Release date</FieldLabel>
@@ -61,10 +61,10 @@ export const DatePickerStory: Story = {
 export const CalendarStory: Story = {
   name: 'Calendar',
   render: () => {
-    const [range, setRange] = React.useState<{ from?: Date; to?: Date } | undefined>({
+    const [range, setRange] = React.useState<{ from?: Date; to?: Date } | undefined>(() => ({
       from: new Date(2026, 9, 6),
       to: new Date(2026, 9, 10),
-    })
+    }))
     return (
       <div className="flex flex-wrap gap-6">
         <Calendar

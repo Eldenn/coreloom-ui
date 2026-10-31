@@ -106,7 +106,7 @@ function ForgotPasswordForm({
             }}
           >
             <FieldGroup className="gap-4">
-              {error && (
+              {!!error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
@@ -196,7 +196,7 @@ function ResetPasswordForm({
             />
           )}
           <FieldGroup className="gap-4">
-            {error && (
+            {!!error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>

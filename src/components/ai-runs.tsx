@@ -129,7 +129,7 @@ function RunList({
         ),
       },
     ],
-    [t, href, locale, formatNumber, messages],
+    [t, href, locale, formatNumber],
   )
   return (
     <DataTable
@@ -210,7 +210,7 @@ function RunTrace({
 }) {
   const { messages, locale, formatNumber } = useCoreloomI18n()
   const t = messages.ai.runs
-  const uid = React.useId()
+  const baseId = React.useId()
   const [selected, setSelected] = React.useState(
     defaultSelectedId ??
       spans.find((s) => s.error)?.id ??
@@ -254,11 +254,11 @@ function RunTrace({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section
-          aria-labelledby={`${uid}-steps`}
+          aria-labelledby={`${baseId}-steps`}
           className="flex min-w-0 flex-col rounded-lg border border-border bg-card"
         >
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
-            <h3 id={`${uid}-steps`} className="m-0 text-[13.5px] font-semibold text-foreground">
+            <h3 id={`${baseId}-steps`} className="m-0 text-[13.5px] font-semibold text-foreground">
               {t.steps}
             </h3>
             <span className="font-mono text-[11px] text-muted-foreground">{t.timeline}</span>

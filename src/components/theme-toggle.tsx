@@ -48,6 +48,7 @@ function readPreference(): ThemePreference {
 }
 
 function systemTheme(): Theme {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- matchMedia is missing in jsdom and old embedded browsers
   return typeof window !== 'undefined' && window.matchMedia?.(LIGHT_QUERY).matches
     ? 'light'
     : 'dark'
@@ -64,10 +65,13 @@ function apply(theme: Theme) {
  * persists it. With "system", the theme follows the OS and updates when it changes.
  */
 function useTheme() {
+  // eslint-disable-next-line @eslint-react/use-state -- setTheme/setPreference/setAccent are the public setters that also apply and persist
   const [theme, setThemeState] = React.useState<Theme>(readTheme)
+  // eslint-disable-next-line @eslint-react/use-state -- setTheme/setPreference/setAccent are the public setters that also apply and persist
   const [preference, setPreferenceState] = React.useState<ThemePreference>('dark')
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads localStorage after mount so the server render matches
     setPreferenceState(readPreference())
     const observer = new MutationObserver(() => {
       setThemeState(readTheme())
@@ -82,6 +86,7 @@ function useTheme() {
   }, [])
 
   React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- matchMedia is missing in jsdom and old embedded browsers
     if (preference !== 'system' || !window.matchMedia) return
     const mq = window.matchMedia(LIGHT_QUERY)
     const onChange = () => {
@@ -204,9 +209,11 @@ function readAccent(): Accent {
 
 /** The accent on <html> and a setter that applies and persists it. */
 function useAccent() {
+  // eslint-disable-next-line @eslint-react/use-state -- setTheme/setPreference/setAccent are the public setters that also apply and persist
   const [accent, setAccentState] = React.useState<Accent>('cyan')
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads <html> after mount so the server render matches
     setAccentState(readAccent())
     const observer = new MutationObserver(() => {
       setAccentState(readAccent())

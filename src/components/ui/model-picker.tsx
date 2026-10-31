@@ -79,7 +79,7 @@ function ModelRow({ model, selected }: { model: AiModel; selected: boolean }) {
             {model.description}
           </span>
         )}
-        {(context || price) && (
+        {(!!context || !!price) && (
           <span className="flex flex-wrap gap-x-3 font-mono text-[11px] text-muted-foreground">
             {context && (
               <>
@@ -221,7 +221,7 @@ function ModelPicker({
   const valueId = React.useId()
   const [open, setOpen] = React.useState(false)
   const [inner, setInner] = React.useState(defaultValue ?? '')
-  const current = value !== undefined ? value : inner
+  const current = value ?? inner
   const selected = models.find((m) => m.id === current)
   size ??= variant === 'outline' ? 'default' : 'sm'
 
@@ -242,6 +242,7 @@ function ModelPicker({
       <PopoverTrigger asChild>
         <button
           type="button"
+          // eslint-disable-next-line jsx-a11y/role-has-required-aria-props -- PopoverTrigger adds aria-controls.
           role="combobox"
           id={id}
           aria-expanded={open}

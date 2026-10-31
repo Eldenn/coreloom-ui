@@ -7,7 +7,7 @@ import { useT } from '@/lib/locale'
 import { runsQuery } from '@/lib/queries'
 
 export const Route = createFileRoute('/_app/runs/')({
-  loader: ({ context }) => context.queryClient.ensureQueryData(runsQuery()),
+  loader: ({ context }) => context.queryClient.query({ ...runsQuery(), staleTime: 'static' }),
   component: RunsPage,
 })
 

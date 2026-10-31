@@ -70,7 +70,8 @@ function writeParams(base: URLSearchParams, state: DataListState, facetKeys: str
   if (state.page > 1) params.set('page', String(state.page))
   else params.delete('page')
   for (const k of facetKeys) {
-    if (state.facets[k]?.length) params.set(k, state.facets[k].join(','))
+    const selected = state.facets[k] as string[] | undefined
+    if (selected?.length) params.set(k, selected.join(','))
     else params.delete(k)
   }
   return params
@@ -133,11 +134,13 @@ function useDataList<T extends object>({
   }
 
   const norm = (v: unknown) =>
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- row values are primitives; String() is the intended conversion
     String(v ?? '')
       .normalize('NFD')
       .replace(/\p{Diacritic}/gu, '')
       .toLowerCase()
   const valueOf = (row: T, f: Facet<T>) =>
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- row values are primitives; String() is the intended conversion
     f.get ? f.get(row) : String((row as Record<string, unknown>)[f.key] ?? '')
   const q = norm(state.q.trim())
   const matchesSearch = (row: T) => !q || searchKeys.some((k) => norm(row[k]).includes(q))
@@ -145,7 +148,7 @@ function useDataList<T extends object>({
     facets.every(
       (f) =>
         f.key === except ||
-        !state.facets[f.key]?.length ||
+        !(state.facets[f.key] as string[] | undefined)?.length ||
         state.facets[f.key].includes(valueOf(row, f)),
     )
 
@@ -314,6 +317,7 @@ function DataListToolbar({
   const t = messages.dataList
   const [draft, setDraft] = React.useState(list.state.q)
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft from the list's query (back/forward, reset)
     setDraft(list.state.q)
   }, [list.state.q])
   // Search as you type, a beat after the last key.
@@ -361,7 +365,7 @@ function DataListToolbar({
             <XIcon />
           </Button>
         )}
-        {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+        {!!actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
       </div>
       <p role="status" className="m-0 font-mono text-[12px] text-muted-foreground">
         {t.results(formatNumber(list.filtered.length), list.filtered.length)}

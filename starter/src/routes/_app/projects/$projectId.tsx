@@ -29,8 +29,8 @@ const ProjectNotes = React.lazy(() => import('@/components/project-notes'))
 export const Route = createFileRoute('/_app/projects/$projectId')({
   loader: async ({ context, params }) => {
     const [project] = await Promise.all([
-      context.queryClient.ensureQueryData(projectQuery(params.projectId)),
-      context.queryClient.ensureQueryData(deploymentsQuery(params.projectId)),
+      context.queryClient.query({ ...projectQuery(params.projectId), staleTime: 'static' }),
+      context.queryClient.query({ ...deploymentsQuery(params.projectId), staleTime: 'static' }),
     ])
     // An unknown id renders this route's notFoundComponent, inside the app shell.
     if (!project) throw notFound()

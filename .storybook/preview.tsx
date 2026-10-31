@@ -21,14 +21,12 @@ const ACCENTS = ['cyan', 'blue', 'violet', 'amber', 'rose'] as const
 
 /** Applies the toolbar's theme and accent to <html data-theme data-accent> and its language to the i18n
  *  provider, like an app does. */
-const withTheme: Decorator = (Story, context) => {
+const WithTheme: Decorator = (Story, context) => {
   const theme = context.globals.theme === 'light' ? 'light' : 'dark'
   const locale = (
     context.globals.locale in LOCALES ? context.globals.locale : 'en'
   ) as keyof typeof LOCALES
-  const accent = ACCENTS.includes(context.globals.accent)
-    ? (context.globals.accent as (typeof ACCENTS)[number])
-    : 'cyan'
+  const accent = ACCENTS.find((a) => a === context.globals.accent) ?? 'cyan'
   React.useEffect(() => {
     if (theme === 'light') document.documentElement.dataset.theme = 'light'
     else delete document.documentElement.dataset.theme
@@ -55,7 +53,7 @@ const withTheme: Decorator = (Story, context) => {
 }
 
 const preview: Preview = {
-  decorators: [withTheme],
+  decorators: [WithTheme],
   globalTypes: {
     theme: {
       description: 'Coreloom theme',

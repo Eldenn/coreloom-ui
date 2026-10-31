@@ -10,7 +10,7 @@
 // Validators accept any Standard Schema (zod, valibot, arktype) or plain functions returning a message.
 // Validate on change (`validators: { onChange: schema }`): errors show once a field has been left or the
 // form submitted, then update as the user types — with aria-invalid on the control.
-import { createFormHook, createFormHookContexts, useStore } from '@tanstack/react-form'
+import { createFormHook, createFormHookContexts, useSelector } from '@tanstack/react-form'
 import * as React from 'react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -56,7 +56,7 @@ interface FieldIssue {
 /** Turns TanStack's mixed error values (strings, Standard Schema issues) into `{ message }`. */
 function toIssues(errors: unknown[]): FieldIssue[] {
   return errors
-    .flatMap((e) => (Array.isArray(e) ? e : [e]))
+    .flatMap((e): unknown[] => (Array.isArray(e) ? e : [e]))
     .map((e) => (typeof e === 'string' ? { message: e } : (e as FieldIssue | null)))
     .filter((e): e is FieldIssue => typeof e?.message === 'string' && e.message !== '')
 }
@@ -64,11 +64,11 @@ function toIssues(errors: unknown[]): FieldIssue[] {
 /** State shared by every field component: ids, the invalid flag and the errors to show. */
 function useFieldMeta() {
   const field = useFieldContext<unknown>()
-  const errors = useStore(field.store, (s) => s.meta.errors)
-  const isBlurred = useStore(field.store, (s) => s.meta.isBlurred)
-  const submitted = useStore(field.form.store, (s) => s.submissionAttempts > 0)
-  const uid = React.useId()
-  const id = `${field.name}-${uid}`
+  const errors = useSelector(field.store, (s): unknown[] => s.meta.errors)
+  const isBlurred = useSelector(field.store, (s) => s.meta.isBlurred)
+  const submitted = useSelector(field.form.store, (s) => s.submissionAttempts > 0)
+  const baseId = React.useId()
+  const id = `${field.name}-${baseId}`
   const issues = toIssues(errors)
   const invalid = (isBlurred || submitted) && issues.length > 0
   return {
@@ -131,7 +131,9 @@ function VerticalShell({
         labelEl
       )}
       {children}
-      {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
+      {description ? (
+        <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>
+      ) : null}
       {meta.invalid && <FieldError id={meta.errorId} errors={meta.issues} />}
     </Field>
   )
@@ -151,7 +153,7 @@ function TextField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value)
+  const value = useSelector(field.store, (s) => s.value)
   return (
     <VerticalShell
       meta={meta}
@@ -164,6 +166,7 @@ function TextField({
       <Input
         id={meta.id}
         name={field.name}
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- the field holds a string or a number; String() is what the input shows.
         value={value == null ? '' : String(value)}
         onChange={(e) => {
           field.handleChange(
@@ -197,7 +200,7 @@ function TextareaField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value)
+  const value = useSelector(field.store, (s) => s.value)
   return (
     <VerticalShell
       meta={meta}
@@ -210,6 +213,7 @@ function TextareaField({
       <Textarea
         id={meta.id}
         name={field.name}
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- the field holds a string or a number; String() is what the input shows.
         value={value == null ? '' : String(value)}
         onChange={(e) => {
           field.handleChange(e.target.value)
@@ -248,7 +252,7 @@ function OTPField({
 }) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   const groups = Array.from({ length: Math.ceil(length / groupSize) }, (_, g) =>
     Array.from(
       { length: Math.min(groupSize, length - g * groupSize) },
@@ -284,6 +288,7 @@ function OTPField({
         containerClassName="w-auto"
       >
         {groups.map((slots, g) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed slot groups computed from the length; they never reorder.
           <React.Fragment key={g}>
             {g > 0 && <InputOTPSeparator />}
             <InputOTPGroup>
@@ -316,7 +321,7 @@ function SelectField({
 }: VerticalShellProps & { options: Option[]; placeholder?: string; disabled?: boolean }) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -368,7 +373,7 @@ function ComboboxField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -413,7 +418,7 @@ function DateField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as Date | undefined
+  const value = useSelector(field.store, (s) => s.value) as Date | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -461,7 +466,7 @@ function DateRangeField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as DateRange | undefined
+  const value = useSelector(field.store, (s) => s.value) as DateRange | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -508,7 +513,7 @@ function TagsField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string[] | undefined
+  const value = useSelector(field.store, (s) => s.value) as string[] | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -555,7 +560,7 @@ function MultiSelectField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string[] | undefined
+  const value = useSelector(field.store, (s) => s.value) as string[] | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -602,7 +607,7 @@ function MoneyField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as number | null | undefined
+  const value = useSelector(field.store, (s) => s.value) as number | null | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -649,7 +654,7 @@ function PhoneField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -696,7 +701,7 @@ function FileField({
   >) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as File[] | undefined
+  const value = useSelector(field.store, (s) => s.value) as File[] | undefined
   return (
     <VerticalShell
       meta={meta}
@@ -731,11 +736,13 @@ function RadioGroupField({
 }: FieldShellProps & { options: Option[]; disabled?: boolean }) {
   const meta = useFieldMeta()
   const field = meta.field
-  const value = useStore(field.store, (s) => s.value) as string | undefined
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
     <Field data-invalid={meta.invalid || undefined} className={className}>
       <FieldLabel id={`${meta.id}-label`}>{label}</FieldLabel>
-      {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
+      {description ? (
+        <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>
+      ) : null}
       <RadioGroup
         name={field.name}
         value={value ?? ''}
@@ -775,7 +782,7 @@ function ToggleField({
 }: FieldShellProps & { disabled?: boolean; control: 'checkbox' | 'switch' }) {
   const meta = useFieldMeta()
   const field = meta.field
-  const checked = useStore(field.store, (s) => Boolean(s.value))
+  const checked = useSelector(field.store, (s) => Boolean(s.value))
   const common = {
     id: meta.id,
     name: field.name,
@@ -797,7 +804,9 @@ function ToggleField({
       {control === 'checkbox' && <Checkbox {...common} />}
       <FieldContent>
         <FieldLabel htmlFor={meta.id}>{label}</FieldLabel>
-        {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
+        {description ? (
+          <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>
+        ) : null}
         {meta.invalid && <FieldError id={meta.errorId} errors={meta.issues} />}
       </FieldContent>
       {control === 'switch' && <Switch {...common} />}
@@ -826,7 +835,7 @@ function SubmitButton({
   pending?: boolean
 }) {
   const form = useFormContext()
-  const isSubmitting = useStore(form.store, (s) => s.isSubmitting)
+  const isSubmitting = useSelector(form.store, (s) => s.isSubmitting)
   const busy = isSubmitting || pending
   return (
     <Button
@@ -846,7 +855,7 @@ function SubmitButton({
 function FormErrors({ title, className }: { title?: React.ReactNode; className?: string }) {
   const t = useCoreloomI18n().messages
   const form = useFormContext()
-  const errors = useStore(form.store, (s) => s.errors)
+  const errors = useSelector(form.store, (s): unknown[] => s.errors)
   const issues = toIssues(errors)
   if (!issues.length) return null
   return (

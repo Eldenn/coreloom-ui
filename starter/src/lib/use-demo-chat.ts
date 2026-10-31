@@ -30,12 +30,15 @@ export function useDemoChat({
   script: DemoScript
   onFinish?: (messages: AiMessage[]) => void
 }) {
+  // eslint-disable-next-line @eslint-react/use-state -- setMessages (below) wraps this setter and also updates `latest`.
   const [messages, setMessagesState] = React.useState<AiMessage[]>(initialMessages)
   const [status, setStatus] = React.useState<AiChatStatus>('ready')
   const [error, setError] = React.useState<Error>()
   const latest = React.useRef(messages)
   const run = React.useRef(0)
   const finish = React.useRef(onFinish)
+  // The latest onFinish, read when a reply ends (not during render).
+  // eslint-disable-next-line react-hooks/refs -- the usual "latest callback" ref, written on every render on purpose.
   finish.current = onFinish
 
   const setMessages = React.useCallback((next: AiMessage[]) => {
@@ -47,7 +50,8 @@ export function useDemoChat({
   const sleep = (ms: number, id: number) =>
     new Promise<void>((resolve, reject) =>
       setTimeout(() => {
-        run.current === id ? resolve() : reject(new Stopped())
+        if (run.current === id) resolve()
+        else reject(new Stopped())
       }, ms),
     )
 

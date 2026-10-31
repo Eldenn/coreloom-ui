@@ -67,12 +67,12 @@ function SettingsSection({
         <h2 className="m-0 font-display text-[17px] leading-[1.3] font-semibold text-foreground">
           {title}
         </h2>
-        {description && (
+        {!!description && (
           <p className="m-0 text-[13px] leading-[1.55] text-muted-foreground">{description}</p>
         )}
       </div>
       <div className="flex flex-col gap-4 px-5 pt-4 pb-5">{children}</div>
-      {(form || onSubmit || footer) && (
+      {(!!form || !!onSubmit || !!footer) && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-surface px-5 py-3">
           <span className="text-[13px] text-muted-foreground">{footer}</span>
           {form ? (
@@ -140,7 +140,7 @@ function SettingsRow({
         <label htmlFor={htmlFor} className="text-[14px] font-medium text-foreground">
           {label}
         </label>
-        {description && <span className="text-[13px] text-muted-foreground">{description}</span>}
+        {!!description && <span className="text-[13px] text-muted-foreground">{description}</span>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>

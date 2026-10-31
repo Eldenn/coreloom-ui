@@ -65,7 +65,7 @@ function SiteHeader({
         )}
         <div className="ml-auto flex items-center gap-1.5">
           {actions}
-          {(links.length > 0 || mobileActions) && (
+          {(links.length > 0 || !!mobileActions) && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button

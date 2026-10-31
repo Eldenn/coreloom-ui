@@ -162,6 +162,7 @@ const wait = (ms: number, signal: AbortSignal) =>
       'abort',
       () => {
         clearTimeout(timer)
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- rejects with the abort reason, as fetch does.
         reject(signal.reason)
       },
       { once: true },
@@ -220,7 +221,7 @@ export const AiPanelOpen: Story = {
           aria-labelledby="ai-open-label"
           minHeight={100}
           ai={{
-            onRequest: async (request) => cannedAnswer(request),
+            onRequest: (request) => Promise.resolve(cannedAnswer(request)),
             defaultOpen: { action: 'improve' },
           }}
         />
@@ -265,7 +266,7 @@ export const AiPanelFrench: Story = {
           defaultValue={draft}
           aria-labelledby="ai-fr-label"
           minHeight={100}
-          ai={{ onRequest: async (request) => cannedAnswer(request), defaultOpen: true }}
+          ai={{ onRequest: (request) => Promise.resolve(cannedAnswer(request)), defaultOpen: true }}
         />
       </Field>
     </div>
@@ -280,6 +281,7 @@ export const AiAddedLater: Story = {
     const [enabled, setEnabled] = React.useState(false)
     return (
       <div className="flex max-w-2xl flex-col gap-4">
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- the label wraps the Switch, a <button> (a labelable element). */}
         <label className="flex items-center gap-2 text-[14px] text-foreground">
           <Switch checked={enabled} onCheckedChange={setEnabled} />
           Writing help

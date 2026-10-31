@@ -55,10 +55,10 @@ type Story = StoryObj<typeof meta>
 
 export const Overview: Story = {
   render: () => {
-    const [range, setRange] = React.useState<DateRange | undefined>({
+    const [range, setRange] = React.useState<DateRange | undefined>(() => ({
       from: new Date(2026, 8, 15),
       to: new Date(2026, 9, 14),
-    })
+    }))
     const [type, setType] = React.useState<'area' | 'bar' | 'line'>('area')
     return (
       <AppShell

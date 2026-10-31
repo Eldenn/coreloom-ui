@@ -125,6 +125,8 @@ published at least 14 days ago; Renovate opens dependency PRs on Mondays with th
 ```bash
 pnpm install
 pnpm storybook          # http://localhost:6006
+pnpm format             # Prettier (format:check in CI)
+pnpm lint               # ESLint, type-aware
 pnpm typecheck          # library, stories and tests
 pnpm test:unit          # Vitest
 pnpm storybook:build    # then: pnpm test (Playwright)

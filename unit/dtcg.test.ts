@@ -3,10 +3,17 @@ import fs from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 // @ts-expect-error — a plain .mjs build script, no types
-import { buildDtcg, color, shadow } from '../build/gen-dtcg.mjs'
+import * as gen from '../build/gen-dtcg.mjs'
 
-const src = JSON.parse(fs.readFileSync('src/styles/tokens.json', 'utf8'))
-const files = buildDtcg(src) as Record<string, Record<string, unknown>>
+// What this test uses from the script, typed here.
+const { buildDtcg, color, shadow } = gen as {
+  buildDtcg: (src: unknown) => Record<string, Record<string, unknown>>
+  color: (css: string) => unknown
+  shadow: (css: string) => unknown
+}
+
+const src: unknown = JSON.parse(fs.readFileSync('src/styles/tokens.json', 'utf8'))
+const files = buildDtcg(src)
 const css = fs.readFileSync('src/styles/tokens.css', 'utf8')
 
 type Node = Record<string, unknown>

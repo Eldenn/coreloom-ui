@@ -90,6 +90,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
   return (
     <style
+      // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml -- shadcn's chart writes CSS variables from the developer's ChartConfig, never user input.
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
@@ -145,9 +146,11 @@ function ChartTooltipContent({
     }
 
     const [item] = payload
-    const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Recharts types dataKey as possibly a function; charts use string keys, as in shadcn.
+    const key = `${labelKey ?? item.dataKey ?? item.name ?? 'value'}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- the label is often not a config key (a date, a category): the lookup can miss.
       !labelKey && typeof label === 'string' ? (config[label]?.label ?? label) : itemConfig?.label
 
     if (labelFormatter) {
@@ -181,19 +184,23 @@ function ChartTooltipContent({
         {payload
           .filter((item) => item.type !== 'none')
           .map((item, index) => {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Recharts types dataKey as possibly a function; charts use string keys, as in shadcn.
             const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color ?? item.payload?.fill ?? item.color
+            const datum = item.payload as { fill?: string } | undefined
+            const indicatorColor = color ?? datum?.fill ?? item.color
 
             return (
               <div
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- Recharts' payload rows have no id and can share a dataKey; the list is rebuilt on every hover.
                 key={index}
                 className={cn(
                   'flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground',
                   indicator === 'dot' && 'items-center',
                 )}
               >
-                {formatter && item?.value !== undefined && item.name ? (
+                {formatter && item.value !== undefined && item.name ? (
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- shadcn passes the hovered datum here, where Recharts types the whole payload; kept so formatters see what they always saw.
                   formatter(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
@@ -257,6 +264,7 @@ function ChartLegendContent({
   className,
   hideIcon = false,
   payload,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- Legend still hands its content verticalAlign; position is not passed to custom content.
   verticalAlign = 'bottom',
   nameKey,
 }: React.ComponentProps<'div'> & {
@@ -280,11 +288,13 @@ function ChartLegendContent({
       {payload
         .filter((item) => item.type !== 'none')
         .map((item, index) => {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions -- Recharts types dataKey as possibly a function; charts use string keys, as in shadcn.
           const key = `${nameKey ?? item.dataKey ?? 'value'}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
           return (
             <div
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- legend entries have no id and can share a dataKey; Recharts rebuilds the list.
               key={index}
               className={cn(
                 'flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground',

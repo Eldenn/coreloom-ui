@@ -209,9 +209,9 @@ test.describe('editor AI', () => {
     // The app reloads the content while the panel is open (a controlled value, a collaborator).
     await page.evaluate(() => {
       // Tiptap puts the editor on its DOM node; the DOM types don't know it.
-      const dom = document.querySelector('.ProseMirror') as HTMLElement & {
-        editor: { commands: { setContent: (html: string) => void } }
-      }
+      const dom = document.querySelector<
+        HTMLElement & { editor: { commands: { setContent: (html: string) => void } } }
+      >('.ProseMirror')!
       dom.editor.commands.setContent('<p>Reloaded from the server.</p>')
     })
     await expect(panel.getByRole('alert')).toHaveText(/The selected text changed/)

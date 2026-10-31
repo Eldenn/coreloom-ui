@@ -19,7 +19,8 @@ function useActiveHeading(ids: string[]) {
       (entries) => {
         const visible = entries
           .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+          .at(0)
         if (visible) setActive(visible.target.id)
       },
       { rootMargin: '-72px 0px -70% 0px' },

@@ -116,11 +116,11 @@ function DocsPageHeader({
 }) {
   return (
     <div className="mb-8">
-      {eyebrow && <div className="mb-3">{eyebrow}</div>}
+      {!!eyebrow && <div className="mb-3">{eyebrow}</div>}
       <h1 className="m-0 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.025em] text-foreground">
         {title}
       </h1>
-      {lead && (
+      {!!lead && (
         <p className="mt-3 mb-0 max-w-[62ch] text-[18px] leading-[1.6] text-fg-secondary">{lead}</p>
       )}
     </div>

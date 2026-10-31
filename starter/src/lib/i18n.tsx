@@ -1383,12 +1383,12 @@ function CoreloomI18nProvider({
       formatNumber: (n) => nf.format(n),
     }
   }, [locale, messages, dateLocale])
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+  return <I18nContext value={value}>{children}</I18nContext>
 }
 
 /** The current messages, locale and date-fns locale. English when there's no provider. */
 function useCoreloomI18n() {
-  return React.useContext(I18nContext)
+  return React.use(I18nContext)
 }
 
 export {
