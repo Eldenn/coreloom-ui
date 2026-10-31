@@ -212,7 +212,8 @@ a `<Canvas of={Stories.X} />`. `tests/docs.spec.ts` checks every page renders.
 
 - They read the AI SDK's `UIMessage` shapes (`parts`, tool states, sources) through structural types in
   `src/lib/ai.ts`. **Do not add `ai` or `@ai-sdk/*` as a dependency of any item**; `ai` is a
-  devDependency only, for the compatibility test in `unit/ai.test.ts`.
+  devDependency only, for the compatibility test in `unit/ai-sdk.test.ts`
+  (which hands the SDK's own types to the blocks' props, so `pnpm typecheck` fails when they drift).
 - New SDK fields are optional additions to those types; unknown part types are skipped, never errors.
 - The starter simulates models (`starter/src/lib/use-demo-chat.ts`, `ai-editor-demo.ts`) with the
   same shapes as the SDK hooks, so swapping in `useChat` is a one-line change.
