@@ -161,12 +161,18 @@ test('members: invite through the API, already-invited addresses refused', async
   const dialog = page.getByRole('dialog')
   await dialog.getByLabel('Email addresses').fill('linus@acme.dev, ')
   await dialog.getByRole('button', { name: 'Send invites' }).click()
-  await expect(page.getByText('Already in the workspace: linus@acme.dev')).toBeVisible()
+  // The fake API answers after 500 ms and the list refetches after 350 ms more: allow for a busy
+  // machine, as for the first load above.
+  await expect(page.getByText('Already in the workspace: linus@acme.dev')).toBeVisible({
+    timeout: 10_000,
+  })
   await dialog.getByRole('button', { name: 'Remove linus@acme.dev' }).click()
   await dialog.getByLabel('Email addresses').fill('margaret@acme.dev, ')
   await dialog.getByRole('button', { name: 'Send invites' }).click()
-  await expect(dialog).toBeHidden()
-  await expect(page.getByText('margaret@acme.dev')).toBeVisible()
+  await expect(dialog).toBeHidden({ timeout: 10_000 })
+  await expect(page.getByRole('main').getByText('margaret@acme.dev')).toBeVisible({
+    timeout: 10_000,
+  })
 })
 
 test('signing up: a taken email is refused, then the emailed code signs you in', async ({
@@ -413,10 +419,15 @@ test('project notes: AI rewrites the selection with ⌘J', async ({ page }) => {
   await page.locator('tbody a').first().click()
   const editor = page.getByRole('textbox', { name: 'Notes' })
   await expect(editor).toBeVisible({ timeout: 10_000 })
+  // The editor is loaded lazily: wait until it has focus and holds the text before the shortcuts,
+  // or on a busy machine they reach the page instead of the editor.
   await editor.click()
+  await expect(editor).toBeFocused()
   await page.keyboard.type('Owned by the platform team. Deploys on Mondays.')
+  await expect(editor).toHaveText('Owned by the platform team. Deploys on Mondays.')
   await page.keyboard.press('ControlOrMeta+a')
   await page.keyboard.press('ControlOrMeta+j')
+  await expect(page.getByRole('dialog', { name: 'AI assistant' })).toBeVisible()
   await page.getByRole('button', { name: 'Make shorter' }).click()
   await page.getByRole('button', { name: 'Replace selection' }).click()
   await expect(editor).toHaveText('Owned by the platform team.')

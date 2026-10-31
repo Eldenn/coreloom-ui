@@ -64,7 +64,9 @@ SB_PORT=6201 pnpm exec playwright test ai-chat-messages   # SB_PORT when several
 - Locally the test server is reused if one is already running on the port (`reuseExistingServer`). If
   results look stale, kill it (`kill $(lsof -t -i:6106)`) — never `pkill -f`, which can kill your own shell.
 - Visual baselines come only from CI's container (the **Visual baselines** workflow). Never commit
-  screenshots taken on your machine; without baselines the visual specs skip themselves.
+  screenshots taken on your machine. A story without a baseline skips its comparison, and the single
+  test `visual · every story has a baseline` fails with the missing files: run the workflow on main
+  after every push that changes what renders, and check that the run it starts passes.
 
 ## Definition of done
 
