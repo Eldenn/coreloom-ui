@@ -169,9 +169,10 @@ const wait = (ms: number, signal: AbortSignal) =>
     )
   })
 
-/** A fake model: the canned answer, one word every 45 ms, stopping when the signal aborts. */
+/** A fake model: the canned answer, one word every 45 ms, stopping when the signal aborts. It
+ *  "thinks" for 1.5 s first, so a test on a busy machine can press Stop before any text. */
 async function* fakeStream(request: RichTextAiRequest) {
-  await wait(600, request.signal)
+  await wait(1500, request.signal)
   for (const word of cannedAnswer(request).split(/(?<=\s)/)) {
     await wait(45, request.signal)
     yield word
