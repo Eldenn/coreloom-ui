@@ -1,4 +1,11 @@
 {
-  "extends": "./tsconfig.json",
-  "include": ["src", "stories", ".storybook"]
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.storybook.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "stories",
+    ".storybook/**/*"
+  ]
 }

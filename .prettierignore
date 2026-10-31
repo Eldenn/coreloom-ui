@@ -1,0 +1,20 @@
+# Build output and generated files
+dist
+coverage
+storybook-static
+public
+playwright-report
+test-results
+tests/__screenshots__
+pnpm-lock.yaml
+starter/pnpm-lock.yaml
+starter/dist
+starter/src/routeTree.gen.ts
+# Synced from the design system (pnpm tokens:sync) and vendored builds
+src/styles/tokens.css
+src/styles/tokens.json
+build/lib
+# The design system's cards, page templates and logo kit are standalone files
+preview
+templates
+brand
