@@ -12,7 +12,8 @@ import { defineConfig, devices } from "@playwright/test"
 
 import { STARTER_PORT } from "./tests/starter-server"
 
-const PORT = 6106
+// SB_PORT lets several checkouts run their tests side by side.
+const PORT = Number(process.env.SB_PORT ?? 6106)
 
 export default defineConfig({
   testDir: "tests",

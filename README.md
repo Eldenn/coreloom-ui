@@ -20,13 +20,14 @@
 
 ---
 
-- **67 components** on Radix and Tailwind CSS v4: forms, overlays, navigation, tables (sorting, server-driven
-  or virtual), date, money and phone inputs, a rich text editor, and AI pieces (prompt, Markdown output,
-  reasoning, tool calls).
+- **70 components** on Radix and Tailwind CSS v4: forms, overlays, navigation, tables (sorting, server-driven
+  or virtual), date, money and phone inputs, a rich text editor with an optional AI panel, and AI pieces
+  (prompt, Markdown output with citations, reasoning, tool calls, model picker, context meter).
 - **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
   pages, notifications, team, billing, kanban, calendar, marketing and docs.
-- **AI blocks**: chat with conversation history, agent management, runs and traces, a model playground
-  and a knowledge base. They read the AI SDK's `UIMessage` as is, without depending on it or on any API.
+- **AI blocks**: chat with conversation history, edits and branches, a floating chat widget, agent
+  management, runs and traces, a model playground and a knowledge base. They read the AI SDK's
+  `UIMessage` as is, without depending on it or on any API.
 - **Dark and light** themes, four accent presets, every pairing WCAG AA. Axe runs on every story in CI.
 - **English, French, Spanish and German** for every built-in string.
 - **Forms** on TanStack Form with zod (or any Standard Schema).

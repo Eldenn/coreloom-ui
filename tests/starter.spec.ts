@@ -313,6 +313,35 @@ test("playground: every variant streams an answer with its metrics", async ({ pa
   await expect(page.getByText("Rename the property")).toHaveCount(2, { timeout: 15_000 })
 })
 
+test("Ask AI in the palette opens the assistant with the question answered", async ({ page }) => {
+  await signIn(page, "/")
+  await page.getByRole("button", { name: /Search or jump to/ }).click()
+  await page.keyboard.type("why did the build fail")
+  await page.getByRole("option", { name: "Ask AI: “why did the build fail”" }).click()
+  await expect(page).toHaveURL(/\/assistant/)
+  const log = page.getByRole("log", { name: "Conversation" })
+  await expect(log.getByText("why did the build fail", { exact: true })).toBeVisible()
+  await expect(log.getByText("Rename the property")).toBeVisible({ timeout: 10_000 })
+  // The answer cites its source inline, and the composer shows the model and the context used.
+  await expect(log.getByRole("button", { name: /Source 1/ }).first()).toBeVisible()
+  await expect(page.getByRole("combobox", { name: /Model: Claude Sonnet/ })).toBeVisible()
+  await expect(page.getByRole("meter")).toBeVisible()
+})
+
+test("project notes: AI rewrites the selection with ⌘J", async ({ page }) => {
+  await signIn(page, "/projects")
+  await page.locator("tbody a").first().click()
+  const editor = page.getByRole("textbox", { name: "Notes" })
+  await expect(editor).toBeVisible({ timeout: 10_000 })
+  await editor.click()
+  await page.keyboard.type("Owned by the platform team. Deploys on Mondays.")
+  await page.keyboard.press("ControlOrMeta+a")
+  await page.keyboard.press("ControlOrMeta+j")
+  await page.getByRole("button", { name: "Make shorter" }).click()
+  await page.getByRole("button", { name: "Replace selection" }).click()
+  await expect(editor).toHaveText("Owned by the platform team.")
+})
+
 // One test per screen and theme, so a slow machine never runs out of time on a long chain.
 const SIGNED_OUT = ["/login", "/signup", "/forgot-password", "/reset-password?token=demo"]
 const SCREENS = [...SIGNED_OUT, "verify", "/", "/projects", "/deployments", "/projects?new=true", "/settings", "/settings?section=appearance", "/settings?section=members", "/settings?section=billing", "/settings?section=notifications", "/does/not/exist", "project", "/assistant?c=c1", "/agents", "/agents/agt_deploy", "/runs", "/runs/run_1ycy", "/playground", "/knowledge"]

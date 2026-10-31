@@ -152,7 +152,7 @@ export const en = {
     script: {
       reasoning: "The question is about the workspace. Search the docs and the latest deployments, then answer in a few lines.",
       answer: (q: string) =>
-        `Here is what I found about “${q}”:\n\n- The last **coreloom-api** deployment failed on a type error: \`Workspace.slug\` is now \`handle\`.\n- The four deployments before it succeeded.\n\nRename the property in \`src/routes/settings.tsx\`, then push again.`,
+        `Here is what I found about “${q}”:\n\n- The last **coreloom-api** deployment failed on a type error: \`Workspace.slug\` is now \`handle\` [1].\n- The four deployments before it succeeded.\n\nRename the property in \`src/routes/settings.tsx\`, then push again.`,
       sensitive: /roll ?back|revert/i,
       approved: "Done: **coreloom-api** is back on `dpl_5t3q`. I'll post a note in #incidents.",
       denied: "OK, nothing was rolled back. Fixing the type error and redeploying is the safer route anyway.",
@@ -161,6 +161,11 @@ export const en = {
     runs: { title: "Runs", description: "Every run of every agent, with its cost.", run: (id: string) => `Run ${id}`, notFoundTitle: "Run not found", notFoundText: "Runs are kept for 30 days." },
     playground: { title: "Playground", description: "Compare models and settings on the same prompt.", system: "You explain failed deployments to developers in two sentences.", prompt: "Why did deployment dpl_8f2k fail?" },
     knowledge: { title: "Knowledge", description: "The documents agents search." },
+    editor: {
+      lengthen: "It also explains why the change matters and what to check after the next deploy.",
+      summary: "In short:",
+      translated: (language: string) => `(${language})`,
+    },
   },
 }
 
@@ -316,7 +321,7 @@ export const fr: Messages = {
     script: {
       reasoning: "La question porte sur l'espace de travail. Chercher dans la doc et les derniers déploiements, puis répondre en quelques lignes.",
       answer: (q: string) =>
-        `Voici ce que j'ai trouvé sur « ${q} » :\n\n- Le dernier déploiement de **coreloom-api** a échoué sur une erreur de type : \`Workspace.slug\` s'appelle désormais \`handle\`.\n- Les quatre déploiements précédents ont réussi.\n\nRenommez la propriété dans \`src/routes/settings.tsx\`, puis poussez à nouveau.`,
+        `Voici ce que j'ai trouvé sur « ${q} » :\n\n- Le dernier déploiement de **coreloom-api** a échoué sur une erreur de type : \`Workspace.slug\` s'appelle désormais \`handle\` [1].\n- Les quatre déploiements précédents ont réussi.\n\nRenommez la propriété dans \`src/routes/settings.tsx\`, puis poussez à nouveau.`,
       sensitive: /roll ?back|revert|annule/i,
       approved: "C'est fait : **coreloom-api** est revenu sur `dpl_5t3q`. Je publie une note dans #incidents.",
       denied: "D'accord, rien n'a été annulé. Corriger l'erreur de type et redéployer reste le plus sûr.",
@@ -325,5 +330,10 @@ export const fr: Messages = {
     runs: { title: "Exécutions", description: "Chaque exécution de chaque agent, avec son coût.", run: (id: string) => `Exécution ${id}`, notFoundTitle: "Exécution introuvable", notFoundText: "Les exécutions sont conservées 30 jours." },
     playground: { title: "Playground", description: "Comparez modèles et réglages sur le même prompt.", system: "Tu expliques en deux phrases aux développeurs pourquoi un déploiement a échoué.", prompt: "Pourquoi le déploiement dpl_8f2k a-t-il échoué ?" },
     knowledge: { title: "Connaissances", description: "Les documents dans lesquels cherchent les agents." },
+    editor: {
+      lengthen: "Il explique aussi pourquoi ce changement compte et quoi vérifier après le prochain déploiement.",
+      summary: "En bref :",
+      translated: (language: string) => `(${language})`,
+    },
   },
 }

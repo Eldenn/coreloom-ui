@@ -99,6 +99,15 @@ export function useDemoChat({ initialMessages = [], script, onFinish }: { initia
     void reply(text)
   }
 
+  /** Edits a sent message: what came after it goes, and the answer is written again (like setMessages + sendMessage). */
+  const edit = (messageId: string, text: string) => {
+    const at = latest.current.findIndex((m) => m.id === messageId)
+    if (at < 0) return
+    run.current++
+    setMessages([...latest.current.slice(0, at), { ...latest.current[at], parts: [{ type: "text", text }] }])
+    void reply(text)
+  }
+
   const stop = () => {
     run.current++
     // Close whatever was streaming, as the SDK does when the request is aborted.
@@ -146,5 +155,5 @@ export function useDemoChat({ initialMessages = [], script, onFinish }: { initia
     []
   )
 
-  return { messages, status, error, sendMessage, stop, regenerate, addToolApprovalResponse }
+  return { messages, status, error, sendMessage, stop, regenerate, edit, addToolApprovalResponse }
 }

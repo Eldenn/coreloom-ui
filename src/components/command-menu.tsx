@@ -1,9 +1,11 @@
 "use client"
 
 // Coreloom UI — CommandMenu block part. The ⌘K palette: a search button for the header and a
-// CommandDialog bound to ⌘K / Ctrl+K. Items are plain data; navigate or act in onSelect.
+// CommandDialog bound to ⌘K / Ctrl+K. Items are plain data; navigate or act in onSelect. With
+// `onAskAi`, what you type can also go to an assistant: "Ask AI: “…”" comes first in the list.
 import * as React from "react"
-import { SearchIcon, type LucideIcon } from "lucide-react"
+import { defaultFilter } from "cmdk"
+import { SearchIcon, SparklesIcon, type LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -45,6 +47,11 @@ type CommandMenuItem = {
   onSelect: () => void
 }
 
+// The Ask AI item always ranks first: cmdk reorders by score, so it gets the top score and every other
+// score is scaled just below it (scaled, not capped, so an exact match still beats a near one).
+const ASK_AI = "coreloom-ask-ai"
+const rank = (value: string, search: string, keywords?: string[]) => (value === ASK_AI ? 1 : defaultFilter(value, search, keywords) * 0.99)
+
 type CommandMenuGroup = {
   heading: string
   items: CommandMenuItem[]
@@ -55,12 +62,15 @@ function CommandMenu({
   placeholder,
   triggerLabel,
   emptyText,
+  onAskAi,
   className,
 }: {
   groups: CommandMenuGroup[]
   placeholder?: string
   triggerLabel?: string
   emptyText?: string
+  /** Offers the typed text to an assistant ("Ask AI: “…”", first in the list). Gets the trimmed query; the palette closes. */
+  onAskAi?: (query: string) => void
   className?: string
 }) {
   const t = useCoreloomI18n().messages
@@ -68,6 +78,8 @@ function CommandMenu({
   triggerLabel ??= t.commandMenu.trigger
   emptyText ??= t.commandMenu.empty
   const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+  const query = search.trim()
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -79,6 +91,11 @@ function CommandMenu({
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
+
+  // Each opening starts from an empty search, as the uncontrolled input did.
+  React.useEffect(() => {
+    if (!open) setSearch("")
+  }, [open])
 
   return (
     <>
@@ -105,10 +122,24 @@ function CommandMenu({
       >
         <SearchIcon />
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen} title={triggerLabel}>
-        <CommandInput placeholder={placeholder} />
+      <CommandDialog open={open} onOpenChange={setOpen} title={triggerLabel} filter={onAskAi ? rank : undefined}>
+        <CommandInput placeholder={placeholder} value={search} onValueChange={setSearch} />
         <CommandList>
           <CommandEmpty>{emptyText}</CommandEmpty>
+          {onAskAi && query && (
+            <CommandGroup>
+              <CommandItem
+                value={ASK_AI}
+                onSelect={() => {
+                  setOpen(false)
+                  onAskAi(query)
+                }}
+              >
+                <SparklesIcon className="text-primary-text" />
+                <span className="min-w-0 truncate">{t.commandMenu.askAi(query)}</span>
+              </CommandItem>
+            </CommandGroup>
+          )}
           {groups.map((group, i) => (
             <React.Fragment key={group.heading}>
               {i > 0 && <CommandSeparator />}

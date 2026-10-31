@@ -16,6 +16,7 @@ function AppShell({
   children,
   breadcrumbs,
   commands,
+  onAskAi,
   headerActions,
   defaultSidebarOpen = true,
   ...sidebar
@@ -24,6 +25,8 @@ function AppShell({
   breadcrumbs?: Crumb[]
   /** ⌘K palette content. Leave out to hide the search. */
   commands?: CommandMenuGroup[]
+  /** Adds "Ask AI: “…”" to the ⌘K palette; called with what was typed. */
+  onAskAi?: (query: string) => void
   /** Extra header buttons, placed before the theme toggle (notifications, help…). */
   headerActions?: React.ReactNode
   defaultSidebarOpen?: boolean
@@ -37,7 +40,7 @@ function AppShell({
           breadcrumbs={breadcrumbs}
           actions={
             <>
-              {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} />}
+              {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} onAskAi={onAskAi} />}
               {headerActions}
               <ThemeMenu />
             </>

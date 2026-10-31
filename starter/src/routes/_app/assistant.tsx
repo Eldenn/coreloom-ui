@@ -1,7 +1,8 @@
 // A chat with an assistant, beside the history of conversations. The answers are simulated by
 // useDemoChat (src/lib/use-demo-chat.ts), which has useChat's shape: swap in @ai-sdk/react's
 // useChat with your own endpoint and the page stays the same. The URL holds the conversation
-// (/assistant?c=c1), so a conversation can be linked to and the Back button works.
+// (/assistant?c=c1), so a conversation can be linked to and the Back button works. "Ask AI" in the
+// ⌘K palette lands here with ?q=…, which starts a new conversation with that question.
 import * as React from "react"
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
@@ -11,15 +12,17 @@ import { z } from "zod"
 import { Chat, ConversationList, type Feedback } from "@/components/ai-chat"
 import { PageHeader } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
+import { ContextMeter } from "@/components/ui/context-meter"
+import { ModelPicker } from "@/components/ui/model-picker"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import type { AiMessage } from "@/lib/ai"
-import { deleteConversation, renameConversation, saveConversation } from "@/lib/ai-api"
+import { messageText, type AiMessage } from "@/lib/ai"
+import { deleteConversation, models, renameConversation, saveConversation } from "@/lib/ai-api"
 import { useT } from "@/lib/locale"
 import { conversationsQuery, messagesQuery } from "@/lib/queries"
 import { useDemoChat } from "@/lib/use-demo-chat"
 
 export const Route = createFileRoute("/_app/assistant")({
-  validateSearch: z.object({ c: z.string().optional().catch(undefined) }),
+  validateSearch: z.object({ c: z.string().optional().catch(undefined), q: z.string().optional().catch(undefined) }),
   staticData: { crumb: (t) => t.nav.assistant },
   loaderDeps: ({ search }) => ({ c: search.c }),
   loader: ({ context, deps }) =>
@@ -31,7 +34,7 @@ const newId = () => `c${Date.now().toString(36)}`
 
 function AssistantPage() {
   const t = useT()
-  const { c } = Route.useSearch()
+  const { c, q } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const queryClient = useQueryClient()
   const { data: conversations } = useSuspenseQuery(conversationsQuery)
@@ -95,19 +98,23 @@ function AssistantPage() {
       <div className="flex h-[calc(100svh-16rem)] min-h-[440px] lg:h-[calc(100svh-13rem)] gap-6">
         <aside className="hidden w-64 shrink-0 flex-col lg:flex">{list}</aside>
         <section aria-label={t.ai.assistant.title} className="min-w-0 flex-1 overflow-hidden rounded-lg border border-border bg-card">
-          <Conversation key={id} id={id} saved={!!c} onSaved={() => !c && void navigate({ search: { c: id }, replace: true })} />
+          <Conversation key={q ? `q-${q}` : id} id={id} saved={!!c} ask={c ? undefined : q} onSaved={() => !c && void navigate({ search: { c: id }, replace: true })} />
         </section>
       </div>
     </>
   )
 }
 
-function Conversation({ id, saved, onSaved }: { id: string; saved: boolean; onSaved: () => void }) {
+// A rough count for the demo's context meter: about four characters per token.
+const estimateTokens = (messages: AiMessage[]) => Math.round(messages.reduce((n, m) => n + messageText(m).length, 0) / 4) + 1800
+
+function Conversation({ id, saved, ask, onSaved }: { id: string; saved: boolean; ask?: string; onSaved: () => void }) {
   const t = useT()
   const queryClient = useQueryClient()
   // Loaded by the route for saved conversations; a new one starts empty.
   const { data: initialMessages } = useQuery({ ...messagesQuery(id), enabled: saved })
   const [feedback, setFeedback] = React.useState<Record<string, Feedback | undefined>>({})
+  const [model, setModel] = React.useState("claude-sonnet")
 
   const chat = useDemoChat({
     initialMessages: initialMessages ?? [],
@@ -122,6 +129,15 @@ function Conversation({ id, saved, onSaved }: { id: string; saved: boolean; onSa
     },
   })
 
+  // A question from the ⌘K palette is sent once, as soon as the conversation opens.
+  const asked = React.useRef(false)
+  React.useEffect(() => {
+    if (ask && !asked.current) {
+      asked.current = true
+      chat.sendMessage({ text: ask })
+    }
+  }, [ask, chat])
+
   return (
     <Chat
       messages={chat.messages}
@@ -130,11 +146,18 @@ function Conversation({ id, saved, onSaved }: { id: string; saved: boolean; onSa
       onSend={chat.sendMessage}
       onStop={chat.stop}
       onRegenerate={chat.regenerate}
+      onEdit={chat.edit}
       onToolApprovalResponse={chat.addToolApprovalResponse}
       feedback={feedback}
       onFeedback={(mid, f) => setFeedback((all) => ({ ...all, [mid]: f }))}
       suggestions={t.ai.suggestions}
       allowAttachments
+      toolbar={
+        <>
+          <ModelPicker models={models} value={model} onValueChange={setModel} />
+          <ContextMeter used={estimateTokens(chat.messages)} model={models.find((m) => m.id === model)} />
+        </>
+      }
     />
   )
 }

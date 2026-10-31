@@ -2,7 +2,9 @@
 
 // Coreloom UI — RichTextEditor. Tiptap (ProseMirror) with a toolbar: bold, italic, underline,
 // strikethrough, inline code, two heading levels, lists, quote, code block, links, undo / redo.
-// The value is HTML. Sanitize it on the server before you render it anywhere else.
+// Optional AI (`ai`): an "AI" button and ⌘J / Ctrl+J open a panel that edits the selection
+// through the app's own model call. The value is HTML. Sanitize it on the server before you
+// render it anywhere else.
 import * as React from "react"
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
@@ -32,6 +34,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  AI_CONTENT,
+  AiSelectionHighlight,
+  RichTextAi,
+  type RichTextAiAction,
+  type RichTextAiCommand,
+  type RichTextAiOptions,
+  type RichTextAiRequest,
+} from "@/components/ui/rich-text-ai"
 import { useCoreloomI18n } from "@/lib/i18n"
 
 function ToolbarToggle({
@@ -159,6 +170,7 @@ function RichTextEditor({
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
+  ai,
 }: {
   /** HTML. Controlled: the editor follows it when it changes from outside. */
   value?: string
@@ -176,11 +188,14 @@ function RichTextEditor({
   "aria-label"?: string
   "aria-labelledby"?: string
   "aria-describedby"?: string
+  /** Turns on the AI panel: `onRequest` sends each request to your model and returns its text (streamed or whole). */
+  ai?: RichTextAiOptions
 }) {
   const t = useCoreloomI18n().messages.editor
   placeholder ??= t.placeholder
   const mac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
   const mod = mac ? "⌘" : "Ctrl+"
+  const [aiOpen, setAiOpen] = React.useState(Boolean(ai?.defaultOpen))
 
   const editor = useEditor({
     // Render on the client after mount (no SSR mismatch in Next.js).
@@ -193,6 +208,8 @@ function RichTextEditor({
         link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener noreferrer nofollow" } },
       }),
       Placeholder.configure({ placeholder }),
+      // Always there (inert until the AI panel paints a selection), so `ai` can be turned on after mount.
+      AiSelectionHighlight,
     ],
     editorProps: {
       attributes: {
@@ -257,6 +274,16 @@ function RichTextEditor({
         "flex w-full flex-col overflow-hidden rounded-md border border-input bg-inset transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:opacity-55",
         className
       )}
+      onKeyDown={
+        ai
+          ? (e) => {
+              // ⌘J / Ctrl+J opens the AI panel from the writing area or the toolbar.
+              if (e.key.toLowerCase() !== "j" || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
+              e.preventDefault()
+              if (!disabled && editor && !aiOpen) setAiOpen(true)
+            }
+          : undefined
+      }
     >
       <div role="toolbar" aria-label={t.toolbar} className="flex flex-wrap items-center gap-0.5 border-b border-border bg-surface px-1.5 py-1">
         {editor && state ? (
@@ -296,7 +323,13 @@ function RichTextEditor({
               <SquareCodeIcon />
             </ToolbarToggle>
             <LinkButton editor={editor} disabled={disabled} />
-            <span className="ml-auto flex gap-0.5">
+            <span className="ml-auto flex items-center gap-0.5">
+              {ai && (
+                <>
+                  <RichTextAi editor={editor} options={ai} open={aiOpen} onOpenChange={setAiOpen} shortcut={`${mod}J`} disabled={disabled} />
+                  <Separator orientation="vertical" className="mx-1 data-[orientation=vertical]:h-5" />
+                </>
+              )}
               <Button type="button" variant="ghost" size="icon-sm" aria-label={t.undo} disabled={disabled || !state.canUndo} onClick={run((e) => e.chain().focus().undo().run())}>
                 <Undo2Icon />
               </Button>
@@ -309,9 +342,9 @@ function RichTextEditor({
           <span className="h-8" />
         )}
       </div>
-      <EditorContent editor={editor} className={cn("px-[13px] py-2.5 text-[14px] leading-[1.6] text-foreground", CONTENT)} />
+      <EditorContent editor={editor} className={cn("px-[13px] py-2.5 text-[14px] leading-[1.6] text-foreground", CONTENT, ai && AI_CONTENT)} />
     </div>
   )
 }
 
-export { RichTextEditor }
+export { RichTextEditor, type RichTextAiAction, type RichTextAiCommand, type RichTextAiOptions, type RichTextAiRequest }

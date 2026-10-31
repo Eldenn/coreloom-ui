@@ -6,7 +6,7 @@ Documentation pages as one installable block: nav column, article, "On this page
 
 **The consumer provides**:
 
-- `<DocsLayout header nav toc>` around the article. `header` is usually a `SiteHeader` with a `CommandMenu` and the `ThemeToggle`. `nav` is `{ title, items: [{ title, href, active? }] }[]`, and `toc` is `{ id, title, depth? }[]` matching the headings' ids.
+- `<DocsLayout header nav toc>` around the article. `header` is usually a `SiteHeader` with a `CommandMenu` and the `ThemeToggle`. Give the `CommandMenu` `onAskAi(query)` and a typed question can go to your assistant: "Ask AI: “…”" comes first in the results. `nav` is `{ title, items: [{ title, href, active? }] }[]`, and `toc` is `{ id, title, depth? }[]` matching the headings' ids.
 - `<DocsPageHeader eyebrow title lead>` to open the page.
 - `<CodeBlock code title>` for code. Pass highlighted markup as children (Shiki, Prism); the copy button always copies `code`.
 - `<ComponentPreview code>` around a live example.

@@ -1,0 +1,25 @@
+# Editor AI
+
+AI inside `RichTextEditor`: select text, press ⌘J / Ctrl+J (or the **AI** button), then type an instruction or pick a quick action — improve, fix spelling and grammar, shorten, lengthen, summarise, translate. The answer streams into a preview; nothing touches the document until the person chooses **Replace selection** or **Insert below**. Front-end only: your app calls the model.
+
+**The consumer provides** `ai={{ onRequest }}` on the editor. `onRequest({ action, prompt, language, text, scope, signal })` returns the answer as an `AsyncIterable<string>` of pieces (each appended — the AI SDK's `textStream` fits) or a `Promise<string>`. `text` is the selection as light Markdown, or the whole document when nothing is selected (`scope` says which); `prompt` is the person's instruction when `action` is `"custom"`; `language` is the BCP 47 target of `"translate"`. Optionally:
+
+- `actions` — the quick actions to offer, in order (default: all six);
+- `languages` — what Translate offers (default `en`, `fr`, `es`, `de`), named in the reader's language;
+- `defaultOpen` — open the panel on mount, or pass a command (`{ action: "custom", prompt: "Draft release notes" }`) to run it right away.
+
+- Pass `signal` to your fetch or `streamText`: Stop, Escape, closing the panel and Try again all abort it. Stop keeps what was written so far (or, if nothing came yet, goes back to the instruction field).
+- `text` and the answer are light Markdown: paragraphs (a line ending in `\` or two spaces is a line break; other line breaks are spaces), `##` headings, `-` and `1.` lists nested by indentation, `>` quotes, code fences, `---`, `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``, `[links](https://…)`, and `<u>underline</u>`. So bold, italic, strike, underline, inline code and links survive a rewrite; a code block's language and a quote's inner structure don't.
+- The answer is inserted as text nodes and marks, never parsed as HTML: `<u>` is the one tag read (as underline), any other tag stays text. Links keep only `http`, `https` and `mailto` addresses; any other link keeps its words without the address.
+- `*` and `_` mark emphasis only at word edges (stricter than CommonMark), so `MAX_RETRY_COUNT`, `file_name.ts`, `__init__.py`, `src/*/x.ts` and `2*3*4` stay as written. Characters that would read as Markdown are escaped with `\` in `text`.
+- One sentence rewritten inside a paragraph stays inline; anything with blocks replaces the selection as blocks. Insert below goes after the block holding the selection (or at the end), and Summarise makes it the default action.
+- The selection stays highlighted while the panel is open. Escape closes the panel and puts focus back in the editor, on the same selection. Each change is one undo step.
+- If the selected text disappears while the panel is open (the app reloads `value`, a collaborator deletes it), Replace selection, Insert below and Try again turn off and the panel says why; the rest of the document is never touched in its place.
+- Errors show in the panel with **Try again**; the message of an `Error` you throw is shown under the generic text, so throw messages meant for people ("The model is busy. Try again in a minute.").
+- Screen readers hear "Writing…", then "Suggestion ready." from a polite live region; the preview is a labelled, focusable region; every action is a button in tab order.
+- Without `ai` the editor looks and behaves as before: no button, no shortcut. The selection-highlight extension is always registered (it does nothing until the panel opens), so `ai` can be turned on after mount.
+- Label AI output as a suggestion and keep the person in charge: never apply an answer without them choosing to.
+
+**In the ⌘K palette:** `CommandMenu` takes `onAskAi(query)`. Once something is typed, "Ask AI: “…”" comes first in the list (and stays when nothing else matches); choosing it closes the palette and hands you the query — open your assistant with it.
+
+**In an app:** `pnpm dlx shadcn@latest add @coreloom/rich-text-editor` (the AI panel is `rich-text-ai.tsx`, installed with it) and `@coreloom/command-menu`.

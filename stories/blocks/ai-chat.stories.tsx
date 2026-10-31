@@ -3,8 +3,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Chat, ChatMessages, ConversationList, type Conversation } from "@/components/ai-chat"
 import { Badge, BadgeDot } from "@/components/ui/badge"
+import { ContextMeter } from "@/components/ui/context-meter"
+import { ModelPicker } from "@/components/ui/model-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { AiChatStatus, AiMessage } from "@/lib/ai"
+import { messageText, type AiChatStatus, type AiMessage } from "@/lib/ai"
+import { catalog, usage } from "./ai-models"
 
 const answer = `Your last three deployments of **coreloom-api** failed at the same step: the type check.
 
@@ -353,6 +356,148 @@ export const French: Story = {
   ),
 }
 
+const cited: AiMessage[] = [
+  { id: "c1", role: "user", parts: [{ type: "text", text: "How do I undo a bad deployment, and how long can I wait?" }] },
+  {
+    id: "c2",
+    role: "assistant",
+    parts: [
+      {
+        type: "text",
+        state: "done",
+        text: "Roll back to the last green build: it replaces what's live in about a minute and keeps the failed build for inspection [1].\n\nYou have **7 days**: older builds are pruned, after which you redeploy from the branch instead [1][2]. The postmortem of incident 42 recommends rolling back first and debugging after [3].\n\nIn a script, `deployments[1]` is the previous build.",
+      },
+      { type: "source-url", sourceId: "s1", url: "https://coreloom.dev/docs/deployments", title: "Deployments guide" },
+      { type: "source-url", sourceId: "s2", url: "https://coreloom.dev/docs/retention", title: "Retention of builds" },
+      { type: "source-document", sourceId: "d1", title: "Incident 42 — postmortem", filename: "incident-42.pdf", mediaType: "application/pdf" },
+    ],
+  },
+]
+
+/** An answer citing its sources: "[1]" in the text becomes a pill that shows the source on hover, focus or tap; the chips below carry the same numbers. */
+export const Citations: Story = {
+  render: () => (
+    <Frame>
+      <Chat autoFocus={false} messages={cited} onSend={() => {}} onRegenerate={() => {}} onFeedback={() => {}} />
+    </Frame>
+  ),
+}
+
+/** Mid-answer: the citations already known are pills, and a half-written "[2" stays text until it closes. Frozen, so it can be tested. */
+export const CitationsWhileStreaming: Story = {
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        status="streaming"
+        onSend={() => {}}
+        onStop={() => {}}
+        messages={[
+          cited[0],
+          {
+            id: "c2",
+            role: "assistant",
+            parts: [
+              { type: "source-url", sourceId: "s1", url: "https://coreloom.dev/docs/deployments", title: "Deployments guide" },
+              { type: "source-url", sourceId: "s2", url: "https://coreloom.dev/docs/retention", title: "Retention of builds" },
+              { type: "text", state: "streaming", text: "Roll back to the last green build [1]. You have **7 days** before older builds are pruned [2" },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+// A tiny conversation tree for EditAndBranches: each message has a parent, and the parent remembers which
+// of its children is shown. The thread on screen is the path that follows those choices.
+type Node = { message: AiMessage; parent?: string; children: string[]; active: number }
+
+const alternatives: Record<string, string[]> = {
+  rollback: [
+    "Run `coreloom rollback coreloom-api --to dpl_5t3q`. It swaps the live build in about a minute.",
+    "Open **Deployments**, pick the last green build (**dpl_5t3q**) and choose *Promote to production*. Same result as the CLI, no terminal needed.",
+    "Roll back with the CLI, then pin the build so the next push doesn't replace it before the fix lands:\n\n```bash\ncoreloom rollback coreloom-api --to dpl_5t3q --pin\n```",
+  ],
+  other: [
+    "Here's what I'd do: check the last green deployment, roll back to it, then fix forward on a branch.",
+    "Short version: roll back first, investigate second. The build logs of the failed deployment stay available.",
+  ],
+}
+
+function seed(): Record<string, Node> {
+  const user: AiMessage = { id: "u1", role: "user", parts: [{ type: "text", text: "How do I roll back coreloom-api?" }] }
+  const answers = alternatives.rollback.slice(0, 2).map((text, i): AiMessage => ({ id: `a1-${i}`, role: "assistant", parts: [{ type: "text", text, state: "done" }] }))
+  return {
+    root: { message: { id: "root", role: "system", parts: [] }, children: ["u1"], active: 0 },
+    u1: { message: user, parent: "root", children: answers.map((a) => a.id), active: 1 },
+    ...Object.fromEntries(answers.map((a) => [a.id, { message: a, parent: "u1", children: [], active: 0 }])),
+  }
+}
+
+/**
+ * Try it: edit your message (Escape cancels, Ctrl or ⌘ + Enter saves) — the old wording stays as version 1.
+ * Regenerate the answer, then flip between versions with ‹ ›. State lives in the story; the answers are canned.
+ */
+export const EditAndBranches: Story = {
+  render: () => {
+    const [tree, setTree] = React.useState(seed)
+    const [status, setStatus] = React.useState<AiChatStatus>("ready")
+    const counter = React.useRef(0)
+
+    const thread: Node[] = []
+    for (let node = tree.root; node.children.length; ) {
+      node = tree[node.children[node.active]]
+      thread.push(node)
+    }
+    const branches = Object.fromEntries(thread.map((n) => [n.message.id, { index: tree[n.parent!].active, count: tree[n.parent!].children.length }]))
+
+    // Adds an answer under `parentId` after a short wait, picking a canned text the parent hasn't shown yet.
+    const answer = (parentId: string, topic: string) => {
+      setStatus("submitted")
+      setTimeout(() => {
+        setTree((t) => {
+          const parent = t[parentId]
+          const pool = alternatives[topic]
+          const text = pool[parent.children.length % pool.length]
+          const id = `answer${++counter.current}`
+          const message: AiMessage = { id, role: "assistant", parts: [{ type: "text", text, state: "done" }] }
+          return { ...t, [id]: { message, parent: parentId, children: [], active: 0 }, [parentId]: { ...parent, children: [...parent.children, id], active: parent.children.length } }
+        })
+        setStatus("ready")
+      }, 500)
+    }
+    const add = (parentId: string, text: string) => {
+      const id = `edit${++counter.current}`
+      setTree((t) => {
+        const parent = t[parentId]
+        const message: AiMessage = { id, role: "user", parts: [{ type: "text", text }] }
+        return { ...t, [id]: { message, parent: parentId, children: [], active: 0 }, [parentId]: { ...parent, children: [...parent.children, id], active: parent.children.length } }
+      })
+      answer(id, /roll ?back/i.test(text) ? "rollback" : "other")
+    }
+
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          messages={thread.map((n) => n.message)}
+          status={status}
+          branches={branches}
+          onBranchChange={(id, index) => setTree((t) => ({ ...t, [t[id].parent!]: { ...t[t[id].parent!], active: index } }))}
+          // An edit is a new sibling of the edited message, answered afresh.
+          onEdit={(id, text) => add(tree[id].parent!, text)}
+          onRegenerate={() => {
+            const last = thread[thread.length - 1]
+            if (last?.message.role === "assistant") answer(last.parent!, /roll ?back/i.test(messageText(tree[last.parent!].message)) ? "rollback" : "other")
+          }}
+          onSend={({ text }) => add(thread[thread.length - 1]?.message.id ?? "root", text)}
+        />
+      </Frame>
+    )
+  },
+}
+
 const NOW = new Date("2026-10-14T10:00:00+02:00")
 const daysAgo = (d: number) => new Date(NOW.getTime() - d * 86_400_000)
 const history: Conversation[] = [
@@ -399,4 +544,30 @@ export const EmptyHistory: Story = {
       </aside>
     </div>
   ),
+}
+
+/** A model picker and the context meter in the composer's toolbar. Switch to GPT mini (128K): the same conversation fills more of its window. */
+export const WithModelPicker: Story = {
+  render: () => {
+    const [model, setModel] = React.useState("claude-sonnet")
+    const current = catalog.find((m) => m.id === model)
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          messages={conversation.slice(0, 2)}
+          onSend={() => {}}
+          onRegenerate={() => {}}
+          toolLabels={toolLabels}
+          allowAttachments
+          toolbar={
+            <>
+              <ModelPicker models={catalog} value={model} onValueChange={setModel} />
+              <ContextMeter used={usage} model={current} />
+            </>
+          }
+        />
+      </Frame>
+    )
+  },
 }

@@ -111,6 +111,7 @@ function AppLayout() {
       ]}
       secondary={[{ title: t.nav.docs, url: "https://eldenn.github.io/coreloom-ui/", icon: LifeBuoyIcon }]}
       breadcrumbs={[{ label: "Coreloom", href: "/" }, ...crumbs]}
+      onAskAi={(q) => void navigate({ to: "/assistant", search: { q } })}
       commands={[
         {
           heading: t.shell.goTo,
