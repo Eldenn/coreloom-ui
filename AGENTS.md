@@ -43,6 +43,9 @@ pnpm lint                    # ESLint, type-aware (lint:fix applies the safe fix
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/
+pnpm llms                    # public/llms.txt, llms-full.txt and guides/ from registry.json + guides
+pnpm brand "#ff5a1f" --name orange > brand.css   # an accent family from one brand colour
+pnpm changeset               # describe a change for the next release (changeset:check in CI)
 pnpm storybook               # dev server on :6006
 pnpm storybook:build         # public/storybook — the Playwright specs run against this build
 pnpm starter:sync            # copy registry items into starter/ (after any change to them)
@@ -79,8 +82,9 @@ A change is finished when all of this is true:
    - exports in `build/artifact-entry.ts` and its name in `COMPONENTS` in `build/build-artifact.mjs`.
 3. **Changed components** have their guide updated: every prop, default and behaviour a guide states
    must match the code. Re-read the guide after changing an API.
-4. **`CHANGELOG.md` `[Unreleased]`** says what changed for someone who installed the item, under
-   Added / Changed / Fixed, and **Upgrading** when they must do something.
+4. **A changeset** (`pnpm changeset`, or a file in `.changeset/`) says what changed for someone who
+   installed the item, under Added / Changed / Fixed, and **Upgrading** when they must do something.
+   Don't edit `CHANGELOG.md`: the release writes it from the changesets.
 5. **`pnpm starter:sync`** has run if any item the starter uses changed (CI runs
    `node build/sync-starter.mjs --check` and fails otherwise). New npm dependencies go in both
    `package.json` files at the same version.
@@ -233,14 +237,16 @@ a `<Canvas of={Stories.X} />`. `tests/docs.spec.ts` checks every page renders.
 
 - Small, focused commits with messages that say what changed and why. Don't commit `public/`,
   `dist/`, `test-results/`, local screenshots or `node_modules`.
-- Don't bump `version` or move `[Unreleased]` — releases are done by a maintainer (see README → Release).
+- Don't bump `version`, edit `CHANGELOG.md` or run `version-packages` — releases go through the
+  Version Packages PR that Changesets opens (see README → Release).
 
 ## Working in parallel (several agents)
 
 - One checkout per agent; each gets its own `SB_PORT`.
-- Agree on file ownership up front. Shared files (`registry.json`, `CHANGELOG.md`, `README.md`,
+- Agree on file ownership up front. Shared files (`registry.json`, `README.md`,
   `build/*`, `starter/*`, `tests/interactions.spec.ts`) are edited by one integrator; feature agents
-  report the registry JSON and CHANGELOG lines they need instead of editing them.
+  report the registry JSON they need instead of editing it, and add their own changeset file
+  (one file per change, so they never conflict).
 - i18n keys go in distinct groups or after distinct anchors so merges don't conflict.
 - After merging, an independent review (by someone who didn't write the code) checks correctness,
   accessibility, API consistency and the guides against the code.
