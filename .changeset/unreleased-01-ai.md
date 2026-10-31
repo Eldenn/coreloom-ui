@@ -52,3 +52,8 @@
   footnotes are translated, labelled with a paragraph instead of a heading, get ids of their own per
   block, and in-page links no longer open a new tab.
 - AI chat: source links are limited to http(s) and mailto (others show as text).
+
+### Upgrading
+
+- The new items read new strings in every locale: re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first, then add them.
