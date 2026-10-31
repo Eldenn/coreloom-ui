@@ -383,3 +383,66 @@ test.describe('editor slash command', () => {
     await expect(editor.locator('p').last()).toHaveText('/s')
   })
 })
+
+test.describe('editor slash command, input methods and scrolling panels', () => {
+  // An input method (Japanese, Chinese, Korean…) uses Enter to confirm the characters it is
+  // composing. That Enter must not run the highlighted command. Browsers mark it with isComposing;
+  // Safari sends the confirming Enter with keyCode 229 after the composition has ended. Real IME
+  // sessions can't be driven from Playwright, so the keydown is dispatched as each browser sends it.
+  for (const [label, init] of [
+    ['isComposing', { key: 'Enter', code: 'Enter', keyCode: 13, isComposing: true }],
+    ['keyCode 229 (Safari)', { key: 'Enter', code: 'Enter', keyCode: 229, isComposing: false }],
+  ] as const) {
+    test(`Enter confirming an input method's text doesn't run a command: ${label}`, async ({
+      page,
+    }) => {
+      const editor = await onEmptyLine(page)
+      await page.keyboard.type('/sum')
+      const menu = page.getByRole('listbox', { name: 'AI commands' })
+      await expect(menu.getByRole('option')).toHaveText(['Summarise'])
+      await editor.evaluate((el, eventInit) => {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', { ...eventInit, bubbles: true, cancelable: true }),
+        )
+      }, init)
+      // Nothing was chosen: the typed command is still there and no panel opened.
+      await expect(editor).toContainText('/sum')
+      await expect(page.getByRole('dialog', { name: 'AI assistant' })).toHaveCount(0)
+      await expect(page.getByTestId('slash-last-request')).toHaveText(
+        'Type / on the empty last line.',
+      )
+    })
+  }
+
+  test('in a scrolling panel the menu follows the "/", then closes when it scrolls out of the panel', async ({
+    page,
+  }) => {
+    await open(page, `${EDITOR}slash-in-scrolling-panel`)
+    const panel = page.getByTestId('scrolling-panel')
+    const editor = page.getByRole('textbox', { name: 'Announcement' })
+    const line = editor.locator('p').last()
+    await line.click()
+    await page.keyboard.type('/')
+    const menu = page.getByRole('listbox', { name: 'AI commands' })
+    await expect(menu).toBeVisible()
+    const before = (await menu.boundingBox())!.y
+
+    // A short scroll keeps the slash in view: the menu moves with it (to the pixel, give or take
+    // the popper's rounding), still open.
+    await panel.evaluate((el) => el.scrollBy(0, 40))
+    await expect
+      .poll(async () => before - ((await menu.boundingBox())?.y ?? before), {
+        message: 'the menu moved up with the slash',
+      })
+      .toBeGreaterThanOrEqual(38)
+    expect(before - (await menu.boundingBox())!.y).toBeLessThanOrEqual(42)
+    await expect(editor).toBeFocused()
+
+    // Scrolled past the top of the panel (the page itself doesn't move), the menu closes and
+    // leaves the "/" as typed.
+    await panel.evaluate((el) => el.scrollBy(0, 400))
+    await expect(menu).toHaveCount(0)
+    await expect(line).toHaveText('/')
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  })
+})

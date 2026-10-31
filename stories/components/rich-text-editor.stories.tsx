@@ -403,3 +403,48 @@ export const SlashInDialog: Story = {
     )
   },
 }
+
+const earlier = [
+  'Typed dates in every date field',
+  'A server-driven data table',
+  'Spanish and German',
+  'Accent presets',
+  'The Kanban block',
+  'Notifications in the header',
+]
+
+/** The editor in a panel that scrolls: the "/" menu follows the slash as the panel scrolls, and closes once the slash leaves the panel's view. */
+export const SlashInScrollingPanel: Story = {
+  name: 'Slash command in a scrolling panel',
+  tags: ['!autodocs'],
+  render: () => {
+    const [html, setHtml] = React.useState(slashDraft)
+    return (
+      <section
+        aria-label="Announcement panel"
+        className="max-w-2xl rounded-lg border border-border bg-card"
+      >
+        <div className="h-[300px] overflow-y-auto p-4" data-testid="scrolling-panel">
+          <Field>
+            <FieldLabel id="slash-panel-label">Announcement</FieldLabel>
+            <RichTextEditor
+              value={html}
+              onValueChange={setHtml}
+              aria-labelledby="slash-panel-label"
+              minHeight={100}
+              ai={{ onRequest: (request) => Promise.resolve(cannedAnswer(request)) }}
+            />
+          </Field>
+          <p className="mt-6 mb-2 text-[13px] font-medium text-foreground">Earlier announcements</p>
+          <ul className="space-y-2 text-[13px] text-muted-foreground">
+            {earlier.map((title) => (
+              <li key={title} className="rounded-md border border-border-subtle px-3 py-2">
+                {title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  },
+}
