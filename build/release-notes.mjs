@@ -6,7 +6,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** The release notes for `tag`. Throws when the tag, package.json and CHANGELOG disagree. */
-export function releaseNotes({ tag, packageVersion, changelog }) {
+export function releaseNotes({ tag, packageVersion, changelog: file }) {
+  const changelog = file.replace(/\r\n?/g, '\n')
   const version = tag.replace(/^v/, '')
   if (!/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(version))
     throw new Error(`"${tag}" is not a version tag (expected v1.2.3).`)

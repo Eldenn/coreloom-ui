@@ -203,21 +203,29 @@ Releases are made with [Changesets](https://changesets.dev) by the **Release** w
    pull request: `pnpm version-packages` (`changeset version`, then `build/changelog.mjs`) bumps
    `version` in `package.json`, writes the `## [x.y.z] - date` section of `CHANGELOG.md` from the
    changesets — their sections merged in the house order — and deletes them. Review its wording there.
-3. Merge it. The workflow then tags `vx.y.z` (`pnpm release`, which runs `changeset git-tag`),
-   checks the tag against `package.json` and the CHANGELOG (`build/release-notes.mjs`) and publishes a
-   GitHub release with that section as notes and the registry (`public/r/*.json`) and the tokens
-   (`public/tokens/*.json`) attached. A pushed tag doesn't start other workflows, so this all happens in
-   that one job; it does nothing for a version that already has a release, so it is safe to re-run.
+   The section's date is the day the pull request was last updated; correct it in the pull request if
+   you merge on a later day.
+3. Merge it. The workflow then sees a version without a tag: it checks out the commit that set the
+   version, checks it against `package.json` and the CHANGELOG (`build/release-notes.mjs`), tags it
+   `vx.y.z` (as `pnpm release` / `changeset git-tag` would) and publishes a GitHub release with that
+   section as notes and the registry (`public/r/*.json`) and the tokens (`public/tokens/*.json`)
+   attached. A pushed tag doesn't start other workflows, so this happens in the same workflow.
+
+The release only looks at `package.json`'s version on `main`: a version that is tagged but has no
+release (a failed run, a deleted release) is released again from its tag; a version with a release is
+left alone; pending changesets don't change any of this. So **Run workflow** on `main` is always a safe
+retry.
 
 `pnpm changeset status --verbose` shows the next version and the changesets that will go into it. Run
 `pnpm version-packages` yourself only to preview the CHANGELOG, and don't commit the result: the
 Version Packages pull request is where the version is bumped.
 
 The repository needs, in **Settings → Actions → General → Workflow permissions**, "Read and write
-permissions" and **Allow GitHub Actions to create and approve pull requests**. Pull requests opened with
-the workflow's own token don't run CI; to have CI on the Version Packages pull request (needed if `main`
-requires status checks), add a `CHANGESETS_TOKEN` secret: a fine-grained token (or a GitHub App's) with
-Contents and Pull requests read and write on this repository.
+permissions" and **Allow GitHub Actions to create and approve pull requests**. Pull requests opened and
+pushed with the workflow's own token don't run CI; to have CI on the Version Packages pull request
+(needed if `main` requires status checks), add a `CHANGESETS_TOKEN` secret: a fine-grained token (or a
+GitHub App's) with Contents and Pull requests read and write on this repository. The workflow uses it
+both to check out (the branch is pushed with the checkout's credentials) and to open the pull request.
 
 ## License
 

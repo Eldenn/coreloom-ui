@@ -15,7 +15,8 @@
   (`KnowledgeBase`, `RetrievalTest`). `@coreloom/ai` types read the AI SDK's `UIMessage` parts as
   they are (checked against `ai` 7 in the unit tests); nothing depends on the SDK or calls an API.
 - Starter: Assistant, Agents, Runs, Playground and Knowledge pages on in-memory data, with a
-  simulated `useChat` (`src/lib/use-demo-chat.ts`); the README shows the swap to `@ai-sdk/react`.
+  simulated `useChat` (the `@coreloom/demo-chat` item, `src/hooks/use-demo-chat.ts`); the README
+  shows the swap to `@ai-sdk/react`.
 - `InlineCitation`: numbered source pills in a model's text; hover or focus shows the source,
   click, tap or Enter keeps it open. `Markdown` takes `sources` and turns `[1]` markers into
   citations (not in code or links, and safe while streaming).

@@ -192,6 +192,29 @@ What changed, release by release.
     ).toThrow(/already has a \[0\.7\.0\]/)
   })
 
+  it('reads a CHANGELOG with Windows line endings', async () => {
+    const entry = await changesetsEntry('0.8.0', [
+      { id: 'a', type: 'patch', summary: '### Fixed\r\n\r\n- `Select` keeps focus.\r\n' },
+    ])
+    const crlf = asWrittenByChangesets(intro + '\n' + history, entry).replace(/\n/g, '\r\n')
+    const result = changelog.formatRelease(crlf, { date: '2026-11-02' })
+    expect(result?.changelog).toContain(
+      '## [0.8.0] - 2026-11-02\n\n### Fixed\n\n- `Select` keeps focus.\n\n## [0.7.0]',
+    )
+    expect(result?.changelog).not.toContain('\r')
+  })
+
+  it('copies code blocks as they are, headings inside them included', async () => {
+    const code = '```md\n### Fixed\n\n## Nor this\n```'
+    const entry = await changesetsEntry('0.8.0', [
+      { id: 'a', type: 'minor', summary: `### Added\n\n- \`Markdown\` renders:\n\n${code}` },
+    ])
+    const result = changelog.formatRelease(asWrittenByChangesets(intro, entry), {
+      date: '2026-11-02',
+    })
+    expect(result?.changelog).toContain(`### Added\n\n- \`Markdown\` renders:\n\n${code}\n`)
+  })
+
   it('dates releases in Paris', () => {
     expect(changelog.releaseDate(new Date('2026-10-31T23:30:00Z'))).toBe('2026-11-01')
     expect(changelog.releaseDate(new Date('2026-10-31T12:00:00Z'))).toBe('2026-10-31')
@@ -209,6 +232,10 @@ describe('checkChangesets', () => {
     )
     fs.writeFileSync(path.join(dir, 'bad.md'), "---\n'@coreloom/ui': patch\n---\n\n## Fixes\n")
     fs.writeFileSync(path.join(dir, 'bare.md'), '### Added\n\n- x\n')
+    fs.writeFileSync(
+      path.join(dir, 'windows.md'),
+      "---\r\n'@coreloom/ui': minor\r\n---\r\n\r\n### Added\r\n",
+    )
     const problems = changelog.checkChangesets(dir)
     fs.rmSync(dir, { recursive: true })
     expect([...problems].sort()).toEqual([
@@ -220,6 +247,15 @@ describe('checkChangesets', () => {
 
 describe('releaseNotes', () => {
   const file = intro + '\n' + history
+
+  it('reads a CHANGELOG with Windows line endings', () => {
+    const notes = releaseNotes({
+      tag: 'v0.7.0',
+      packageVersion: '0.7.0',
+      changelog: file.replace(/\n/g, '\r\n'),
+    })
+    expect(notes.startsWith('### Added\n\n- `MultiSelect`.\n\n**Pin')).toBe(true)
+  })
 
   it('prints the section and how to pin the release', () => {
     const notes = releaseNotes({ tag: 'v0.7.0', packageVersion: '0.7.0', changelog: file })
