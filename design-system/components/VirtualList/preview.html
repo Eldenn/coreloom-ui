@@ -1,0 +1,47 @@
+<!-- @dsCard group="Data display" height=560 subtitle="VirtualList · 10,000 log lines · DataTable virtual · 5,000 rows" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.VirtualList || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { VirtualList, DataTable, DataTableColumnHeader, Badge, BadgeDot } = UI;
+      const msgs = ['Installing dependencies', 'Resolved 1,284 packages in 2.1s', 'Compiling 312 modules', "Type error in src/routes/settings.tsx: property 'slug' does not exist on type 'Workspace'.", 'Uploading build output (14.2 MB)', 'Cache hit for node_modules'];
+      const lv = ['info', 'info', 'warn', 'error', 'info', 'info'];
+      const V = { info: 'secondary', warn: 'warning', error: 'destructive' };
+      const lines = Array.from({ length: 10000 }, (_, i) => ({ id: i, level: lv[i % 6], msg: msgs[i % 6], at: '10:' + String(Math.floor(i / 60) % 60).padStart(2, '0') + ':' + String(i % 60).padStart(2, '0') }));
+      const row = (l) => h('div', { className: 'flex items-start gap-3 border-b border-border-subtle px-4 py-2.5 text-[13px]' },
+        h('span', { className: 'shrink-0 font-mono text-[12px] text-muted-foreground' }, l.at),
+        h(Badge, { variant: V[l.level], className: 'shrink-0' }, h(BadgeDot), l.level),
+        h('span', { className: 'min-w-0 text-foreground' }, l.msg));
+      const P = ['coreloom-web', 'coreloom-api', 'docs', 'cli', 'marketing'];
+      const S = ['ready', 'ready', 'building', 'ready', 'failed'];
+      const data = Array.from({ length: 5000 }, (_, i) => ({ id: 'dpl_' + String(i + 1).padStart(4, '0'), project: P[(i * 7) % 5], status: S[(i * 3) % 5] }));
+      const ST = { ready: 'success', building: 'default', failed: 'destructive' };
+      const columns = [
+        { accessorKey: 'id', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Deployment' }), cell: ({ row }) => h('span', { className: 'font-mono text-[12px]' }, row.original.id) },
+        { accessorKey: 'project', header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Project' }) },
+        { accessorKey: 'status', header: 'Status', cell: ({ row }) => h(Badge, { variant: ST[row.original.status] }, h(BadgeDot), row.original.status) },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+        h('div', null, h('p', { className: 'cap' }, 'VirtualList · 10,000 lines'),
+          h(VirtualList, { 'aria-label': 'Build log', items: lines, getKey: (l) => l.id, estimateSize: 42, height: 440, renderItem: row })),
+        h('div', null, h('p', { className: 'cap' }, 'DataTable virtual · 5,000 rows'),
+          h(DataTable, { columns, data, filterColumn: 'project', filterPlaceholder: 'Filter projects…', virtual: { height: 392, rowHeight: 45, label: 'Deployments' } }))));
+    }
+    render();
+  </script>
+</body>
+</html>

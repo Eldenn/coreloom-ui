@@ -1,0 +1,48 @@
+<!-- @dsCard group="Brand" height=150 page subtitle="Lockup · v1 lattice page" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);font-family:var(--font-sans);color:var(--fg-1);
+        padding:28px 32px;display:flex;align-items:center;gap:40px;}
+  .lockup{display:flex;align-items:center;gap:16px;}
+  .lockup img{width:56px;height:56px;display:block;border-radius:14px;}
+  .lock{display:flex;align-items:center;gap:12px;}
+  .word{font-family:var(--font-display);font-weight:700;font-size:34px;
+         letter-spacing:-0.03em;line-height:1;color:var(--fg-1);}
+  .word b{color:var(--cl-cyan);font-weight:700;}
+  .ui{font-family:var(--font-mono);font-weight:600;font-size:15px;letter-spacing:0.06em;
+      color:var(--cl-cyan);background:rgba(28,224,211,0.10);
+      border:1px solid rgba(28,224,211,0.30);border-radius:7px;padding:4px 9px;line-height:1;}
+  .light .ui{color:var(--cl-teal);background:rgba(15,143,140,0.10);border-color:rgba(15,143,140,0.30);}
+  .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;
+       text-transform:uppercase;color:var(--fg-muted);margin-top:8px;}
+  .divider{width:1px;align-self:stretch;background:var(--border);}
+  .light{background:#F4F5F7;border-radius:14px;padding:22px 26px;display:flex;
+          align-items:center;gap:14px;}
+  .light .word{color:#15171C;}
+  .light .word b{color:#0F8F8C;}
+  .light img{width:46px;height:46px;}
+</style>
+</head>
+<body>
+  <div>
+    <div class="lockup">
+      <img src="../../assets/Logos/coreloom-logomark.svg" alt="Coreloom UI logomark">
+      <div class="lock">
+        <div class="word">Core<b>loom</b></div>
+        <span class="ui">UI</span>
+      </div>
+    </div>
+    <div class="tag">Coreloom UI · the component package of the Coreloom monorepo</div>
+  </div>
+  <div class="divider"></div>
+  <div class="light">
+    <img src="../../assets/Logos/coreloom-logomark.svg" alt="Coreloom UI logomark">
+    <div class="word">Core<b>loom</b></div>
+    <span class="ui">UI</span>
+  </div>
+</body>
+</html>

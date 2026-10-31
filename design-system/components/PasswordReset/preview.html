@@ -1,0 +1,34 @@
+<!-- @dsCard group="Blocks" width=1000 height=640 subtitle="auth block · forgot password · reset password" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start;width:100%;max-width:860px;margin:0 auto}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ForgotPasswordForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const Brand = () => h('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' } },
+        h('img', { src: '../../assets/Logos/coreloom-logomark.svg', alt: '', style: { width: 28, height: 28, borderRadius: 7 } }),
+        h('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.03em', color: 'var(--fg-1)' } }, 'Core', h('span', { style: { color: 'var(--accent)' } }, 'loom')));
+      const { AuthLayout, ForgotPasswordForm, ResetPasswordForm, TooltipProvider } = UI;
+      const wait = () => new Promise((r) => setTimeout(r, 700));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(TooltipProvider, null,
+          h(AuthLayout, { brand: h(Brand), className: '[&>div:nth-child(3)]:max-w-[1180px]', footer: 'Try it: send the link, then type two passwords that differ.' },
+            h('div', { className: 'cols' },
+              h(ForgotPasswordForm, { onSubmit: wait, signInHref: '#', defaultEmail: 'ada@coreloom.dev' }),
+              h(ResetPasswordForm, { onSubmit: wait, email: 'ada@coreloom.dev' })))));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!-- @dsCard group="Foundations" width=980 height=400 page subtitle="generateAccent(hex) · one brand colour → a checked accent family for both themes → brand.css" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:20px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.generateAccent || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Button, Badge, BadgeDot, Switch, Input, Label, Field, FieldLabel, FieldDescription, generateAccent, accentVariables, parseHex } = UI;
+
+      function Panel({ theme, family }) {
+        return h('section', {
+            'aria-label': (theme === 'dark' ? 'Dark' : 'Light') + ' theme preview',
+            'data-theme': theme, style: accentVariables(theme, family),
+            className: 'flex min-w-0 flex-col gap-4 rounded-lg border border-border bg-background p-4 text-foreground' },
+          h('div', { className: 'flex items-center justify-between' },
+            h('p', { className: 'font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase' }, theme),
+            h(Badge, { variant: 'default' }, h(BadgeDot), 'New')),
+          h('div', { className: 'flex flex-wrap items-center gap-3' },
+            h(Button, null, 'Deploy'),
+            h(Button, { variant: 'outline', className: 'ring-[3px] ring-ring', tabIndex: -1 }, 'Focus ring')),
+          h('div', { className: 'flex items-center gap-3' },
+            h(Switch, { defaultChecked: true, 'aria-label': 'Auto-deploy, ' + theme }),
+            h('a', { href: '#', className: 'text-[14px] text-primary-text underline underline-offset-4' }, 'Read the docs')));
+      }
+
+      function Generator() {
+        const [hex, setHex] = React.useState('#ff5a1f');
+        const valid = parseHex(hex) !== null;
+        const result = React.useMemo(() => (valid ? generateAccent(hex, { name: 'brand' }) : null), [hex, valid]);
+        const failed = result ? result.checks.filter((c) => !c.pass).length : 0;
+        return h('div', { className: 'flex flex-col gap-4' },
+          h('div', { className: 'flex flex-wrap items-end gap-4' },
+            h(Field, { style: { width: 220 } },
+              h(FieldLabel, { htmlFor: 'brand-hex' }, 'Brand colour'),
+              h(Input, { id: 'brand-hex', value: hex, onChange: (e) => setHex(e.target.value), 'aria-invalid': !valid || undefined, spellCheck: false }),
+              h(FieldDescription, null, valid ? '#rgb or #rrggbb' : 'Not a hex colour')),
+            result && h('p', { role: 'status', className: 'pb-6 text-[13px] ' + (result.pass ? 'text-success' : 'text-destructive') },
+              result.pass ? 'Every check passes (' + result.checks.length + ').' : failed + ' checks fail: pick a nearby colour.')),
+          result && h('div', { className: 'grid gap-4', style: { gridTemplateColumns: '1fr 1fr' } },
+            h(Panel, { theme: 'dark', family: result.dark }),
+            h(Panel, { theme: 'light', family: result.light })),
+          result && result.adjustments.length > 0 && h('ul', { className: 'list-disc pl-5 text-[12.5px] text-muted-foreground' },
+            result.adjustments.slice(0, 4).map((a, i) => h('li', { key: i }, a.message))));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Generator));
+    }
+    render();
+  </script>
+</body>
+</html>

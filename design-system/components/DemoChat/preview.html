@@ -1,0 +1,52 @@
+<!-- @dsCard group="AI" height=620 subtitle="useDemoChat · a simulated model for the Chat block · reasoning, tool call, approval, cited answer" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Chat || !UI.useDemoChat || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const reply = "Here's a short summary [1].\n\n- **3 deployments** failed this week, all on `coreloom-api`.\n- Build minutes are up **12%**, mostly from `docs`.\n\nWant the details for one of them?";
+      function Demo() {
+        // Swap this for useChat({ transport }) from @ai-sdk/react: the Chat props stay the same.
+        const chat = UI.useDemoChat({
+          script: {
+            reasoning: 'Find the failed deployments, then read their build logs.',
+            answer: () => reply,
+            source: { url: 'https://coreloom.dev/docs/deployments', title: 'Deployments guide' },
+            sensitive: /roll ?back/i,
+            approved: 'Done: **coreloom-api** is back on `dpl_5t3q`.',
+            denied: 'OK, nothing was rolled back.',
+          },
+        });
+        return h('div', { className: 'flex flex-col overflow-hidden rounded-lg border border-border bg-card', style: { height: 560 } },
+          h(UI.Chat, {
+            autoFocus: false,
+            messages: chat.messages,
+            status: chat.status,
+            error: chat.error,
+            onSend: chat.sendMessage,
+            onStop: chat.stop,
+            onRegenerate: chat.regenerate,
+            onEdit: chat.edit,
+            onToolApprovalResponse: (r) => void chat.addToolApprovalResponse(r),
+            suggestions: ['What failed this week?', 'Roll back coreloom-api'],
+            toolLabels: { searchDocs: 'Search the docs', rollback: 'Roll back production' },
+          }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

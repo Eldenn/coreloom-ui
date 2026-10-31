@@ -2,5 +2,5 @@
 @import 'tw-animate-css';
 @import '../src/styles/theme.css';
 @source '../src/components';
-@source '../preview'; /* design-system previews (components/<Comp>/preview.html), when building the artifact */
-@source '../templates'; /* starting-point templates (templates/<name>/index.html; project/templates in the design system) */
+@source '../design-system/components'; /* the design system's cards (components/<Comp>/preview.html in the artifact) */
+@source '../design-system/templates'; /* starting-point templates (project/templates/<name>/index.html in the artifact) */

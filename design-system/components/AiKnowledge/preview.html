@@ -1,0 +1,42 @@
+<!-- @dsCard group="AI" height=760 subtitle="KnowledgeBase (indexing statuses) · RetrievalTest" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.KnowledgeBase || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const ago = (m) => new Date(Date.now() - m * 60000);
+      const docs0 = [
+        { id: 'd1', name: 'Deployments guide.md', size: 48200, status: 'indexed', chunks: 64, updatedAt: ago(1560) },
+        { id: 'd2', name: 'Runbook — rollbacks.pdf', size: 1284000, status: 'indexed', chunks: 212, updatedAt: ago(3000) },
+        { id: 'd3', name: 'Pricing 2026.docx', size: 312000, status: 'processing', progress: 62, updatedAt: ago(2) },
+        { id: 'd4', name: 'Incident 42 postmortem.md', size: 18400, status: 'queued', updatedAt: ago(1) },
+        { id: 'd5', name: 'Scanned contract.pdf', size: 8900000, status: 'failed', error: 'No text found: the PDF is a scan. Run OCR first.', updatedAt: ago(180) },
+      ];
+      function App() {
+        const [docs, setDocs] = React.useState(docs0);
+        return h('div', { className: 'flex flex-col gap-4' },
+          h(UI.KnowledgeBase, { documents: docs, onUpload: () => {}, onReindex: () => {}, onRemove: (id) => setDocs((d) => d.filter((x) => x.id !== id)) }),
+          h(UI.RetrievalTest, { onSearch: async () => { await new Promise((r) => setTimeout(r, 400)); return [
+            { id: 'r1', source: 'Runbook — rollbacks.pdf · p. 4', score: 0.86, text: 'Roll back only to a deployment built from a branch that still exists; otherwise redeploy the last green commit.' },
+            { id: 'r2', source: 'Deployments guide.md', score: 0.71, text: 'A failed type check stops the build before anything is uploaded. Fix the error and push again.' } ]; } }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+    }
+    render();
+  </script>
+</body>
+</html>

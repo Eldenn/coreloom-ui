@@ -1,0 +1,38 @@
+<!-- @dsCard group="AI" height=1120 subtitle="RunTrace waterfall · RunList" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.RunTrace || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const spans = [
+        { id: 's1', kind: 'agent', name: 'Deploy doctor', startMs: 0, durationMs: 9420, status: 'error' },
+        { id: 's2', parentId: 's1', kind: 'llm', name: 'plan', startMs: 40, durationMs: 1830, status: 'ok', model: 'claude-sonnet', tokens: { input: 1840, output: 212 }, cost: 0.0087, output: 'Look up the failed deployment, then read its logs.' },
+        { id: 's3', parentId: 's1', kind: 'tool', name: 'searchDeployments', startMs: 1900, durationMs: 640, status: 'ok', input: { project: 'coreloom-api' }, output: { id: 'dpl_8f2k', error: 'TS2339' } },
+        { id: 's4', parentId: 's1', kind: 'retrieval', name: 'runbooks', startMs: 2580, durationMs: 410, status: 'ok' },
+        { id: 's5', parentId: 's1', kind: 'llm', name: 'explain', startMs: 3020, durationMs: 3610, status: 'ok', model: 'claude-sonnet', tokens: { input: 3520, output: 498 }, cost: 0.0184 },
+        { id: 's6', parentId: 's1', kind: 'tool', name: 'rollback', startMs: 6700, durationMs: 2680, status: 'error', input: { deployment: 'dpl_5t3q' }, error: 'Rollback refused: dpl_5t3q was built from a branch that no longer exists.' },
+      ];
+      const S = ['succeeded', 'failed', 'succeeded', 'running', 'cancelled'];
+      const runs = Array.from({ length: 5 }, (_, i) => ({ id: 'run_' + (9120 - i * 7).toString(36), agent: ['Deploy doctor', 'Support triage'][i % 2], status: S[i], trigger: ['Chat', 'Schedule', 'API'][i % 3], startedAt: new Date(Date.now() - (i * 47 + 3) * 60000), durationMs: S[i] === 'running' ? undefined : 1800 + i * 2371, tokens: 900 + i * 1733, cost: 0.002 + i * 0.011 }));
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'flex flex-col gap-6' },
+        h(UI.RunTrace, { run: { status: 'failed', durationMs: 9420, tokens: { input: 6120, output: 842 }, cost: 0.0312 }, spans }),
+        h(UI.RunList, { runs, href: (id) => '#' + id })));
+    }
+    render();
+  </script>
+</body>
+</html>

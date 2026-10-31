@@ -1,0 +1,59 @@
+<!-- @dsCard group="AI" height=640 subtitle="Chat · ConversationList · reasoning, tool call, approval, inline citations" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Chat || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const conversation = [
+        { id: 'm1', role: 'user', parts: [{ type: 'text', text: 'Why did the last coreloom-api deployment fail?' }] },
+        { id: 'm2', role: 'assistant', parts: [
+          { type: 'reasoning', text: 'Find the failed deployment, then read its build log.', state: 'done' },
+          { type: 'tool-searchDeployments', toolCallId: 't1', state: 'output-available', input: { project: 'coreloom-api', status: 'failed' }, output: { id: 'dpl_8f2k', error: 'TS2339' } },
+          { type: 'text', text: 'The build stopped on a **type error**: `Workspace.slug` was renamed to `handle` in 0.8 [1].\n\n1. Rename it in `src/routes/settings.tsx`.\n2. Run `pnpm typecheck`.\n3. Push again.', state: 'done' },
+          { type: 'source-url', sourceId: 's1', url: 'https://coreloom.dev/docs/deployments', title: 'Deployments guide' } ] },
+        { id: 'm3', role: 'user', parts: [{ type: 'text', text: 'Roll back production meanwhile.' }] },
+        { id: 'm4', role: 'assistant', parts: [
+          { type: 'tool-rollback', toolCallId: 't2', state: 'approval-requested', input: { project: 'coreloom-api', deployment: 'dpl_5t3q' }, approval: { id: 'a1' } } ] },
+      ];
+      const NOW = new Date();
+      const ago = (d) => new Date(NOW.getTime() - d * 86400000);
+      const history = [
+        { id: 'c1', title: 'Why did coreloom-api fail?', updatedAt: ago(0) },
+        { id: 'c2', title: 'Release notes for v0.8', updatedAt: ago(0.1) },
+        { id: 'c3', title: 'Build minutes by project', updatedAt: ago(1) },
+        { id: 'c4', title: 'Rename the billing workspace', updatedAt: ago(3) },
+        { id: 'c5', title: 'Onboarding checklist', updatedAt: ago(20) },
+      ];
+      function App() {
+        const [items, setItems] = React.useState(history);
+        const [active, setActive] = React.useState('c1');
+        const [fb, setFb] = React.useState({ m2: 'good' });
+        return h('div', { className: 'flex h-[592px] overflow-hidden rounded-lg border border-border bg-background' },
+          h('aside', { className: 'w-64 shrink-0 border-r border-border-subtle p-3' },
+            h(UI.ConversationList, { conversations: items, activeId: active, now: NOW, onSelect: setActive, onNew: () => {},
+              onRename: (id, title) => setItems((a) => a.map((c) => (c.id === id ? { ...c, title } : c))),
+              onDelete: (id) => setItems((a) => a.filter((c) => c.id !== id)) })),
+          h('div', { className: 'min-w-0 flex-1' },
+            h(UI.Chat, { autoFocus: false, messages: conversation, onSend: () => {}, onRegenerate: () => {}, feedback: fb,
+              onFeedback: (id, f) => setFb((s) => ({ ...s, [id]: f })), onToolApprovalResponse: () => {}, allowAttachments: true })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(App)));
+    }
+    render();
+  </script>
+</body>
+</html>
