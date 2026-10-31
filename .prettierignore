@@ -15,7 +15,6 @@ src/styles/tokens.css
 src/styles/tokens.json
 build/lib
 # The design system's cards, page templates and logo kit are standalone files
-preview
-templates
+design-system
 brand
 starter/src/styles/coreloom/tokens.css

@@ -1,0 +1,45 @@
+<!-- @dsCard group="Forms" height=420 subtitle="Toolbar · headings, lists, quote, code, links · AI panel (⌘J) · “/” commands · HTML value" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.RichTextEditor || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { RichTextEditor, Field, FieldLabel, FieldDescription, TooltipProvider } = UI;
+      const sample = '<h2>Release notes</h2><p>This release adds <strong>typed dates</strong>, a <em>server-driven</em> table and a <a href="#">rich text editor</a>.</p><ul><li>Faster builds</li><li>Fewer surprises</li></ul><p></p>';
+      // A canned model: the editor streams whatever onRequest yields. Apps call their own model here.
+      const answers = {
+        continue: ' Upgrade with --overwrite to get the new strings.',
+        shorten: 'Typed dates, a server-driven table and a rich text editor.',
+        summarise: '- Typed dates\n- Server-driven table\n- Rich text editor',
+      };
+      async function* onRequest(request) {
+        const text = answers[request.action] || 'This release brings **typed dates**, a server-driven table and a rich text editor.';
+        for (const word of text.split(/(?<= )/)) {
+          if (request.signal.aborted) return;
+          await new Promise((r) => setTimeout(r, 40));
+          yield word;
+        }
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null,
+        h('div', { style: { maxWidth: 640 } }, h(Field, null,
+          h(FieldLabel, { id: 'notes-label' }, 'Release notes'),
+          h(RichTextEditor, { defaultValue: sample, 'aria-labelledby': 'notes-label', minHeight: 140, ai: { onRequest } }),
+          h(FieldDescription, null, 'Type / on the empty last line for AI commands, or select text and press ⌘J / Ctrl+J. Markdown shortcuts work too.')))));
+    }
+    render();
+  </script>
+</body>
+</html>

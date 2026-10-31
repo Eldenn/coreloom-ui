@@ -1,0 +1,41 @@
+<!-- @dsCard group="AI" height=1060 subtitle="AgentList · AgentEditor (variables, ask-first tools, knowledge)" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AgentEditor || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const ago = (m) => new Date(Date.now() - m * 60000);
+      const agents = [
+        { id: 'a1', name: 'Support triage', description: 'Reads new tickets, tags them and drafts a first answer from the docs.', status: 'active', model: 'Claude Sonnet', toolCount: 4, lastRunAt: ago(12), runsThisWeek: 1284 },
+        { id: 'a2', name: 'Deploy doctor', description: 'Explains failed builds and proposes a fix or a rollback.', status: 'active', model: 'Claude Sonnet', toolCount: 3, lastRunAt: ago(95), runsThisWeek: 86 },
+        { id: 'a3', name: 'Weekly digest', description: 'Summarises incidents, deploys and usage every Monday.', status: 'paused', model: 'Claude Haiku', toolCount: 2, lastRunAt: ago(4320), runsThisWeek: 0 },
+      ];
+      const models = [{ id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'Anthropic' }, { id: 'claude-haiku', name: 'Claude Haiku', provider: 'Anthropic' }, { id: 'gpt-mini', name: 'GPT mini', provider: 'OpenAI' }];
+      const tools = [
+        { id: 'searchDocs', name: 'searchDocs', description: 'Search the product documentation.' },
+        { id: 'searchDeployments', name: 'searchDeployments', description: 'List deployments with their status and logs.' },
+        { id: 'rollback', name: 'rollback', description: 'Roll a project back to an earlier deployment.', sensitive: true },
+      ];
+      const values = { name: 'Deploy doctor', description: 'Explains failed builds and proposes a fix or a rollback.', instructions: 'You help {{team}} understand why a deployment of {{project}} failed.\n\n1. Look up the failed deployment and its logs.\n2. Explain the cause in two sentences.', model: 'claude-sonnet', temperature: 0.3, maxSteps: 8, tools: ['searchDocs', 'searchDeployments', 'rollback'], askFirst: ['rollback'], knowledge: ['kb_docs'] };
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'flex flex-col gap-6' },
+        h(UI.AgentList, { agents, href: (id) => '#' + id, onNew: () => {} }),
+        h('div', { style: { maxWidth: 760 } }, h(UI.AgentEditor, { defaultValues: values, models, tools, knowledgeBases: [{ id: 'kb_docs', name: 'Product docs' }, { id: 'kb_runbooks', name: 'Runbooks' }], onSubmit: () => new Promise((r) => setTimeout(r, 700)) }))));
+    }
+    render();
+  </script>
+</body>
+</html>

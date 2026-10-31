@@ -32,7 +32,7 @@ Storybook as its documentation and a Vite starter app that uses it.
 | `starter/`                               | The starter app. Its `src/components/**` and `src/lib/{i18n,ai,link,utils}` are **copies** — see below.                |
 | `build/`                                 | Scripts: starter sync, design-system bundle, `.d.ts` generation, DTCG tokens, release notes.                           |
 | `brand/logo/`                            | The logo kit and its usage rules.                                                                                      |
-| `preview/`, `templates/`                 | The design system's cards and page templates.                                                                          |
+| `design-system/`                         | The design system's cards (`components/<Name>/`) and page templates. See its README.                                   |
 
 ## Commands
 
@@ -81,7 +81,8 @@ A change is finished when all of this is true:
    - an item in `registry.json` (and in `all` for ui items), with exact `dependencies` and
      `registryDependencies` — derive them from the file's imports;
    - stories (states below), a guide (`.md` + `.mdx`), and tests for any behaviour;
-   - exports in `build/artifact-entry.ts` and its name in `COMPONENTS` in `build/build-artifact.mjs`.
+   - exports in `build/artifact-entry.ts` and its name in `COMPONENTS` in `build/build-artifact.mjs`;
+   - a design-system card: `design-system/components/<Name>/preview.html` and `README.md`.
 3. **Changed components** have their guide updated: every prop, default and behaviour a guide states
    must match the code. Re-read the guide after changing an API.
 4. **A changeset** (`pnpm changeset`, or a file in `.changeset/`) says what changed for someone who

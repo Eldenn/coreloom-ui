@@ -1,0 +1,38 @@
+<!-- @dsCard group="AI" height=820 subtitle="ChatWidget · open, with an inline citation" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ChatWidget || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const messages = [
+        { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Can I roll back a preview deployment?' }] },
+        { id: 'a1', role: 'assistant', parts: [
+          { type: 'text', text: 'Yes — open the deployment, then **Roll back**. Previews keep their last 10 builds [1].', state: 'done' },
+          { type: 'source-url', sourceId: 's1', url: 'https://coreloom.dev/docs/deployments', title: 'Deployments guide' } ] },
+      ];
+      function App() {
+        const [open, setOpen] = React.useState(true);
+        return h('div', { style: { position: 'relative', height: 772, transform: 'translateZ(0)', overflow: 'hidden' }, className: 'rounded-lg border border-border bg-background' },
+          h('div', { className: 'p-6 text-[14px] text-muted-foreground' }, h('p', { className: 'cap' }, 'ChatWidget · your page behind'), 'Pricing, docs, dashboard — the widget floats above whatever page hosts it.'),
+          h(UI.ChatWidget, { open, onOpenChange: setOpen, title: 'Coreloom support', subtitle: 'Usually answers in a minute', presence: 'online', messages, onSend: () => {}, autoFocus: false, suggestions: ['Rename a project'] }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(App)));
+    }
+    render();
+  </script>
+</body>
+</html>
