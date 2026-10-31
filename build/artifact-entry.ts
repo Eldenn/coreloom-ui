@@ -72,6 +72,7 @@ export * from '@/components/ui/tool-call'
 export * from '@/components/ui/tooltip'
 export * from '@/components/ui/virtual-list'
 export * from '@/hooks/use-demo-chat'
+export * from '@/lib/accent'
 export * from '@/lib/ai'
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from 'recharts'
