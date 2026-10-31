@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   test:
-    name: Typecheck, unit tests, starter build, a11y, visual and interaction tests
+    name: Format, lint, typecheck, unit tests, starter build, a11y, visual and interaction tests
     runs-on: ubuntu-latest
     # Same image as the "Visual baselines" workflow, so screenshots render identically.
     # Keep the tag in step with @playwright/test in package.json.
@@ -33,6 +33,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:unit
       - run: pnpm registry:build
