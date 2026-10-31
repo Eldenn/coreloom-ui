@@ -1,7 +1,7 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "./coreloom/fonts.css";
-@import "./coreloom/tokens.css";
-@import "./coreloom/theme.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './coreloom/fonts.css';
+@import './coreloom/tokens.css';
+@import './coreloom/theme.css';
 /* Accent presets: <html data-accent="violet">, chosen in Settings → Appearance. */
-@import "./coreloom/accents.css";
+@import './coreloom/accents.css';

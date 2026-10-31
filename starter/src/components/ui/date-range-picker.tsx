@@ -1,20 +1,31 @@
-"use client"
+'use client'
 
 // Coreloom UI — DateRangePicker. A trigger that opens a two-month Calendar in range mode, with
 // shortcuts ("Last 7 days", "This month") down the side. The value is { from, to } (react-day-picker's
 // DateRange); either end may be undefined while the user picks.
-import * as React from "react"
-import { endOfMonth, format, startOfDay, startOfMonth, subDays, subMonths, type Locale } from "date-fns"
-import { CalendarRangeIcon } from "lucide-react"
-import type { DateRange } from "react-day-picker"
+import {
+  endOfMonth,
+  format,
+  type Locale,
+  startOfDay,
+  startOfMonth,
+  subDays,
+  subMonths,
+} from 'date-fns'
+import { CalendarRangeIcon } from 'lucide-react'
+import * as React from 'react'
+import type { DateRange } from 'react-day-picker'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type DateRangePreset = { label: string; range: () => DateRange }
+interface DateRangePreset {
+  label: string
+  range: () => DateRange
+}
 
 /** The built-in shortcuts, relative to today. */
 function useDefaultPresets(): DateRangePreset[] {
@@ -27,7 +38,13 @@ function useDefaultPresets(): DateRangePreset[] {
       { label: t.last7, range: () => ({ from: subDays(today(), 6), to: today() }) },
       { label: t.last30, range: () => ({ from: subDays(today(), 29), to: today() }) },
       { label: t.thisMonth, range: () => ({ from: startOfMonth(today()), to: today() }) },
-      { label: t.lastMonth, range: () => ({ from: startOfMonth(subMonths(today(), 1)), to: endOfMonth(subMonths(today(), 1)) }) },
+      {
+        label: t.lastMonth,
+        range: () => ({
+          from: startOfMonth(subMonths(today(), 1)),
+          to: endOfMonth(subMonths(today(), 1)),
+        }),
+      },
     ]
   }, [t])
 }
@@ -41,7 +58,7 @@ function DateRangePicker({
   defaultValue,
   onValueChange,
   placeholder,
-  formatString = "PP",
+  formatString = 'PP',
   locale,
   presets,
   numberOfMonths = 2,
@@ -50,9 +67,9 @@ function DateRangePicker({
   id,
   calendarProps,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
-  "aria-describedby": ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedby,
 }: {
   value?: DateRange
   defaultValue?: DateRange
@@ -69,12 +86,15 @@ function DateRangePicker({
   className?: string
   id?: string
   /** Passed to Calendar: disabled days, startMonth / endMonth, min / max nights… */
-  calendarProps?: Omit<React.ComponentProps<typeof Calendar>, "mode" | "selected" | "onSelect" | "required">
+  calendarProps?: Omit<
+    React.ComponentProps<typeof Calendar>,
+    'mode' | 'selected' | 'onSelect' | 'required'
+  >
   /** Called when the popover closes (a form's "touched"). */
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
+  'aria-describedby'?: string
 }) {
   const i18n = useCoreloomI18n()
   const t = i18n.messages.dateRange
@@ -115,10 +135,10 @@ function DateRangePicker({
           aria-describedby={ariaDescribedby}
           disabled={disabled}
           data-slot="date-range-picker-trigger"
-          data-placeholder={current?.from ? undefined : ""}
+          data-placeholder={current?.from ? undefined : ''}
           className={cn(
-            "flex h-[42px] w-full cursor-pointer items-center gap-2.5 rounded-md border border-input bg-inset px-[13px] text-left font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            className
+            'flex h-[42px] w-full cursor-pointer items-center gap-2.5 rounded-md border border-input bg-inset px-[13px] text-left font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            className,
           )}
         >
           <CalendarRangeIcon className="size-4 text-muted-foreground" />
@@ -142,7 +162,10 @@ function DateRangePicker({
                   variant="ghost"
                   size="sm"
                   aria-pressed={active}
-                  className={cn("shrink-0 justify-start font-medium", active && "bg-primary-subtle text-primary-text hover:bg-primary-subtle")}
+                  className={cn(
+                    'shrink-0 justify-start font-medium',
+                    active && 'bg-primary-subtle text-primary-text hover:bg-primary-subtle',
+                  )}
                   onClick={() => {
                     set(r)
                     setOpen(false)
@@ -159,7 +182,9 @@ function DateRangePicker({
           mode="range"
           selected={current}
           onSelect={set}
-          defaultMonth={current?.from ?? (numberOfMonths > 1 ? subMonths(new Date(), 1) : undefined)}
+          defaultMonth={
+            current?.from ?? (numberOfMonths > 1 ? subMonths(new Date(), 1) : undefined)
+          }
           numberOfMonths={numberOfMonths}
           autoFocus
           locale={locale}
@@ -170,4 +195,4 @@ function DateRangePicker({
   )
 }
 
-export { DateRangePicker, type DateRange, type DateRangePreset }
+export { type DateRange, DateRangePicker, type DateRangePreset }

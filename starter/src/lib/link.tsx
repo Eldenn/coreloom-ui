@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Router-agnostic links. Blocks render <AppLink href> for their navigation; by default it is a plain
 // <a>. Give the app your router's link once and every block navigates client-side:
@@ -7,9 +7,9 @@
 //
 // Next.js: component={Link} from "next/link" works as is. TanStack Router: map `href` to `to`
 // (see the starter's src/components/router-link.tsx). Hash links and other sites stay plain <a>.
-import * as React from "react"
+import * as React from 'react'
 
-export type LinkProps = React.ComponentProps<"a"> & { href: string }
+export type LinkProps = React.ComponentProps<'a'> & { href: string }
 export type LinkComponent = React.ComponentType<LinkProps>
 
 function PlainLink(props: LinkProps) {
@@ -18,7 +18,13 @@ function PlainLink(props: LinkProps) {
 
 const LinkContext = React.createContext<LinkComponent>(PlainLink)
 
-export function CoreloomLinkProvider({ component, children }: { component: LinkComponent; children: React.ReactNode }) {
+export function CoreloomLinkProvider({
+  component,
+  children,
+}: {
+  component: LinkComponent
+  children: React.ReactNode
+}) {
   return <LinkContext.Provider value={component}>{children}</LinkContext.Provider>
 }
 
@@ -29,7 +35,7 @@ export function useLinkComponent() {
 
 /** true for "#section", "https://…", "mailto:…": those never go through the router. */
 export function isExternalHref(href: string) {
-  return href.startsWith("#") || /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//")
+  return href.startsWith('#') || /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith('//')
 }
 
 /** An <a> that navigates with the app's router when the href is in-app. Works with `asChild`. */

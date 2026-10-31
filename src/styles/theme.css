@@ -76,7 +76,9 @@
    font-sans / font-mono and the text scale work the same way: Tailwind's defaults
    sit in @layer theme and the Coreloom tokens override them. */
 @theme {
-  --font-display: 'Space Grotesk', 'Space Grotesk Variable', 'Geist', 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    'Space Grotesk', 'Space Grotesk Variable', 'Geist', 'Geist Variable', ui-sans-serif, system-ui,
+    sans-serif;
   --font-heading: var(--font-display);
   --radius-pill: 999px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -89,12 +91,20 @@
   --animate-accordion-up: accordion-up 180ms cubic-bezier(0.22, 1, 0.36, 1);
 
   @keyframes accordion-down {
-    from { height: 0; }
-    to { height: var(--radix-accordion-content-height); }
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
   }
   @keyframes accordion-up {
-    from { height: var(--radix-accordion-content-height); }
-    to { height: 0; }
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
   }
 }
 
@@ -103,7 +113,7 @@
     @apply border-border outline-ring;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background font-sans text-foreground;
   }
   ::selection {
     @apply bg-primary-subtle;
@@ -114,7 +124,7 @@
    without sliding or zooming, the accordion opens without growing). The Spinner keeps
    turning, slower — it is the only motion that carries meaning. */
 @media (prefers-reduced-motion: reduce) {
-  *:not([data-slot="spinner"]),
+  *:not([data-slot='spinner']),
   *::before,
   *::after {
     animation-duration: 1ms !important;
@@ -129,7 +139,14 @@
   --animate-caret-blink: caret-blink 1.25s ease-out infinite;
 
   @keyframes caret-blink {
-    0%, 70%, 100% { opacity: 1; }
-    20%, 50% { opacity: 0; }
+    0%,
+    70%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    50% {
+      opacity: 0;
+    }
   }
 }

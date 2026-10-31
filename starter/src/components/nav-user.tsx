@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
 // Coreloom UI — NavUser (app-shell block). The account menu at the foot of the sidebar.
-import * as React from "react"
-import { ChevronsUpDownIcon, LogOutIcon, type LucideIcon } from "lucide-react"
+import { ChevronsUpDownIcon, LogOutIcon, type LucideIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +13,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/sidebar'
+import { useCoreloomI18n } from '@/lib/i18n'
 
 /** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
  *  server → client boundary in Next.js, components don't. */
@@ -32,14 +32,18 @@ function renderIcon(icon: IconLike | undefined) {
   // else is already a node: an element, or what a server component's element became on the way to
   // the client (React dedupes repeated elements into lazy references).
   const kind = (icon as { $$typeof?: symbol }).$$typeof
-  if (typeof icon === "function" || kind === Symbol.for("react.forward_ref") || kind === Symbol.for("react.memo")) {
+  if (
+    typeof icon === 'function' ||
+    kind === Symbol.for('react.forward_ref') ||
+    kind === Symbol.for('react.memo')
+  ) {
     const Icon = icon as LucideIcon
     return <Icon />
   }
   return icon as React.ReactNode
 }
 
-type NavUserProps = {
+interface NavUserProps {
   user: { name: string; email?: string; role?: string; avatar?: string }
   /** Entries above "Log out": Account, Billing, Notifications… */
   menu?: { label: string; icon?: IconLike; onSelect: () => void }[]
@@ -50,7 +54,7 @@ function initials(name: string) {
   return name
     .split(/\s+/)
     .map((part) => part.charAt(0))
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase()
 }
@@ -72,16 +76,20 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
               {avatar}
               <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate text-[14px] font-medium text-foreground">{user.name}</span>
+                <span className="truncate text-[14px] font-medium text-foreground">
+                  {user.name}
+                </span>
                 {(user.role || user.email) && (
-                  <span className="truncate text-[12px] text-muted-foreground">{user.role ?? user.email}</span>
+                  <span className="truncate text-[12px] text-muted-foreground">
+                    {user.role ?? user.email}
+                  </span>
                 )}
               </div>
               <ChevronsUpDownIcon className="ml-auto text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={8}
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
@@ -90,7 +98,11 @@ function NavUser({ user, menu = [], onSignOut }: NavUserProps) {
               {avatar}
               <span className="grid leading-tight">
                 <span className="truncate font-medium text-foreground">{user.name}</span>
-                {user.email && <span className="truncate text-[12px] font-normal text-muted-foreground">{user.email}</span>}
+                {user.email && (
+                  <span className="truncate text-[12px] font-normal text-muted-foreground">
+                    {user.email}
+                  </span>
+                )}
               </span>
             </DropdownMenuLabel>
             {menu.length > 0 && (

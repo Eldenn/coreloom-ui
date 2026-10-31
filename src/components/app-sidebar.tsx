@@ -1,11 +1,12 @@
-"use client"
+'use client'
 
 // Coreloom UI — AppSidebar (app-shell block). Workspace switcher, grouped navigation, secondary
 // links and the account menu, on the Sidebar component. Navigation is data: pass your routes.
 // Links go through AppLink: wrap the app in CoreloomLinkProvider to navigate with your router.
-import * as React from "react"
-import { ChevronsUpDownIcon, PlusIcon, type LucideIcon } from "lucide-react"
+import { ChevronsUpDownIcon, type LucideIcon, PlusIcon } from 'lucide-react'
+import * as React from 'react'
 
+import { NavUser, type NavUserProps } from '@/components/nav-user'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   Sidebar,
   SidebarContent,
@@ -28,10 +29,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { NavUser, type NavUserProps } from "@/components/nav-user"
-import { AppLink } from "@/lib/link"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/sidebar'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { AppLink } from '@/lib/link'
 
 /** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
  *  server → client boundary in Next.js, components don't. */
@@ -43,14 +43,18 @@ function renderIcon(icon: IconLike | undefined) {
   // else is already a node: an element, or what a server component's element became on the way to
   // the client (React dedupes repeated elements into lazy references).
   const kind = (icon as { $$typeof?: symbol }).$$typeof
-  if (typeof icon === "function" || kind === Symbol.for("react.forward_ref") || kind === Symbol.for("react.memo")) {
+  if (
+    typeof icon === 'function' ||
+    kind === Symbol.for('react.forward_ref') ||
+    kind === Symbol.for('react.memo')
+  ) {
     const Icon = icon as LucideIcon
     return <Icon />
   }
   return icon as React.ReactNode
 }
 
-type NavItem = {
+interface NavItem {
   title: string
   url: string
   icon: IconLike
@@ -58,24 +62,24 @@ type NavItem = {
   badge?: React.ReactNode
 }
 
-type NavGroup = {
+interface NavGroup {
   label: string
   items: NavItem[]
 }
 
-type Workspace = {
+interface Workspace {
   name: string
   plan?: string
   logo?: React.ReactNode
 }
 
-function NavLinks({ items, size }: { items: NavItem[]; size?: "sm" | "default" }) {
+function NavLinks({ items, size }: { items: NavItem[]; size?: 'sm' | 'default' }) {
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild isActive={item.isActive} tooltip={item.title} size={size}>
-            <AppLink href={item.url} aria-current={item.isActive ? "page" : undefined}>
+            <AppLink href={item.url} aria-current={item.isActive ? 'page' : undefined}>
               {renderIcon(item.icon)}
               <span>{item.title}</span>
             </AppLink>
@@ -107,13 +111,22 @@ function WorkspaceSwitcher({
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
               <WorkspaceLogo workspace={active} />
               <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-display text-[15px] font-semibold text-foreground">{active.name}</span>
-                {active.plan && <span className="truncate font-mono text-[11px] text-muted-foreground">{active.plan}</span>}
+                <span className="truncate font-display text-[15px] font-semibold text-foreground">
+                  {active.name}
+                </span>
+                {active.plan && (
+                  <span className="truncate font-mono text-[11px] text-muted-foreground">
+                    {active.plan}
+                  </span>
+                )}
               </div>
               <ChevronsUpDownIcon className="ml-auto text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
+          <DropdownMenuContent
+            align="start"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+          >
             <DropdownMenuLabel>{t.appShell.workspaces}</DropdownMenuLabel>
             {workspaces.map((workspace, i) => (
               <DropdownMenuItem key={workspace.name} onSelect={() => onSelect?.(workspace)}>
@@ -140,8 +153,9 @@ function WorkspaceSwitcher({
 
 /** The workspace's logo, or its initial on a graphite tile. */
 function WorkspaceLogo({ workspace, small }: { workspace: Workspace; small?: boolean }) {
-  const size = small ? "size-5 rounded-[5px] text-[11px]" : "size-8 rounded-[7px] text-[14px]"
-  if (workspace.logo) return <span className={`flex shrink-0 overflow-hidden ${size}`}>{workspace.logo}</span>
+  const size = small ? 'size-5 rounded-[5px] text-[11px]' : 'size-8 rounded-[7px] text-[14px]'
+  if (workspace.logo)
+    return <span className={`flex shrink-0 overflow-hidden ${size}`}>{workspace.logo}</span>
   return (
     <span
       className={`flex shrink-0 items-center justify-center border border-border bg-surface font-display font-bold text-primary ${size}`}
@@ -170,8 +184,8 @@ function AppSidebar({
   groups: NavGroup[]
   /** Small links pinned above the account menu (Support, Docs). */
   secondary?: NavItem[]
-  user: NavUserProps["user"]
-} & Pick<NavUserProps, "menu" | "onSignOut">) {
+  user: NavUserProps['user']
+} & Pick<NavUserProps, 'menu' | 'onSignOut'>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

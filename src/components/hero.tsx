@@ -1,10 +1,10 @@
 // Coreloom UI — Hero (marketing block). Announcement badge, headline with an accent phrase,
 // lead, two actions and an optional install command — over the faint cyan top-light.
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Badge, BadgeDot } from "@/components/ui/badge"
-import { CopyButton } from "@/components/copy-button"
+import { CopyButton } from '@/components/copy-button'
+import { Badge, BadgeDot } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 function Hero({
   announcement,
@@ -30,7 +30,7 @@ function Hero({
   className?: string
 }) {
   return (
-    <section className={cn("relative px-5 pt-20 pb-16 text-center md:pt-24", className)}>
+    <section className={cn('relative px-5 pt-20 pb-16 text-center md:pt-24', className)}>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-[15%] -top-10 h-[420px] bg-[radial-gradient(ellipse_at_50%_0,var(--accent-subtle),transparent_70%)]"
@@ -46,12 +46,18 @@ function Hero({
           {title}
           {highlight && (
             <>
-              {" "}
-              <span className="bg-[linear-gradient(120deg,var(--cyan-200),var(--accent))] bg-clip-text text-transparent">{highlight}</span>
+              {' '}
+              <span className="bg-[linear-gradient(120deg,var(--cyan-200),var(--accent))] bg-clip-text text-transparent">
+                {highlight}
+              </span>
             </>
           )}
         </h1>
-        {description && <p className="mx-auto mt-5 mb-0 max-w-[60ch] text-[19px] leading-[1.6] text-fg-secondary">{description}</p>}
+        {description && (
+          <p className="mx-auto mt-5 mb-0 max-w-[60ch] text-[19px] leading-[1.6] text-fg-secondary">
+            {description}
+          </p>
+        )}
         {actions && <div className="mt-8 flex flex-wrap justify-center gap-3">{actions}</div>}
         {command && (
           <div className="mx-auto mt-8 flex max-w-[460px] items-center justify-between gap-4 rounded-md border border-border bg-inset py-2 pr-2 pl-4 font-mono text-[14px] text-foreground">

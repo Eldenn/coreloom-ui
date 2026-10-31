@@ -1,14 +1,13 @@
-"use client"
+'use client'
 
 // Coreloom UI — SettingsSection, SettingsRow, DangerZone (settings block).
 // A section is a card with a title, its fields and a footer with the save action.
 // Pass a `form` from useAppForm (@coreloom/form) and put its fields inside: the section becomes the
 // <form>, and Save is the form's SubmitButton (busy while your onSubmit runs). `onSubmit(FormData)`
 // still works for plain, uncontrolled inputs.
-import * as React from "react"
-import { AlertTriangleIcon } from "lucide-react"
+import { AlertTriangleIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +19,17 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import type { SubmitButton } from "@/components/ui/form"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
+import type { SubmitButton } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 /** What SettingsSection needs from a `useAppForm` instance. */
-type SectionForm = {
+interface SectionForm {
   handleSubmit: () => unknown
   AppForm: React.ComponentType<{ children?: React.ReactNode }>
   SubmitButton: React.ComponentType<React.ComponentProps<typeof SubmitButton>>
@@ -64,8 +64,12 @@ function SettingsSection({
   const body = (
     <>
       <div className="flex flex-col gap-1 px-5 pt-5">
-        <h2 className="m-0 font-display text-[17px] leading-[1.3] font-semibold text-foreground">{title}</h2>
-        {description && <p className="m-0 text-[13px] leading-[1.55] text-muted-foreground">{description}</p>}
+        <h2 className="m-0 font-display text-[17px] leading-[1.3] font-semibold text-foreground">
+          {title}
+        </h2>
+        {description && (
+          <p className="m-0 text-[13px] leading-[1.55] text-muted-foreground">{description}</p>
+        )}
       </div>
       <div className="flex flex-col gap-4 px-5 pt-4 pb-5">{children}</div>
       {(form || onSubmit || footer) && (
@@ -77,17 +81,19 @@ function SettingsSection({
                 {submitLabel}
               </form.SubmitButton>
             </form.AppForm>
-          ) : onSubmit && (
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending && <Spinner className="text-current" />}
-              {submitLabel}
-            </Button>
+          ) : (
+            onSubmit && (
+              <Button type="submit" size="sm" disabled={pending}>
+                {pending && <Spinner className="text-current" />}
+                {submitLabel}
+              </Button>
+            )
           )}
         </div>
       )}
     </>
   )
-  const frame = cn("overflow-hidden rounded-lg border border-border bg-card shadow-md", className)
+  const frame = cn('overflow-hidden rounded-lg border border-border bg-card shadow-md', className)
   if (form)
     return (
       <form
@@ -168,15 +174,23 @@ function DangerZone({
 }) {
   const t = useCoreloomI18n().messages
   title ??= t.settings.dangerZone
-  const [typed, setTyped] = React.useState("")
+  const [typed, setTyped] = React.useState('')
   return (
     <section className="overflow-hidden rounded-lg border border-destructive/40 bg-card">
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5">
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="m-0 font-display text-[17px] leading-[1.3] font-semibold text-foreground">{title}</h2>
-          <p className="m-0 max-w-[56ch] text-[13px] leading-[1.55] text-muted-foreground">{description}</p>
+          <h2 className="m-0 font-display text-[17px] leading-[1.3] font-semibold text-foreground">
+            {title}
+          </h2>
+          <p className="m-0 max-w-[56ch] text-[13px] leading-[1.55] text-muted-foreground">
+            {description}
+          </p>
         </div>
-        <AlertDialog onOpenChange={() => setTyped("")}>
+        <AlertDialog
+          onOpenChange={() => {
+            setTyped('')
+          }}
+        >
           <AlertDialogTrigger asChild>
             <Button variant="destructive">{actionLabel}</Button>
           </AlertDialogTrigger>
@@ -192,12 +206,24 @@ function DangerZone({
               <FieldLabel htmlFor="danger-confirm">
                 {t.settings.typeToConfirm(resourceName)}
               </FieldLabel>
-              <Input id="danger-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" spellCheck={false} />
+              <Input
+                id="danger-confirm"
+                value={typed}
+                onChange={(e) => {
+                  setTyped(e.target.value)
+                }}
+                autoComplete="off"
+                spellCheck={false}
+              />
               <FieldDescription>{t.settings.cannotUndo}</FieldDescription>
             </Field>
             <AlertDialogFooter>
               <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
-              <AlertDialogAction variant="destructive" disabled={typed !== resourceName || pending} onClick={() => onConfirm()}>
+              <AlertDialogAction
+                variant="destructive"
+                disabled={typed !== resourceName || pending}
+                onClick={() => onConfirm()}
+              >
                 {pending && <Spinner className="text-current" />}
                 {actionLabel}
               </AlertDialogAction>

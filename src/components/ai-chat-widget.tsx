@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — Chat widget (block). The support bubble in a page's corner: a round launcher (with an
 // unread count and an optional greeting next to it) that opens the Chat in a card above it, or in a
@@ -10,18 +10,21 @@
 //
 // Not modal on a desktop: the page stays usable behind the card. Escape (or Minimise) folds it back
 // into the launcher and gives focus back to it; opening puts the cursor in the composer.
-import * as React from "react"
-import { MessageCircleIcon, MinusIcon, SparklesIcon, XIcon } from "lucide-react"
+import { MessageCircleIcon, MinusIcon, SparklesIcon, XIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Chat } from "@/components/ai-chat"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Chat } from '@/components/ai-chat'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type ChatWidgetPresence = "online" | "away" | "offline"
+type ChatWidgetPresence = 'online' | 'away' | 'offline'
 
-type ChatWidgetProps = Omit<React.ComponentProps<typeof Chat>, "className" | "header" | "autoFocus"> & {
+type ChatWidgetProps = Omit<
+  React.ComponentProps<typeof Chat>,
+  'className' | 'header' | 'autoFocus'
+> & {
   /** Controlled open state (with onOpenChange); or leave it out and use defaultOpen. */
   open?: boolean
   defaultOpen?: boolean
@@ -43,7 +46,7 @@ type ChatWidgetProps = Omit<React.ComponentProps<typeof Chat>, "className" | "he
   /** The header's Close button: end the conversation (Minimise only hides it). The panel closes either way. */
   onClose?: () => void
   /** Corner of the page. Default "right". */
-  side?: "left" | "right"
+  side?: 'left' | 'right'
   /** Distance from the corner, in px. Default 24. */
   offset?: number | { x: number; y: number }
   /** Default 1200: above sticky headers (1100), under modals (1300), so its own menus (popover 1400) and toasts (1500) stay on top. */
@@ -53,16 +56,20 @@ type ChatWidgetProps = Omit<React.ComponentProps<typeof Chat>, "className" | "he
   className?: string
 }
 
-const PHONE = "(max-width: 639px)"
+const PHONE = '(max-width: 639px)'
 
 function useNarrow() {
   const [narrow, setNarrow] = React.useState(false)
   React.useEffect(() => {
     const mql = window.matchMedia(PHONE)
-    const update = () => setNarrow(mql.matches)
+    const update = () => {
+      setNarrow(mql.matches)
+    }
     update()
-    mql.addEventListener("change", update)
-    return () => mql.removeEventListener("change", update)
+    mql.addEventListener('change', update)
+    return () => {
+      mql.removeEventListener('change', update)
+    }
   }, [])
   return narrow
 }
@@ -71,9 +78,10 @@ function useNarrow() {
 // card (the context meter), menu, listbox or dialog. Tooltips are left out: Escape on a button whose tooltip
 // shows (or is still fading out) closes the chat.
 const LAYERS =
-  "[data-radix-popper-content-wrapper] > [data-state=open]:not([data-slot=tooltip-content]), [role=dialog][data-state=open], [role=alertdialog][data-state=open], [role=menu][data-state=open], [role=listbox][data-state=open]"
+  '[data-radix-popper-content-wrapper] > [data-state=open]:not([data-slot=tooltip-content]), [role=dialog][data-state=open], [role=alertdialog][data-state=open], [role=menu][data-state=open], [role=listbox][data-state=open]'
 
-const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 /** A support chat in the page's corner: a launcher that opens the Chat above it. */
 function ChatWidget({
@@ -83,12 +91,12 @@ function ChatWidget({
   title,
   subtitle,
   avatar,
-  presence = "online",
+  presence = 'online',
   unread = 0,
   greeting,
   onGreetingDismiss,
   onClose,
-  side = "right",
+  side = 'right',
   offset = 24,
   zIndex = 1200,
   fullScreen,
@@ -112,10 +120,14 @@ function ChatWidget({
   // starts open keeps its scroll). Opening goes to the composer; closing goes back to the launcher only
   // when focus was in the panel (read here, before the panel hides and focus falls to <body>).
   const prevOpen = React.useRef(open)
-  const focusNext = React.useRef<"composer" | "launcher" | null>(null)
+  const focusNext = React.useRef<'composer' | 'launcher' | null>(null)
   if (prevOpen.current !== open) {
     prevOpen.current = open
-    focusNext.current = open ? "composer" : panel.current?.contains(document.activeElement) ? "launcher" : null
+    focusNext.current = open
+      ? 'composer'
+      : panel.current?.contains(document.activeElement)
+        ? 'launcher'
+        : null
   }
   // Whether a popover, hover card or menu was open when Escape went down (before it closed itself).
   const layerOpen = React.useRef(false)
@@ -136,20 +148,27 @@ function ChatWidget({
     if (!target) return
     focusNext.current = null
     const frame = requestAnimationFrame(() => {
-      if (target === "launcher") launcher.current?.focus({ preventScroll: true })
-      else panel.current?.querySelector<HTMLElement>("[data-slot=prompt-input-textarea]")?.focus({ preventScroll: true })
+      if (target === 'launcher') launcher.current?.focus({ preventScroll: true })
+      else
+        panel.current
+          ?.querySelector<HTMLElement>('[data-slot=prompt-input-textarea]')
+          ?.focus({ preventScroll: true })
     })
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+    }
   }, [open])
 
   React.useEffect(() => {
     if (!open) return
     // Window capture runs before Radix's own Escape listeners (on document) close their layer.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") layerOpen.current = !!document.querySelector(LAYERS)
+      if (e.key === 'Escape') layerOpen.current = !!document.querySelector(LAYERS)
     }
-    window.addEventListener("keydown", onKey, true)
-    return () => window.removeEventListener("keydown", onKey, true)
+    window.addEventListener('keydown', onKey, true)
+    return () => {
+      window.removeEventListener('keydown', onKey, true)
+    }
   }, [open])
 
   // The full-screen sheet covers the page: the page behind it doesn't scroll. The scrollbar's width goes
@@ -159,16 +178,17 @@ function ChatWidget({
     const body = document.body
     const before = { overflow: body.style.overflow, paddingRight: body.style.paddingRight }
     const scrollbar = window.innerWidth - document.documentElement.clientWidth
-    if (scrollbar > 0) body.style.paddingRight = `${parseFloat(getComputedStyle(body).paddingRight) + scrollbar}px`
-    body.style.overflow = "hidden"
+    if (scrollbar > 0)
+      body.style.paddingRight = `${parseFloat(getComputedStyle(body).paddingRight) + scrollbar}px`
+    body.style.overflow = 'hidden'
     return () => {
       body.style.overflow = before.overflow
       body.style.paddingRight = before.paddingRight
     }
   }, [open, sheet])
 
-  const x = typeof offset === "number" ? offset : offset.x
-  const y = typeof offset === "number" ? offset : offset.y
+  const x = typeof offset === 'number' ? offset : offset.x
+  const y = typeof offset === 'number' ? offset : offset.y
   const LAUNCHER = 56
   const GAP = 16
   const showGreeting = !!greeting && !greetingGone && !open
@@ -177,7 +197,7 @@ function ChatWidget({
   const onPanelKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     // Only keys from inside the panel's own DOM: a menu portalled out of it (focus goes there) handles its own Escape.
     if (!panel.current?.contains(e.target as Node)) return
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       // An inner layer (a citation's card, the context meter) closed first: the next Escape closes the chat.
       // A tooltip also marks Escape as handled, but it isn't a layer worth a second press.
       if (e.defaultPrevented && layerOpen.current) return
@@ -186,8 +206,10 @@ function ChatWidget({
       return
     }
     // The full-screen sheet covers the page: keep Tab inside it.
-    if (sheet && e.key === "Tab") {
-      const items = Array.from(panel.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.offsetParent !== null || el === document.activeElement)
+    if (sheet && e.key === 'Tab') {
+      const items = Array.from(panel.current.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+        (el) => el.offsetParent !== null || el === document.activeElement,
+      )
       if (!items.length) return
       const first = items[0]
       const last = items[items.length - 1]
@@ -204,7 +226,14 @@ function ChatWidget({
   const headerButton = (label: string, onClick: () => void, icon: React.ReactNode) => (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button type="button" variant="ghost" size="icon-sm" aria-label={label} onClick={onClick} className="text-muted-foreground">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          onClick={onClick}
+          className="text-muted-foreground"
+        >
           {icon}
         </Button>
       </TooltipTrigger>
@@ -216,8 +245,12 @@ function ChatWidget({
     <div
       data-slot="chat-widget"
       data-side={side}
-      data-state={open ? "open" : "closed"}
-      className={cn("pointer-events-none fixed flex flex-col gap-4 font-sans", side === "right" ? "items-end" : "items-start", className)}
+      data-state={open ? 'open' : 'closed'}
+      className={cn(
+        'pointer-events-none fixed flex flex-col gap-4 font-sans',
+        side === 'right' ? 'items-end' : 'items-start',
+        className,
+      )}
       style={{ bottom: y, [side]: x, zIndex }}
     >
       <div
@@ -231,48 +264,80 @@ function ChatWidget({
         hidden={!open}
         onKeyDown={onPanelKeyDown}
         className={cn(
-          "pointer-events-auto flex flex-col overflow-hidden bg-surface text-foreground outline-none",
-          "duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0",
+          'pointer-events-auto flex flex-col overflow-hidden bg-surface text-foreground outline-none',
+          'duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0',
           sheet
-            ? "fixed inset-0 motion-safe:slide-in-from-bottom-6"
-            : cn("h-[600px] w-[400px] rounded-xl border border-border shadow-xl motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2", side === "right" ? "origin-bottom-right" : "origin-bottom-left"),
-          !open && "hidden"
+            ? 'fixed inset-0 motion-safe:slide-in-from-bottom-6'
+            : cn(
+                'h-[600px] w-[400px] rounded-xl border border-border shadow-xl motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2',
+                side === 'right' ? 'origin-bottom-right' : 'origin-bottom-left',
+              ),
+          !open && 'hidden',
         )}
-        style={sheet ? undefined : { maxHeight: `calc(100dvh - ${y + LAUNCHER + GAP + 16}px)`, maxWidth: `calc(100vw - ${2 * x}px)` }}
+        style={
+          sheet
+            ? undefined
+            : {
+                maxHeight: `calc(100dvh - ${y + LAUNCHER + GAP + 16}px)`,
+                maxWidth: `calc(100vw - ${2 * x}px)`,
+              }
+        }
       >
-        <div data-slot="chat-widget-header" className="flex shrink-0 items-center gap-3 border-b border-border-subtle px-4 py-3">
+        <div
+          data-slot="chat-widget-header"
+          className="flex shrink-0 items-center gap-3 border-b border-border-subtle px-4 py-3"
+        >
           <div className="relative shrink-0">
             {avatar ?? (
-              <div aria-hidden className="flex size-9 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
+              <div
+                aria-hidden
+                className="flex size-9 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+              >
                 <SparklesIcon className="size-4" />
               </div>
             )}
             <span
               aria-hidden
               className={cn(
-                "absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-surface",
-                presence === "online" ? "bg-success" : presence === "away" ? "bg-warning" : "bg-muted-foreground"
+                'absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-surface',
+                presence === 'online'
+                  ? 'bg-success'
+                  : presence === 'away'
+                    ? 'bg-warning'
+                    : 'bg-muted-foreground',
               )}
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col">
-            <p id={titleId} className="m-0 truncate text-[14.5px] leading-snug font-semibold text-foreground">
+            <p
+              id={titleId}
+              className="m-0 truncate text-[14.5px] leading-snug font-semibold text-foreground"
+            >
               {titleText}
             </p>
-            <p id={subtitleId} className="m-0 truncate text-[12.5px] leading-snug text-muted-foreground">
+            <p
+              id={subtitleId}
+              className="m-0 truncate text-[12.5px] leading-snug text-muted-foreground"
+            >
               <span className="sr-only">{t.presence[presence]}. </span>
               {subtitle ?? t.subtitle}
             </p>
           </div>
           <div className="-mr-1.5 flex shrink-0 items-center gap-0.5">
-            {headerButton(t.minimise, () => setOpen(false), <MinusIcon />)}
+            {headerButton(
+              t.minimise,
+              () => {
+                setOpen(false)
+              },
+              <MinusIcon />,
+            )}
             {headerButton(
               t.close,
               () => {
                 setOpen(false)
                 onClose?.()
               },
-              <XIcon />
+              <XIcon />,
             )}
           </div>
         </div>
@@ -283,19 +348,27 @@ function ChatWidget({
         />
       </div>
 
-      <div className={cn("pointer-events-auto flex items-end gap-3", side === "left" && "flex-row-reverse", open && sheet && "hidden")}>
+      <div
+        className={cn(
+          'pointer-events-auto flex items-end gap-3',
+          side === 'left' && 'flex-row-reverse',
+          open && sheet && 'hidden',
+        )}
+      >
         {showGreeting && (
           <div
             data-slot="chat-widget-greeting"
             className={cn(
-              "relative mb-2 flex max-w-64 items-start gap-1 rounded-xl border border-border bg-popover py-1 pr-1 pl-1 text-[13.5px] text-foreground shadow-lg",
-              "duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1",
-              side === "right" ? "rounded-br-sm" : "rounded-bl-sm"
+              'relative mb-2 flex max-w-64 items-start gap-1 rounded-xl border border-border bg-popover py-1 pr-1 pl-1 text-[13.5px] text-foreground shadow-lg',
+              'duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1',
+              side === 'right' ? 'rounded-br-sm' : 'rounded-bl-sm',
             )}
           >
             <button
               type="button"
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setOpen(true)
+              }}
               className="min-w-0 flex-1 cursor-pointer rounded-lg px-2.5 py-1.5 text-left leading-[1.45] outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
             >
               {greeting}
@@ -320,22 +393,28 @@ function ChatWidget({
           aria-label={t.launcher(unread)}
           aria-expanded={open}
           aria-controls={panelId}
-          onClick={() => setOpen(!open)}
-          className="relative inline-flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none transition-[background-color,box-shadow,transform] duration-180 ease-out hover:bg-primary-hover hover:shadow-glow active:translate-y-px focus-visible:ring-[3px] focus-visible:ring-ring"
+          onClick={() => {
+            setOpen(!open)
+          }}
+          className="relative inline-flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[background-color,box-shadow,transform] duration-180 ease-out outline-none hover:bg-primary-hover hover:shadow-glow focus-visible:ring-[3px] focus-visible:ring-ring active:translate-y-px"
         >
-          {open ? <XIcon className="size-6" aria-hidden /> : <MessageCircleIcon className="size-6" aria-hidden />}
+          {open ? (
+            <XIcon className="size-6" aria-hidden />
+          ) : (
+            <MessageCircleIcon className="size-6" aria-hidden />
+          )}
           {unread > 0 && !open && (
             <span
               aria-hidden
               className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 font-mono text-[11px] font-semibold text-background ring-2 ring-background"
             >
-              {unread > 99 ? "99+" : formatNumber(unread)}
+              {unread > 99 ? '99+' : formatNumber(unread)}
             </span>
           )}
         </button>
       </div>
       <span role="status" className="sr-only">
-        {!open && unread > 0 ? t.unreadStatus(unread) : ""}
+        {!open && unread > 0 ? t.unreadStatus(unread) : ''}
       </span>
     </div>
   )

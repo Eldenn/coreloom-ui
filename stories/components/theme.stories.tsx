@@ -1,16 +1,16 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { AccentPicker, ThemeMenu, ThemeToggle } from "@/components/theme-toggle"
+import { AccentPicker, ThemeMenu, ThemeToggle } from '@/components/theme-toggle'
 
 const meta = {
-  title: "Components/Actions/Theme switch",
+  title: 'Components/Actions/Theme switch',
   component: ThemeMenu,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
         component:
-          "`ThemeMenu` offers Light, Dark and System (follows the OS, live). `ThemeToggle` is the one-button light ↔ dark version. Both save the choice in `localStorage(\"theme\")`; the inline script in Getting started applies it before the first paint. `AccentPicker` sets `<html data-accent>` from the presets in `accents.css` and saves it in `localStorage(\"accent\")`.",
+          '`ThemeMenu` offers Light, Dark and System (follows the OS, live). `ThemeToggle` is the one-button light ↔ dark version. Both save the choice in `localStorage("theme")`; the inline script in Getting started applies it before the first paint. `AccentPicker` sets `<html data-accent>` from the presets in `accents.css` and saves it in `localStorage("accent")`.',
       },
     },
   },

@@ -1,11 +1,10 @@
-"use client"
+'use client'
 
 // Coreloom UI — Combobox. A searchable Select, composed from Popover + Command (Radix + cmdk),
 // following shadcn's combobox pattern. Single value; for several, compose the same parts.
-import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
 import {
   Command,
   CommandEmpty,
@@ -13,11 +12,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type ComboboxOption = {
+interface ComboboxOption {
   value: string
   label: string
   /** Shown before the label (a Lucide icon, an Avatar…). */
@@ -39,8 +39,8 @@ function Combobox({
   className,
   contentClassName,
   id,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
 }: {
   options: ComboboxOption[]
   value?: string
@@ -53,15 +53,15 @@ function Combobox({
   className?: string
   contentClassName?: string
   id?: string
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
 }) {
   const t = useCoreloomI18n().messages
   placeholder ??= t.combobox.placeholder
   searchPlaceholder ??= t.combobox.search
   emptyText ??= t.combobox.empty
   const [open, setOpen] = React.useState(false)
-  const [inner, setInner] = React.useState(defaultValue ?? "")
+  const [inner, setInner] = React.useState(defaultValue ?? '')
   const current = value !== undefined ? value : inner
   const selected = options.find((o) => o.value === current)
 
@@ -83,10 +83,10 @@ function Combobox({
           aria-label={ariaLabel}
           disabled={disabled}
           data-slot="combobox-trigger"
-          data-placeholder={selected ? undefined : ""}
+          data-placeholder={selected ? undefined : ''}
           className={cn(
             "flex h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset px-[13px] font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-            className
+            className,
           )}
         >
           <span className="flex min-w-0 items-center gap-2 truncate">
@@ -98,7 +98,7 @@ function Combobox({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className={cn("w-(--radix-popover-trigger-width) min-w-56 p-0", contentClassName)}
+        className={cn('w-(--radix-popover-trigger-width) min-w-56 p-0', contentClassName)}
       >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
@@ -111,14 +111,16 @@ function Combobox({
                   value={option.value}
                   keywords={[option.label, ...(option.keywords ?? [])]}
                   disabled={option.disabled}
-                  onSelect={() => pick(option.value)}
+                  onSelect={() => {
+                    pick(option.value)
+                  }}
                 >
                   {option.icon}
                   <span className="truncate">{option.label}</span>
                   <CheckIcon
                     className={cn(
-                      "ml-auto text-primary",
-                      option.value === current ? "opacity-100" : "opacity-0"
+                      'ml-auto text-primary',
+                      option.value === current ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                 </CommandItem>

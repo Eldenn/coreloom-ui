@@ -1,16 +1,23 @@
-"use client"
+'use client'
 
 // Coreloom UI — OnboardingLayout (onboarding block). A multi-step setup: the Stepper on top, the
 // current step's content in a card, Back / Continue (Finish on the last step) at the bottom.
 // Each step is usually one form; validate it before `onNext` moves on.
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
-import { Stepper, type StepperStep } from "@/components/ui/stepper"
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Spinner } from '@/components/ui/spinner'
+import { Stepper, type StepperStep } from '@/components/ui/stepper'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function OnboardingLayout({
   steps,
@@ -25,7 +32,7 @@ function OnboardingLayout({
   onSkip,
   nextLabel,
   pending = false,
-  nextType = "button",
+  nextType = 'button',
   formId,
   className,
 }: {
@@ -48,7 +55,7 @@ function OnboardingLayout({
   nextLabel?: React.ReactNode
   pending?: boolean
   /** "submit" with `formId` makes Continue submit the step's <form id={formId}>. */
-  nextType?: "button" | "submit"
+  nextType?: 'button' | 'submit'
   formId?: string
   className?: string
 }) {
@@ -66,12 +73,21 @@ function OnboardingLayout({
   }, [current])
 
   return (
-    <div data-slot="onboarding" className={cn("mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10", className)}>
+    <div
+      data-slot="onboarding"
+      className={cn('mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10', className)}
+    >
       {brand && <div className="flex justify-center">{brand}</div>}
       <Stepper steps={steps} current={current} onStepChange={onStepChange} />
       <Card className="gap-6 px-6 py-6">
         <CardHeader>
-          <CardTitle ref={headingRef} tabIndex={-1} className="text-[20px] outline-none" role="heading" aria-level={1}>
+          <CardTitle
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-[20px] outline-none"
+            role="heading"
+            aria-level={1}
+          >
             {title}
           </CardTitle>
           {description && <CardDescription className="text-[14px]">{description}</CardDescription>}
@@ -90,7 +106,13 @@ function OnboardingLayout({
               </Button>
             )}
           </div>
-          <Button type={nextType} form={formId} onClick={nextType === "button" ? () => onNext?.() : undefined} disabled={pending} aria-busy={pending || undefined}>
+          <Button
+            type={nextType}
+            form={formId}
+            onClick={nextType === 'button' ? () => onNext?.() : undefined}
+            disabled={pending}
+            aria-busy={pending || undefined}
+          >
             {pending && <Spinner className="text-current" />}
             {nextLabel ?? (last ? t.finish : t.next)}
           </Button>

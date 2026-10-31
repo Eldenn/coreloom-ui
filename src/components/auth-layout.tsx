@@ -1,8 +1,8 @@
 // Coreloom UI — AuthLayout (auth block). Centered column for sign-in, sign-up and verification
 // screens: brand on top, the form card, small print below.
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 function AuthLayout({
   brand,
@@ -20,8 +20,8 @@ function AuthLayout({
   return (
     <div
       className={cn(
-        "relative flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-base px-4 py-10",
-        className
+        'relative flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-base px-4 py-10',
+        className,
       )}
     >
       <div
@@ -30,7 +30,11 @@ function AuthLayout({
       />
       {brand && <div className="relative flex items-center justify-center">{brand}</div>}
       <div className="relative w-full max-w-[400px]">{children}</div>
-      {footer && <div className="relative max-w-[400px] text-center text-[12px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">{footer}</div>}
+      {footer && (
+        <div className="relative max-w-[400px] text-center text-[12px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground">
+          {footer}
+        </div>
+      )}
     </div>
   )
 }

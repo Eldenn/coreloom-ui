@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
 // Coreloom UI — AppHeader (app-shell block). Sticky bar above the page: sidebar toggle,
 // breadcrumb, then your actions (search, notifications, theme) on the right.
-import * as React from "react"
+import * as React from 'react'
 
 import {
   Breadcrumb,
@@ -11,14 +11,23 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { AppLink } from "@/lib/link"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+} from '@/components/ui/breadcrumb'
+import { Separator } from '@/components/ui/separator'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { AppLink } from '@/lib/link'
 
-type Crumb = { label: string; href?: string }
+interface Crumb {
+  label: string
+  href?: string
+}
 
-function AppHeader({ breadcrumbs = [], actions }: { breadcrumbs?: Crumb[]; actions?: React.ReactNode }) {
+function AppHeader({
+  breadcrumbs = [],
+  actions,
+}: {
+  breadcrumbs?: Crumb[]
+  actions?: React.ReactNode
+}) {
   return (
     <header className="sticky top-0 z-(--z-dropdown) flex h-14 shrink-0 items-center gap-2 border-b border-border-subtle bg-background/85 px-4 backdrop-blur-md">
       <SidebarTrigger className="-ml-1" />
@@ -34,7 +43,9 @@ function AppHeader({ breadcrumbs = [], actions }: { breadcrumbs?: Crumb[]; actio
                     {i === breadcrumbs.length - 1 || !crumb.href ? (
                       <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink asChild><AppLink href={crumb.href}>{crumb.label}</AppLink></BreadcrumbLink>
+                      <BreadcrumbLink asChild>
+                        <AppLink href={crumb.href}>{crumb.label}</AppLink>
+                      </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>
                 </React.Fragment>

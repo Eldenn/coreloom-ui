@@ -1,16 +1,20 @@
-"use client"
+'use client'
 
 // Coreloom UI — FileUpload. A drop zone (click or drag) and the list of chosen files, with type and
 // size checks, image thumbnails and an optional progress bar per file. It only collects Files: you
 // upload them (and pass `progress`) yourself.
-import * as React from "react"
-import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react"
+import { FileIcon, UploadCloudIcon, XIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { Progress } from "@/components/ui/progress"
+import { Progress } from '@/components/ui/progress'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type FileRejection = { file: File; reason: "type" | "size" | "count"; message: string }
+interface FileRejection {
+  file: File
+  reason: 'type' | 'size' | 'count'
+  message: string
+}
 
 /** "image/*,.pdf" → does this file match? */
 function accepts(file: File, accept?: string) {
@@ -18,15 +22,21 @@ function accepts(file: File, accept?: string) {
   const name = file.name.toLowerCase()
   const type = file.type.toLowerCase()
   return accept
-    .split(",")
+    .split(',')
     .map((a) => a.trim().toLowerCase())
     .filter(Boolean)
-    .some((a) => (a.startsWith(".") ? name.endsWith(a) : a.endsWith("/*") ? type.startsWith(a.slice(0, -1)) : type === a))
+    .some((a) =>
+      a.startsWith('.')
+        ? name.endsWith(a)
+        : a.endsWith('/*')
+          ? type.startsWith(a.slice(0, -1))
+          : type === a,
+    )
 }
 
 /** 1536 → "1.5 kB" in the current locale. */
 function formatBytes(bytes: number, locale: string) {
-  const units = ["byte", "kilobyte", "megabyte", "gigabyte"] as const
+  const units = ['byte', 'kilobyte', 'megabyte', 'gigabyte'] as const
   let i = 0
   let n = bytes
   while (n >= 1024 && i < units.length - 1) {
@@ -34,10 +44,17 @@ function formatBytes(bytes: number, locale: string) {
     i++
   }
   // "narrow" gives B / kB / MB (o / ko / Mo in French) instead of "byte"; keep a space before the unit.
-  return new Intl.NumberFormat(locale, { style: "unit", unit: units[i], unitDisplay: "narrow", maximumFractionDigits: n < 10 && i > 0 ? 1 : 0 })
+  return new Intl.NumberFormat(locale, {
+    style: 'unit',
+    unit: units[i],
+    unitDisplay: 'narrow',
+    maximumFractionDigits: n < 10 && i > 0 ? 1 : 0,
+  })
     .formatToParts(n)
-    .map((part, index, parts) => (part.type === "unit" && parts[index - 1]?.type !== "literal" ? ` ${part.value}` : part.value))
-    .join("")
+    .map((part, index, parts) =>
+      part.type === 'unit' && parts[index - 1]?.type !== 'literal' ? ` ${part.value}` : part.value,
+    )
+    .join('')
 }
 
 function fileKey(file: File) {
@@ -47,10 +64,12 @@ function fileKey(file: File) {
 function Thumbnail({ file }: { file: File }) {
   const [url, setUrl] = React.useState<string>()
   React.useEffect(() => {
-    if (!file.type.startsWith("image/") || typeof URL.createObjectURL !== "function") return
+    if (!file.type.startsWith('image/') || typeof URL.createObjectURL !== 'function') return
     const u = URL.createObjectURL(file)
     setUrl(u)
-    return () => URL.revokeObjectURL(u)
+    return () => {
+      URL.revokeObjectURL(u)
+    }
   }, [file])
   return (
     <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-border bg-secondary text-muted-foreground [&_svg]:size-4">
@@ -73,8 +92,8 @@ function FileUpload({
   className,
   id,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-describedby": ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedby,
 }: {
   value?: File[]
   defaultValue?: File[]
@@ -94,8 +113,8 @@ function FileUpload({
   /** Lands on the file input, so a FieldLabel's htmlFor points at it. */
   id?: string
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-describedby'?: string
 }) {
   const { messages, locale } = useCoreloomI18n()
   const t = messages.fileUpload
@@ -117,13 +136,22 @@ function FileUpload({
     const rejections: FileRejection[] = []
     const ok: File[] = []
     for (const file of incoming) {
-      if (!accepts(file, accept)) rejections.push({ file, reason: "type", message: t.wrongType(file.name) })
-      else if (maxSize !== undefined && file.size > maxSize) rejections.push({ file, reason: "size", message: t.tooLarge(file.name, formatBytes(maxSize, locale)) })
+      if (!accepts(file, accept))
+        rejections.push({ file, reason: 'type', message: t.wrongType(file.name) })
+      else if (maxSize !== undefined && file.size > maxSize)
+        rejections.push({
+          file,
+          reason: 'size',
+          message: t.tooLarge(file.name, formatBytes(maxSize, locale)),
+        })
       else ok.push(file)
     }
-    let next = multiple ? [...files.filter((f) => !ok.some((o) => fileKey(o) === fileKey(f))), ...ok] : ok.slice(-1)
+    let next = multiple
+      ? [...files.filter((f) => !ok.some((o) => fileKey(o) === fileKey(f))), ...ok]
+      : ok.slice(-1)
     if (limit !== undefined && next.length > limit) {
-      for (const file of next.slice(limit)) rejections.push({ file, reason: "count", message: t.tooMany(limit) })
+      for (const file of next.slice(limit))
+        rejections.push({ file, reason: 'count', message: t.tooMany(limit) })
       next = next.slice(0, limit)
     }
     setErrors([...new Set(rejections.map((r) => r.message))])
@@ -131,22 +159,24 @@ function FileUpload({
     if (ok.length) commit(next)
   }
 
-  const invalid = (ariaInvalid && ariaInvalid !== "false") || errors.length > 0
+  const invalid = (ariaInvalid && ariaInvalid !== 'false') || errors.length > 0
 
   return (
-    <div data-slot="file-upload" className={cn("flex w-full flex-col gap-2.5", className)}>
+    <div data-slot="file-upload" className={cn('flex w-full flex-col gap-2.5', className)}>
       <label
         data-dragging={dragging || undefined}
         data-disabled={disabled || undefined}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-input bg-inset px-4 py-7 text-center font-sans text-[14px] text-muted-foreground transition-[border-color,background-color,box-shadow] duration-180 ease-out hover:border-primary has-[input:focus-visible]:border-primary has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring data-dragging:border-primary data-dragging:bg-primary-subtle data-disabled:pointer-events-none data-disabled:opacity-55",
-          invalid && "border-destructive"
+          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-input bg-inset px-4 py-7 text-center font-sans text-[14px] text-muted-foreground transition-[border-color,background-color,box-shadow] duration-180 ease-out hover:border-primary has-[input:focus-visible]:border-primary has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring data-disabled:pointer-events-none data-disabled:opacity-55 data-dragging:border-primary data-dragging:bg-primary-subtle',
+          invalid && 'border-destructive',
         )}
         onDragOver={(e) => {
           e.preventDefault()
           if (!disabled) setDragging(true)
         }}
-        onDragLeave={() => setDragging(false)}
+        onDragLeave={() => {
+          setDragging(false)
+        }}
         onDrop={(e) => {
           e.preventDefault()
           setDragging(false)
@@ -155,7 +185,10 @@ function FileUpload({
       >
         <UploadCloudIcon className="size-6 text-muted-foreground" aria-hidden />
         <span>
-          {multiple ? t.drop : t.dropOne} <span className="font-medium text-primary-text underline underline-offset-4">{t.browse}</span>
+          {multiple ? t.drop : t.dropOne}{' '}
+          <span className="font-medium text-primary-text underline underline-offset-4">
+            {t.browse}
+          </span>
         </span>
         <input
           ref={inputRef}
@@ -166,16 +199,22 @@ function FileUpload({
           multiple={multiple}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={[ariaDescribedby, errors.length ? errorId : null].filter(Boolean).join(" ") || undefined}
+          aria-describedby={
+            [ariaDescribedby, errors.length ? errorId : null].filter(Boolean).join(' ') || undefined
+          }
           onChange={(e) => {
             if (e.target.files?.length) addFiles(e.target.files)
-            e.target.value = ""
+            e.target.value = ''
           }}
           onBlur={onBlur}
         />
       </label>
       {errors.length > 0 && (
-        <div id={errorId} role="alert" className="flex flex-col gap-0.5 text-[11px] text-destructive">
+        <div
+          id={errorId}
+          role="alert"
+          className="flex flex-col gap-0.5 text-[11px] text-destructive"
+        >
           {errors.map((m) => (
             <span key={m}>{m}</span>
           ))}
@@ -186,15 +225,28 @@ function FileUpload({
           {files.map((file) => {
             const p = progress?.(file)
             return (
-              <li key={fileKey(file)} className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5">
+              <li
+                key={fileKey(file)}
+                className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5"
+              >
                 <Thumbnail file={file} />
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="truncate text-[14px] font-medium text-foreground">{file.name}</span>
-                    <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{formatBytes(file.size, locale)}</span>
+                    <span className="truncate text-[14px] font-medium text-foreground">
+                      {file.name}
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                      {formatBytes(file.size, locale)}
+                    </span>
                   </div>
                   {p !== undefined && p < 100 && (
-                    <Progress value={p} aria-label={t.uploading(new Intl.NumberFormat(locale, { style: "percent" }).format(p / 100))} className="h-1" />
+                    <Progress
+                      value={p}
+                      aria-label={t.uploading(
+                        new Intl.NumberFormat(locale, { style: 'percent' }).format(p / 100),
+                      )}
+                      className="h-1"
+                    />
                   )}
                 </div>
                 <button
@@ -218,4 +270,4 @@ function FileUpload({
   )
 }
 
-export { FileUpload, formatBytes, type FileRejection }
+export { type FileRejection, FileUpload, formatBytes }

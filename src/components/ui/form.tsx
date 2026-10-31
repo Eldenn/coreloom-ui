@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — Form: TanStack Form wired to Coreloom's Field and controls.
 // `useAppForm` is TanStack's useForm with the field components below attached:
@@ -10,41 +10,55 @@
 // Validators accept any Standard Schema (zod, valibot, arktype) or plain functions returning a message.
 // Validate on change (`validators: { onChange: schema }`): errors show once a field has been left or the
 // form submitted, then update as the user types — with aria-invalid on the control.
-import * as React from "react"
-import { createFormHook, createFormHookContexts, useStore } from "@tanstack/react-form"
+import { createFormHook, createFormHookContexts, useStore } from '@tanstack/react-form'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Combobox } from "@/components/ui/combobox"
-import { DatePicker } from "@/components/ui/date-picker"
-import { DateRangePicker, type DateRange } from "@/components/ui/date-range-picker"
-import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
-import { FileUpload } from "@/components/ui/file-upload"
-import { Input } from "@/components/ui/input"
-import { MoneyInput } from "@/components/ui/money-input"
-import { MultiSelect } from "@/components/ui/multi-select"
-import { PhoneInput } from "@/components/ui/phone-input"
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import { Switch } from "@/components/ui/switch"
-import { TagsInput } from "@/components/ui/tags-input"
-import { Textarea } from "@/components/ui/textarea"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Combobox } from '@/components/ui/combobox'
+import { DatePicker } from '@/components/ui/date-picker'
+import { type DateRange, DateRangePicker } from '@/components/ui/date-range-picker'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field'
+import { FileUpload } from '@/components/ui/file-upload'
+import { Input } from '@/components/ui/input'
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
+import { MoneyInput } from '@/components/ui/money-input'
+import { MultiSelect } from '@/components/ui/multi-select'
+import { PhoneInput } from '@/components/ui/phone-input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
+import { TagsInput } from '@/components/ui/tags-input'
+import { Textarea } from '@/components/ui/textarea'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
 
-type FieldIssue = { message?: string }
+interface FieldIssue {
+  message?: string
+}
 
 /** Turns TanStack's mixed error values (strings, Standard Schema issues) into `{ message }`. */
 function toIssues(errors: unknown[]): FieldIssue[] {
   return errors
     .flatMap((e) => (Array.isArray(e) ? e : [e]))
-    .map((e) => (typeof e === "string" ? { message: e } : (e as FieldIssue | null)))
-    .filter((e): e is FieldIssue => typeof e?.message === "string" && e.message !== "")
+    .map((e) => (typeof e === 'string' ? { message: e } : (e as FieldIssue | null)))
+    .filter((e): e is FieldIssue => typeof e?.message === 'string' && e.message !== '')
 }
 
 /** State shared by every field component: ids, the invalid flag and the errors to show. */
@@ -57,10 +71,18 @@ function useFieldMeta() {
   const id = `${field.name}-${uid}`
   const issues = toIssues(errors)
   const invalid = (isBlurred || submitted) && issues.length > 0
-  return { field, id, labelId: `${id}-label`, descriptionId: `${id}-description`, errorId: `${id}-error`, invalid, issues }
+  return {
+    field,
+    id,
+    labelId: `${id}-label`,
+    descriptionId: `${id}-description`,
+    errorId: `${id}-error`,
+    invalid,
+    issues,
+  }
 }
 
-type FieldShellProps = {
+interface FieldShellProps {
   label: React.ReactNode
   description?: React.ReactNode
   className?: string
@@ -76,13 +98,25 @@ type VerticalShellProps = FieldShellProps & {
 type Meta = ReturnType<typeof useFieldMeta>
 
 function describedBy(meta: Meta, description?: React.ReactNode) {
-  return [description ? meta.descriptionId : null, meta.invalid ? meta.errorId : null].filter(Boolean).join(" ") || undefined
+  return (
+    [description ? meta.descriptionId : null, meta.invalid ? meta.errorId : null]
+      .filter(Boolean)
+      .join(' ') || undefined
+  )
 }
 
 /** Label on top, control, then the description and the error. */
-function VerticalShell({ meta, label, description, className, labelAction, hideLabel, children }: VerticalShellProps & { meta: Meta; children: React.ReactNode }) {
+function VerticalShell({
+  meta,
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  children,
+}: VerticalShellProps & { meta: Meta; children: React.ReactNode }) {
   const labelEl = (
-    <FieldLabel id={meta.labelId} htmlFor={meta.id} className={cn(hideLabel && "sr-only")}>
+    <FieldLabel id={meta.labelId} htmlFor={meta.id} className={cn(hideLabel && 'sr-only')}>
       {label}
     </FieldLabel>
   )
@@ -110,17 +144,36 @@ function TextField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof Input>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof Input>,
+    'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value)
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <Input
         id={meta.id}
         name={field.name}
-        value={value == null ? "" : String(value)}
-        onChange={(e) => field.handleChange(props.type === "number" ? (e.target.value === "" ? undefined : e.target.valueAsNumber) : e.target.value)}
+        value={value == null ? '' : String(value)}
+        onChange={(e) => {
+          field.handleChange(
+            props.type === 'number'
+              ? e.target.value === ''
+                ? undefined
+                : e.target.valueAsNumber
+              : e.target.value,
+          )
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -137,17 +190,30 @@ function TextareaField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof Textarea>, "value" | "defaultValue" | "onChange" | "onBlur" | "id" | "name" | "className">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof Textarea>,
+    'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value)
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <Textarea
         id={meta.id}
         name={field.name}
-        value={value == null ? "" : String(value)}
-        onChange={(e) => field.handleChange(e.target.value)}
+        value={value == null ? '' : String(value)}
+        onChange={(e) => {
+          field.handleChange(e.target.value)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -184,10 +250,20 @@ function OTPField({
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   const groups = Array.from({ length: Math.ceil(length / groupSize) }, (_, g) =>
-    Array.from({ length: Math.min(groupSize, length - g * groupSize) }, (_, i) => g * groupSize + i)
+    Array.from(
+      { length: Math.min(groupSize, length - g * groupSize) },
+      (_, i) => g * groupSize + i,
+    ),
   )
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <InputOTP
         id={meta.id}
         name={field.name}
@@ -196,8 +272,10 @@ function OTPField({
         autoComplete="one-time-code"
         autoFocus={autoFocus}
         disabled={disabled}
-        value={value ?? ""}
-        onChange={(v: string) => field.handleChange(v)}
+        value={value ?? ''}
+        onChange={(v: string) => {
+          field.handleChange(v)
+        }}
         onBlur={field.handleBlur}
         onComplete={() => {
           if (submitOnComplete) void field.form.handleSubmit()
@@ -220,7 +298,11 @@ function OTPField({
   )
 }
 
-type Option = { value: string; label: React.ReactNode; disabled?: boolean }
+interface Option {
+  value: string
+  label: React.ReactNode
+  disabled?: boolean
+}
 
 function SelectField({
   label,
@@ -236,15 +318,28 @@ function SelectField({
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <Select
         name={field.name}
-        value={value ?? ""}
-        onValueChange={(v) => field.handleChange(v)}
+        value={value ?? ''}
+        onValueChange={(v) => {
+          field.handleChange(v)
+        }}
         onOpenChange={(open) => !open && field.handleBlur()}
         disabled={disabled}
       >
-        <SelectTrigger id={meta.id} aria-invalid={meta.invalid || undefined} aria-describedby={describedBy(meta, description)}>
+        <SelectTrigger
+          id={meta.id}
+          aria-invalid={meta.invalid || undefined}
+          aria-describedby={describedBy(meta, description)}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -266,15 +361,26 @@ function ComboboxField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof Combobox>, "value" | "defaultValue" | "onValueChange" | "id" | "className" | "aria-invalid">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof Combobox>,
+    'value' | 'defaultValue' | 'onValueChange' | 'id' | 'className' | 'aria-invalid'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <Combobox
         id={meta.id}
-        value={value ?? ""}
+        value={value ?? ''}
         onValueChange={(v) => {
           field.handleChange(v)
           field.handleBlur()
@@ -293,12 +399,30 @@ function DateField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof DatePicker>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof DatePicker>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as Date | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <DatePicker
         id={meta.id}
         value={value}
@@ -323,16 +447,36 @@ function DateRangeField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof DateRangePicker>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof DateRangePicker>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as DateRange | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <DateRangePicker
         id={meta.id}
         value={value ?? { from: undefined }}
-        onValueChange={(r) => field.handleChange(r)}
+        onValueChange={(r) => {
+          field.handleChange(r)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -350,16 +494,36 @@ function TagsField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof TagsInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof TagsInput>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string[] | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <TagsInput
         id={meta.id}
         value={value ?? []}
-        onValueChange={(tags) => field.handleChange(tags)}
+        onValueChange={(tags) => {
+          field.handleChange(tags)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -377,16 +541,36 @@ function MultiSelectField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof MultiSelect>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof MultiSelect>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string[] | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <MultiSelect
         id={meta.id}
         value={value ?? []}
-        onValueChange={(v) => field.handleChange(v)}
+        onValueChange={(v) => {
+          field.handleChange(v)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -404,16 +588,36 @@ function MoneyField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof MoneyInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof MoneyInput>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as number | null | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <MoneyInput
         id={meta.id}
         value={value ?? null}
-        onValueChange={(n) => field.handleChange(n)}
+        onValueChange={(n) => {
+          field.handleChange(n)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -431,16 +635,36 @@ function PhoneField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof PhoneInput>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof PhoneInput>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <PhoneInput
         id={meta.id}
-        value={value ?? ""}
-        onValueChange={(v) => field.handleChange(v)}
+        value={value ?? ''}
+        onValueChange={(v) => {
+          field.handleChange(v)
+        }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
         aria-describedby={describedBy(meta, description)}
@@ -458,12 +682,30 @@ function FileField({
   labelAction,
   hideLabel,
   ...props
-}: VerticalShellProps & Omit<React.ComponentProps<typeof FileUpload>, "value" | "defaultValue" | "onValueChange" | "onBlur" | "id" | "className" | "aria-invalid" | "aria-describedby">) {
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof FileUpload>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useStore(field.store, (s) => s.value) as File[] | undefined
   return (
-    <VerticalShell meta={meta} label={label} description={description} className={className} labelAction={labelAction} hideLabel={hideLabel}>
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
       <FileUpload
         id={meta.id}
         value={value ?? []}
@@ -496,7 +738,7 @@ function RadioGroupField({
       {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
       <RadioGroup
         name={field.name}
-        value={value ?? ""}
+        value={value ?? ''}
         onValueChange={(v) => {
           field.handleChange(v)
           field.handleBlur()
@@ -508,7 +750,12 @@ function RadioGroupField({
       >
         {options.map((o) => (
           <Field key={o.value} orientation="horizontal">
-            <RadioGroupItem id={`${meta.id}-${o.value}`} value={o.value} disabled={o.disabled} aria-invalid={meta.invalid || undefined} />
+            <RadioGroupItem
+              id={`${meta.id}-${o.value}`}
+              value={o.value}
+              disabled={o.disabled}
+              aria-invalid={meta.invalid || undefined}
+            />
             <FieldLabel htmlFor={`${meta.id}-${o.value}`}>{o.label}</FieldLabel>
           </Field>
         ))}
@@ -525,7 +772,7 @@ function ToggleField({
   className,
   disabled,
   control,
-}: FieldShellProps & { disabled?: boolean; control: "checkbox" | "switch" }) {
+}: FieldShellProps & { disabled?: boolean; control: 'checkbox' | 'switch' }) {
   const meta = useFieldMeta()
   const field = meta.field
   const checked = useStore(field.store, (s) => Boolean(s.value))
@@ -534,22 +781,26 @@ function ToggleField({
     name: field.name,
     checked,
     disabled,
-    onCheckedChange: (c: boolean | "indeterminate") => {
+    onCheckedChange: (c: boolean | 'indeterminate') => {
       field.handleChange(c === true)
       field.handleBlur()
     },
-    "aria-invalid": meta.invalid || undefined,
-    "aria-describedby": describedBy(meta, description),
+    'aria-invalid': meta.invalid || undefined,
+    'aria-describedby': describedBy(meta, description),
   }
   return (
-    <Field orientation="horizontal" data-invalid={meta.invalid || undefined} className={cn(control === "switch" && "justify-between", className)}>
-      {control === "checkbox" && <Checkbox {...common} />}
+    <Field
+      orientation="horizontal"
+      data-invalid={meta.invalid || undefined}
+      className={cn(control === 'switch' && 'justify-between', className)}
+    >
+      {control === 'checkbox' && <Checkbox {...common} />}
       <FieldContent>
         <FieldLabel htmlFor={meta.id}>{label}</FieldLabel>
         {description && <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>}
         {meta.invalid && <FieldError id={meta.errorId} errors={meta.issues} />}
       </FieldContent>
-      {control === "switch" && <Switch {...common} />}
+      {control === 'switch' && <Switch {...common} />}
     </Field>
   )
 }
@@ -569,7 +820,7 @@ function SubmitButton({
   pending = false,
   disabled,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "type"> & {
+}: Omit<React.ComponentProps<typeof Button>, 'type'> & {
   pendingLabel?: React.ReactNode
   /** Busy state you control (an OAuth redirect, a parent's request), on top of the form's own submission. */
   pending?: boolean
@@ -578,7 +829,13 @@ function SubmitButton({
   const isSubmitting = useStore(form.store, (s) => s.isSubmitting)
   const busy = isSubmitting || pending
   return (
-    <Button {...props} type="submit" data-submitting={isSubmitting || undefined} aria-busy={busy || undefined} disabled={busy || disabled}>
+    <Button
+      {...props}
+      type="submit"
+      data-submitting={isSubmitting || undefined}
+      aria-busy={busy || undefined}
+      disabled={busy || disabled}
+    >
       {busy && <Spinner className="text-current" />}
       {busy && pendingLabel ? pendingLabel : children}
     </Button>
@@ -595,7 +852,12 @@ function FormErrors({ title, className }: { title?: React.ReactNode; className?:
   return (
     <Alert variant="destructive" className={className}>
       <AlertTitle>{title ?? t.form.errorTitle}</AlertTitle>
-      <AlertDescription>{issues.map((i) => i.message).filter(Boolean).join(" ")}</AlertDescription>
+      <AlertDescription>
+        {issues
+          .map((i) => i.message)
+          .filter(Boolean)
+          .join(' ')}
+      </AlertDescription>
     </Alert>
   )
 }
@@ -627,31 +889,31 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
 })
 
 export {
-  useAppForm,
-  withForm,
-  withFieldGroup,
-  useFieldContext,
-  useFormContext,
-  TextField,
-  TextareaField,
-  SelectField,
+  CheckboxField,
   ComboboxField,
-  MultiSelectField,
   DateField,
   DateRangeField,
-  TagsField,
+  describedBy,
   FileField,
+  FormErrors,
   MoneyField,
+  MultiSelectField,
+  OTPField,
   PhoneField,
   RadioGroupField,
-  CheckboxField,
-  SwitchField,
-  OTPField,
+  SelectField,
   SubmitButton,
-  FormErrors,
+  SwitchField,
+  TagsField,
+  TextareaField,
+  TextField,
+  useAppForm,
+  useFieldContext,
   // For your own field components (see rich-text-field.tsx): ids, errors and the label / description / error frame.
   useFieldMeta,
+  useFormContext,
   VerticalShell,
-  describedBy,
   type VerticalShellProps,
+  withFieldGroup,
+  withForm,
 }

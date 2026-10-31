@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — VirtualList. A long list (logs, events, search results) in a scrolling box where
 // only the visible items are in the DOM (TanStack Virtual). Items can differ in height: they are
@@ -8,12 +8,12 @@
 //   const q = useInfiniteQuery(…)
 //   <VirtualList items={q.data?.pages.flat() ?? []} hasMore={q.hasNextPage}
 //     loadingMore={q.isFetchingNextPage} onEndReached={() => q.fetchNextPage()} … />
-import * as React from "react"
-import { useVirtualizer } from "@tanstack/react-virtual"
+import { useVirtualizer } from '@tanstack/react-virtual'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Spinner } from "@/components/ui/spinner"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Spinner } from '@/components/ui/spinner'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function VirtualList<T>({
   items,
@@ -29,8 +29,8 @@ function VirtualList<T>({
   endThreshold = 5,
   empty,
   className,
-  "aria-label": ariaLabel,
-  "aria-labelledby": ariaLabelledBy,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
 }: {
   items: readonly T[]
   renderItem: (item: T, index: number) => React.ReactNode
@@ -53,8 +53,8 @@ function VirtualList<T>({
   empty?: React.ReactNode
   className?: string
   /** Name the list: the scrolling box is a keyboard-reachable region. */
-  "aria-label"?: string
-  "aria-labelledby"?: string
+  'aria-label'?: string
+  'aria-labelledby'?: string
 }) {
   const t = useCoreloomI18n().messages.virtualList
   const scrollRef = React.useRef<HTMLDivElement>(null)
@@ -65,7 +65,7 @@ function VirtualList<T>({
     estimateSize: () => estimateSize,
     overscan,
     gap,
-    getItemKey: (index) => (index < items.length ? getKey(items[index], index) : "__footer"),
+    getItemKey: (index) => (index < items.length ? getKey(items[index], index) : '__footer'),
   })
   const virtualItems = virtualizer.getVirtualItems()
   const lastIndex = virtualItems[virtualItems.length - 1]?.index ?? -1
@@ -87,14 +87,20 @@ function VirtualList<T>({
       aria-busy={loadingMore || undefined}
       style={{ height }}
       className={cn(
-        "relative overflow-y-auto overscroll-contain rounded-md border border-border-subtle outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-        className
+        'relative overflow-y-auto overscroll-contain rounded-md border border-border-subtle outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+        className,
       )}
     >
       {items.length === 0 && !loadingMore && !hasMore ? (
-        <div className="flex h-full items-center justify-center p-6 text-center text-[13.5px] text-muted-foreground">{empty}</div>
+        <div className="flex h-full items-center justify-center p-6 text-center text-[13.5px] text-muted-foreground">
+          {empty}
+        </div>
       ) : (
-        <ul role="list" className="relative m-0 list-none p-0" style={{ height: virtualizer.getTotalSize() }}>
+        <ul
+          role="list"
+          className="relative m-0 list-none p-0"
+          style={{ height: virtualizer.getTotalSize() }}
+        >
           {virtualItems.map((v) =>
             v.index < items.length ? (
               <li
@@ -127,12 +133,12 @@ function VirtualList<T>({
                   t.end
                 )}
               </li>
-            )
+            ),
           )}
         </ul>
       )}
       <span role="status" className="sr-only">
-        {loadingMore ? t.loadingMore : ""}
+        {loadingMore ? t.loadingMore : ''}
       </span>
     </div>
   )

@@ -1,15 +1,15 @@
-"use client"
+'use client'
 
 // Coreloom UI — Reasoning. A model's thinking, folded under one line: "Thinking…" while it streams
 // (open, so people can follow), then "Thought for 6 s", closed. Takes an AI SDK reasoning part's
 // text and state.
-import * as React from "react"
-import { BrainIcon, ChevronRightIcon } from "lucide-react"
+import { BrainIcon, ChevronRightIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Spinner } from "@/components/ui/spinner"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Spinner } from '@/components/ui/spinner'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function Reasoning({
   text,
@@ -45,14 +45,28 @@ function Reasoning({
 
   const seconds = duration ?? measured
   return (
-    <Collapsible open={open} onOpenChange={setOpen} data-slot="reasoning" className={cn("text-[13.5px]", className)}>
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      data-slot="reasoning"
+      className={cn('text-[13.5px]', className)}
+    >
       <CollapsibleTrigger className="group inline-flex cursor-pointer items-center gap-1.5 rounded-sm py-0.5 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring">
-        {streaming ? <Spinner className="size-3.5 text-current" aria-hidden role="presentation" /> : <BrainIcon className="size-3.5" aria-hidden />}
+        {streaming ? (
+          <Spinner className="size-3.5 text-current" aria-hidden role="presentation" />
+        ) : (
+          <BrainIcon className="size-3.5" aria-hidden />
+        )}
         <span>{streaming ? t.thinking : t.thought(seconds ?? 0)}</span>
-        <ChevronRightIcon className="size-3.5 transition-transform duration-180 group-data-[state=open]:rotate-90" aria-hidden />
+        <ChevronRightIcon
+          className="size-3.5 transition-transform duration-180 group-data-[state=open]:rotate-90"
+          aria-hidden
+        />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-2 border-l-2 border-border-strong py-0.5 pl-3 leading-[1.6] whitespace-pre-wrap text-muted-foreground">{text}</div>
+        <div className="mt-2 border-l-2 border-border-strong py-0.5 pl-3 leading-[1.6] whitespace-pre-wrap text-muted-foreground">
+          {text}
+        </div>
       </CollapsibleContent>
     </Collapsible>
   )

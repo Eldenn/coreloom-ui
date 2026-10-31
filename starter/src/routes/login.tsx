@@ -1,18 +1,18 @@
-import * as React from "react"
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
-import { z } from "zod"
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import * as React from 'react'
+import { z } from 'zod'
 
-import { AuthLayout } from "@/components/auth-layout"
-import { Brand } from "@/components/brand"
-import { LoginForm } from "@/components/login-form"
-import { auth } from "@/lib/auth"
-import { useT } from "@/lib/locale"
+import { AuthLayout } from '@/components/auth-layout'
+import { Brand } from '@/components/brand'
+import { LoginForm } from '@/components/login-form'
+import { auth } from '@/lib/auth'
+import { useT } from '@/lib/locale'
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute('/login')({
   // Where to go after signing in; set by the protected layout (src/routes/_app.tsx).
-  validateSearch: z.object({ redirect: z.string().startsWith("/").optional().catch(undefined) }),
+  validateSearch: z.object({ redirect: z.string().startsWith('/').optional().catch(undefined) }),
   beforeLoad: ({ context, search }) => {
-    if (context.auth.user) throw redirect({ href: search.redirect ?? "/" })
+    if (context.auth.user) throw redirect({ href: search.redirect ?? '/' })
   },
   component: LoginPage,
 })
@@ -33,7 +33,7 @@ function LoginPage() {
           setError(undefined)
           try {
             await auth.signIn(email, password)
-            await navigate({ href: next ?? "/", replace: true })
+            await navigate({ href: next ?? '/', replace: true })
           } catch {
             setError(t.login.wrongCredentials)
           }

@@ -1,13 +1,12 @@
-"use client"
+'use client'
 
 // Coreloom UI — TeamMembers (team block). The members of a workspace with their role, an invite
 // dialog (several emails, one role), pending invites and removal behind a confirmation.
 // Everything is data and callbacks: call your API in them; return a promise to show progress.
-import * as React from "react"
-import { MailIcon, Trash2Icon, UserPlusIcon } from "lucide-react"
-import { z } from "zod"
+import { MailIcon, Trash2Icon, UserPlusIcon } from 'lucide-react'
+import * as React from 'react'
+import { z } from 'zod'
 
-import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,36 +17,79 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useAppForm } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/alert-dialog'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { useAppForm } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type TeamRole = { value: string; label: string; description?: string }
-type TeamMember = { id: string; name: string; email: string; role: string; avatar?: string }
-type TeamInvite = { id: string; email: string; role: string; invitedAt: Date }
+interface TeamRole {
+  value: string
+  label: string
+  description?: string
+}
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+  role: string
+  avatar?: string
+}
+interface TeamInvite {
+  id: string
+  email: string
+  role: string
+  invitedAt: Date
+}
 
 const initials = (name: string) =>
   name
     .split(/\s+/)
     .map((p) => p.charAt(0))
-    .join("")
+    .join('')
     .slice(0, 2)
     .toUpperCase()
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function InviteDialog({ roles, onInvite }: { roles: TeamRole[]; onInvite: (emails: string[], role: string) => unknown }) {
+function InviteDialog({
+  roles,
+  onInvite,
+}: {
+  roles: TeamRole[]
+  onInvite: (emails: string[], role: string) => unknown
+}) {
   const { messages } = useCoreloomI18n()
   const t = messages.team
   const [open, setOpen] = React.useState(false)
   const form = useAppForm({
-    defaultValues: { emails: [] as string[], role: roles[roles.length - 1]?.value ?? "" },
+    defaultValues: { emails: [] as string[], role: roles[roles.length - 1]?.value ?? '' },
     validators: {
       onChange: z.object({
         emails: z
@@ -55,7 +97,8 @@ function InviteDialog({ roles, onInvite }: { roles: TeamRole[]; onInvite: (email
           .min(1, t.emailsRequired)
           .superRefine((emails, ctx) => {
             const bad = emails.filter((e) => !EMAIL.test(e))
-            if (bad.length) ctx.addIssue({ code: "custom", message: t.emailsInvalid(bad.join(", ")) })
+            if (bad.length)
+              ctx.addIssue({ code: 'custom', message: t.emailsInvalid(bad.join(', ')) })
           }),
         role: z.string(),
       }),
@@ -91,9 +134,18 @@ function InviteDialog({ roles, onInvite }: { roles: TeamRole[]; onInvite: (email
             <DialogDescription>{t.inviteDescription}</DialogDescription>
           </DialogHeader>
           <form.AppField name="emails">
-            {(field) => <field.TagsField label={t.emails} description={t.emailsHint} placeholder="ada@acme.dev" transform={(v) => v.trim().toLowerCase()} />}
+            {(field) => (
+              <field.TagsField
+                label={t.emails}
+                description={t.emailsHint}
+                placeholder="ada@acme.dev"
+                transform={(v) => v.trim().toLowerCase()}
+              />
+            )}
           </form.AppField>
-          <form.AppField name="role">{(field) => <field.SelectField label={t.role} options={roles} />}</form.AppField>
+          <form.AppField name="role">
+            {(field) => <field.SelectField label={t.role} options={roles} />}
+          </form.AppField>
           <DialogFooter>
             <form.AppForm>
               <form.SubmitButton pendingLabel={t.sending}>{t.send}</form.SubmitButton>
@@ -136,10 +188,10 @@ function TeamMembers({
   const t = messages.team
   const pendingId = React.useId()
   const roleLabel = (v: string) => roles.find((r) => r.value === v)?.label ?? v
-  const date = (d: Date) => d.toLocaleDateString(locale, { day: "numeric", month: "short" })
+  const date = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
 
   return (
-    <Card className={cn("gap-0 p-0", className)}>
+    <Card className={cn('gap-0 p-0', className)}>
       <CardHeader className="border-b border-border px-5 py-4">
         <CardTitle asChild>
           <h2 className="m-0">{title ?? t.title}</h2>
@@ -156,7 +208,11 @@ function TeamMembers({
           {members.map((m) => {
             const you = m.id === currentUserId
             return (
-              <li key={m.id} data-slot="team-member" className="flex flex-wrap items-center gap-3 border-b border-border-subtle px-5 py-3 last:border-b-0">
+              <li
+                key={m.id}
+                data-slot="team-member"
+                className="flex flex-wrap items-center gap-3 border-b border-border-subtle px-5 py-3 last:border-b-0"
+              >
                 <Avatar>
                   {m.avatar && <AvatarImage src={m.avatar} alt="" />}
                   <AvatarFallback>{initials(m.name)}</AvatarFallback>
@@ -182,7 +238,9 @@ function TeamMembers({
                     </SelectContent>
                   </Select>
                 ) : (
-                  <span className="w-36 px-3 text-[13px] text-fg-secondary">{roleLabel(m.role)}</span>
+                  <span className="w-36 px-3 text-[13px] text-fg-secondary">
+                    {roleLabel(m.role)}
+                  </span>
                 )}
                 {onRemove &&
                   (you ? (
@@ -201,7 +259,10 @@ function TeamMembers({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>{messages.common.cancel}</AlertDialogCancel>
-                          <AlertDialogAction variant="destructive" onClick={() => void onRemove(m.id)}>
+                          <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => void onRemove(m.id)}
+                          >
                             {t.removeConfirm}
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -213,8 +274,14 @@ function TeamMembers({
           })}
         </ul>
         {invites.length > 0 && (
-          <section aria-labelledby={pendingId} className="border-t border-border bg-surface/40 px-5 py-3">
-            <h3 id={pendingId} className="m-0 mb-2 font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
+          <section
+            aria-labelledby={pendingId}
+            className="border-t border-border bg-surface/40 px-5 py-3"
+          >
+            <h3
+              id={pendingId}
+              className="m-0 mb-2 font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase"
+            >
               {t.pending}
             </h3>
             <ul className="m-0 flex list-none flex-col gap-2 p-0">
@@ -230,7 +297,12 @@ function TeamMembers({
                     </span>
                   </span>
                   {onRevoke && (
-                    <Button variant="ghost" size="sm" aria-label={t.revoke(inv.email)} onClick={() => void onRevoke(inv.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label={t.revoke(inv.email)}
+                      onClick={() => void onRevoke(inv.id)}
+                    >
                       {t.revokeShort}
                     </Button>
                   )}
@@ -244,4 +316,4 @@ function TeamMembers({
   )
 }
 
-export { TeamMembers, type TeamInvite, type TeamMember, type TeamRole }
+export { type TeamInvite, type TeamMember, TeamMembers, type TeamRole }
