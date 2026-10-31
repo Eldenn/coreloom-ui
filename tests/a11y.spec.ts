@@ -18,6 +18,9 @@ for (const story of stories()) {
     test(`a11y · ${story.title} · ${story.name} · ${theme}${locale !== 'en' ? ` · ${locale}` : ''}${accent ? ` · ${accent}` : ''}`, async ({
       page,
     }) => {
+      // Whole blocks (tables, traces, editors) give axe thousands of nodes: on a 2-core machine with
+      // 4 workers one run can pass 30 s, so blocks get the slow-test allowance.
+      if (story.title.startsWith('Blocks/')) test.slow()
       await openStory(page, story.id, theme, locale, accent)
       const { violations } = await new AxeBuilder({ page })
         .include('#storybook-root')
