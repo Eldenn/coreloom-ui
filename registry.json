@@ -126,6 +126,18 @@
       ]
     },
     {
+      "name": "accent",
+      "type": "registry:lib",
+      "title": "Accent generator",
+      "description": "generateAccent(hex): a contrast-checked accent family for both themes, and the brand.css that applies it (data-accent). No dependencies.",
+      "files": [
+        {
+          "path": "src/lib/accent.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",

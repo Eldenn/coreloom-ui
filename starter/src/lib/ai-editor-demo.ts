@@ -21,6 +21,9 @@ function rewrite(req: RichTextAiRequest, t: Messages['ai']['editor']) {
       return `${t.summary} ${sentences(text)[0]}`
     case 'translate':
       return `${t.translated(req.language ?? 'en')} ${text}`
+    case 'continue':
+      // Continue writing: a sentence that follows on from the text before the cursor.
+      return t.lengthen
     case 'fixGrammar':
       return text.replace(/\s+/g, ' ').replace(/^./, (c) => c.toUpperCase())
     default:

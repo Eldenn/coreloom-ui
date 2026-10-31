@@ -25,7 +25,15 @@ const GUIDE_FOR = {
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */
-const TOPICS = ['AiSdk', 'EditorAi', 'Accents', 'Language', 'InteractionStates', 'Motion']
+const TOPICS = [
+  'AiSdk',
+  'EditorAi',
+  'Accents',
+  'ThemeGenerator',
+  'Language',
+  'InteractionStates',
+  'Motion',
+]
 
 const SECTIONS = [
   ['Foundations', (i) => ['registry:item', 'registry:lib', 'registry:hook'].includes(i.type)],
