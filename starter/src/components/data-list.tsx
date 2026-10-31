@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — DataList (data-list block). A filterable list whose state lives in the URL, so a
 // filtered view can be bookmarked, shared and survives a reload: ?q=api&status=ready,building&page=2.
@@ -10,21 +10,40 @@
 //
 // By default it reads and writes window.location (history.replaceState). With a router, pass
 // `searchParams` and `onSearchParamsChange` (Next.js: useSearchParams() and router.replace).
-import * as React from "react"
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusCircleIcon, SearchIcon, SearchXIcon, XIcon } from "lucide-react"
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusCircleIcon,
+  SearchIcon,
+  SearchXIcon,
+  XIcon,
+} from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Separator } from '@/components/ui/separator'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type FacetOption = { value: string; label: string; icon?: React.ReactNode }
-type Facet<T> = {
+interface FacetOption {
+  value: string
+  label: string
+  icon?: React.ReactNode
+}
+interface Facet<T> {
   /** URL parameter and row field (or `get` for computed values). */
   key: string
   label: string
@@ -32,22 +51,26 @@ type Facet<T> = {
   get?: (row: T) => string
 }
 
-type DataListState = { q: string; page: number; facets: Record<string, string[]> }
+interface DataListState {
+  q: string
+  page: number
+  facets: Record<string, string[]>
+}
 
 function readParams(params: URLSearchParams, facetKeys: string[]): DataListState {
   const facets: Record<string, string[]> = {}
-  for (const k of facetKeys) facets[k] = params.get(k)?.split(",").filter(Boolean) ?? []
-  return { q: params.get("q") ?? "", page: Math.max(1, Number(params.get("page")) || 1), facets }
+  for (const k of facetKeys) facets[k] = params.get(k)?.split(',').filter(Boolean) ?? []
+  return { q: params.get('q') ?? '', page: Math.max(1, Number(params.get('page')) || 1), facets }
 }
 
 function writeParams(base: URLSearchParams, state: DataListState, facetKeys: string[]) {
   const params = new URLSearchParams(base)
-  if (state.q) params.set("q", state.q)
-  else params.delete("q")
-  if (state.page > 1) params.set("page", String(state.page))
-  else params.delete("page")
+  if (state.q) params.set('q', state.q)
+  else params.delete('q')
+  if (state.page > 1) params.set('page', String(state.page))
+  else params.delete('page')
   for (const k of facetKeys) {
-    if (state.facets[k]?.length) params.set(k, state.facets[k].join(","))
+    if (state.facets[k]?.length) params.set(k, state.facets[k].join(','))
     else params.delete(k)
   }
   return params
@@ -74,15 +97,21 @@ function useDataList<T extends object>({
   const facetKeys = facets.map((f) => f.key)
   const controlled = searchParams !== undefined
   const [local, setLocal] = React.useState<URLSearchParams>(() =>
-    typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search)
+    typeof window === 'undefined'
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search),
   )
   const params = controlled ? searchParams : local
 
   React.useEffect(() => {
     if (controlled) return
-    const onPop = () => setLocal(new URLSearchParams(window.location.search))
-    window.addEventListener("popstate", onPop)
-    return () => window.removeEventListener("popstate", onPop)
+    const onPop = () => {
+      setLocal(new URLSearchParams(window.location.search))
+    }
+    window.addEventListener('popstate', onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+    }
   }, [controlled])
 
   const state = readParams(params, facetKeys)
@@ -95,27 +124,39 @@ function useDataList<T extends object>({
     if (!controlled) {
       setLocal(out)
       const qs = out.toString()
-      window.history.replaceState(window.history.state, "", `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`)
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`,
+      )
     }
   }
 
   const norm = (v: unknown) =>
-    String(v ?? "")
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
+    String(v ?? '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
       .toLowerCase()
-  const valueOf = (row: T, f: Facet<T>) => (f.get ? f.get(row) : String((row as Record<string, unknown>)[f.key] ?? ""))
+  const valueOf = (row: T, f: Facet<T>) =>
+    f.get ? f.get(row) : String((row as Record<string, unknown>)[f.key] ?? '')
   const q = norm(state.q.trim())
   const matchesSearch = (row: T) => !q || searchKeys.some((k) => norm(row[k]).includes(q))
   const matchesFacets = (row: T, except?: string) =>
-    facets.every((f) => f.key === except || !state.facets[f.key]?.length || state.facets[f.key].includes(valueOf(row, f)))
+    facets.every(
+      (f) =>
+        f.key === except ||
+        !state.facets[f.key]?.length ||
+        state.facets[f.key].includes(valueOf(row, f)),
+    )
 
   const filtered = rows.filter((r) => matchesSearch(r) && matchesFacets(r))
   // Counts per option ignore the facet's own selection, so options stay comparable.
   const counts: Record<string, Record<string, number>> = {}
   for (const f of facets) {
     counts[f.key] = {}
-    for (const r of rows) if (matchesSearch(r) && matchesFacets(r, f.key)) counts[f.key][valueOf(r, f)] = (counts[f.key][valueOf(r, f)] ?? 0) + 1
+    for (const r of rows)
+      if (matchesSearch(r) && matchesFacets(r, f.key))
+        counts[f.key][valueOf(r, f)] = (counts[f.key][valueOf(r, f)] ?? 0) + 1
   }
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const page = Math.min(state.page, pageCount)
@@ -124,10 +165,18 @@ function useDataList<T extends object>({
 
   return {
     state,
-    setSearch: (value: string) => setState({ q: value }),
-    setFacet: (key: string, values: string[]) => setState({ facets: { ...state.facets, [key]: values } }),
-    setPage: (p: number) => setState({ page: p }),
-    clear: () => setState({ q: "", facets: Object.fromEntries(facetKeys.map((k) => [k, []])) }),
+    setSearch: (value: string) => {
+      setState({ q: value })
+    },
+    setFacet: (key: string, values: string[]) => {
+      setState({ facets: { ...state.facets, [key]: values } })
+    },
+    setPage: (p: number) => {
+      setState({ page: p })
+    },
+    clear: () => {
+      setState({ q: '', facets: Object.fromEntries(facetKeys.map((k) => [k, []])) })
+    },
     facets,
     counts,
     filtered,
@@ -162,7 +211,12 @@ function FacetedFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="border-dashed" aria-label={t.filterBy(title)}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-dashed"
+          aria-label={t.filterBy(title)}
+        >
           <PlusCircleIcon />
           {title}
           {selected.size > 0 && (
@@ -197,20 +251,26 @@ function FacetedFilter({
                     value={o.label}
                     role="option"
                     aria-selected={on}
-                    onSelect={() => onValueChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])}
+                    onSelect={() => {
+                      onValueChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])
+                    }}
                   >
                     <span
                       aria-hidden
                       className={cn(
-                        "flex size-4 items-center justify-center rounded-xs border border-border-strong [&_svg]:size-3",
-                        on && "border-primary bg-primary text-primary-foreground"
+                        'flex size-4 items-center justify-center rounded-xs border border-border-strong [&_svg]:size-3',
+                        on && 'border-primary bg-primary text-primary-foreground',
                       )}
                     >
                       {on && <CheckIcon />}
                     </span>
                     {o.icon}
                     <span className="flex-1">{o.label}</span>
-                    {counts && <span className="font-mono text-[11px] text-muted-foreground">{formatNumber(counts[o.value] ?? 0)}</span>}
+                    {counts && (
+                      <span className="font-mono text-[11px] text-muted-foreground">
+                        {formatNumber(counts[o.value] ?? 0)}
+                      </span>
+                    )}
                   </CommandItem>
                 )
               })}
@@ -218,7 +278,14 @@ function FacetedFilter({
           </CommandList>
           {selected.size > 0 && (
             <div className="border-t border-border-subtle p-1">
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => onValueChange([])}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  onValueChange([])
+                }}
+              >
                 {t.clear}
               </Button>
             </div>
@@ -246,23 +313,31 @@ function DataListToolbar({
   const { messages, formatNumber } = useCoreloomI18n()
   const t = messages.dataList
   const [draft, setDraft] = React.useState(list.state.q)
-  React.useEffect(() => setDraft(list.state.q), [list.state.q])
+  React.useEffect(() => {
+    setDraft(list.state.q)
+  }, [list.state.q])
   // Search as you type, a beat after the last key.
   React.useEffect(() => {
     if (draft === list.state.q) return
-    const id = setTimeout(() => list.setSearch(draft), 250)
-    return () => clearTimeout(id)
+    const id = setTimeout(() => {
+      list.setSearch(draft)
+    }, 250)
+    return () => {
+      clearTimeout(id)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft])
   return (
-    <div data-slot="data-list-toolbar" className={cn("flex flex-col gap-3", className)}>
+    <div data-slot="data-list-toolbar" className={cn('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full sm:w-64">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value)
+            }}
             placeholder={searchLabel ?? t.search}
             aria-label={searchLabel ?? t.search}
             className="h-9 pl-9"
@@ -274,7 +349,9 @@ function DataListToolbar({
             title={f.label}
             options={f.options}
             value={list.state.facets[f.key] ?? []}
-            onValueChange={(v) => list.setFacet(f.key, v)}
+            onValueChange={(v) => {
+              list.setFacet(f.key, v)
+            }}
             counts={list.counts[f.key]}
           />
         ))}
@@ -297,7 +374,7 @@ function DataListToolbar({
 function DataListEmpty({ list, className }: { list: DataList; className?: string }) {
   const t = useCoreloomI18n().messages.dataList
   return (
-    <Empty className={cn("border", className)}>
+    <Empty className={cn('border', className)}>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <SearchXIcon />
@@ -319,13 +396,34 @@ function DataListPagination({ list, className }: { list: DataList; className?: s
   const { messages, formatNumber } = useCoreloomI18n()
   if (list.pageCount <= 1) return null
   return (
-    <nav aria-label={messages.pagination.label} className={cn("flex items-center justify-end gap-3", className)}>
-      <span className="font-mono text-[12px] text-muted-foreground">{messages.dataTable.pageOf(formatNumber(list.page), formatNumber(list.pageCount))}</span>
+    <nav
+      aria-label={messages.pagination.label}
+      className={cn('flex items-center justify-end gap-3', className)}
+    >
+      <span className="font-mono text-[12px] text-muted-foreground">
+        {messages.dataTable.pageOf(formatNumber(list.page), formatNumber(list.pageCount))}
+      </span>
       <div className="flex gap-1.5">
-        <Button variant="outline" size="icon-sm" aria-label={messages.pagination.previousPage} disabled={list.page <= 1} onClick={() => list.setPage(list.page - 1)}>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label={messages.pagination.previousPage}
+          disabled={list.page <= 1}
+          onClick={() => {
+            list.setPage(list.page - 1)
+          }}
+        >
           <ChevronLeftIcon />
         </Button>
-        <Button variant="outline" size="icon-sm" aria-label={messages.pagination.nextPage} disabled={list.page >= list.pageCount} onClick={() => list.setPage(list.page + 1)}>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label={messages.pagination.nextPage}
+          disabled={list.page >= list.pageCount}
+          onClick={() => {
+            list.setPage(list.page + 1)
+          }}
+        >
           <ChevronRightIcon />
         </Button>
       </div>
@@ -333,4 +431,13 @@ function DataListPagination({ list, className }: { list: DataList; className?: s
   )
 }
 
-export { DataListEmpty, DataListPagination, DataListToolbar, FacetedFilter, useDataList, type DataList, type Facet, type FacetOption }
+export {
+  type DataList,
+  DataListEmpty,
+  DataListPagination,
+  DataListToolbar,
+  type Facet,
+  FacetedFilter,
+  type FacetOption,
+  useDataList,
+}

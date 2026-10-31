@@ -1,27 +1,30 @@
 // A server-driven table: the API sorts, searches and pages (src/lib/api.ts → searchDeployments),
 // the URL holds the query (/deployments?page=2&sort=duration&desc=true&q=api), TanStack Query
 // caches each page and keeps the current one on screen while the next loads.
-import { useQuery } from "@tanstack/react-query"
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import type { ColumnDef } from "@tanstack/react-table"
-import { GitBranchIcon } from "lucide-react"
-import { z } from "zod"
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
+import { GitBranchIcon } from 'lucide-react'
+import { z } from 'zod'
 
-import { PageHeader } from "@/components/app-shell"
-import { StatusBadge } from "@/components/status-badge"
-import { DataTable, DataTableColumnHeader, type DataTableQuery } from "@/components/ui/data-table"
-import type { DeploymentQuery, DeploymentRow } from "@/lib/api"
-import { formatRelative } from "@/lib/format"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { useT } from "@/lib/locale"
-import { deploymentSearchQuery } from "@/lib/queries"
-import type { Messages } from "@/messages"
+import { PageHeader } from '@/components/app-shell'
+import { StatusBadge } from '@/components/status-badge'
+import { DataTable, DataTableColumnHeader, type DataTableQuery } from '@/components/ui/data-table'
+import type { DeploymentQuery, DeploymentRow } from '@/lib/api'
+import { formatRelative } from '@/lib/format'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { useT } from '@/lib/locale'
+import { deploymentSearchQuery } from '@/lib/queries'
+import type { Messages } from '@/messages'
 
-const SORTABLE = ["createdAt", "duration", "project"] as const
+const SORTABLE = ['createdAt', 'duration', 'project'] as const
 
 const search = z.object({
   page: z.number().int().min(1).optional().catch(undefined),
-  size: z.union([z.literal(10), z.literal(20), z.literal(50)]).optional().catch(undefined),
+  size: z
+    .union([z.literal(10), z.literal(20), z.literal(50)])
+    .optional()
+    .catch(undefined),
   sort: z.enum(SORTABLE).optional().catch(undefined),
   desc: z.boolean().optional().catch(undefined),
   q: z.string().optional().catch(undefined),
@@ -33,19 +36,22 @@ const toQuery = (s: Search): DeploymentQuery => ({
   page: s.page ?? 1,
   pageSize: s.size ?? 10,
   sort: s.sort ? { id: s.sort, desc: !!s.desc } : undefined,
-  search: s.q ?? "",
+  search: s.q ?? '',
 })
 
 /** The table's query → URL search params (defaults left out, so URLs stay short). */
 const toSearch = (q: DataTableQuery): Search => ({
   page: q.page > 1 ? q.page : undefined,
-  size: q.pageSize !== 10 ? (q.pageSize as Search["size"]) : undefined,
-  sort: q.sort && (SORTABLE as readonly string[]).includes(q.sort.id) ? (q.sort.id as Search["sort"]) : undefined,
+  size: q.pageSize !== 10 ? (q.pageSize as Search['size']) : undefined,
+  sort:
+    q.sort && (SORTABLE as readonly string[]).includes(q.sort.id)
+      ? (q.sort.id as Search['sort'])
+      : undefined,
   desc: q.sort?.desc || undefined,
   q: q.search || undefined,
 })
 
-export const Route = createFileRoute("/_app/deployments")({
+export const Route = createFileRoute('/_app/deployments')({
   validateSearch: search,
   staticData: { crumb: (t) => t.nav.deployments },
   loaderDeps: ({ search }) => toQuery(search),
@@ -57,14 +63,16 @@ export const Route = createFileRoute("/_app/deployments")({
 function columnsFor(t: Messages, locale: string): ColumnDef<DeploymentRow>[] {
   return [
     {
-      accessorKey: "commit",
+      accessorKey: 'commit',
       enableSorting: false,
       header: t.project.commit,
-      cell: ({ row }) => <span className="font-mono text-[12px] text-foreground">{row.original.commit}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-[12px] text-foreground">{row.original.commit}</span>
+      ),
     },
     {
-      id: "project",
-      accessorKey: "project",
+      id: 'project',
+      accessorKey: 'project',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t.projects.name} />,
       cell: ({ row }) => (
         <Link
@@ -77,7 +85,7 @@ function columnsFor(t: Messages, locale: string): ColumnDef<DeploymentRow>[] {
       ),
     },
     {
-      accessorKey: "branch",
+      accessorKey: 'branch',
       enableSorting: false,
       header: t.project.branch,
       cell: ({ row }) => (
@@ -87,18 +95,27 @@ function columnsFor(t: Messages, locale: string): ColumnDef<DeploymentRow>[] {
         </span>
       ),
     },
-    { accessorKey: "status", enableSorting: false, header: t.projects.status, cell: ({ row }) => <StatusBadge status={row.original.status} /> },
     {
-      id: "duration",
-      accessorKey: "duration",
+      accessorKey: 'status',
+      enableSorting: false,
+      header: t.projects.status,
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    },
+    {
+      id: 'duration',
+      accessorKey: 'duration',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t.project.duration} />,
       cell: ({ row }) => <span className="font-mono text-[12px]">{row.original.duration}s</span>,
     },
     {
-      id: "createdAt",
-      accessorKey: "createdAt",
+      id: 'createdAt',
+      accessorKey: 'createdAt',
       header: ({ column }) => <DataTableColumnHeader column={column} title={t.project.created} />,
-      cell: ({ row }) => <span className="font-mono text-[12px]">{formatRelative(row.original.createdAt, locale)}</span>,
+      cell: ({ row }) => (
+        <span className="font-mono text-[12px]">
+          {formatRelative(row.original.createdAt, locale)}
+        </span>
+      ),
     },
   ]
 }
@@ -120,7 +137,8 @@ function DeploymentsPage() {
         filterPlaceholder={t.deployments.search}
         server={{
           query,
-          onQueryChange: (next) => void navigate({ search: toSearch(next), replace: next.search !== query.search }),
+          onQueryChange: (next) =>
+            void navigate({ search: toSearch(next), replace: next.search !== query.search }),
           rowCount: data?.total ?? 0,
           loading: isFetching,
           searchable: true,

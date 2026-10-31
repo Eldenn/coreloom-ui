@@ -1,18 +1,18 @@
 // One agent: its settings (the AgentEditor form) and its latest runs.
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, notFound } from "@tanstack/react-router"
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 
-import { AgentStatusBadge, AgentEditor } from "@/components/ai-agents"
-import { RunList } from "@/components/ai-runs"
-import { PageHeader } from "@/components/app-shell"
-import { Brand } from "@/components/brand"
-import { NotFoundPage } from "@/components/error-page"
-import { toast } from "@/components/ui/sonner"
-import { knowledgeBases, models, tools, updateAgent } from "@/lib/ai-api"
-import { useT } from "@/lib/locale"
-import { agentQuery, agentsQuery, runsQuery } from "@/lib/queries"
+import { AgentEditor, AgentStatusBadge } from '@/components/ai-agents'
+import { RunList } from '@/components/ai-runs'
+import { PageHeader } from '@/components/app-shell'
+import { Brand } from '@/components/brand'
+import { NotFoundPage } from '@/components/error-page'
+import { toast } from '@/components/ui/sonner'
+import { knowledgeBases, models, tools, updateAgent } from '@/lib/ai-api'
+import { useT } from '@/lib/locale'
+import { agentQuery, agentsQuery, runsQuery } from '@/lib/queries'
 
-export const Route = createFileRoute("/_app/agents/$agentId")({
+export const Route = createFileRoute('/_app/agents/$agentId')({
   loader: async ({ context, params }) => {
     const [agent] = await Promise.all([
       context.queryClient.ensureQueryData(agentQuery(params.agentId)),
@@ -27,7 +27,15 @@ export const Route = createFileRoute("/_app/agents/$agentId")({
 
 function AgentNotFound() {
   const t = useT()
-  return <NotFoundPage brand={<Brand />} title={t.ai.agents.notFoundTitle} description={t.ai.agents.notFoundText} homeHref="/agents" className="min-h-[60vh]" />
+  return (
+    <NotFoundPage
+      brand={<Brand />}
+      title={t.ai.agents.notFoundTitle}
+      description={t.ai.agents.notFoundText}
+      homeHref="/agents"
+      className="min-h-[60vh]"
+    />
+  )
 }
 
 function AgentPage() {

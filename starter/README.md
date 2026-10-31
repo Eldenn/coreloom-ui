@@ -16,22 +16,22 @@ https://eldenn.github.io/coreloom-ui/starter/
 
 ## What's in it
 
-| Screen | Route file | Shows |
-|---|---|---|
-| Sign in | `src/routes/login.tsx` | `LoginForm`, redirect back to the page you asked for |
-| Sign up | `src/routes/signup.tsx`, `verify.tsx` | `SignupForm`, then `VerifyForm` for the emailed code |
-| Password reset | `src/routes/forgot-password.tsx`, `reset-password.tsx` | `ForgotPasswordForm`, then `ResetPasswordForm` on the emailed link (`?token=…`) |
-| Overview | `src/routes/_app/index.tsx` | `StatGrid`, `TrendChart`, `ActivityFeed`, data from a route loader |
-| Projects | `src/routes/_app/projects/index.tsx` | `useDataList` with search, filters and page in the route's typed search params; "New project" dialog (`?new=true`) |
-| Project | `src/routes/_app/projects/$projectId.tsx` | Loader with `notFound()`, breadcrumb from loader data; notes in `RichTextEditor`, loaded with `React.lazy` so Tiptap downloads only here |
-| Deployments | `src/routes/_app/deployments.tsx` | `DataTable` driven by the API (sort, search, pages) with the query in the URL |
-| Settings | `src/routes/_app/settings.tsx` | `SettingsLayout` with one URL per section: a form, appearance (theme and `AccentPicker`), members, billing, notification switches, the danger zone |
-| Assistant | `src/routes/_app/assistant.tsx` | `Chat` and `ConversationList`, the conversation in the URL (`?c=…`); answers streamed by `useDemoChat`, with reasoning, a tool call and approval for a rollback |
-| Agents | `src/routes/_app/agents/` | `AgentList`, then `AgentEditor` and the agent's runs |
-| Runs | `src/routes/_app/runs/` | `RunList`, then `RunTrace` for one run |
-| Playground | `src/routes/_app/playground.tsx` | `Playground`, variants streamed side by side |
-| Knowledge | `src/routes/_app/knowledge.tsx` | `KnowledgeBase` with an indexing queue the query polls, `RetrievalTest` |
-| 404 and errors | `src/routes/__root.tsx` | `NotFoundPage`, `ServerErrorPage` with retry |
+| Screen         | Route file                                             | Shows                                                                                                                                                           |
+| -------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sign in        | `src/routes/login.tsx`                                 | `LoginForm`, redirect back to the page you asked for                                                                                                            |
+| Sign up        | `src/routes/signup.tsx`, `verify.tsx`                  | `SignupForm`, then `VerifyForm` for the emailed code                                                                                                            |
+| Password reset | `src/routes/forgot-password.tsx`, `reset-password.tsx` | `ForgotPasswordForm`, then `ResetPasswordForm` on the emailed link (`?token=…`)                                                                                 |
+| Overview       | `src/routes/_app/index.tsx`                            | `StatGrid`, `TrendChart`, `ActivityFeed`, data from a route loader                                                                                              |
+| Projects       | `src/routes/_app/projects/index.tsx`                   | `useDataList` with search, filters and page in the route's typed search params; "New project" dialog (`?new=true`)                                              |
+| Project        | `src/routes/_app/projects/$projectId.tsx`              | Loader with `notFound()`, breadcrumb from loader data; notes in `RichTextEditor`, loaded with `React.lazy` so Tiptap downloads only here                        |
+| Deployments    | `src/routes/_app/deployments.tsx`                      | `DataTable` driven by the API (sort, search, pages) with the query in the URL                                                                                   |
+| Settings       | `src/routes/_app/settings.tsx`                         | `SettingsLayout` with one URL per section: a form, appearance (theme and `AccentPicker`), members, billing, notification switches, the danger zone              |
+| Assistant      | `src/routes/_app/assistant.tsx`                        | `Chat` and `ConversationList`, the conversation in the URL (`?c=…`); answers streamed by `useDemoChat`, with reasoning, a tool call and approval for a rollback |
+| Agents         | `src/routes/_app/agents/`                              | `AgentList`, then `AgentEditor` and the agent's runs                                                                                                            |
+| Runs           | `src/routes/_app/runs/`                                | `RunList`, then `RunTrace` for one run                                                                                                                          |
+| Playground     | `src/routes/_app/playground.tsx`                       | `Playground`, variants streamed side by side                                                                                                                    |
+| Knowledge      | `src/routes/_app/knowledge.tsx`                        | `KnowledgeBase` with an indexing queue the query polls, `RetrievalTest`                                                                                         |
+| 404 and errors | `src/routes/__root.tsx`                                | `NotFoundPage`, `ServerErrorPage` with retry                                                                                                                    |
 
 Around them: the app shell (sidebar, breadcrumbs, ⌘K palette, notifications, theme menu, language
 menu), English and French, light / dark / system theme and the accent without a flash on load, and
@@ -45,10 +45,14 @@ That hook has the AI SDK's `useChat` shape, so moving to a real model is a swap 
 `src/routes/_app/assistant.tsx`:
 
 ```tsx
-import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
+import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
 
-const chat = useChat({ id, messages: initialMessages, transport: new DefaultChatTransport({ api: "/api/chat" }) })
+const chat = useChat({
+  id,
+  messages: initialMessages,
+  transport: new DefaultChatTransport({ api: '/api/chat' }),
+})
 
 // The SDK takes attachments as a FileList: wrap the File[] the composer hands over.
 const onSend = ({ text, files }: { text: string; files: File[] }) => {
@@ -99,12 +103,12 @@ Docs and live examples: https://eldenn.github.io/coreloom-ui/
 
 ## Scripts
 
-| | |
-|---|---|
-| `pnpm dev` | Dev server with the router and query devtools |
-| `pnpm build` | Typecheck, then a production build in `dist/` |
-| `pnpm preview` | Serve `dist/` |
-| `pnpm typecheck` | `tsc -b` |
+|                  |                                               |
+| ---------------- | --------------------------------------------- |
+| `pnpm dev`       | Dev server with the router and query devtools |
+| `pnpm build`     | Typecheck, then a production build in `dist/` |
+| `pnpm preview`   | Serve `dist/`                                 |
+| `pnpm typecheck` | `tsc -b`                                      |
 
 Deploying `dist/` as a static site: send every unknown path to `index.html` (the router handles
 it), e.g. a `_redirects` rule `/* /index.html 200` on Netlify, a rewrite on Vercel, or

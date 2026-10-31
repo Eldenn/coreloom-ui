@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Markdown } from "@/components/ui/markdown"
+import { Markdown } from '@/components/ui/markdown'
 
 const sample = `## Rolling back
 
@@ -28,9 +28,9 @@ coreloom rollback coreloom-api --to dpl_5t3q
 See the [runbook](https://coreloom.dev/runbooks/rollback) for the details. Inline \`code\` and ~~old advice~~ render too.`
 
 const meta = {
-  title: "Components/AI/Markdown",
+  title: 'Components/AI/Markdown',
   component: Markdown,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
@@ -51,14 +51,15 @@ export const Default: Story = {}
 export const Streaming: Story = {
   args: {
     streaming: true,
-    children: "The build stopped on a **type error**: `Workspace.slug` was renamed to",
+    children: 'The build stopped on a **type error**: `Workspace.slug` was renamed to',
   },
 }
 
 /** HTML in the text is dropped, not rendered. */
 export const UntrustedHtml: Story = {
   args: {
-    children: 'Here is the fix. <img src=x onerror="alert(1)"> <b>Bold?</b> Only **Markdown** formats.',
+    children:
+      'Here is the fix. <img src=x onerror="alert(1)"> <b>Bold?</b> Only **Markdown** formats.',
   },
 }
 
@@ -73,9 +74,25 @@ export const WithSources: Story = {
     children:
       "Rolling back replaces what's live with the last green build [1], and the old one stays available for a week [1][2].\n\nIn a script, read `deployments[1]` for the previous build — see the [CLI reference](https://coreloom.dev/docs/cli) [3]. A footnote like [4] without a source stays plain text, and so do an escaped \\[2\\] and an index like x[2].\n\n[1]: https://evil.example/written-by-the-model",
     sources: [
-      { type: "source-url", sourceId: "s1", url: "https://coreloom.dev/docs/deployments", title: "Deployments guide" },
-      { type: "source-url", sourceId: "s2", url: "https://coreloom.dev/docs/retention", title: "Retention of builds" },
-      { type: "source-document", sourceId: "d1", title: "Runbook — rollbacks", filename: "rollbacks.pdf", mediaType: "application/pdf" },
+      {
+        type: 'source-url',
+        sourceId: 's1',
+        url: 'https://coreloom.dev/docs/deployments',
+        title: 'Deployments guide',
+      },
+      {
+        type: 'source-url',
+        sourceId: 's2',
+        url: 'https://coreloom.dev/docs/retention',
+        title: 'Retention of builds',
+      },
+      {
+        type: 'source-document',
+        sourceId: 'd1',
+        title: 'Runbook — rollbacks',
+        filename: 'rollbacks.pdf',
+        mediaType: 'application/pdf',
+      },
     ],
   },
 }

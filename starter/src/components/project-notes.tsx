@@ -1,16 +1,16 @@
 // The project's notes, in the rich text editor. The project page loads this file with React.lazy,
 // so Tiptap (about 130 kB gzipped) downloads only when a project page opens, never with the rest of the app.
 // The editor's AI button (⌘J) is wired to a simulated model (src/lib/ai-editor-demo.ts).
-import * as React from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from '@tanstack/react-query'
+import * as React from 'react'
 
-import { useAppForm } from "@/components/ui/form"
-import { RichTextField } from "@/components/ui/rich-text-field"
-import { toast } from "@/components/ui/sonner"
-import { demoEditorAi } from "@/lib/ai-editor-demo"
-import { updateProject, type Project } from "@/lib/api"
-import { useT } from "@/lib/locale"
-import { projectQuery } from "@/lib/queries"
+import { useAppForm } from '@/components/ui/form'
+import { RichTextField } from '@/components/ui/rich-text-field'
+import { toast } from '@/components/ui/sonner'
+import { demoEditorAi } from '@/lib/ai-editor-demo'
+import { type Project, updateProject } from '@/lib/api'
+import { useT } from '@/lib/locale'
+import { projectQuery } from '@/lib/queries'
 
 export default function ProjectNotes({ project }: { project: Project }) {
   const t = useT()
@@ -35,7 +35,16 @@ export default function ProjectNotes({ project }: { project: Project }) {
       }}
     >
       <form.AppField name="notes">
-        {() => <RichTextField label={t.project.notes} hideLabel placeholder={t.project.notesPlaceholder} minHeight={140} className="w-full" ai={ai} />}
+        {() => (
+          <RichTextField
+            label={t.project.notes}
+            hideLabel
+            placeholder={t.project.notesPlaceholder}
+            minHeight={140}
+            className="w-full"
+            ai={ai}
+          />
+        )}
       </form.AppField>
       <form.AppForm>
         <form.SubmitButton size="sm" pendingLabel={t.project.savingNotes}>

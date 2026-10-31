@@ -32,6 +32,7 @@ import {
   LifeBuoyIcon,
   ListFilterIcon,
   LogOutIcon,
+  type LucideProps,
   MenuIcon,
   MoonIcon,
   PackageIcon,
@@ -52,11 +53,10 @@ import {
   UsersIcon,
   XIcon,
   ZapIcon,
-  type LucideProps,
-} from "lucide-react"
+} from 'lucide-react'
 
 /** GitHub mark, drawn in the Lucide line style (Lucide no longer ships brand icons). */
-function GithubIcon({ size = 24, strokeWidth = 2, ...props }: Omit<LucideProps, "ref">) {
+function GithubIcon({ size = 24, strokeWidth = 2, ...props }: Omit<LucideProps, 'ref'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -144,10 +144,10 @@ function Icon({
   size = 18,
   strokeWidth = 2,
   ...props
-}: Omit<LucideProps, "ref"> & { name: IconName; size?: number }) {
+}: Omit<LucideProps, 'ref'> & { name: IconName; size?: number }) {
   const Glyph = icons[name]
   if (!Glyph) return null
   return <Glyph data-slot="icon" aria-hidden size={size} strokeWidth={strokeWidth} {...props} />
 }
 
-export { Icon, icons, type IconName }
+export { Icon, type IconName, icons }

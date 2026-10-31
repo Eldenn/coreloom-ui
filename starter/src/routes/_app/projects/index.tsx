@@ -1,18 +1,30 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { PlusIcon } from "lucide-react"
-import { z } from "zod"
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { PlusIcon } from 'lucide-react'
+import { z } from 'zod'
 
-import { PageHeader } from "@/components/app-shell"
-import { DataListEmpty, DataListPagination, DataListToolbar, useDataList } from "@/components/data-list"
-import { NewProjectDialog } from "@/components/new-project-dialog"
-import { StatusBadge } from "@/components/status-badge"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatRelative } from "@/lib/format"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { useT } from "@/lib/locale"
-import { projectsQuery } from "@/lib/queries"
+import { PageHeader } from '@/components/app-shell'
+import {
+  DataListEmpty,
+  DataListPagination,
+  DataListToolbar,
+  useDataList,
+} from '@/components/data-list'
+import { NewProjectDialog } from '@/components/new-project-dialog'
+import { StatusBadge } from '@/components/status-badge'
+import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { formatRelative } from '@/lib/format'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { useT } from '@/lib/locale'
+import { projectsQuery } from '@/lib/queries'
 
 // The list's state lives in the URL, validated here: /projects?q=api&status=ready,failed&page=2.
 // `new` opens the "New project" dialog (the ⌘K palette links to it).
@@ -25,9 +37,9 @@ const search = z.object({
 })
 
 type Search = z.infer<typeof search>
-const LIST_KEYS = ["q", "status", "region", "page"] as const
+const LIST_KEYS = ['q', 'status', 'region', 'page'] as const
 
-export const Route = createFileRoute("/_app/projects/")({
+export const Route = createFileRoute('/_app/projects/')({
   validateSearch: search,
   loader: ({ context }) => context.queryClient.ensureQueryData(projectsQuery),
   component: ProjectsPage,
@@ -46,27 +58,42 @@ function ProjectsPage() {
 
   const list = useDataList({
     rows: projects,
-    searchKeys: ["name", "framework"],
+    searchKeys: ['name', 'framework'],
     pageSize: 8,
     facets: [
-      { key: "status", label: t.projects.status, options: (["ready", "building", "failed"] as const).map((value) => ({ value, label: t.status[value] })) },
-      { key: "region", label: t.projects.region, options: (["cdg1", "fra1", "iad1"] as const).map((value) => ({ value, label: t.regions[value] })) },
+      {
+        key: 'status',
+        label: t.projects.status,
+        options: (['ready', 'building', 'failed'] as const).map((value) => ({
+          value,
+          label: t.status[value],
+        })),
+      },
+      {
+        key: 'region',
+        label: t.projects.region,
+        options: (['cdg1', 'fra1', 'iad1'] as const).map((value) => ({
+          value,
+          label: t.regions[value],
+        })),
+      },
     ],
     searchParams: params,
     onSearchParamsChange: (next) =>
       void navigate({
         search: (prev): Search => ({
           new: prev.new,
-          q: next.get("q") ?? undefined,
-          status: next.get("status") ?? undefined,
-          region: next.get("region") ?? undefined,
-          page: next.has("page") ? Number(next.get("page")) : undefined,
+          q: next.get('q') ?? undefined,
+          status: next.get('status') ?? undefined,
+          region: next.get('region') ?? undefined,
+          page: next.has('page') ? Number(next.get('page')) : undefined,
         }),
         replace: true,
       }),
   })
 
-  const setDialog = (open: boolean) => void navigate({ search: (prev): Search => ({ ...prev, new: open || undefined }) })
+  const setDialog = (open: boolean) =>
+    void navigate({ search: (prev): Search => ({ ...prev, new: open || undefined }) })
 
   return (
     <>
@@ -76,7 +103,12 @@ function ProjectsPage() {
           list={list}
           searchLabel={t.projects.search}
           actions={
-            <Button size="sm" onClick={() => setDialog(true)}>
+            <Button
+              size="sm"
+              onClick={() => {
+                setDialog(true)
+              }}
+            >
               <PlusIcon />
               {t.projects.new}
             </Button>
@@ -113,7 +145,9 @@ function ProjectsPage() {
                     </TableCell>
                     <TableCell className="font-mono text-[12px]">{project.region}</TableCell>
                     <TableCell>{project.framework}</TableCell>
-                    <TableCell className="text-right font-mono text-[12px]">{formatRelative(project.updatedAt, locale)}</TableCell>
+                    <TableCell className="text-right font-mono text-[12px]">
+                      {formatRelative(project.updatedAt, locale)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -125,7 +159,9 @@ function ProjectsPage() {
       <NewProjectDialog
         open={!!current.new}
         onOpenChange={setDialog}
-        onCreated={(project) => void navigate({ to: "/projects/$projectId", params: { projectId: project.id } })}
+        onCreated={(project) =>
+          void navigate({ to: '/projects/$projectId', params: { projectId: project.id } })
+        }
       />
     </>
   )

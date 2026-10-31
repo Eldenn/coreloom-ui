@@ -42,10 +42,7 @@
       "type": "registry:lib",
       "title": "cn()",
       "description": "Class-name merging helper used by every component.",
-      "dependencies": [
-        "clsx",
-        "tailwind-merge"
-      ],
+      "dependencies": ["clsx", "tailwind-merge"],
       "files": [
         {
           "path": "src/lib/utils.ts",
@@ -70,9 +67,7 @@
       "type": "registry:lib",
       "title": "i18n — Spanish",
       "description": "Spanish messages for CoreloomI18nProvider: <CoreloomI18nProvider locale=\"es\" messages={es} dateLocale={…}>.",
-      "registryDependencies": [
-        "@coreloom/i18n"
-      ],
+      "registryDependencies": ["@coreloom/i18n"],
       "files": [
         {
           "path": "src/lib/i18n-es.tsx",
@@ -85,9 +80,7 @@
       "type": "registry:lib",
       "title": "i18n — German",
       "description": "German messages for CoreloomI18nProvider: <CoreloomI18nProvider locale=\"de\" messages={de} dateLocale={…}>.",
-      "registryDependencies": [
-        "@coreloom/i18n"
-      ],
+      "registryDependencies": ["@coreloom/i18n"],
       "files": [
         {
           "path": "src/lib/i18n-de.tsx",
@@ -124,13 +117,8 @@
       "type": "registry:ui",
       "title": "Alert",
       "description": "Inline status banner for info, success, warning and danger messages.",
-      "dependencies": [
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/alert.tsx",
@@ -143,14 +131,8 @@
       "type": "registry:ui",
       "title": "Badge",
       "description": "Compact mono-type status or metadata pill.",
-      "dependencies": [
-        "class-variance-authority",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["class-variance-authority", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/badge.tsx",
@@ -163,14 +145,8 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "Primary interactive control, cyan by default.",
-      "dependencies": [
-        "class-variance-authority",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["class-variance-authority", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/button.tsx",
@@ -183,13 +159,8 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "Elevated surface panel with icon tile, accent glow and mono footer.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/card.tsx",
@@ -202,14 +173,8 @@
       "type": "registry:ui",
       "title": "Checkbox",
       "description": "Square check control, with indeterminate state.",
-      "dependencies": [
-        "lucide-react",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["lucide-react", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/checkbox.tsx",
@@ -222,10 +187,7 @@
       "type": "registry:ui",
       "title": "Dialog",
       "description": "Modal window over the Coreloom scrim.",
-      "dependencies": [
-        "lucide-react",
-        "radix-ui"
-      ],
+      "dependencies": ["lucide-react", "radix-ui"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -244,9 +206,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "Label, control, description and error layout for forms.",
-      "dependencies": [
-        "class-variance-authority"
-      ],
+      "dependencies": ["class-variance-authority"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -265,13 +225,8 @@
       "type": "registry:ui",
       "title": "Icon",
       "description": "Lucide icons under the Coreloom icon names.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/icon.tsx",
@@ -285,10 +240,7 @@
       "title": "Input",
       "description": "Single-line text field.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/input.tsx",
@@ -302,10 +254,7 @@
       "title": "Kbd",
       "description": "Keyboard key for shortcuts.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/kbd.tsx",
@@ -318,13 +267,8 @@
       "type": "registry:ui",
       "title": "Label",
       "description": "Accessible form label.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/label.tsx",
@@ -337,13 +281,8 @@
       "type": "registry:ui",
       "title": "RadioGroup",
       "description": "Single choice among a few visible options.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/radio-group.tsx",
@@ -356,14 +295,8 @@
       "type": "registry:ui",
       "title": "Select",
       "description": "Styled, keyboard-navigable listbox.",
-      "dependencies": [
-        "lucide-react",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["lucide-react", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/select.tsx",
@@ -376,13 +309,8 @@
       "type": "registry:ui",
       "title": "Separator",
       "description": "Hairline divider.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/separator.tsx",
@@ -395,14 +323,8 @@
       "type": "registry:ui",
       "title": "Slider",
       "description": "Single value or range slider.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/slider.tsx",
@@ -415,13 +337,8 @@
       "type": "registry:ui",
       "title": "Switch",
       "description": "On/off toggle for settings that apply immediately.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/switch.tsx",
@@ -434,14 +351,8 @@
       "type": "registry:ui",
       "title": "Tabs",
       "description": "Pills or underline tabs.",
-      "dependencies": [
-        "class-variance-authority",
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["class-variance-authority", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/tabs.tsx",
@@ -455,10 +366,7 @@
       "title": "Textarea",
       "description": "Multi-line text field that grows with its content.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/textarea.tsx",
@@ -471,14 +379,8 @@
       "type": "registry:ui",
       "title": "Tooltip",
       "description": "Inverted hint chip with 400 ms hover delay.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/kbd"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/kbd"],
       "files": [
         {
           "path": "src/components/ui/tooltip.tsx",
@@ -491,13 +393,8 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Floating panel anchored to a trigger, for small forms and details.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/popover.tsx",
@@ -510,15 +407,8 @@
       "type": "registry:ui",
       "title": "Sheet",
       "description": "Panel that slides in from an edge of the screen (Drawer).",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/sheet.tsx",
@@ -531,14 +421,8 @@
       "type": "registry:ui",
       "title": "Toaster",
       "description": "Toast notifications (Sonner) themed for Coreloom.",
-      "dependencies": [
-        "sonner",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["sonner", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/sonner.tsx",
@@ -551,15 +435,8 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Where the current page sits in the hierarchy.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/breadcrumb.tsx",
@@ -572,9 +449,7 @@
       "type": "registry:ui",
       "title": "Pagination",
       "description": "Page links for long lists and tables.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -593,14 +468,8 @@
       "type": "registry:ui",
       "title": "DropdownMenu",
       "description": "Menu of actions opened from a button.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/dropdown-menu.tsx",
@@ -613,10 +482,7 @@
       "type": "registry:ui",
       "title": "Command",
       "description": "Searchable command list and ⌘K palette (cmdk).",
-      "dependencies": [
-        "cmdk",
-        "lucide-react"
-      ],
+      "dependencies": ["cmdk", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -636,14 +502,8 @@
       "type": "registry:ui",
       "title": "Accordion",
       "description": "Stacked sections that expand one at a time.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/accordion.tsx",
@@ -656,13 +516,8 @@
       "type": "registry:ui",
       "title": "Avatar",
       "description": "User or project image with initials fallback.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/avatar.tsx",
@@ -675,15 +530,8 @@
       "type": "registry:ui",
       "title": "Item",
       "description": "List row with media, title, description and actions (List).",
-      "dependencies": [
-        "radix-ui",
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/separator"
-      ],
+      "dependencies": ["radix-ui", "class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/separator"],
       "files": [
         {
           "path": "src/components/ui/item.tsx",
@@ -696,13 +544,8 @@
       "type": "registry:ui",
       "title": "Progress",
       "description": "Determinate progress bar.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/progress.tsx",
@@ -716,10 +559,7 @@
       "title": "Skeleton",
       "description": "Placeholder shape while content loads.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/skeleton.tsx",
@@ -732,14 +572,8 @@
       "type": "registry:ui",
       "title": "Spinner",
       "description": "Indeterminate loading indicator.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/spinner.tsx",
@@ -753,10 +587,7 @@
       "title": "Table",
       "description": "Data table with mono headers and row states.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/table.tsx",
@@ -769,11 +600,7 @@
       "type": "registry:ui",
       "title": "Sidebar",
       "description": "Collapsible app navigation (offcanvas or icon rail) that turns into a Sheet below 768px; Ctrl/Cmd+B toggles it.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react",
-        "class-variance-authority"
-      ],
+      "dependencies": ["radix-ui", "lucide-react", "class-variance-authority"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -801,14 +628,8 @@
       "type": "registry:ui",
       "title": "AlertDialog",
       "description": "A confirmation that must be answered before anything else, for destructive or irreversible actions.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/button"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/button"],
       "files": [
         {
           "path": "src/components/ui/alert-dialog.tsx",
@@ -821,13 +642,8 @@
       "type": "registry:ui",
       "title": "Collapsible",
       "description": "Unstyled show / hide region with a trigger.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/collapsible.tsx",
@@ -840,14 +656,8 @@
       "type": "registry:ui",
       "title": "Toggle",
       "description": "Two-state button for formatting and view options.",
-      "dependencies": [
-        "radix-ui",
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/toggle.tsx",
@@ -860,15 +670,8 @@
       "type": "registry:ui",
       "title": "ToggleGroup",
       "description": "A row of toggles, single or multiple choice.",
-      "dependencies": [
-        "radix-ui",
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/toggle"
-      ],
+      "dependencies": ["radix-ui", "class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/toggle"],
       "files": [
         {
           "path": "src/components/ui/toggle-group.tsx",
@@ -881,13 +684,8 @@
       "type": "registry:ui",
       "title": "HoverCard",
       "description": "Preview card shown when hovering a link or name.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/hover-card.tsx",
@@ -900,13 +698,8 @@
       "type": "registry:ui",
       "title": "ScrollArea",
       "description": "Scroll container with a slim themed scrollbar.",
-      "dependencies": [
-        "radix-ui"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/scroll-area.tsx",
@@ -919,10 +712,7 @@
       "type": "registry:ui",
       "title": "Calendar",
       "description": "Month grid for picking a date or a range (react-day-picker).",
-      "dependencies": [
-        "react-day-picker@^9",
-        "lucide-react"
-      ],
+      "dependencies": ["react-day-picker@^9", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -941,14 +731,8 @@
       "type": "registry:ui",
       "title": "InputOTP",
       "description": "One-time code input, one box per character.",
-      "dependencies": [
-        "input-otp@^1",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["input-otp@^1", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/input-otp.tsx",
@@ -961,13 +745,8 @@
       "type": "registry:ui",
       "title": "Empty",
       "description": "Empty state: icon, title, description and an action.",
-      "dependencies": [
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/empty.tsx",
@@ -980,9 +759,7 @@
       "type": "registry:ui",
       "title": "Combobox",
       "description": "Searchable select built from Popover and Command.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1002,10 +779,7 @@
       "type": "registry:ui",
       "title": "DatePicker",
       "description": "Date field: a Calendar in a Popover, or with `typing` a text input that reads dates in the locale's order, plus a calendar button.",
-      "dependencies": [
-        "date-fns@^4",
-        "lucide-react"
-      ],
+      "dependencies": ["date-fns@^4", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1025,11 +799,7 @@
       "type": "registry:ui",
       "title": "DataTable",
       "description": "Table with sorting, filtering, selection and pagination (TanStack Table). With `server`, sorting, search and pagination go to your API (page in, rows and total out). With `virtual`, thousands of rows scroll in a fixed-height box, only the visible ones rendered (TanStack Virtual).",
-      "dependencies": [
-        "@tanstack/react-table@^8",
-        "@tanstack/react-virtual@^3",
-        "lucide-react"
-      ],
+      "dependencies": ["@tanstack/react-table@^8", "@tanstack/react-virtual@^3", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1051,9 +821,7 @@
       "type": "registry:ui",
       "title": "VirtualList",
       "description": "A long list in a scrolling box with only the visible items rendered (TanStack Virtual): measured item heights, load-more at the end for infinite queries.",
-      "dependencies": [
-        "@tanstack/react-virtual@^3"
-      ],
+      "dependencies": ["@tanstack/react-virtual@^3"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1072,14 +840,8 @@
       "type": "registry:ui",
       "title": "ContextMenu",
       "description": "Right-click / long-press menu of actions on an element.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/context-menu.tsx",
@@ -1092,14 +854,8 @@
       "type": "registry:ui",
       "title": "Menubar",
       "description": "Desktop-app style menu bar (File, Edit, View…).",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/menubar.tsx",
@@ -1112,15 +868,8 @@
       "type": "registry:ui",
       "title": "NavigationMenu",
       "description": "Site navigation with dropdown panels of links.",
-      "dependencies": [
-        "radix-ui",
-        "lucide-react",
-        "class-variance-authority"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["radix-ui", "lucide-react", "class-variance-authority"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/navigation-menu.tsx",
@@ -1133,14 +882,8 @@
       "type": "registry:ui",
       "title": "Resizable",
       "description": "Panel groups the user can resize by dragging or with the keyboard.",
-      "dependencies": [
-        "react-resizable-panels@^4",
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["react-resizable-panels@^4", "lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/resizable.tsx",
@@ -1153,10 +896,7 @@
       "type": "registry:ui",
       "title": "Carousel",
       "description": "Swipeable slides with previous / next buttons (Embla).",
-      "dependencies": [
-        "embla-carousel-react@^8",
-        "lucide-react"
-      ],
+      "dependencies": ["embla-carousel-react@^8", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1175,13 +915,8 @@
       "type": "registry:ui",
       "title": "Drawer",
       "description": "Draggable bottom sheet for phones (vaul).",
-      "dependencies": [
-        "vaul@^1"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["vaul@^1"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/drawer.tsx",
@@ -1194,13 +929,8 @@
       "type": "registry:ui",
       "title": "Chart",
       "description": "Recharts wrapper: container, tooltip and legend on Coreloom tokens, series colors from --chart-1…5.",
-      "dependencies": [
-        "recharts@^3"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils"
-      ],
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
           "path": "src/components/ui/chart.tsx",
@@ -1213,10 +943,7 @@
       "type": "registry:ui",
       "title": "Form",
       "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, multi-select, date (picked or typed), date range, tags, file, money, phone, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
-      "dependencies": [
-        "@tanstack/react-form@^1",
-        "input-otp@^1"
-      ],
+      "dependencies": ["@tanstack/react-form@^1", "input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1253,11 +980,7 @@
       "type": "registry:ui",
       "title": "DateRangePicker",
       "description": "Date range field: a two-month range Calendar in a Popover, with shortcuts (Last 7 days, This month…).",
-      "dependencies": [
-        "date-fns@^4",
-        "react-day-picker@^9",
-        "lucide-react"
-      ],
+      "dependencies": ["date-fns@^4", "react-day-picker@^9", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1278,14 +1001,8 @@
       "type": "registry:ui",
       "title": "TagsInput",
       "description": "Text field that turns entries into removable tags (Enter, comma or paste).",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/tags-input.tsx",
@@ -1298,9 +1015,7 @@
       "type": "registry:ui",
       "title": "FileUpload",
       "description": "Drop zone and file list with type and size checks, image thumbnails and per-file progress.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1319,14 +1034,8 @@
       "type": "registry:ui",
       "title": "Stepper",
       "description": "Progress through a multi-step flow: done, current and upcoming steps, horizontal or vertical.",
-      "dependencies": [
-        "lucide-react"
-      ],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/stepper.tsx",
@@ -1339,9 +1048,7 @@
       "type": "registry:ui",
       "title": "MultiSelect",
       "description": "Several values from a known list: chips in the trigger, a searchable checklist, select all / clear, an optional maximum.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1362,11 +1069,7 @@
       "title": "MoneyInput",
       "description": "An amount typed the reader's way (1 234,50 / 1,234.50), the currency symbol where the locale puts it; the value is a number.",
       "dependencies": [],
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/i18n"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/money-input.tsx",
@@ -1379,9 +1082,7 @@
       "type": "registry:ui",
       "title": "PhoneInput",
       "description": "Country picker and national number, formatted as people write it; the value is E.164 (+33612345678). isValidPhone() included.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1442,11 +1143,7 @@
       "type": "registry:ui",
       "title": "Markdown",
       "description": "Model output (or any Markdown) in Coreloom type: GitHub-flavoured tables, task lists, code blocks with copy; raw HTML is dropped. A caret while streaming.",
-      "dependencies": [
-        "react-markdown@^10",
-        "remark-gfm@^4",
-        "lucide-react"
-      ],
+      "dependencies": ["react-markdown@^10", "remark-gfm@^4", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1465,9 +1162,7 @@
       "type": "registry:ui",
       "title": "PromptInput",
       "description": "The composer for a chat: grows with the text, Enter sends, attachments, Send turns into Stop while a reply streams, a toolbar slot.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1488,9 +1183,7 @@
       "type": "registry:ui",
       "title": "Reasoning",
       "description": "A model's thinking folded under one line: open while it streams, \"Thought for 6 s\" once done.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1510,9 +1203,7 @@
       "type": "registry:ui",
       "title": "ToolCall",
       "description": "One tool call from an agent: name, state, input and output, and Allow / Deny when it needs approval. Reads an AI SDK tool part.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1534,9 +1225,7 @@
       "type": "registry:ui",
       "title": "InlineCitation",
       "description": "A numbered citation in a model's text: hover, focus or tap shows the source (title, site or file, link). Reads an AI SDK source part.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1556,9 +1245,7 @@
       "type": "registry:ui",
       "title": "ModelPicker",
       "description": "Pick the model that answers: a ghost or outline trigger opening a searchable list grouped by provider, with context window, price per million tokens and capabilities. ModelList shows the list inline.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1579,13 +1266,8 @@
       "type": "registry:ui",
       "title": "ModelField",
       "description": "ModelPicker in the form kit: an outline, full-width picker inside <form.AppField>, labelled by the field's label; the value is the model's id.",
-      "dependencies": [
-        "@tanstack/react-form"
-      ],
-      "registryDependencies": [
-        "@coreloom/model-picker",
-        "@coreloom/form"
-      ],
+      "dependencies": ["@tanstack/react-form"],
+      "registryDependencies": ["@coreloom/model-picker", "@coreloom/form"],
       "files": [
         {
           "path": "src/components/ui/model-field.tsx",
@@ -1700,10 +1382,7 @@
       "type": "registry:component",
       "title": "ThemeToggle",
       "description": "ThemeToggle (light ↔ dark), ThemeMenu (Light, Dark, System) and AccentPicker (the accent presets), with useTheme and useAccent. Choices are saved in localStorage.",
-      "dependencies": [
-        "lucide-react",
-        "radix-ui"
-      ],
+      "dependencies": ["lucide-react", "radix-ui"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1724,10 +1403,7 @@
       "type": "registry:component",
       "title": "CommandMenu",
       "description": "The ⌘K palette: a header search button and a CommandDialog fed with plain data, with an optional \"Ask AI\" item (onAskAi).",
-      "dependencies": [
-        "lucide-react",
-        "cmdk"
-      ],
+      "dependencies": ["lucide-react", "cmdk"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1748,9 +1424,7 @@
       "type": "registry:component",
       "title": "CopyButton",
       "description": "Copies a string, confirms with a check and a toast.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1771,9 +1445,7 @@
       "type": "registry:component",
       "title": "SiteHeader",
       "description": "Sticky site bar with brand, links and actions; links move into a Sheet on phones.",
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1794,11 +1466,7 @@
       "type": "registry:component",
       "title": "SiteFooter",
       "description": "Footer with a note and links.",
-      "registryDependencies": [
-        "@coreloom/theme",
-        "@coreloom/utils",
-        "@coreloom/link"
-      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/link"],
       "files": [
         {
           "path": "src/components/site-footer.tsx",
@@ -1812,14 +1480,8 @@
       "type": "registry:block",
       "title": "App shell",
       "description": "Product layout: collapsible sidebar with workspace switcher and account menu, sticky header with breadcrumb, ⌘K palette and theme toggle, page header and stat cards.",
-      "categories": [
-        "application",
-        "sidebar",
-        "dashboard"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["application", "sidebar", "dashboard"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1863,13 +1525,8 @@
       "type": "registry:block",
       "title": "Auth screens",
       "description": "Sign-in, sign-up, code verification, forgot-password and reset-password forms on @coreloom/form (TanStack Form), with a centered layout.",
-      "categories": [
-        "authentication",
-        "login"
-      ],
-      "dependencies": [
-        "input-otp@^1"
-      ],
+      "categories": ["authentication", "login"],
+      "dependencies": ["input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1912,13 +1569,8 @@
       "type": "registry:block",
       "title": "Settings page",
       "description": "Settings layout with section nav, form sections (a TanStack form or plain inputs) with a save footer, switch rows and a danger zone with typed confirmation.",
-      "categories": [
-        "application",
-        "settings"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1947,13 +1599,8 @@
       "type": "registry:block",
       "title": "Marketing page",
       "description": "Landing sections: site header, hero with install command, feature grid, FAQ, call to action and footer.",
-      "categories": [
-        "marketing",
-        "landing"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["marketing", "landing"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -1989,12 +1636,8 @@
       "type": "registry:block",
       "title": "Docs layout",
       "description": "Documentation layout: nav column (Sheet on phones), article, scroll-spy table of contents, code blocks and Preview / Code tabs.",
-      "categories": [
-        "docs"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["docs"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2031,14 +1674,8 @@
       "type": "registry:block",
       "title": "Dashboard",
       "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines) and an activity feed.",
-      "categories": [
-        "dashboard",
-        "application"
-      ],
-      "dependencies": [
-        "lucide-react",
-        "recharts@^3"
-      ],
+      "categories": ["dashboard", "application"],
+      "dependencies": ["lucide-react", "recharts@^3"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2063,13 +1700,8 @@
       "type": "registry:block",
       "title": "Data list",
       "description": "Search, faceted filters with counts and pagination, with the state kept in the URL.",
-      "categories": [
-        "application",
-        "table"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["application", "table"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2094,13 +1726,8 @@
       "type": "registry:block",
       "title": "Pricing",
       "description": "Plan cards with a monthly / yearly switch, locale-formatted prices and a featured plan.",
-      "categories": [
-        "marketing",
-        "pricing"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["marketing", "pricing"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2122,10 +1749,7 @@
       "type": "registry:block",
       "title": "Onboarding",
       "description": "Multi-step setup: a Stepper, the step's content in a card, Back / Continue / Finish.",
-      "categories": [
-        "application",
-        "onboarding"
-      ],
+      "categories": ["application", "onboarding"],
       "dependencies": [],
       "registryDependencies": [
         "@coreloom/theme",
@@ -2148,10 +1772,7 @@
       "type": "registry:block",
       "title": "Error pages",
       "description": "404, 500 and maintenance pages, plus the bare ErrorPage layout for any other status.",
-      "categories": [
-        "application",
-        "error"
-      ],
+      "categories": ["application", "error"],
       "dependencies": [],
       "registryDependencies": [
         "@coreloom/theme",
@@ -2172,12 +1793,8 @@
       "type": "registry:block",
       "title": "Notifications",
       "description": "A bell with the unread count and a popover of notifications: all / unread, mark one or all as read, links.",
-      "categories": [
-        "application"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2200,14 +1817,8 @@
       "type": "registry:block",
       "title": "Team",
       "description": "Workspace members with roles, an invite dialog (several emails, one role), pending invites and confirmed removal.",
-      "categories": [
-        "application",
-        "settings"
-      ],
-      "dependencies": [
-        "lucide-react",
-        "zod"
-      ],
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react", "zod"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2233,13 +1844,8 @@
       "type": "registry:block",
       "title": "Billing",
       "description": "Current plan, usage meters against limits, payment method and invoices, in the reader's currency format.",
-      "categories": [
-        "application",
-        "settings"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2263,9 +1869,7 @@
       "type": "registry:block",
       "title": "Kanban",
       "description": "Columns of cards to reorder and move by drag and drop (pointer or keyboard, announced) or from a Move to menu; WIP limits.",
-      "categories": [
-        "application"
-      ],
+      "categories": ["application"],
       "dependencies": [
         "lucide-react",
         "@dnd-kit/core@^6",
@@ -2293,13 +1897,8 @@
       "type": "registry:block",
       "title": "Event calendar",
       "description": "A month of events: grid on wide screens, agenda on phones, locale week start, n more, today.",
-      "categories": [
-        "application"
-      ],
-      "dependencies": [
-        "lucide-react",
-        "date-fns@^4"
-      ],
+      "categories": ["application"],
+      "dependencies": ["lucide-react", "date-fns@^4"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2318,12 +1917,8 @@
       "type": "registry:block",
       "title": "AI chat",
       "description": "A conversation with a model for the AI SDK's useChat: Markdown answers, reasoning, tool calls with approval, sources, files, copy / regenerate / feedback, suggestions, and the conversation history.",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2355,12 +1950,8 @@
       "type": "registry:block",
       "title": "AI chat widget",
       "description": "A support chat in the page's corner: a launcher with an unread count and a greeting that opens the Chat in a card (a full-screen sheet on phones).",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2381,13 +1972,8 @@
       "type": "registry:block",
       "title": "AI agents",
       "description": "The agents as cards (status, model, tools, last run) and an agent's settings on the form kit: instructions with {{variables}}, model, temperature, steps, tools that ask first, knowledge.",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react",
-        "@tanstack/react-form"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react", "@tanstack/react-form"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2417,13 +2003,8 @@
       "type": "registry:block",
       "title": "AI runs and traces",
       "description": "An agent's runs in a table, and one run's trace: a waterfall of model calls, tools and retrievals with each step's input, output, tokens, cost and error.",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react",
-        "@tanstack/react-table@^8"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react", "@tanstack/react-table@^8"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2445,12 +2026,8 @@
       "type": "registry:block",
       "title": "AI playground",
       "description": "One prompt, up to three variants side by side (model, temperature) to compare answers, latency, tokens and cost.",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
@@ -2476,12 +2053,8 @@
       "type": "registry:block",
       "title": "AI knowledge base",
       "description": "The documents agents search, with indexing status and progress, upload, re-index and remove, and a retrieval test with scored passages.",
-      "categories": [
-        "ai"
-      ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",

@@ -1,20 +1,30 @@
 // TanStack Form + TanStack Query together: the schema validates as you type, the mutation runs on
 // submit, and an error from the API lands on its field (or at the top of the form).
-import * as React from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { z } from "zod"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as React from 'react'
+import { z } from 'zod'
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useAppForm } from "@/components/ui/form"
-import { toast } from "@/components/ui/sonner"
-import { ApiError, createProject, type Project, type Region } from "@/lib/api"
-import { useT } from "@/lib/locale"
-import type { Messages } from "@/messages"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { useAppForm } from '@/components/ui/form'
+import { toast } from '@/components/ui/sonner'
+import { ApiError, createProject, type Project, type Region } from '@/lib/api'
+import { useT } from '@/lib/locale'
+import type { Messages } from '@/messages'
 
 const schemaFor = (t: Messages) =>
   z.object({
-    name: z.string().min(1, t.newProject.nameRequired).regex(/^[a-z0-9-]*$/, t.newProject.nameFormat),
-    region: z.enum(["cdg1", "fra1", "iad1"]),
+    name: z
+      .string()
+      .min(1, t.newProject.nameRequired)
+      .regex(/^[a-z0-9-]*$/, t.newProject.nameFormat),
+    region: z.enum(['cdg1', 'fra1', 'iad1']),
     framework: z.string().min(1, t.newProject.frameworkRequired),
   })
 
@@ -32,11 +42,11 @@ export function NewProjectDialog({
   const created = React.useRef<Project | null>(null)
   const mutation = useMutation({
     mutationFn: createProject,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
   })
 
   const form = useAppForm({
-    defaultValues: { name: "", region: "cdg1" as Region, framework: "" },
+    defaultValues: { name: '', region: 'cdg1' as Region, framework: '' },
     validators: {
       onChange: schemaFor(t),
       // The "server" check: its errors go to the field they concern, or to the whole form.
@@ -45,7 +55,8 @@ export function NewProjectDialog({
           created.current = await mutation.mutateAsync(value)
           return undefined
         } catch (error) {
-          if (error instanceof ApiError && error.field) return { form: undefined, fields: { [error.field]: error.message } }
+          if (error instanceof ApiError && error.field)
+            return { form: undefined, fields: { [error.field]: error.message } }
           return { form: t.newProject.failed, fields: {} }
         }
       },
@@ -83,23 +94,43 @@ export function NewProjectDialog({
             <form.FormErrors />
           </form.AppForm>
           <form.AppField name="name">
-            {(field) => <field.TextField label={t.newProject.name} description={t.newProject.nameHint} placeholder="acme-web" autoComplete="off" />}
+            {(field) => (
+              <field.TextField
+                label={t.newProject.name}
+                description={t.newProject.nameHint}
+                placeholder="acme-web"
+                autoComplete="off"
+              />
+            )}
           </form.AppField>
           <form.AppField name="region">
-            {(field) => <field.SelectField label={t.newProject.region} options={(["cdg1", "fra1", "iad1"] as const).map((value) => ({ value, label: t.regions[value] }))} />}
+            {(field) => (
+              <field.SelectField
+                label={t.newProject.region}
+                options={(['cdg1', 'fra1', 'iad1'] as const).map((value) => ({
+                  value,
+                  label: t.regions[value],
+                }))}
+              />
+            )}
           </form.AppField>
           <form.AppField name="framework">
             {(field) => (
               <field.SelectField
                 label={t.newProject.framework}
                 placeholder={t.newProject.frameworkPlaceholder}
-                options={["React + Vite", "AdonisJS", "Next.js", "Astro"].map((value) => ({ value, label: value }))}
+                options={['React + Vite', 'AdonisJS', 'Next.js', 'Astro'].map((value) => ({
+                  value,
+                  label: value,
+                }))}
               />
             )}
           </form.AppField>
           <DialogFooter>
             <form.AppForm>
-              <form.SubmitButton pendingLabel={t.newProject.creating}>{t.newProject.create}</form.SubmitButton>
+              <form.SubmitButton pendingLabel={t.newProject.creating}>
+                {t.newProject.create}
+              </form.SubmitButton>
             </form.AppForm>
           </DialogFooter>
         </form>

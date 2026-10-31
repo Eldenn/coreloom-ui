@@ -1,28 +1,33 @@
-import * as React from "react"
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as React from 'react'
 
-import { Badge, BadgeDot } from "@/components/ui/badge"
-import { VirtualList } from "@/components/ui/virtual-list"
+import { Badge, BadgeDot } from '@/components/ui/badge'
+import { VirtualList } from '@/components/ui/virtual-list'
 
-type LogLine = { id: number; level: "info" | "warn" | "error"; message: string; at: string }
+interface LogLine {
+  id: number
+  level: 'info' | 'warn' | 'error'
+  message: string
+  at: string
+}
 const messages = [
-  "Installing dependencies",
-  "Resolved 1,284 packages in 2.1s",
-  "Peer dependency react@19 satisfied",
-  "Compiling 312 modules",
+  'Installing dependencies',
+  'Resolved 1,284 packages in 2.1s',
+  'Peer dependency react@19 satisfied',
+  'Compiling 312 modules',
   "Type error in src/routes/settings.tsx: property 'slug' does not exist on type 'Workspace'. Did you mean 'name'? Fix the type or the property, then push again.",
-  "Uploading build output (14.2 MB)",
-  "Cache hit for node_modules",
+  'Uploading build output (14.2 MB)',
+  'Cache hit for node_modules',
 ]
-const levels = ["info", "info", "info", "warn", "error", "info", "info"] as const
+const levels = ['info', 'info', 'info', 'warn', 'error', 'info', 'info'] as const
 // Deterministic, so screenshots stay the same.
 const logLine = (i: number): LogLine => ({
   id: i,
   level: levels[i % levels.length],
   message: messages[i % messages.length],
-  at: `10:${String(Math.floor(i / 60) % 60).padStart(2, "0")}:${String(i % 60).padStart(2, "0")}`,
+  at: `10:${String(Math.floor(i / 60) % 60).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}`,
 })
-const variant = { info: "secondary", warn: "warning", error: "destructive" } as const
+const variant = { info: 'secondary', warn: 'warning', error: 'destructive' } as const
 
 function Row({ line }: { line: LogLine }) {
   return (
@@ -38,9 +43,9 @@ function Row({ line }: { line: LogLine }) {
 }
 
 const meta = {
-  title: "Components/Virtual list",
+  title: 'Components/Virtual list',
   component: VirtualList,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
@@ -89,7 +94,10 @@ export const InfiniteLoading: Story = {
         onEndReached={() => {
           setLoading(true)
           setTimeout(() => {
-            setItems((current) => [...current, ...Array.from({ length: 50 }, (_, i) => logLine(current.length + i))])
+            setItems((current) => [
+              ...current,
+              ...Array.from({ length: 50 }, (_, i) => logLine(current.length + i)),
+            ])
             setLoading(false)
           }, 600)
         }}
@@ -101,5 +109,14 @@ export const InfiniteLoading: Story = {
 
 export const Empty: Story = {
   args: {} as never,
-  render: () => <VirtualList aria-label="Build log" items={[] as LogLine[]} getKey={(l) => l.id} height={200} empty="No log lines yet." renderItem={(line) => <Row line={line} />} />,
+  render: () => (
+    <VirtualList
+      aria-label="Build log"
+      items={[] as LogLine[]}
+      getKey={(l) => l.id}
+      height={200}
+      empty="No log lines yet."
+      renderItem={(line) => <Row line={line} />}
+    />
+  ),
 }

@@ -1,13 +1,13 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
-import { AgentList } from "@/components/ai-agents"
-import { PageHeader } from "@/components/app-shell"
-import { createAgent } from "@/lib/ai-api"
-import { useT } from "@/lib/locale"
-import { agentsQuery } from "@/lib/queries"
+import { AgentList } from '@/components/ai-agents'
+import { PageHeader } from '@/components/app-shell'
+import { createAgent } from '@/lib/ai-api'
+import { useT } from '@/lib/locale'
+import { agentsQuery } from '@/lib/queries'
 
-export const Route = createFileRoute("/_app/agents/")({
+export const Route = createFileRoute('/_app/agents/')({
   loader: ({ context }) => context.queryClient.ensureQueryData(agentsQuery),
   component: AgentsPage,
 })
@@ -26,7 +26,7 @@ function AgentsPage() {
         onNew={async () => {
           const agent = await createAgent(t.ai.agents.newName)
           await queryClient.invalidateQueries({ queryKey: agentsQuery.queryKey })
-          void navigate({ to: "/agents/$agentId", params: { agentId: agent.id } })
+          void navigate({ to: '/agents/$agentId', params: { agentId: agent.id } })
         }}
       />
     </>

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — DataTable. shadcn's data-table recipe (TanStack Table v8) packaged as one
 // component: sorting, a text filter, row selection and pagination on top of Table.
@@ -12,23 +12,22 @@
 // With `virtual`, every row stays in the browser but only the visible ones are in the DOM: the
 // table scrolls inside a fixed height with its header pinned, and there are no pages. For lists
 // of thousands of rows; sorting, the filter and selection work the same.
-import * as React from "react"
 import {
+  type Column,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type Column,
-  type ColumnDef,
-  type ColumnFiltersState,
   type RowSelectionState,
   type SortingState,
   type Table as TanstackTable,
+  useReactTable,
   type VisibilityState,
-} from "@tanstack/react-table"
-import { useVirtualizer } from "@tanstack/react-virtual"
+} from '@tanstack/react-table'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   ArrowDownIcon,
   ArrowUpDownIcon,
@@ -36,18 +35,18 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   SearchIcon,
-} from "lucide-react"
+} from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -55,11 +54,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/table'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 /** A virtual table: its scrolling box and row size. */
-type DataTableVirtual = {
+interface DataTableVirtual {
   /** Height of the scrolling box: 480, "60vh"… */
   height: number | string
   /** Estimated row height in px (rows are measured as they render). Default 41, a one-line row. */
@@ -71,7 +71,7 @@ type DataTableVirtual = {
 }
 
 /** What a server-driven table asks your API for. `page` starts at 1. */
-type DataTableQuery = {
+interface DataTableQuery {
   page: number
   pageSize: number
   /** Column id and direction, or undefined for the API's default order. */
@@ -80,7 +80,7 @@ type DataTableQuery = {
   search: string
 }
 
-type DataTableServer = {
+interface DataTableServer {
   query: DataTableQuery
   onQueryChange: (query: DataTableQuery) => void
   /** Rows matching the search across all pages. */
@@ -145,15 +145,19 @@ function DataTable<TData, TValue>({
     initialState: { pagination: { pageSize } },
     onSortingChange: server
       ? (updater) => {
-          const next = typeof updater === "function" ? updater(serverState!.sorting) : updater
+          const next = typeof updater === 'function' ? updater(serverState!.sorting) : updater
           server.onQueryChange({ ...server.query, sort: next[0], page: 1 })
         }
       : setSorting,
     onPaginationChange: server
       ? (updater) => {
-          const next = typeof updater === "function" ? updater(serverState!.pagination) : updater
+          const next = typeof updater === 'function' ? updater(serverState!.pagination) : updater
           const sizeChanged = next.pageSize !== server.query.pageSize
-          server.onQueryChange({ ...server.query, page: sizeChanged ? 1 : next.pageIndex + 1, pageSize: next.pageSize })
+          server.onQueryChange({
+            ...server.query,
+            page: sizeChanged ? 1 : next.pageIndex + 1,
+            pageSize: next.pageSize,
+          })
         }
       : undefined,
     onColumnFiltersChange: setColumnFilters,
@@ -161,7 +165,12 @@ function DataTable<TData, TValue>({
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     ...(server
-      ? { manualPagination: true, manualSorting: true, manualFiltering: true, rowCount: server.rowCount }
+      ? {
+          manualPagination: true,
+          manualSorting: true,
+          manualFiltering: true,
+          rowCount: server.rowCount,
+        }
       : {
           getSortedRowModel: getSortedRowModel(),
           getFilteredRowModel: getFilteredRowModel(),
@@ -187,12 +196,16 @@ function DataTable<TData, TValue>({
   const renderRow = (row: (typeof rows)[number], index?: number) => (
     <TableRow
       key={row.id}
-      data-state={row.getIsSelected() ? "selected" : undefined}
+      data-state={row.getIsSelected() ? 'selected' : undefined}
       // In a virtual table, assistive tech hears "row 512 of 5,001" although only a few rows exist.
-      {...(index !== undefined ? { "data-index": index, "aria-rowindex": index + 2, ref: virtualizer.measureElement } : {})}
+      {...(index !== undefined
+        ? { 'data-index': index, 'aria-rowindex': index + 2, ref: virtualizer.measureElement }
+        : {})}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
       ))}
     </TableRow>
   )
@@ -201,7 +214,13 @@ function DataTable<TData, TValue>({
   React.useEffect(() => {
     if (server) setRowSelection({})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server?.query.page, server?.query.pageSize, server?.query.sort?.id, server?.query.sort?.desc, server?.query.search])
+  }, [
+    server?.query.page,
+    server?.query.pageSize,
+    server?.query.sort?.id,
+    server?.query.sort?.desc,
+    server?.query.search,
+  ])
 
   React.useEffect(() => {
     onRowSelectionChange?.(table.getSelectedRowModel().rows.map((r) => r.original))
@@ -212,15 +231,20 @@ function DataTable<TData, TValue>({
   const showSearch = !!filter || !!server?.searchable
 
   return (
-    <div data-slot="data-table" className={cn("flex flex-col gap-3", className)}>
+    <div data-slot="data-table" className={cn('flex flex-col gap-3', className)}>
       {(showSearch || toolbar) && (
-        <div data-slot="data-table-toolbar" className="flex flex-wrap items-center justify-between gap-2">
+        <div
+          data-slot="data-table-toolbar"
+          className="flex flex-wrap items-center justify-between gap-2"
+        >
           {filter ? (
             <div className="relative w-full max-w-72">
               <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                value={(filter.getFilterValue() as string) ?? ""}
-                onChange={(e) => filter.setFilterValue(e.target.value)}
+                value={(filter.getFilterValue() as string) ?? ''}
+                onChange={(e) => {
+                  filter.setFilterValue(e.target.value)
+                }}
                 placeholder={filterPlaceholder}
                 aria-label={filterPlaceholder}
                 className="h-9 pl-9"
@@ -238,22 +262,25 @@ function DataTable<TData, TValue>({
       <Table
         aria-busy={server?.loading || undefined}
         aria-rowcount={isVirtual ? rows.length + 1 : undefined}
-        className={cn(server?.loading && "[&_tbody]:opacity-60 [&_tbody]:transition-opacity")}
+        className={cn(server?.loading && '[&_tbody]:opacity-60 [&_tbody]:transition-opacity')}
         container={
           isVirtual
             ? {
                 ref: scrollRef,
                 // A scrolling box must be reachable with the keyboard to scroll it.
                 tabIndex: 0,
-                role: "region",
-                "aria-label": virtual.label ?? t.dataTable.scrollable,
+                role: 'region',
+                'aria-label': virtual.label ?? t.dataTable.scrollable,
                 style: { height: virtual.height },
-                className: "overflow-y-auto overscroll-contain focus-visible:ring-[3px] focus-visible:ring-ring outline-none",
+                className:
+                  'overflow-y-auto overscroll-contain focus-visible:ring-[3px] focus-visible:ring-ring outline-none',
               }
             : undefined
         }
       >
-        <TableHeader className={cn(isVirtual && "sticky top-0 z-10 shadow-[0_1px_0_var(--border-subtle)]")}>
+        <TableHeader
+          className={cn(isVirtual && 'sticky top-0 z-10 shadow-[0_1px_0_var(--border-subtle)]')}
+        >
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id} aria-rowindex={isVirtual ? 1 : undefined}>
               {group.headers.map((header) => (
@@ -287,7 +314,10 @@ function DataTable<TData, TValue>({
             )
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-28 text-center text-muted-foreground">
+              <TableCell
+                colSpan={columns.length}
+                className="h-28 text-center text-muted-foreground"
+              >
                 {server?.loading ? t.dataTable.loading : emptyText}
               </TableCell>
             </TableRow>
@@ -301,7 +331,9 @@ function DataTable<TData, TValue>({
         <DataTablePagination
           table={table}
           total={server?.rowCount}
-          pageSizeOptions={[...new Set([...pageSizeOptions, server?.query.pageSize ?? pageSize])].sort((x, y) => x - y)}
+          pageSizeOptions={[
+            ...new Set([...pageSizeOptions, server?.query.pageSize ?? pageSize]),
+          ].sort((x, y) => x - y)}
         />
       )}
     </div>
@@ -314,11 +346,17 @@ function ServerSearch({ server, placeholder }: { server: DataTableServer; placeh
   const latest = React.useRef(server)
   latest.current = server
   // Follow the query when it changes from outside (back button, a link).
-  React.useEffect(() => setText(server.query.search), [server.query.search])
+  React.useEffect(() => {
+    setText(server.query.search)
+  }, [server.query.search])
   React.useEffect(() => {
     if (text === latest.current.query.search) return
-    const timer = setTimeout(() => latest.current.onQueryChange({ ...latest.current.query, search: text, page: 1 }), 300)
-    return () => clearTimeout(timer)
+    const timer = setTimeout(() => {
+      latest.current.onQueryChange({ ...latest.current.query, search: text, page: 1 })
+    }, 300)
+    return () => {
+      clearTimeout(timer)
+    }
   }, [text])
   return (
     <div className="relative w-full max-w-72">
@@ -326,7 +364,9 @@ function ServerSearch({ server, placeholder }: { server: DataTableServer; placeh
       <Input
         type="search"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value)
+        }}
         placeholder={placeholder}
         aria-label={placeholder}
         className="h-9 pl-9"
@@ -348,20 +388,20 @@ function DataTableColumnHeader<TData, TValue>({
   const t = useCoreloomI18n().messages
   if (!column.getCanSort()) return <span className={className}>{title}</span>
   const sorted = column.getIsSorted()
-  const Icon = sorted === "asc" ? ArrowUpIcon : sorted === "desc" ? ArrowDownIcon : ArrowUpDownIcon
+  const Icon = sorted === 'asc' ? ArrowUpIcon : sorted === 'desc' ? ArrowDownIcon : ArrowUpDownIcon
   return (
     <button
       type="button"
       onClick={column.getToggleSortingHandler()}
       aria-label={t.dataTable.sortBy(title)}
       className={cn(
-        "-mx-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-1 uppercase outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring",
-        sorted && "text-foreground",
-        className
+        '-mx-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-1 uppercase outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring',
+        sorted && 'text-foreground',
+        className,
       )}
     >
       {title}
-      <Icon className={cn("size-3.5", !sorted && "text-muted-foreground")} />
+      <Icon className={cn('size-3.5', !sorted && 'text-muted-foreground')} />
     </button>
   )
 }
@@ -372,8 +412,14 @@ function DataTableCount<TData>({ table }: { table: TanstackTable<TData> }) {
   const selected = table.getFilteredSelectedRowModel().rows.length
   const total = table.getFilteredRowModel().rows.length
   return (
-    <div data-slot="data-table-count" aria-live="polite" className="font-mono text-[12px] text-muted-foreground">
-      {selected > 0 ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected) : t.dataTable.rows(formatNumber(total), total)}
+    <div
+      data-slot="data-table-count"
+      aria-live="polite"
+      className="font-mono text-[12px] text-muted-foreground"
+    >
+      {selected > 0
+        ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected)
+        : t.dataTable.rows(formatNumber(total), total)}
     </div>
   )
 }
@@ -398,12 +444,19 @@ function DataTablePagination<TData>({
       className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted-foreground"
     >
       <span className="font-mono text-[12px]">
-        {selected > 0 ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected) : t.dataTable.rows(formatNumber(total), total)}
+        {selected > 0
+          ? t.dataTable.selected(formatNumber(selected), formatNumber(total), selected)
+          : t.dataTable.rows(formatNumber(total), total)}
       </span>
       <div className="flex items-center gap-4">
         <div className="hidden items-center gap-2 sm:flex">
           <span>{t.dataTable.rowsPerPage}</span>
-          <Select value={String(pageSize)} onValueChange={(v) => table.setPageSize(Number(v))}>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => {
+              table.setPageSize(Number(v))
+            }}
+          >
             <SelectTrigger size="sm" className="w-[72px]" aria-label={t.dataTable.rowsPerPage}>
               <SelectValue />
             </SelectTrigger>
@@ -417,13 +470,18 @@ function DataTablePagination<TData>({
           </Select>
         </div>
         <span className="font-mono text-[12px]">
-          {t.dataTable.pageOf(formatNumber(pageIndex + 1), formatNumber(Math.max(table.getPageCount(), 1)))}
+          {t.dataTable.pageOf(
+            formatNumber(pageIndex + 1),
+            formatNumber(Math.max(table.getPageCount(), 1)),
+          )}
         </span>
         <div className="flex gap-1.5">
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => table.previousPage()}
+            onClick={() => {
+              table.previousPage()
+            }}
             disabled={!table.getCanPreviousPage()}
             aria-label={t.dataTable.previousPage}
           >
@@ -432,7 +490,9 @@ function DataTablePagination<TData>({
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => table.nextPage()}
+            onClick={() => {
+              table.nextPage()
+            }}
             disabled={!table.getCanNextPage()}
             aria-label={t.dataTable.nextPage}
           >
@@ -444,4 +504,12 @@ function DataTablePagination<TData>({
   )
 }
 
-export { DataTable, DataTableColumnHeader, DataTableCount, DataTablePagination, type DataTableQuery, type DataTableServer, type DataTableVirtual }
+export {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableCount,
+  DataTablePagination,
+  type DataTableQuery,
+  type DataTableServer,
+  type DataTableVirtual,
+}

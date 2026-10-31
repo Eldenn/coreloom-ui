@@ -1,14 +1,15 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { ContextBreakdown, ContextMeter } from "@/components/ui/context-meter"
-import { catalog, usage } from "../blocks/ai-models"
+import { ContextBreakdown, ContextMeter } from '@/components/ui/context-meter'
+
+import { catalog, usage } from '../blocks/ai-models'
 
 const sonnet = catalog[0]
 
 const meta = {
-  title: "Components/AI/Context meter",
+  title: 'Components/AI/Context meter',
   component: ContextMeter,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
@@ -17,13 +18,13 @@ const meta = {
       },
     },
   },
-  args: { used: usage, model: sonnet, variant: "ring", showValue: true },
+  args: { used: usage, model: sonnet, variant: 'ring', showValue: true },
   argTypes: {
-    variant: { control: "inline-radio", options: ["ring", "bar"] },
-    showValue: { control: "boolean" },
-    max: { control: "number" },
-    cost: { control: "number" },
-    used: { control: "object" },
+    variant: { control: 'inline-radio', options: ['ring', 'bar'] },
+    showValue: { control: 'boolean' },
+    max: { control: 'number' },
+    cost: { control: 'number' },
+    used: { control: 'object' },
     model: { control: false },
   },
   // Where it lives: the right of a composer's bottom bar.
@@ -58,15 +59,22 @@ export const High: Story = {
 
 /** 97 %: red, and the card warns older messages may be left out. */
 export const NearFull: Story = {
-  args: { used: { inputTokens: 186_400, outputTokens: 7_900, outputTokenDetails: { reasoningTokens: 5_100 }, totalTokens: 194_300 } },
+  args: {
+    used: {
+      inputTokens: 186_400,
+      outputTokens: 7_900,
+      outputTokenDetails: { reasoningTokens: 5_100 },
+      totalTokens: 194_300,
+    },
+  },
 }
 
 /** A short bar instead of the ring, with a cost the app computed itself. */
-export const Bar: Story = { args: { variant: "bar", cost: 0.27 } }
+export const Bar: Story = { args: { variant: 'bar', cost: 0.27 } }
 
 /** French: "42 %", "85 k sur 200 k", "0,30 $US". */
 export const French: Story = {
-  globals: { locale: "fr" },
+  globals: { locale: 'fr' },
   render: (args) => (
     <div className="flex flex-col items-start gap-3">
       <div className="flex w-full max-w-xl items-center justify-end gap-1 rounded-lg border border-input bg-inset p-2">

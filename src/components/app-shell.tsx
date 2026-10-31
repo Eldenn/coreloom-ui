@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
 // Coreloom UI — AppShell (app-shell block). The whole product layout in one component:
 // sidebar, sticky header with breadcrumb, ⌘K palette and theme toggle, and your page
 // centered at --container-app. Pass data; edit this file when the layout itself must change.
-import * as React from "react"
+import * as React from 'react'
 
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AppHeader, type Crumb } from "@/components/app-header"
-import { AppSidebar } from "@/components/app-sidebar"
-import { CommandMenu, type CommandMenuGroup } from "@/components/command-menu"
-import { ThemeMenu } from "@/components/theme-toggle"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { AppHeader, type Crumb } from '@/components/app-header'
+import { AppSidebar } from '@/components/app-sidebar'
+import { CommandMenu, type CommandMenuGroup } from '@/components/command-menu'
+import { ThemeMenu } from '@/components/theme-toggle'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { useCoreloomI18n } from '@/lib/i18n'
 
 function AppShell({
   children,
@@ -40,7 +40,9 @@ function AppShell({
           breadcrumbs={breadcrumbs}
           actions={
             <>
-              {commands && <CommandMenu groups={commands} triggerLabel={t.appShell.search} onAskAi={onAskAi} />}
+              {commands && (
+                <CommandMenu groups={commands} triggerLabel={t.appShell.search} onAskAi={onAskAi} />
+              )}
               {headerActions}
               <ThemeMenu />
             </>
@@ -70,7 +72,9 @@ function PageHeader({
         <h1 className="m-0 font-display text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] text-foreground">
           {title}
         </h1>
-        {description && <p className="mt-1 mb-0 text-[14px] text-muted-foreground">{description}</p>}
+        {description && (
+          <p className="mt-1 mb-0 text-[14px] text-muted-foreground">{description}</p>
+        )}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>

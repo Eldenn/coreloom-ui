@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Reasoning } from "@/components/ui/reasoning"
+import { Reasoning } from '@/components/ui/reasoning'
 
 const meta = {
-  title: "Components/AI/Reasoning",
+  title: 'Components/AI/Reasoning',
   component: Reasoning,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
@@ -15,7 +15,7 @@ const meta = {
     },
   },
   args: {
-    text: "Checked the logs: a type error in settings.tsx. The fix is a rename; no rollback needed.",
+    text: 'Checked the logs: a type error in settings.tsx. The fix is a rename; no rollback needed.',
     duration: 6,
   },
   decorators: [(Story) => <div className="max-w-2xl">{Story()}</div>],
@@ -31,7 +31,7 @@ export const Thinking: Story = {
   args: {
     streaming: true,
     duration: undefined,
-    text: "The user wants to know why the build failed. Check the latest failed deployment first, then its logs.",
+    text: 'The user wants to know why the build failed. Check the latest failed deployment first, then its logs.',
   },
 }
 

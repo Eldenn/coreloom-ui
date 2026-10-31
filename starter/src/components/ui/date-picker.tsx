@@ -1,24 +1,24 @@
-"use client"
+'use client'
 
 // Coreloom UI — DatePicker. A date field: Popover + Calendar, following shadcn's date-picker
 // pattern. The value is a Date (or undefined); the label is formatted with date-fns.
 // With `typing`, the field is a text input too: people type "14/10/2026" (in the locale's order)
 // and the calendar button stays for those who prefer to pick.
-import * as React from "react"
-import { format, isValid, parse, type Locale } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format, isValid, type Locale, parse } from 'date-fns'
+import { CalendarIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 /** The order of day, month and year in the locale's short date ("P"): e.g. ["d", "m", "y"] in French. */
 function dateOrder(locale?: Locale) {
-  const sample = format(new Date(2026, 11, 31), "P", { locale })
+  const sample = format(new Date(2026, 11, 31), 'P', { locale })
   const at = (part: string) => sample.indexOf(part)
-  return (["d", "m", "y"] as const)
-    .map((k) => ({ k, i: at(k === "d" ? "31" : k === "m" ? "12" : "2026") }))
+  return (['d', 'm', 'y'] as const)
+    .map((k) => ({ k, i: at(k === 'd' ? '31' : k === 'm' ? '12' : '2026') }))
     .sort((a, b) => a.i - b.i)
     .map((x) => x.k)
 }
@@ -34,11 +34,11 @@ function parseTypedDate(text: string, locale?: Locale): Date | undefined {
   if (iso) [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])]
   else if (parts && parts.length === 3 && /^[\d\s./-]+$/.test(s)) {
     const order = dateOrder(locale)
-    const get = (k: "d" | "m" | "y") => Number(parts[order.indexOf(k)])
-    ;[y, m, d] = [get("y"), get("m"), get("d")]
+    const get = (k: 'd' | 'm' | 'y') => Number(parts[order.indexOf(k)])
+    ;[y, m, d] = [get('y'), get('m'), get('d')]
     if (y < 100) y += 2000
   } else {
-    for (const pattern of ["PP", "PPP", "P"]) {
+    for (const pattern of ['PP', 'PPP', 'P']) {
       const date = parse(s, pattern, new Date(), { locale })
       if (isValid(date)) return date
     }
@@ -46,7 +46,9 @@ function parseTypedDate(text: string, locale?: Locale): Date | undefined {
   }
   const date = new Date(y, m - 1, d)
   // Rejects 31/02 and the like, which Date would roll over to March.
-  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d ? date : undefined
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d
+    ? date
+    : undefined
 }
 
 function DatePicker({
@@ -54,7 +56,7 @@ function DatePicker({
   defaultValue,
   onValueChange,
   placeholder,
-  formatString = "PPP",
+  formatString = 'PPP',
   locale,
   disabled,
   className,
@@ -62,9 +64,9 @@ function DatePicker({
   calendarProps,
   typing = false,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
-  "aria-describedby": ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedBy,
 }: {
   value?: Date
   defaultValue?: Date
@@ -78,13 +80,13 @@ function DatePicker({
   className?: string
   id?: string
   /** Passed to Calendar: disabled days, locale, startMonth / endMonth, captionLayout… */
-  calendarProps?: Omit<React.ComponentProps<typeof Calendar>, "mode" | "selected" | "onSelect">
+  calendarProps?: Omit<React.ComponentProps<typeof Calendar>, 'mode' | 'selected' | 'onSelect'>
   /** Also accept a typed date (text input + calendar button). The label uses the short form ("P"). */
   typing?: boolean
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
+  'aria-describedby'?: string
 }) {
   const i18n = useCoreloomI18n()
   placeholder ??= i18n.messages.datePicker.placeholder
@@ -134,14 +136,16 @@ function DatePicker({
           onBlur={onBlur}
           disabled={disabled}
           data-slot="date-picker-trigger"
-          data-placeholder={current ? undefined : ""}
+          data-placeholder={current ? undefined : ''}
           className={cn(
-            "flex h-[42px] w-full cursor-pointer items-center gap-2.5 rounded-md border border-input bg-inset px-[13px] text-left font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            className
+            'flex h-[42px] w-full cursor-pointer items-center gap-2.5 rounded-md border border-input bg-inset px-[13px] text-left font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            className,
           )}
         >
           <CalendarIcon className="size-4 text-muted-foreground" />
-          <span className="truncate">{current ? format(current, formatString, { locale }) : placeholder}</span>
+          <span className="truncate">
+            {current ? format(current, formatString, { locale }) : placeholder}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
@@ -170,9 +174,9 @@ function TypedDatePicker({
   className,
   calendarProps,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
-  "aria-describedby": ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedBy,
 }: {
   current: Date | undefined
   commit: (date: Date | undefined) => void
@@ -182,14 +186,14 @@ function TypedDatePicker({
   id?: string
   disabled?: boolean
   className?: string
-  calendarProps?: Omit<React.ComponentProps<typeof Calendar>, "mode" | "selected" | "onSelect">
+  calendarProps?: Omit<React.ComponentProps<typeof Calendar>, 'mode' | 'selected' | 'onSelect'>
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
+  'aria-describedby'?: string
 }) {
   const t = useCoreloomI18n().messages.datePicker
-  const show = (d?: Date) => (d ? format(d, "P", { locale }) : "")
+  const show = (d?: Date) => (d ? format(d, 'P', { locale }) : '')
   const [text, setText] = React.useState(() => show(current))
   const [unreadable, setUnreadable] = React.useState(false)
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -201,8 +205,14 @@ function TypedDatePicker({
     commit(date)
   }
   const hint = dateOrder(locale)
-    .map((k) => (k === "d" ? t.formatTokens.day : k === "m" ? t.formatTokens.month : t.formatTokens.year))
-    .join(format(new Date(2026, 11, 31), "P", { locale }).replace(/\d/g, "").charAt(0) || "/")
+    .map((k) =>
+      k === 'd' ? t.formatTokens.day : k === 'm' ? t.formatTokens.month : t.formatTokens.year,
+    )
+    .join(
+      format(new Date(2026, 11, 31), 'P', { locale })
+        .replace(/\d/g, '')
+        .charAt(0) || '/',
+    )
 
   // Follow outside changes (picked in the calendar, a form reset).
   React.useEffect(() => {
@@ -213,7 +223,7 @@ function TypedDatePicker({
   }, [current?.getTime(), locale])
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}>
       <div
         data-slot="date-picker-input"
         data-disabled={disabled || undefined}
@@ -230,7 +240,10 @@ function TypedDatePicker({
           disabled={disabled}
           aria-invalid={unreadable || ariaInvalid}
           aria-label={ariaLabel}
-          aria-describedby={[unreadable ? hintId : undefined, ariaDescribedBy].filter(Boolean).join(" ") || undefined}
+          aria-describedby={
+            [unreadable ? hintId : undefined, ariaDescribedBy].filter(Boolean).join(' ') ||
+            undefined
+          }
           className="h-full min-w-0 flex-1 bg-transparent px-[13px] text-foreground tabular-nums outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
           onChange={(e) => {
             setText(e.target.value)

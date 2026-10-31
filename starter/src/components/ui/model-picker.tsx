@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — ModelPicker. Which model answers: a small trigger with the chosen model's name that
 // opens a searchable list, grouped by provider, with what each model is for, its context window, its
@@ -6,14 +6,21 @@
 // composer's toolbar; an outline one fits a settings form. ModelList is the list on its own.
 //
 //   <ModelPicker models={models} value={model} onValueChange={setModel} />
-import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { formatTokenPrice, formatTokens, type AiModel } from "@/lib/ai"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCoreloomI18n } from "@/lib/i18n"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { type AiModel, formatTokenPrice, formatTokens } from '@/lib/ai'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 /** The provider's first letter in a small square: a mark that needs no logo. */
 function ProviderMark({ provider, className }: { provider?: string; className?: string }) {
@@ -21,17 +28,17 @@ function ProviderMark({ provider, className }: { provider?: string; className?: 
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border bg-secondary font-mono text-[10px] leading-none font-semibold text-fg-secondary uppercase",
-        className
+        'inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border bg-secondary font-mono text-[10px] leading-none font-semibold text-fg-secondary uppercase',
+        className,
       )}
     >
-      {(provider ?? "?").trim().charAt(0)}
+      {(provider ?? '?').trim().charAt(0)}
     </span>
   )
 }
 
 /** Models in the order given, grouped by provider (in the order providers first appear). */
-function byProvider(models: ReadonlyArray<AiModel>, other: string) {
+function byProvider(models: readonly AiModel[], other: string) {
   const groups = new Map<string, AiModel[]>()
   for (const m of models) {
     const key = m.provider ?? other
@@ -49,7 +56,8 @@ function ModelRow({ model, selected }: { model: AiModel; selected: boolean }) {
     input: formatTokenPrice(model.pricing.input, locale, currency),
     output: formatTokenPrice(model.pricing.output, locale, currency),
   }
-  const context = model.contextWindow !== undefined ? formatTokens(model.contextWindow, locale) : undefined
+  const context =
+    model.contextWindow !== undefined ? formatTokens(model.contextWindow, locale) : undefined
   return (
     <>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -66,7 +74,11 @@ function ModelRow({ model, selected }: { model: AiModel; selected: boolean }) {
           ))}
           {selected && <span className="sr-only">{t.selected}</span>}
         </span>
-        {model.description && <span className="text-[12.5px] leading-[1.45] text-muted-foreground">{model.description}</span>}
+        {model.description && (
+          <span className="text-[12.5px] leading-[1.45] text-muted-foreground">
+            {model.description}
+          </span>
+        )}
         {(context || price) && (
           <span className="flex flex-wrap gap-x-3 font-mono text-[11px] text-muted-foreground">
             {context && (
@@ -84,18 +96,30 @@ function ModelRow({ model, selected }: { model: AiModel; selected: boolean }) {
           </span>
         )}
       </div>
-      <CheckIcon aria-hidden className={cn("mt-0.5 self-start text-primary", selected ? "opacity-100" : "opacity-0")} />
+      <CheckIcon
+        aria-hidden
+        className={cn('mt-0.5 self-start text-primary', selected ? 'opacity-100' : 'opacity-0')}
+      />
     </>
   )
 }
 
-const fold = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
+const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
 
 /** Every word typed must appear in the model's id, name, provider, description or capabilities. Plain
  *  substring matching: cmdk's fuzzy default lets "fast" match any model whose text holds f, a, s, t in order. */
 function matches(value: string, search: string, keywords?: string[]) {
-  const haystack = fold([value, ...(keywords ?? [])].join(" "))
-  return fold(search).split(/\s+/).filter(Boolean).every((word) => haystack.includes(word)) ? 1 : 0
+  const haystack = fold([value, ...(keywords ?? [])].join(' '))
+  return fold(search)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => haystack.includes(word))
+    ? 1
+    : 0
 }
 
 /** The searchable list of models on its own: inside ModelPicker's popover, or inline on a settings page. */
@@ -106,7 +130,7 @@ function ModelList({
   autoFocus,
   className,
 }: {
-  models: ReadonlyArray<AiModel>
+  models: readonly AiModel[]
   /** The chosen model's id: checked, and highlighted when the list opens. */
   value?: string
   onValueChange: (id: string) => void
@@ -116,7 +140,13 @@ function ModelList({
   const t = useCoreloomI18n().messages.ai.model
   const labels = t.capabilities as Record<string, string>
   return (
-    <Command data-slot="model-list" defaultValue={value} filter={matches} loop className={className}>
+    <Command
+      data-slot="model-list"
+      defaultValue={value}
+      filter={matches}
+      loop
+      className={className}
+    >
       <CommandInput placeholder={t.search} aria-label={t.search} autoFocus={autoFocus} />
       <CommandList className="max-h-[min(420px,calc(var(--radix-popover-content-available-height,468px)-48px))]">
         <CommandEmpty>{t.empty}</CommandEmpty>
@@ -126,9 +156,16 @@ function ModelList({
               <CommandItem
                 key={m.id}
                 value={m.id}
-                keywords={[m.name, m.provider ?? "", m.description ?? "", ...(m.capabilities ?? []).map((c) => labels[c] ?? c)]}
+                keywords={[
+                  m.name,
+                  m.provider ?? '',
+                  m.description ?? '',
+                  ...(m.capabilities ?? []).map((c) => labels[c] ?? c),
+                ]}
                 disabled={m.disabled}
-                onSelect={() => onValueChange(m.id)}
+                onSelect={() => {
+                  onValueChange(m.id)
+                }}
                 data-checked={m.id === value || undefined}
                 className="items-start gap-2.5"
               >
@@ -148,7 +185,7 @@ function ModelPicker({
   value,
   defaultValue,
   onValueChange,
-  variant = "ghost",
+  variant = 'ghost',
   size,
   placeholder,
   disabled,
@@ -156,18 +193,18 @@ function ModelPicker({
   contentClassName,
   id,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-describedby": ariaDescribedBy,
-  "aria-labelledby": ariaLabelledBy,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
+  'aria-labelledby': ariaLabelledBy,
 }: {
-  models: ReadonlyArray<AiModel>
+  models: readonly AiModel[]
   value?: string
   defaultValue?: string
   onValueChange?: (id: string) => void
   /** "ghost" in a composer's toolbar, "outline" in a form (full width, like Select). */
-  variant?: "ghost" | "outline"
+  variant?: 'ghost' | 'outline'
   /** Height: "sm" (28 px, the default for ghost) or "default" (42 px, the default for outline). */
-  size?: "sm" | "default"
+  size?: 'sm' | 'default'
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -175,18 +212,18 @@ function ModelPicker({
   id?: string
   /** Called when the list closes (forms mark the field as touched). */
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-describedby'?: string
   /** A label elsewhere (a form field's): the name becomes that label followed by the chosen model. */
-  "aria-labelledby"?: string
+  'aria-labelledby'?: string
 }) {
   const t = useCoreloomI18n().messages.ai.model
   const valueId = React.useId()
   const [open, setOpen] = React.useState(false)
-  const [inner, setInner] = React.useState(defaultValue ?? "")
+  const [inner, setInner] = React.useState(defaultValue ?? '')
   const current = value !== undefined ? value : inner
   const selected = models.find((m) => m.id === current)
-  size ??= variant === "outline" ? "default" : "sm"
+  size ??= variant === 'outline' ? 'default' : 'sm'
 
   const pick = (next: string) => {
     if (value === undefined) setInner(next)
@@ -213,18 +250,23 @@ function ModelPicker({
           // Always named with what it picks and what's chosen: "Default model Claude Haiku" from a form's
           // label, "Model: Claude Haiku" on its own.
           aria-labelledby={ariaLabelledBy ? `${ariaLabelledBy} ${valueId}` : undefined}
-          aria-label={ariaLabelledBy ? undefined : t.trigger(selected?.name ?? placeholder ?? t.placeholder)}
+          aria-label={
+            ariaLabelledBy ? undefined : t.trigger(selected?.name ?? placeholder ?? t.placeholder)
+          }
           disabled={disabled}
           data-slot="model-picker-trigger"
           data-variant={variant}
-          data-placeholder={selected ? undefined : ""}
+          data-placeholder={selected ? undefined : ''}
           className={cn(
-            "flex min-w-0 cursor-pointer items-center gap-2 font-sans whitespace-nowrap text-foreground transition-[background-color,border-color,box-shadow] duration-180 ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            variant === "ghost" && "max-w-full rounded-md border border-transparent bg-transparent px-2 hover:bg-accent aria-expanded:bg-accent",
-            variant === "outline" &&
-              "w-full justify-between rounded-md border border-input bg-inset px-[13px] focus-visible:border-primary aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle",
-            size === "sm" ? "h-7 text-[12.5px] [&_svg:not([class*='size-'])]:size-3.5" : "h-[42px] text-[14px] [&_svg:not([class*='size-'])]:size-4",
-            className
+            'flex min-w-0 cursor-pointer items-center gap-2 font-sans whitespace-nowrap text-foreground transition-[background-color,border-color,box-shadow] duration-180 ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            variant === 'ghost' &&
+              'max-w-full rounded-md border border-transparent bg-transparent px-2 hover:bg-accent aria-expanded:bg-accent',
+            variant === 'outline' &&
+              'w-full justify-between rounded-md border border-input bg-inset px-[13px] focus-visible:border-primary aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle',
+            size === 'sm'
+              ? "h-7 text-[12.5px] [&_svg:not([class*='size-'])]:size-3.5"
+              : "h-[42px] text-[14px] [&_svg:not([class*='size-'])]:size-4",
+            className,
           )}
         >
           <span className="flex min-w-0 items-center gap-2">
@@ -239,7 +281,11 @@ function ModelPicker({
       <PopoverContent
         align="start"
         collisionPadding={16}
-        className={cn("w-[min(400px,calc(100vw-32px))] p-0", variant === "outline" && "min-w-(--radix-popover-trigger-width)", contentClassName)}
+        className={cn(
+          'w-[min(400px,calc(100vw-32px))] p-0',
+          variant === 'outline' && 'min-w-(--radix-popover-trigger-width)',
+          contentClassName,
+        )}
       >
         <ModelList models={models} value={current} onValueChange={pick} />
       </PopoverContent>
@@ -247,4 +293,4 @@ function ModelPicker({
   )
 }
 
-export { ModelPicker, ModelList }
+export { ModelList, ModelPicker }

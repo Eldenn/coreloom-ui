@@ -1,29 +1,29 @@
-"use client"
+'use client'
 
 // Coreloom UI — password reset (auth block), in two steps:
 //   ForgotPasswordForm: asks for the account's email, then says a link is on its way. It never says
 //                       whether the account exists, so the form can't be used to probe emails.
 //   ResetPasswordForm:  the page the link opens — a new password, typed twice.
 // Built on @coreloom/form (TanStack Form), like LoginForm.
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { AppLink } from "@/lib/link"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FieldGroup } from "@/components/ui/field"
-import { useAppForm } from "@/components/ui/form"
-import { validateEmail } from "@/components/login-form"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { validateEmail } from '@/components/login-form'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FieldGroup } from '@/components/ui/field'
+import { useAppForm } from '@/components/ui/form'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { AppLink } from '@/lib/link'
+import { cn } from '@/lib/utils'
 
-const linkClass = "font-medium text-primary-text underline-offset-4 hover:underline"
+const linkClass = 'font-medium text-primary-text underline-offset-4 hover:underline'
 
 function ForgotPasswordForm({
   onSubmit,
   pending = false,
   error,
-  defaultEmail = "",
+  defaultEmail = '',
   signInHref,
   title,
   description,
@@ -71,19 +71,28 @@ function ForgotPasswordForm({
   )
 
   return (
-    <Card className={cn("gap-5 px-6 py-6", className)}>
+    <Card className={cn('gap-5 px-6 py-6', className)}>
       <CardHeader className="text-center">
         <CardTitle asChild className="m-0 text-[22px] outline-none">
           <h1 ref={heading} tabIndex={-1}>
             {sentTo ? l.sentTitle : (title ?? l.title)}
           </h1>
         </CardTitle>
-        <CardDescription className="text-[14px]">{sentTo ? l.sentTo(sentTo) : (description ?? l.description)}</CardDescription>
+        <CardDescription className="text-[14px]">
+          {sentTo ? l.sentTo(sentTo) : (description ?? l.description)}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {sentTo ? (
           <div className="flex flex-col gap-4">
-            <Button type="button" variant="secondary" className="w-full" onClick={() => setSentTo(undefined)}>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                setSentTo(undefined)
+              }}
+            >
               {l.otherEmail}
             </Button>
             {back}
@@ -102,8 +111,18 @@ function ForgotPasswordForm({
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <form.AppField name="email" validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}>
-                {(field) => <field.TextField label={l.email} type="email" autoComplete="email" placeholder={t.auth.emailPlaceholder} />}
+              <form.AppField
+                name="email"
+                validators={{ onChange: ({ value }) => validateEmail(value, t.auth) }}
+              >
+                {(field) => (
+                  <field.TextField
+                    label={l.email}
+                    type="email"
+                    autoComplete="email"
+                    placeholder={t.auth.emailPlaceholder}
+                  />
+                )}
               </form.AppField>
               <form.AppForm>
                 <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>
@@ -144,14 +163,14 @@ function ResetPasswordForm({
   const t = useCoreloomI18n().messages
   const l = t.auth.reset
   const form = useAppForm({
-    defaultValues: { password: "", confirm: "" },
+    defaultValues: { password: '', confirm: '' },
     onSubmit: async ({ value }) => {
       await onSubmit(value.password)
     },
   })
 
   return (
-    <Card className={cn("gap-5 px-6 py-6", className)}>
+    <Card className={cn('gap-5 px-6 py-6', className)}>
       <CardHeader className="text-center">
         <CardTitle asChild className="m-0 text-[22px]">
           <h1>{title ?? l.title}</h1>
@@ -166,7 +185,16 @@ function ResetPasswordForm({
             void form.handleSubmit()
           }}
         >
-          {email && <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />}
+          {email && (
+            <input
+              type="email"
+              name="username"
+              autoComplete="username"
+              value={email}
+              readOnly
+              hidden
+            />
+          )}
           <FieldGroup className="gap-4">
             {error && (
               <Alert variant="destructive">
@@ -176,21 +204,32 @@ function ResetPasswordForm({
             <form.AppField
               name="password"
               validators={{
-                onChange: ({ value }) => (value.length < minPasswordLength ? t.auth.signup.passwordTooShort(minPasswordLength) : undefined),
+                onChange: ({ value }) =>
+                  value.length < minPasswordLength
+                    ? t.auth.signup.passwordTooShort(minPasswordLength)
+                    : undefined,
               }}
             >
               {(field) => (
-                <field.TextField label={l.password} type="password" autoComplete="new-password" description={t.auth.signup.passwordHint(minPasswordLength)} />
+                <field.TextField
+                  label={l.password}
+                  type="password"
+                  autoComplete="new-password"
+                  description={t.auth.signup.passwordHint(minPasswordLength)}
+                />
               )}
             </form.AppField>
             <form.AppField
               name="confirm"
               validators={{
-                onChangeListenTo: ["password"],
-                onChange: ({ value, fieldApi }) => (value === fieldApi.form.getFieldValue("password") ? undefined : l.mismatch),
+                onChangeListenTo: ['password'],
+                onChange: ({ value, fieldApi }) =>
+                  value === fieldApi.form.getFieldValue('password') ? undefined : l.mismatch,
               }}
             >
-              {(field) => <field.TextField label={l.confirm} type="password" autoComplete="new-password" />}
+              {(field) => (
+                <field.TextField label={l.confirm} type="password" autoComplete="new-password" />
+              )}
             </form.AppField>
             <form.AppForm>
               <form.SubmitButton className="w-full" pending={pending} pendingLabel={l.submitting}>

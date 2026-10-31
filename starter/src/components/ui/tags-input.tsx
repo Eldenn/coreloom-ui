@@ -1,12 +1,12 @@
-"use client"
+'use client'
 
 // Coreloom UI — TagsInput. A field that turns what you type into removable tags: Enter or a comma
 // adds one, Backspace on the empty input removes the last, pasting "a, b, c" adds three.
-import * as React from "react"
-import { XIcon } from "lucide-react"
+import { XIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function TagsInput({
   value,
@@ -20,9 +20,9 @@ function TagsInput({
   className,
   id,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
-  "aria-describedby": ariaDescribedby,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedby,
 }: {
   value?: string[]
   defaultValue?: string[]
@@ -37,15 +37,15 @@ function TagsInput({
   /** Lands on the text input, so a FieldLabel's htmlFor points at it. */
   id?: string
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
+  'aria-describedby'?: string
 }) {
   const t = useCoreloomI18n().messages.tags
   const [inner, setInner] = React.useState<string[]>(defaultValue)
   const tags = value ?? inner
-  const [draft, setDraft] = React.useState("")
-  const [announcement, setAnnouncement] = React.useState("")
+  const [draft, setDraft] = React.useState('')
+  const [announcement, setAnnouncement] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement>(null)
   const full = maxTags !== undefined && tags.length >= maxTags
 
@@ -66,7 +66,7 @@ function TagsInput({
     }
     if (added.length) {
       commit(next)
-      setAnnouncement(added.map(t.added).join(". "))
+      setAnnouncement(added.map(t.added).join('. '))
     }
   }
 
@@ -82,9 +82,11 @@ function TagsInput({
       data-slot="tags-input"
       aria-disabled={disabled || undefined}
       className={cn(
-        "flex min-h-[42px] w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-inset px-[7px] py-[6px] font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-55",
-        ariaInvalid && ariaInvalid !== "false" && "border-destructive ring-[3px] ring-destructive-subtle focus-within:border-destructive focus-within:ring-destructive/70",
-        className
+        'flex min-h-[42px] w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-inset px-[7px] py-[6px] font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-55',
+        ariaInvalid &&
+          ariaInvalid !== 'false' &&
+          'border-destructive ring-[3px] ring-destructive-subtle focus-within:border-destructive focus-within:ring-destructive/70',
+        className,
       )}
       onClick={(e) => {
         if (e.target === e.currentTarget) inputRef.current?.focus()
@@ -102,7 +104,9 @@ function TagsInput({
               type="button"
               disabled={disabled}
               aria-label={t.remove(tag)}
-              onClick={() => remove(i)}
+              onClick={() => {
+                remove(i)
+              }}
               className="inline-flex size-6 cursor-pointer items-center justify-center rounded-xs text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none [&_svg]:size-3.5"
             >
               <XIcon />
@@ -123,25 +127,25 @@ function TagsInput({
         className="h-7 min-w-24 flex-1 bg-transparent px-1.5 text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         onChange={(e) => {
           const v = e.target.value
-          if (v.includes(",")) {
-            const parts = v.split(",")
+          if (v.includes(',')) {
+            const parts = v.split(',')
             add(parts.slice(0, -1))
             setDraft(parts[parts.length - 1])
           } else setDraft(v)
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === 'Enter') {
             if (!draft.trim()) return
             e.preventDefault()
             add([draft])
-            setDraft("")
-          } else if (e.key === "Backspace" && !draft && tags.length) {
+            setDraft('')
+          } else if (e.key === 'Backspace' && !draft && tags.length) {
             e.preventDefault()
             remove(tags.length - 1)
           }
         }}
         onPaste={(e) => {
-          const text = e.clipboardData.getData("text")
+          const text = e.clipboardData.getData('text')
           if (!/[,\n]/.test(text)) return
           e.preventDefault()
           add(text.split(/[,\n]/))
@@ -149,7 +153,7 @@ function TagsInput({
         onBlur={() => {
           if (draft.trim()) {
             add([draft])
-            setDraft("")
+            setDraft('')
           }
           onBlur?.()
         }}

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — ContextMeter. How much of the model's context window a conversation fills: a small
 // ring (or bar) and a percentage, turning amber from 80 % and red from 95 %. Hover or focus it for the
@@ -6,14 +6,23 @@
 // Takes the AI SDK's usage (`LanguageModelUsage`) as it is, or a plain token count.
 //
 //   <ContextMeter used={usage} model={model} />   // max from model.contextWindow, cost from model.pricing
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { contextLevel, estimateCost, formatCost, formatTokens, usageDetails, usageTotal, type AiModel, type AiUsage } from "@/lib/ai"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import {
+  type AiModel,
+  type AiUsage,
+  contextLevel,
+  estimateCost,
+  formatCost,
+  formatTokens,
+  usageDetails,
+  usageTotal,
+} from '@/lib/ai'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type ContextMeterProps = {
+interface ContextMeterProps {
   /** Tokens in the conversation: a count, or the AI SDK's usage for a breakdown. */
   used: number | AiUsage
   /** The context window, in tokens. Defaults to `model.contextWindow`. */
@@ -25,30 +34,41 @@ type ContextMeterProps = {
 }
 
 const TONE = {
-  ok: { text: "text-fg-secondary", fill: "text-primary", bg: "bg-primary" },
-  warning: { text: "text-warning", fill: "text-warning", bg: "bg-warning" },
-  critical: { text: "text-destructive", fill: "text-destructive", bg: "bg-destructive" },
+  ok: { text: 'text-fg-secondary', fill: 'text-primary', bg: 'bg-primary' },
+  warning: { text: 'text-warning', fill: 'text-warning', bg: 'bg-warning' },
+  critical: { text: 'text-destructive', fill: 'text-destructive', bg: 'bg-destructive' },
 } as const
 
 /** Everything the meter and its breakdown show, formatted for the locale. */
 function useMeter({ used, max, cost, model }: ContextMeterProps) {
   const { messages, locale, formatNumber } = useCoreloomI18n()
   const t = messages.ai.model.meter
-  const usage: AiUsage = typeof used === "number" ? { totalTokens: used } : used
+  const usage: AiUsage = typeof used === 'number' ? { totalTokens: used } : used
   const total = usageTotal(usage)
   const window = max ?? model?.contextWindow ?? 0
   const ratio = window > 0 ? Math.min(1, total / window) : 0
   const level = contextLevel(total, window)
-  const estimated = cost ?? (typeof used !== "number" && model?.pricing ? estimateCost(usage, model.pricing) : undefined)
-  const percent = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(ratio)
+  const estimated =
+    cost ??
+    (typeof used !== 'number' && model?.pricing ? estimateCost(usage, model.pricing) : undefined)
+  const percent = new Intl.NumberFormat(locale, {
+    style: 'percent',
+    maximumFractionDigits: 0,
+  }).format(ratio)
   const { reasoning, cached } = usageDetails(usage)
   const rows: { label: string; value: string; sub?: boolean }[] = []
-  if (usage.inputTokens !== undefined) rows.push({ label: t.input, value: formatNumber(usage.inputTokens) })
+  if (usage.inputTokens !== undefined)
+    rows.push({ label: t.input, value: formatNumber(usage.inputTokens) })
   if (cached) rows.push({ label: t.cached, value: formatNumber(cached), sub: true })
-  if (usage.outputTokens !== undefined) rows.push({ label: t.output, value: formatNumber(usage.outputTokens) })
+  if (usage.outputTokens !== undefined)
+    rows.push({ label: t.output, value: formatNumber(usage.outputTokens) })
   if (reasoning) rows.push({ label: t.reasoning, value: formatNumber(reasoning), sub: true })
-  rows.push({ label: t.total, value: t.of(formatTokens(total, locale), formatTokens(window, locale)) })
-  if (estimated !== undefined) rows.push({ label: t.cost, value: formatCost(estimated, locale, model?.pricing?.currency) })
+  rows.push({
+    label: t.total,
+    value: t.of(formatTokens(total, locale), formatTokens(window, locale)),
+  })
+  if (estimated !== undefined)
+    rows.push({ label: t.cost, value: formatCost(estimated, locale, model?.pricing?.currency) })
   return {
     t,
     total,
@@ -65,19 +85,43 @@ function useMeter({ used, max, cost, model }: ContextMeterProps) {
 function ContextBreakdown({ className, ...props }: ContextMeterProps & { className?: string }) {
   const { t, ratio, level, percent, rows } = useMeter(props)
   return (
-    <div data-slot="context-breakdown" data-level={level} className={cn("flex flex-col gap-3 text-[13px]", className)}>
+    <div
+      data-slot="context-breakdown"
+      data-level={level}
+      className={cn('flex flex-col gap-3 text-[13px]', className)}
+    >
       <div className="flex items-baseline justify-between gap-3">
-        <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.title}</p>
-        <span className={cn("font-mono text-[12.5px] font-semibold", TONE[level].text)}>{percent}</span>
+        <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          {t.title}
+        </p>
+        <span className={cn('font-mono text-[12.5px] font-semibold', TONE[level].text)}>
+          {percent}
+        </span>
       </div>
-      <span aria-hidden className="relative block h-1.5 w-full overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset">
-        <span className={cn("absolute inset-y-0 left-0 rounded-pill transition-[width] duration-320 ease-out", TONE[level].bg)} style={{ width: `${ratio * 100}%` }} />
+      <span
+        aria-hidden
+        className="relative block h-1.5 w-full overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset"
+      >
+        <span
+          className={cn(
+            'absolute inset-y-0 left-0 rounded-pill transition-[width] duration-320 ease-out',
+            TONE[level].bg,
+          )}
+          style={{ width: `${ratio * 100}%` }}
+        />
       </span>
-      <p className={cn("m-0 text-[12.5px] leading-[1.45]", level === "ok" ? "text-muted-foreground" : TONE[level].text)}>{t.levels[level]}</p>
+      <p
+        className={cn(
+          'm-0 text-[12.5px] leading-[1.45]',
+          level === 'ok' ? 'text-muted-foreground' : TONE[level].text,
+        )}
+      >
+        {t.levels[level]}
+      </p>
       <dl className="m-0 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 border-t border-border-subtle pt-2.5">
         {rows.map((r) => (
           <React.Fragment key={r.label}>
-            <dt className={cn("text-muted-foreground", r.sub && "pl-3")}>{r.label}</dt>
+            <dt className={cn('text-muted-foreground', r.sub && 'pl-3')}>{r.label}</dt>
             <dd className="m-0 text-right font-mono text-[12px] text-foreground">{r.value}</dd>
           </React.Fragment>
         ))}
@@ -90,8 +134,16 @@ function Ring({ ratio, className }: { ratio: number; className?: string }) {
   const r = 6
   const c = 2 * Math.PI * r
   return (
-    <svg aria-hidden viewBox="0 0 16 16" className={cn("size-4 shrink-0 -rotate-90", className)}>
-      <circle cx="8" cy="8" r={r} fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border-strong" />
+    <svg aria-hidden viewBox="0 0 16 16" className={cn('size-4 shrink-0 -rotate-90', className)}>
+      <circle
+        cx="8"
+        cy="8"
+        r={r}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        className="text-border-strong"
+      />
       <circle
         cx="8"
         cy="8"
@@ -109,13 +161,13 @@ function Ring({ ratio, className }: { ratio: number; className?: string }) {
 }
 
 function ContextMeter({
-  variant = "ring",
+  variant = 'ring',
   showValue = true,
   className,
   ...props
 }: ContextMeterProps & {
   /** A ring (the default, for a toolbar) or a short bar. */
-  variant?: "ring" | "bar"
+  variant?: 'ring' | 'bar'
   /** Show the percentage next to the ring. It's always in the accessible value. */
   showValue?: boolean
   className?: string
@@ -143,7 +195,8 @@ function ContextMeter({
           // browser to scroll) doesn't. The state is read on pointerdown: the open card closes itself on a
           // press outside it, before pointerup.
           onPointerDown={(e) => {
-            touchStart.current = e.pointerType === "touch" ? { x: e.clientX, y: e.clientY, wasOpen: open } : null
+            touchStart.current =
+              e.pointerType === 'touch' ? { x: e.clientX, y: e.clientY, wasOpen: open } : null
           }}
           onPointerCancel={() => {
             touchStart.current = null
@@ -151,18 +204,29 @@ function ContextMeter({
           onPointerUp={(e) => {
             const start = touchStart.current
             touchStart.current = null
-            if (e.pointerType === "touch" && start && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 10) setOpen(!start.wasOpen)
+            if (
+              e.pointerType === 'touch' &&
+              start &&
+              Math.hypot(e.clientX - start.x, e.clientY - start.y) < 10
+            )
+              setOpen(!start.wasOpen)
           }}
           className={cn(
-            "inline-flex h-7 shrink-0 cursor-default items-center gap-1.5 rounded-md px-1.5 font-mono text-[11.5px] font-medium outline-none select-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring data-[state=open]:bg-accent",
-            className
+            'inline-flex h-7 shrink-0 cursor-default items-center gap-1.5 rounded-md px-1.5 font-mono text-[11.5px] font-medium outline-none select-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring data-[state=open]:bg-accent',
+            className,
           )}
         >
-          {variant === "ring" ? (
+          {variant === 'ring' ? (
             <Ring ratio={ratio} className={TONE[level].fill} />
           ) : (
-            <span aria-hidden className="relative block h-1.5 w-14 overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset">
-              <span className={cn("absolute inset-y-0 left-0 rounded-pill", TONE[level].bg)} style={{ width: `${ratio * 100}%` }} />
+            <span
+              aria-hidden
+              className="relative block h-1.5 w-14 overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset"
+            >
+              <span
+                className={cn('absolute inset-y-0 left-0 rounded-pill', TONE[level].bg)}
+                style={{ width: `${ratio * 100}%` }}
+              />
             </span>
           )}
           {showValue && (
@@ -182,4 +246,4 @@ function ContextMeter({
   )
 }
 
-export { ContextMeter, ContextBreakdown, type ContextMeterProps }
+export { ContextBreakdown, ContextMeter, type ContextMeterProps }

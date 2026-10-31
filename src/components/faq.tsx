@@ -1,11 +1,16 @@
-"use client"
+'use client'
 
 // Coreloom UI — Faq (marketing block). Questions in an Accordion, the first one open.
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { useCoreloomI18n } from "@/lib/i18n"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function Faq({
   title,
@@ -19,9 +24,11 @@ function Faq({
   const t = useCoreloomI18n().messages
   title ??= t.marketing.faq
   return (
-    <section className={cn("border-t border-border-subtle px-5 py-20", className)}>
+    <section className={cn('border-t border-border-subtle px-5 py-20', className)}>
       <div className="mx-auto max-w-[720px]">
-        <h2 className="mt-0 mb-6 text-center font-display text-[28px] font-semibold tracking-[-0.02em] text-foreground">{title}</h2>
+        <h2 className="mt-0 mb-6 text-center font-display text-[28px] font-semibold tracking-[-0.02em] text-foreground">
+          {title}
+        </h2>
         <Accordion type="single" collapsible defaultValue="faq-0">
           {items.map((item, i) => (
             <AccordionItem key={item.question} value={`faq-${i}`}>

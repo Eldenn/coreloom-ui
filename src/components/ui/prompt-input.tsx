@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — PromptInput. Where people write to a model: a text area that grows with the text,
 // Enter to send and Shift + Enter for a new line, attachments, and a Send button that becomes Stop
@@ -6,21 +6,21 @@
 //
 // With the AI SDK: <PromptInput status={status} onStop={stop}
 //   onSubmit={({ text, files }) => sendMessage({ text, files })} />
-import * as React from "react"
-import { ArrowUpIcon, FileIcon, PaperclipIcon, SquareIcon, XIcon } from "lucide-react"
+import { ArrowUpIcon, FileIcon, PaperclipIcon, SquareIcon, XIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import type { AiChatStatus } from "@/lib/ai"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import type { AiChatStatus } from '@/lib/ai'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function PromptInput({
   onSubmit,
   onStop,
-  status = "ready",
+  status = 'ready',
   value,
-  defaultValue = "",
+  defaultValue = '',
   onValueChange,
   placeholder,
   accept,
@@ -60,13 +60,13 @@ function PromptInput({
   const fileInput = React.useRef<HTMLInputElement>(null)
   const textarea = React.useRef<HTMLTextAreaElement>(null)
   const hintId = React.useId()
-  const busy = status === "submitted" || status === "streaming"
+  const busy = status === 'submitted' || status === 'streaming'
   const canSend = !disabled && !busy && (text.trim().length > 0 || files.length > 0)
 
   const submit = () => {
     if (!canSend) return
     onSubmit({ text: text.trim(), files })
-    setText("")
+    setText('')
     setFiles([])
   }
 
@@ -79,21 +79,26 @@ function PromptInput({
         submit()
       }}
       className={cn(
-        "flex flex-col gap-2 rounded-lg border border-input bg-inset p-2 shadow-sm transition-[border-color,box-shadow] duration-180 focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring",
-        disabled && "opacity-55",
-        className
+        'flex flex-col gap-2 rounded-lg border border-input bg-inset p-2 shadow-sm transition-[border-color,box-shadow] duration-180 focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring',
+        disabled && 'opacity-55',
+        className,
       )}
     >
       {files.length > 0 && (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0 px-1 pt-1">
           {files.map((file, i) => (
-            <li key={`${file.name}-${i}`} className="flex items-center gap-1.5 rounded-md border border-border bg-card py-1 pr-1 pl-2 text-[12.5px] text-foreground">
+            <li
+              key={`${file.name}-${i}`}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card py-1 pr-1 pl-2 text-[12.5px] text-foreground"
+            >
               <FileIcon className="size-3.5 text-muted-foreground" aria-hidden />
               <span className="max-w-40 truncate">{file.name}</span>
               <button
                 type="button"
                 aria-label={t.removeFile(file.name)}
-                onClick={() => setFiles((f) => f.filter((_, j) => j !== i))}
+                onClick={() => {
+                  setFiles((f) => f.filter((_, j) => j !== i))
+                }}
                 className="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
               >
                 <XIcon className="size-3" />
@@ -112,10 +117,12 @@ function PromptInput({
         disabled={disabled}
         autoFocus={autoFocus}
         placeholder={placeholder ?? t.placeholder}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value)
+        }}
         onKeyDown={(e) => {
           // Enter sends; Shift + Enter breaks the line; composing (IME) text never sends.
-          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
             e.preventDefault()
             submit()
           }
@@ -138,13 +145,20 @@ function PromptInput({
                 onChange={(e) => {
                   const picked = Array.from(e.target.files ?? [])
                   setFiles((f) => [...f, ...picked])
-                  e.target.value = ""
+                  e.target.value = ''
                   textarea.current?.focus()
                 }}
               />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button type="button" variant="ghost" size="icon-sm" aria-label={t.attach} disabled={disabled} onClick={() => fileInput.current?.click()}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t.attach}
+                    disabled={disabled}
+                    onClick={() => fileInput.current?.click()}
+                  >
                     <PaperclipIcon />
                   </Button>
                 </TooltipTrigger>
@@ -155,7 +169,13 @@ function PromptInput({
           {toolbar}
         </div>
         {busy && onStop ? (
-          <Button type="button" size="icon-sm" variant="secondary" aria-label={t.stop} onClick={onStop}>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="secondary"
+            aria-label={t.stop}
+            onClick={onStop}
+          >
             <SquareIcon className="fill-current" />
           </Button>
         ) : (

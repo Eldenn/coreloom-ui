@@ -1,25 +1,32 @@
-import * as React from "react"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { Link, createFileRoute, notFound } from "@tanstack/react-router"
-import { ArrowLeftIcon, ExternalLinkIcon, GitBranchIcon } from "lucide-react"
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link, notFound } from '@tanstack/react-router'
+import { ArrowLeftIcon, ExternalLinkIcon, GitBranchIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { PageHeader } from "@/components/app-shell"
-import { Brand } from "@/components/brand"
-import { NotFoundPage } from "@/components/error-page"
-import { StatusBadge } from "@/components/status-badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatRelative } from "@/lib/format"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { useT } from "@/lib/locale"
-import { deploymentsQuery, projectQuery } from "@/lib/queries"
+import { PageHeader } from '@/components/app-shell'
+import { Brand } from '@/components/brand'
+import { NotFoundPage } from '@/components/error-page'
+import { StatusBadge } from '@/components/status-badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { formatRelative } from '@/lib/format'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { useT } from '@/lib/locale'
+import { deploymentsQuery, projectQuery } from '@/lib/queries'
 
 // The editor and its Tiptap dependencies load on their own, after the page is on screen.
-const ProjectNotes = React.lazy(() => import("@/components/project-notes"))
+const ProjectNotes = React.lazy(() => import('@/components/project-notes'))
 
-export const Route = createFileRoute("/_app/projects/$projectId")({
+export const Route = createFileRoute('/_app/projects/$projectId')({
   loader: async ({ context, params }) => {
     const [project] = await Promise.all([
       context.queryClient.ensureQueryData(projectQuery(params.projectId)),
@@ -35,7 +42,15 @@ export const Route = createFileRoute("/_app/projects/$projectId")({
 
 function ProjectNotFound() {
   const t = useT()
-  return <NotFoundPage brand={<Brand />} title={t.project.notFoundTitle} description={t.project.notFoundText} homeHref="/projects" className="min-h-[60vh]" />
+  return (
+    <NotFoundPage
+      brand={<Brand />}
+      title={t.project.notFoundTitle}
+      description={t.project.notFoundText}
+      homeHref="/projects"
+      className="min-h-[60vh]"
+    />
+  )
 }
 
 function ProjectPage() {
@@ -92,7 +107,9 @@ function ProjectPage() {
             <TableBody>
               {deployments.map((deployment) => (
                 <TableRow key={deployment.id}>
-                  <TableCell className="pl-5 font-mono text-[12px] text-foreground">{deployment.commit}</TableCell>
+                  <TableCell className="pl-5 font-mono text-[12px] text-foreground">
+                    {deployment.commit}
+                  </TableCell>
                   <TableCell>
                     <span className="inline-flex items-center gap-1.5 font-mono text-[12px] [&_svg]:size-3.5">
                       <GitBranchIcon aria-hidden />
@@ -102,8 +119,12 @@ function ProjectPage() {
                   <TableCell>
                     <StatusBadge status={deployment.status} />
                   </TableCell>
-                  <TableCell className="text-right font-mono text-[12px]">{deployment.duration}s</TableCell>
-                  <TableCell className="pr-5 text-right font-mono text-[12px]">{formatRelative(deployment.createdAt, locale)}</TableCell>
+                  <TableCell className="text-right font-mono text-[12px]">
+                    {deployment.duration}s
+                  </TableCell>
+                  <TableCell className="pr-5 text-right font-mono text-[12px]">
+                    {formatRelative(deployment.createdAt, locale)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

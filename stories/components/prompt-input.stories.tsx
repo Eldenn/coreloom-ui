@@ -1,14 +1,14 @@
-import * as React from "react"
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as React from 'react'
 
-import { Badge } from "@/components/ui/badge"
-import { PromptInput } from "@/components/ui/prompt-input"
-import type { AiChatStatus } from "@/lib/ai"
+import { Badge } from '@/components/ui/badge'
+import { PromptInput } from '@/components/ui/prompt-input'
+import type { AiChatStatus } from '@/lib/ai'
 
 const meta = {
-  title: "Components/AI/Prompt input",
+  title: 'Components/AI/Prompt input',
   component: PromptInput,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
@@ -19,15 +19,15 @@ const meta = {
   },
   args: {
     onSubmit: () => {},
-    status: "ready",
-    placeholder: "Ask anything…",
+    status: 'ready',
+    placeholder: 'Ask anything…',
     allowAttachments: false,
     disabled: false,
   },
   argTypes: {
     status: {
-      control: "inline-radio",
-      options: ["ready", "submitted", "streaming", "error"],
+      control: 'inline-radio',
+      options: ['ready', 'submitted', 'streaming', 'error'],
     },
   },
   decorators: [(Story) => <div className="max-w-2xl">{Story()}</div>],
@@ -38,7 +38,7 @@ type Story = StoryObj<typeof meta>
 /** Enter sends, Shift + Enter breaks the line. While a reply streams, Send becomes Stop. */
 export const Default: Story = {
   render: (args) => {
-    const [status, setStatus] = React.useState<AiChatStatus>("ready")
+    const [status, setStatus] = React.useState<AiChatStatus>('ready')
     const [sent, setSent] = React.useState<string[]>([])
     return (
       <div className="flex flex-col gap-3">
@@ -46,10 +46,12 @@ export const Default: Story = {
           {...args}
           status={status}
           allowAttachments
-          onStop={() => setStatus("ready")}
+          onStop={() => {
+            setStatus('ready')
+          }}
           onSubmit={({ text }) => {
             setSent((s) => [...s, text])
-            setStatus("streaming")
+            setStatus('streaming')
           }}
           toolbar={<Badge variant="secondary">Claude Sonnet</Badge>}
         />
@@ -66,13 +68,13 @@ export const Default: Story = {
 /** A reply is on its way: Stop replaces Send. */
 export const Streaming: Story = {
   args: {
-    status: "streaming",
+    status: 'streaming',
     onStop: () => {},
-    defaultValue: "And for the staging project?",
+    defaultValue: 'And for the staging project?',
   },
 }
 
 /** Disabled, for instance while the chat is read-only. */
 export const Disabled: Story = {
-  args: { disabled: true, placeholder: "This conversation is archived." },
+  args: { disabled: true, placeholder: 'This conversation is archived.' },
 }

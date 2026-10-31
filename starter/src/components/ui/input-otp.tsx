@@ -1,11 +1,12 @@
-"use client"
+'use client'
 
 // Coreloom UI — InputOTP (shadcn/ui new-york-v4 on input-otp, restyled). One-time codes, one box per character.
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { OTPInput, OTPInputContext } from "input-otp"
-import { MinusIcon } from "lucide-react"
+import { OTPInput, OTPInputContext } from 'input-otp'
+import { MinusIcon } from 'lucide-react'
+import * as React from 'react'
+
+import { cn } from '@/lib/utils'
 
 function InputOTP({
   className,
@@ -17,23 +18,16 @@ function InputOTP({
   return (
     <OTPInput
       data-slot="input-otp"
-      containerClassName={cn(
-        "flex items-center gap-2 has-disabled:opacity-50",
-        containerClassName
-      )}
-      className={cn("disabled:cursor-not-allowed", className)}
+      containerClassName={cn('flex items-center gap-2 has-disabled:opacity-50', containerClassName)}
+      className={cn('disabled:cursor-not-allowed', className)}
       {...props}
     />
   )
 }
 
-function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
+function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="input-otp-group"
-      className={cn("flex items-center", className)}
-      {...props}
-    />
+    <div data-slot="input-otp-group" className={cn('flex items-center', className)} {...props} />
   )
 }
 
@@ -41,7 +35,7 @@ function InputOTPSlot({
   index,
   className,
   ...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentProps<'div'> & {
   index: number
 }) {
   const inputOTPContext = React.useContext(OTPInputContext)
@@ -52,8 +46,8 @@ function InputOTPSlot({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        "relative flex h-[46px] w-[42px] items-center justify-center border-y border-r border-border bg-inset font-mono text-[18px] font-medium text-foreground transition-[border-color,box-shadow] duration-180 outline-none first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-primary data-[active=true]:ring-[3px] data-[active=true]:ring-ring data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/70",
-        className
+        'relative flex h-[46px] w-[42px] items-center justify-center border-y border-r border-border bg-inset font-mono text-[18px] font-medium text-foreground transition-[border-color,box-shadow] duration-180 outline-none first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-primary data-[active=true]:ring-[3px] data-[active=true]:ring-ring data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/70',
+        className,
       )}
       {...props}
     >
@@ -67,12 +61,17 @@ function InputOTPSlot({
   )
 }
 
-function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
+function InputOTPSeparator({ ...props }: React.ComponentProps<'div'>) {
   return (
-    <div data-slot="input-otp-separator" role="separator" className="text-faint-foreground" {...props}>
+    <div
+      data-slot="input-otp-separator"
+      role="separator"
+      className="text-faint-foreground"
+      {...props}
+    >
       <MinusIcon />
     </div>
   )
 }
 
-export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }
+export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot }

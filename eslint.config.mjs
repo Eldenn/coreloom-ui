@@ -1,9 +1,9 @@
 // Code quality for the library, stories, tests, build scripts and the starter. Formatting is
 // Prettier's job: eslint-config-prettier (last) turns off every rule that would fight it.
-import eslintReact from '@eslint-react/eslint-plugin'
 import js from '@eslint/js'
-import prettier from 'eslint-config-prettier'
+import eslintReact from '@eslint-react/eslint-plugin'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import prettier from 'eslint-config-prettier'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
@@ -86,7 +86,12 @@ export default defineConfig(
       ],
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_', ignoreRestSiblings: true },
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
       ],
     },
   },
@@ -94,7 +99,12 @@ export default defineConfig(
     // shadcn components export their cva variants and helpers next to the component
     // (buttonVariants, useFormField, formatBytes…). Moving them out to please Fast Refresh would
     // break the API every shadcn user knows, and this rule is only about dev-time HMR: off here.
-    files: ['src/components/**/*.tsx', 'starter/src/components/**/*.tsx', 'src/lib/**/*.tsx', 'starter/src/lib/**/*.tsx'],
+    files: [
+      'src/components/**/*.tsx',
+      'starter/src/components/**/*.tsx',
+      'src/lib/**/*.tsx',
+      'starter/src/lib/**/*.tsx',
+    ],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
@@ -138,12 +148,30 @@ export default defineConfig(
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['**/*.config.*', '**/*.stories.*'],
     rules: {
-      'no-restricted-exports': ['error', { restrictDefaultExports: { direct: true, named: true, defaultFrom: true, namedFrom: true, namespaceFrom: true } }],
+      'no-restricted-exports': [
+        'error',
+        {
+          restrictDefaultExports: {
+            direct: true,
+            named: true,
+            defaultFrom: true,
+            namedFrom: true,
+            namespaceFrom: true,
+          },
+        },
+      ],
     },
   },
   {
     // Node: build scripts, test runners and config files
-    files: ['build/**/*.mjs', 'tests/**/*.{ts,mjs}', 'unit/**/*.ts', '*.{mjs,ts}', 'starter/*.ts', '.storybook/main.ts'],
+    files: [
+      'build/**/*.mjs',
+      'tests/**/*.{ts,mjs}',
+      'unit/**/*.ts',
+      '*.{mjs,ts}',
+      'starter/*.ts',
+      '.storybook/main.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
   {
@@ -156,5 +184,5 @@ export default defineConfig(
     files: ['**/*.{js,mjs}'],
     extends: [tseslint.configs.disableTypeChecked],
   },
-  prettier
+  prettier,
 )

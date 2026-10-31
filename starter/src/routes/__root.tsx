@@ -1,22 +1,27 @@
-import * as React from "react"
-import type { QueryClient } from "@tanstack/react-query"
-import { Outlet, createRootRouteWithContext, useRouter, type ErrorComponentProps } from "@tanstack/react-router"
+import type { QueryClient } from '@tanstack/react-query'
+import {
+  createRootRouteWithContext,
+  type ErrorComponentProps,
+  Outlet,
+  useRouter,
+} from '@tanstack/react-router'
+import * as React from 'react'
 
-import { Brand } from "@/components/brand"
-import { RouterLink } from "@/components/router-link"
-import { NotFoundPage, ServerErrorPage } from "@/components/error-page"
-import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import type { Auth } from "@/lib/auth"
-import { CoreloomLinkProvider } from "@/lib/link"
-import { LocaleProvider } from "@/lib/locale"
+import { Brand } from '@/components/brand'
+import { NotFoundPage, ServerErrorPage } from '@/components/error-page'
+import { RouterLink } from '@/components/router-link'
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import type { Auth } from '@/lib/auth'
+import { CoreloomLinkProvider } from '@/lib/link'
+import { LocaleProvider } from '@/lib/locale'
 
 // Devtools only load in development; the production bundle doesn't include them.
 const Devtools = import.meta.env.DEV
   ? React.lazy(async () => {
       const [{ TanStackRouterDevtools }, { ReactQueryDevtools }] = await Promise.all([
-        import("@tanstack/react-router-devtools"),
-        import("@tanstack/react-query-devtools"),
+        import('@tanstack/react-router-devtools'),
+        import('@tanstack/react-query-devtools'),
       ])
       return {
         default: () => (
@@ -29,7 +34,10 @@ const Devtools = import.meta.env.DEV
     })
   : () => null
 
-export type RouterContext = { queryClient: QueryClient; auth: Auth }
+export interface RouterContext {
+  queryClient: QueryClient
+  auth: Auth
+}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: Root,
@@ -63,7 +71,9 @@ function Root() {
 
 function RootError({ error, reset }: ErrorComponentProps) {
   const router = useRouter()
-  React.useEffect(() => console.error(error), [error])
+  React.useEffect(() => {
+    console.error(error)
+  }, [error])
   return (
     <Providers>
       <ServerErrorPage

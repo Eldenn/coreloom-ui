@@ -1,13 +1,13 @@
 // Coreloom UI — SiteFooter (marketing and docs blocks).
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { AppLink } from "@/lib/link"
+import { AppLink } from '@/lib/link'
+import { cn } from '@/lib/utils'
 
 function SiteFooter({
   note,
   links = [],
-  maxWidth = "max-w-[1120px]",
+  maxWidth = 'max-w-[1120px]',
   className,
 }: {
   /** Left side: "© 2026 Coreloom — MIT licensed". */
@@ -17,13 +17,22 @@ function SiteFooter({
   className?: string
 }) {
   return (
-    <footer className={cn("border-t border-border-subtle px-5 py-8", className)}>
-      <div className={cn("mx-auto flex flex-wrap items-center justify-between gap-4 text-[13px] text-muted-foreground", maxWidth)}>
+    <footer className={cn('border-t border-border-subtle px-5 py-8', className)}>
+      <div
+        className={cn(
+          'mx-auto flex flex-wrap items-center justify-between gap-4 text-[13px] text-muted-foreground',
+          maxWidth,
+        )}
+      >
         <span>{note}</span>
         {links.length > 0 && (
           <nav className="flex flex-wrap gap-5" aria-label="Footer">
             {links.map((link) => (
-              <AppLink key={link.href} href={link.href} className="transition-colors hover:text-foreground">
+              <AppLink
+                key={link.href}
+                href={link.href}
+                className="transition-colors hover:text-foreground"
+              >
                 {link.label}
               </AppLink>
             ))}

@@ -1,14 +1,13 @@
-"use client"
+'use client'
 
 // Coreloom UI — CommandMenu block part. The ⌘K palette: a search button for the header and a
 // CommandDialog bound to ⌘K / Ctrl+K. Items are plain data; navigate or act in onSelect. With
 // `onAskAi`, what you type can also go to an assistant: "Ask AI: “…”" comes first in the list.
-import * as React from "react"
-import { defaultFilter } from "cmdk"
-import { SearchIcon, SparklesIcon, type LucideIcon } from "lucide-react"
+import { defaultFilter } from 'cmdk'
+import { type LucideIcon, SearchIcon, SparklesIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 import {
   CommandDialog,
   CommandEmpty,
@@ -18,9 +17,10 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@/components/ui/command"
-import { Kbd } from "@/components/ui/kbd"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/command'
+import { Kbd } from '@/components/ui/kbd'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 /** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
  *  server → client boundary in Next.js, components don't. */
@@ -32,14 +32,18 @@ function renderIcon(icon: IconLike | undefined) {
   // else is already a node: an element, or what a server component's element became on the way to
   // the client (React dedupes repeated elements into lazy references).
   const kind = (icon as { $$typeof?: symbol }).$$typeof
-  if (typeof icon === "function" || kind === Symbol.for("react.forward_ref") || kind === Symbol.for("react.memo")) {
+  if (
+    typeof icon === 'function' ||
+    kind === Symbol.for('react.forward_ref') ||
+    kind === Symbol.for('react.memo')
+  ) {
     const Icon = icon as LucideIcon
     return <Icon />
   }
   return icon as React.ReactNode
 }
 
-type CommandMenuItem = {
+interface CommandMenuItem {
   label: string
   icon?: IconLike
   shortcut?: string
@@ -49,10 +53,11 @@ type CommandMenuItem = {
 
 // The Ask AI item always ranks first: cmdk reorders by score, so it gets the top score and every other
 // score is scaled just below it (scaled, not capped, so an exact match still beats a near one).
-const ASK_AI = "coreloom-ask-ai"
-const rank = (value: string, search: string, keywords?: string[]) => (value === ASK_AI ? 1 : defaultFilter(value, search, keywords) * 0.99)
+const ASK_AI = 'coreloom-ask-ai'
+const rank = (value: string, search: string, keywords?: string[]) =>
+  value === ASK_AI ? 1 : defaultFilter(value, search, keywords) * 0.99
 
-type CommandMenuGroup = {
+interface CommandMenuGroup {
   heading: string
   items: CommandMenuItem[]
 }
@@ -78,33 +83,37 @@ function CommandMenu({
   triggerLabel ??= t.commandMenu.trigger
   emptyText ??= t.commandMenu.empty
   const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
+  const [search, setSearch] = React.useState('')
   const query = search.trim()
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setOpen((o) => !o)
       }
     }
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [])
 
   // Each opening starts from an empty search, as the uncontrolled input did.
   React.useEffect(() => {
-    if (!open) setSearch("")
+    if (!open) setSearch('')
   }, [open])
 
   return (
     <>
       <Button
         variant="outline"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+        }}
         className={cn(
-          "hidden h-8 w-56 justify-between px-3 font-normal text-muted-foreground md:inline-flex lg:w-64",
-          className
+          'hidden h-8 w-56 justify-between px-3 font-normal text-muted-foreground md:inline-flex lg:w-64',
+          className,
         )}
       >
         <span className="flex items-center gap-2">
@@ -117,12 +126,19 @@ function CommandMenu({
         variant="ghost"
         size="icon"
         className="md:hidden"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+        }}
         aria-label={triggerLabel}
       >
         <SearchIcon />
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen} title={triggerLabel} filter={onAskAi ? rank : undefined}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={triggerLabel}
+        filter={onAskAi ? rank : undefined}
+      >
         <CommandInput placeholder={placeholder} value={search} onValueChange={setSearch} />
         <CommandList>
           <CommandEmpty>{emptyText}</CommandEmpty>

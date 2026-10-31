@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 // Coreloom UI — AI chat (block). A conversation with a model, ready for the AI SDK's useChat:
 //
@@ -11,25 +11,27 @@
 // Markdown with inline citations, reasoning, tool calls, files, sources; a user's message can be edited,
 // and a message with other versions shows "‹ 2 / 3 ›"), ChatEmpty (suggestions) and ConversationList (the
 // history beside it).
-import * as React from "react"
-import { ArrowDownIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CopyIcon, FileIcon, LinkIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, SparklesIcon, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react"
-
-import { cn } from "@/lib/utils"
 import {
-  isFilePart,
-  isReasoningPart,
-  isSourcePart,
-  isTextPart,
-  isToolPart,
-  messageText,
-  type AiChatStatus,
-  type AiMessage,
-  type AiSourceDocumentPart,
-  type AiSourceUrlPart,
-  type AiToolPart,
-} from "@/lib/ai"
-import { AppLink } from "@/lib/link"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+  ArrowDownIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  FileIcon,
+  LinkIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  SparklesIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import * as React from 'react'
+
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,28 +41,51 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { safeSourceUrl, sourceTitle } from "@/components/ui/inline-citation"
-import { Markdown } from "@/components/ui/markdown"
-import { PromptInput } from "@/components/ui/prompt-input"
-import { Reasoning } from "@/components/ui/reasoning"
-import { ToolCall } from "@/components/ui/tool-call"
-import { Textarea } from "@/components/ui/textarea"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { safeSourceUrl, sourceTitle } from '@/components/ui/inline-citation'
+import { Input } from '@/components/ui/input'
+import { Markdown } from '@/components/ui/markdown'
+import { PromptInput } from '@/components/ui/prompt-input'
+import { Reasoning } from '@/components/ui/reasoning'
+import { Textarea } from '@/components/ui/textarea'
+import { ToolCall } from '@/components/ui/tool-call'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  type AiChatStatus,
+  type AiMessage,
+  type AiSourceDocumentPart,
+  type AiSourceUrlPart,
+  type AiToolPart,
+  isFilePart,
+  isReasoningPart,
+  isSourcePart,
+  isTextPart,
+  isToolPart,
+  messageText,
+} from '@/lib/ai'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { AppLink } from '@/lib/link'
+import { cn } from '@/lib/utils'
 
-type Feedback = "good" | "bad"
+type Feedback = 'good' | 'bad'
 
 /**
  * Where a message stands among its versions (other answers after Regenerate, other wordings after an
  * edit): `index` is the version shown, from 0, out of `count`.
  */
-type Branch = { index: number; count: number }
+interface Branch {
+  index: number
+  count: number
+}
 
-type MessageOptions = {
+interface MessageOptions {
   /** A user message was edited (Save). The app keeps the messages before it, replaces it, and asks again. */
   onEdit?: (messageId: string, text: string) => void
   /** Versions by message id: those with `count` > 1 show "‹ 2 / 3 ›". */
@@ -69,7 +94,7 @@ type MessageOptions = {
   onBranchChange?: (messageId: string, index: number) => void
 }
 
-type ToolOptions = {
+interface ToolOptions {
   /** Human names for tools, by id: { searchDocs: "Search the docs" }. */
   toolLabels?: Record<string, React.ReactNode>
   /** Draw a tool's output yourself (by tool id); JSON otherwise. */
@@ -110,8 +135,8 @@ function IconAction({
           aria-disabled={disabled || undefined}
           onClick={() => !disabled && onClick()}
           className={cn(
-            "text-muted-foreground aria-pressed:text-primary-text aria-disabled:cursor-not-allowed aria-disabled:opacity-45 aria-disabled:hover:bg-transparent",
-            pressed && "bg-primary-subtle"
+            'text-muted-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-45 aria-disabled:hover:bg-transparent aria-pressed:text-primary-text',
+            pressed && 'bg-primary-subtle',
           )}
         >
           {children}
@@ -123,12 +148,32 @@ function IconAction({
 }
 
 /** "‹ 2 / 3 ›": the versions of a message. ChatMessages announces the change and keeps focus on the arrow. */
-function BranchPicker({ branch, disabled, onChange }: { branch: Branch; disabled?: boolean; onChange: (index: number) => void }) {
+function BranchPicker({
+  branch,
+  disabled,
+  onChange,
+}: {
+  branch: Branch
+  disabled?: boolean
+  onChange: (index: number) => void
+}) {
   const t = useCoreloomI18n().messages.ai.chat
   const { index, count } = branch
   return (
-    <div role="group" aria-label={t.versions} data-slot="chat-branches" className="flex items-center">
-      <IconAction label={t.previousVersion} action="previous" disabled={disabled || index <= 0} onClick={() => onChange(index - 1)}>
+    <div
+      role="group"
+      aria-label={t.versions}
+      data-slot="chat-branches"
+      className="flex items-center"
+    >
+      <IconAction
+        label={t.previousVersion}
+        action="previous"
+        disabled={disabled || index <= 0}
+        onClick={() => {
+          onChange(index - 1)
+        }}
+      >
         <ChevronLeftIcon />
       </IconAction>
       <span className="min-w-9 text-center font-mono text-[12px] text-muted-foreground tabular-nums">
@@ -137,7 +182,14 @@ function BranchPicker({ branch, disabled, onChange }: { branch: Branch; disabled
         </span>
         <span className="sr-only">{t.version(index + 1, count)}</span>
       </span>
-      <IconAction label={t.nextVersion} action="next" disabled={disabled || index >= count - 1} onClick={() => onChange(index + 1)}>
+      <IconAction
+        label={t.nextVersion}
+        action="next"
+        disabled={disabled || index >= count - 1}
+        onClick={() => {
+          onChange(index + 1)
+        }}
+      >
         <ChevronRightIcon />
       </IconAction>
     </div>
@@ -145,7 +197,15 @@ function BranchPicker({ branch, disabled, onChange }: { branch: Branch; disabled
 }
 
 /** A user message in place: the text in a box, Save (Ctrl / ⌘ + Enter) and Cancel (Escape). */
-function EditMessage({ text, onSave, onCancel }: { text: string; onSave: (text: string) => void; onCancel: () => void }) {
+function EditMessage({
+  text,
+  onSave,
+  onCancel,
+}: {
+  text: string
+  onSave: (text: string) => void
+  onCancel: () => void
+}) {
   const t = useCoreloomI18n().messages.ai.chat
   const [value, setValue] = React.useState(text)
   const hintId = React.useId()
@@ -174,17 +234,19 @@ function EditMessage({ text, onSave, onCancel }: { text: string; onSave: (text: 
       <Textarea
         ref={ref}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value)
+        }}
         aria-label={t.editLabel}
         aria-describedby={hintId}
         className="max-h-80 min-h-[72px] text-[14.5px] leading-[1.6]"
         onKeyDown={(e) => {
-          if (e.key === "Escape") {
+          if (e.key === 'Escape') {
             e.preventDefault()
             e.stopPropagation()
             onCancel()
           }
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.nativeEvent.isComposing) {
             e.preventDefault()
             save()
           }
@@ -209,32 +271,34 @@ function Sources({ sources }: { sources: (AiSourceUrlPart | AiSourceDocumentPart
   const t = useCoreloomI18n().messages.ai.chat
   return (
     <div className="flex flex-col gap-1.5" data-slot="chat-sources">
-      <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t.sources}</span>
+      <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+        {t.sources}
+      </span>
       <ol className="m-0 flex list-none flex-wrap gap-1.5 p-0">
         {sources.map((s, i) => {
           // Only http(s) and mailto addresses become links; anything else (javascript:, data:) is shown, not linked.
-          const href = s.type === "source-url" ? safeSourceUrl(s.url) : undefined
+          const href = s.type === 'source-url' ? safeSourceUrl(s.url) : undefined
           return (
-          <li key={s.sourceId} data-citation={i + 1}>
-            {href ? (
-              <a
-                href={href}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={t.citation(i + 1, sourceTitle(s))}
-                className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground outline-none hover:border-border-strong focus-visible:ring-[3px] focus-visible:ring-ring"
-              >
-                <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
-                <span className="truncate">{sourceTitle(s)}</span>
-                <LinkIcon className="size-3 shrink-0 text-muted-foreground" aria-hidden />
-              </a>
-            ) : (
-              <span className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground">
-                <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
-                <span className="truncate">{sourceTitle(s)}</span>
-              </span>
-            )}
-          </li>
+            <li key={s.sourceId} data-citation={i + 1}>
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={t.citation(i + 1, sourceTitle(s))}
+                  className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground outline-none hover:border-border-strong focus-visible:ring-[3px] focus-visible:ring-ring"
+                >
+                  <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
+                  <span className="truncate">{sourceTitle(s)}</span>
+                  <LinkIcon className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                </a>
+              ) : (
+                <span className="inline-flex max-w-64 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[12px] text-foreground">
+                  <span className="font-mono text-[11px] text-muted-foreground">{i + 1}</span>
+                  <span className="truncate">{sourceTitle(s)}</span>
+                </span>
+              )}
+            </li>
           )
         })}
       </ol>
@@ -243,8 +307,14 @@ function Sources({ sources }: { sources: (AiSourceUrlPart | AiSourceDocumentPart
 }
 
 function Attachment({ part }: { part: { mediaType: string; url: string; filename?: string } }) {
-  if (part.mediaType.startsWith("image/"))
-    return <img src={part.url} alt={part.filename ?? ""} className="max-h-48 max-w-64 rounded-md border border-border object-cover" />
+  if (part.mediaType.startsWith('image/'))
+    return (
+      <img
+        src={part.url}
+        alt={part.filename ?? ''}
+        className="max-h-48 max-w-64 rounded-md border border-border object-cover"
+      />
+    )
   return (
     <a
       href={part.url}
@@ -297,13 +367,19 @@ function ChatMessage({
   // Editing belongs to one message: if another takes this place, the box doesn't carry over.
   const [editingId, setEditingId] = React.useState<string>()
   const editing = editingId === message.id
-  const setEditing = (on: boolean) => setEditingId(on ? message.id : undefined)
+  const setEditing = (on: boolean) => {
+    setEditingId(on ? message.id : undefined)
+  }
   const editButton = React.useRef<HTMLButtonElement>(null)
   const wasEditing = React.useRef(false)
   React.useEffect(() => {
     if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 1400)
-    return () => clearTimeout(timer)
+    const timer = setTimeout(() => {
+      setCopied(false)
+    }, 1400)
+    return () => {
+      clearTimeout(timer)
+    }
   }, [copied])
   // Back from editing with Cancel: the cursor returns to Edit (after Save, ChatMessages moves it to the message).
   const cancelled = React.useRef(false)
@@ -313,18 +389,29 @@ function ChatMessage({
     wasEditing.current = editing
   }, [editing])
 
-  if (message.role === "system") return null
+  if (message.role === 'system') return null
 
   const branches =
     branch && branch.count > 1 && onBranchChange ? (
-      <BranchPicker branch={branch} disabled={busy} onChange={(index) => onBranchChange(message.id, index)} />
+      <BranchPicker
+        branch={branch}
+        disabled={busy}
+        onChange={(index) => {
+          onBranchChange(message.id, index)
+        }}
+      />
     ) : null
 
-  if (message.role === "user") {
+  if (message.role === 'user') {
     const text = messageText(message)
     const canEdit = !!onEdit && !!text && !busy
     return (
-      <article data-slot="chat-message" data-role="user" aria-label={t.you} className={cn("group/message flex flex-col items-end gap-2 outline-none", className)}>
+      <article
+        data-slot="chat-message"
+        data-role="user"
+        aria-label={t.you}
+        className={cn('group/message flex flex-col items-end gap-2 outline-none', className)}
+      >
         {message.parts.filter(isFilePart).length > 0 && (
           <div className="flex flex-wrap justify-end gap-2">
             {message.parts.filter(isFilePart).map((p, i) => (
@@ -352,12 +439,18 @@ function ChatMessage({
           )
         )}
         {!editing && (canEdit || branches) && (
-          <div className="-mr-1.5 -mt-1 flex items-center gap-0.5">
+          <div className="-mt-1 -mr-1.5 flex items-center gap-0.5">
             {branches}
             {canEdit && (
               // Shown on hover and focus; always on touch screens, which can't hover.
               <div className="opacity-0 transition-opacity duration-120 group-focus-within/message:opacity-100 group-hover/message:opacity-100 pointer-coarse:opacity-100">
-                <IconAction label={t.edit} buttonRef={editButton} onClick={() => setEditing(true)}>
+                <IconAction
+                  label={t.edit}
+                  buttonRef={editButton}
+                  onClick={() => {
+                    setEditing(true)
+                  }}
+                >
                   <PencilIcon />
                 </IconAction>
               </div>
@@ -372,29 +465,51 @@ function ChatMessage({
   const lastText = textParts[textParts.length - 1]
   const sources = message.parts.filter(isSourcePart)
   return (
-    <article data-slot="chat-message" data-role="assistant" aria-label={t.assistant} aria-busy={streaming || undefined} className={cn("flex gap-3 outline-none", className)}>
-      <div aria-hidden className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
+    <article
+      data-slot="chat-message"
+      data-role="assistant"
+      aria-label={t.assistant}
+      aria-busy={streaming || undefined}
+      className={cn('flex gap-3 outline-none', className)}
+    >
+      <div
+        aria-hidden
+        className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+      >
         <SparklesIcon className="size-3.5" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         {message.parts.map((part, i) => {
           if (isTextPart(part))
             return part.text ? (
-              <Markdown key={i} streaming={streaming && part === lastText && part.state !== "done"} sources={sources}>
+              <Markdown
+                key={i}
+                streaming={streaming && part === lastText && part.state !== 'done'}
+                sources={sources}
+              >
                 {part.text}
               </Markdown>
             ) : null
           if (isReasoningPart(part))
-            return <Reasoning key={i} text={part.text} streaming={streaming && part.state === "streaming"} />
+            return (
+              <Reasoning
+                key={i}
+                text={part.text}
+                streaming={streaming && part.state === 'streaming'}
+              />
+            )
           if (isToolPart(part)) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- narrows the union for TS 7 (TS 6, which the linter runs on, narrows it already)
             const tool = part as AiToolPart
-            const name = tool.type === "dynamic-tool" ? (tool.toolName ?? "") : tool.type.slice(5)
+            const name = tool.type === 'dynamic-tool' ? (tool.toolName ?? '') : tool.type.slice(5)
             return (
               <ToolCall
                 key={tool.toolCallId}
                 part={tool}
                 label={toolLabels?.[name]}
-                renderOutput={renderToolOutput ? (output) => renderToolOutput(name, output) : undefined}
+                renderOutput={
+                  renderToolOutput ? (output) => renderToolOutput(name, output) : undefined
+                }
                 onApprovalResponse={onToolApprovalResponse}
               />
             )
@@ -426,10 +541,22 @@ function ChatMessage({
             )}
             {onFeedback && (
               <>
-                <IconAction label={t.good} pressed={feedback === "good"} onClick={() => onFeedback(message.id, feedback === "good" ? undefined : "good")}>
+                <IconAction
+                  label={t.good}
+                  pressed={feedback === 'good'}
+                  onClick={() => {
+                    onFeedback(message.id, feedback === 'good' ? undefined : 'good')
+                  }}
+                >
                   <ThumbsUpIcon />
                 </IconAction>
-                <IconAction label={t.bad} pressed={feedback === "bad"} onClick={() => onFeedback(message.id, feedback === "bad" ? undefined : "bad")}>
+                <IconAction
+                  label={t.bad}
+                  pressed={feedback === 'bad'}
+                  onClick={() => {
+                    onFeedback(message.id, feedback === 'bad' ? undefined : 'bad')
+                  }}
+                >
                   <ThumbsDownIcon />
                 </IconAction>
               </>
@@ -460,12 +587,12 @@ function useStickToBottom<T extends HTMLElement>() {
     const follow = () => {
       if (pinnedRef.current) box.scrollTop = box.scrollHeight
     }
-    box.addEventListener("scroll", onScroll, { passive: true })
+    box.addEventListener('scroll', onScroll, { passive: true })
     const observer = new ResizeObserver(follow)
     for (const child of Array.from(box.children)) observer.observe(child)
     follow()
     return () => {
-      box.removeEventListener("scroll", onScroll)
+      box.removeEventListener('scroll', onScroll)
       observer.disconnect()
     }
   }, [])
@@ -474,7 +601,10 @@ function useStickToBottom<T extends HTMLElement>() {
     if (!box) return
     pinnedRef.current = true
     setPinned(true)
-    box.scrollTo({ top: box.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+    box.scrollTo({
+      top: box.scrollHeight,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    })
   }, [])
   return { ref, pinned, scrollToBottom }
 }
@@ -483,12 +613,19 @@ function TypingIndicator() {
   const t = useCoreloomI18n().messages.ai.chat
   return (
     <div data-slot="chat-typing" className="flex gap-3">
-      <div aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
+      <div
+        aria-hidden
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+      >
         <SparklesIcon className="size-3.5" />
       </div>
       <div className="flex h-7 items-center gap-1" role="status" aria-label={t.waiting}>
         {[0, 150, 300].map((d) => (
-          <span key={d} className="size-1.5 animate-bounce rounded-full bg-muted-foreground motion-reduce:animate-none" style={{ animationDelay: `${d}ms` }} />
+          <span
+            key={d}
+            className="size-1.5 animate-bounce rounded-full bg-muted-foreground motion-reduce:animate-none"
+            style={{ animationDelay: `${d}ms` }}
+          />
         ))}
       </div>
     </div>
@@ -498,7 +635,7 @@ function TypingIndicator() {
 /** The scrolling log of messages, kept at the latest one while it streams. */
 function ChatMessages({
   messages,
-  status = "ready",
+  status = 'ready',
   error,
   onRetry,
   onRegenerate,
@@ -510,7 +647,7 @@ function ChatMessages({
   className,
   ...tools
 }: {
-  messages: ReadonlyArray<AiMessage>
+  messages: readonly AiMessage[]
   status?: AiChatStatus
   /** useChat's error; shown with Try again. */
   error?: Error | string | null
@@ -520,28 +657,38 @@ function ChatMessages({
   feedback?: Record<string, Feedback | undefined>
   onFeedback?: (messageId: string, feedback: Feedback | undefined) => void
   className?: string
-} & MessageOptions & ToolOptions) {
+} & MessageOptions &
+  ToolOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   const { ref, pinned, scrollToBottom } = useStickToBottom<HTMLDivElement>()
   const last = messages[messages.length - 1]
-  const streaming = status === "streaming"
-  const visible = messages.filter((m) => m.role !== "system")
-  const busy = status === "submitted" || streaming
+  const streaming = status === 'streaming'
+  const visible = messages.filter((m) => m.role !== 'system')
+  const busy = status === 'submitted' || streaming
 
   // Switching versions or saving an edit usually swaps the message for another (another id, so it
   // remounts) and the button the reader pressed goes with it. Remember where focus should land — the
   // same arrow, or the edited message — and put it back once the new messages are in.
-  const pending = React.useRef<{ position: number; target: "previous" | "next" | "message"; from: ReadonlyArray<AiMessage> }>(undefined)
-  const [announcement, setAnnouncement] = React.useState("")
+  const pending = React.useRef<{
+    position: number
+    target: 'previous' | 'next' | 'message'
+    from: readonly AiMessage[]
+  }>(undefined)
+  const [announcement, setAnnouncement] = React.useState('')
   React.useLayoutEffect(() => {
     const want = pending.current
     const box = ref.current
     if (!want || !box) return
     if (!document.activeElement || document.activeElement === document.body) {
-      const article = box.querySelectorAll<HTMLElement>("[data-slot=chat-message]")[want.position]
-      const target = want.target === "message" ? article : article?.querySelector<HTMLElement>(`[data-slot=chat-branches] [data-action=${want.target}]`)
+      const article = box.querySelectorAll<HTMLElement>('[data-slot=chat-message]')[want.position]
+      const target =
+        want.target === 'message'
+          ? article
+          : article?.querySelector<HTMLElement>(
+              `[data-slot=chat-branches] [data-action=${want.target}]`,
+            )
       if (target) {
-        if (want.target === "message") target.tabIndex = -1
+        if (want.target === 'message') target.tabIndex = -1
         target.focus()
       }
     }
@@ -551,19 +698,31 @@ function ChatMessages({
   const changeBranch = (position: number) => (id: string, index: number) => {
     const branch = branches?.[id]
     if (!branch || !onBranchChange) return
-    pending.current = { position, target: index < branch.index ? "previous" : "next", from: messages }
+    pending.current = {
+      position,
+      target: index < branch.index ? 'previous' : 'next',
+      from: messages,
+    }
     // One live region for the whole log, saying only what changed; a no-break space makes a repeat announce again.
-    setAnnouncement((before) => t.version(index + 1, branch.count) + (before.endsWith("\u00a0") ? "" : "\u00a0"))
+    setAnnouncement(
+      (before) => t.version(index + 1, branch.count) + (before.endsWith('\u00a0') ? '' : '\u00a0'),
+    )
     onBranchChange(id, index)
   }
   const edit = (position: number) => (id: string, text: string) => {
-    pending.current = { position, target: "message", from: messages }
+    pending.current = { position, target: 'message', from: messages }
     onEdit?.(id, text)
   }
 
   return (
-    <div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
-      <p data-slot="chat-announcer" className="sr-only" role="status" aria-live="polite" aria-atomic>
+    <div className={cn('relative flex min-h-0 flex-1 flex-col', className)}>
+      <p
+        data-slot="chat-announcer"
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic
+      >
         {announcement}
       </p>
       <div
@@ -574,14 +733,14 @@ function ChatMessages({
         aria-live="polite"
         aria-relevant="additions"
         tabIndex={0}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-inset"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
       >
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
           {visible.map((m, i) => (
             <ChatMessage
               key={m.id}
               message={m}
-              streaming={streaming && m === last && m.role === "assistant"}
+              streaming={streaming && m === last && m.role === 'assistant'}
               isLast={m === last}
               feedback={feedback?.[m.id]}
               onFeedback={onFeedback}
@@ -593,11 +752,11 @@ function ChatMessages({
               {...tools}
             />
           ))}
-          {status === "submitted" && <TypingIndicator />}
-          {(status === "error" || error) && (
+          {status === 'submitted' && <TypingIndicator />}
+          {(status === 'error' || error) && (
             <Alert variant="destructive">
               <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
-                <span>{typeof error === "string" ? error : t.error}</span>
+                <span>{typeof error === 'string' ? error : t.error}</span>
                 {onRetry && (
                   <Button size="sm" variant="outline" onClick={onRetry}>
                     <RefreshCwIcon />
@@ -641,12 +800,20 @@ function ChatEmpty({
 }) {
   const t = useCoreloomI18n().messages.ai.chat
   return (
-    <div data-slot="chat-empty" className={cn("flex flex-1 flex-col items-center justify-center gap-6 px-4 py-10 text-center", className)}>
+    <div
+      data-slot="chat-empty"
+      className={cn(
+        'flex flex-1 flex-col items-center justify-center gap-6 px-4 py-10 text-center',
+        className,
+      )}
+    >
       <div className="flex size-11 items-center justify-center rounded-full bg-primary-subtle text-primary-text">
         <SparklesIcon className="size-5" aria-hidden />
       </div>
       <div className="flex flex-col gap-1.5">
-        <h2 className="m-0 font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">{title ?? t.emptyTitle}</h2>
+        <h2 className="m-0 font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">
+          {title ?? t.emptyTitle}
+        </h2>
         <p className="m-0 text-[14px] text-muted-foreground">{description ?? t.emptyDescription}</p>
       </div>
       {suggestions.length > 0 && (
@@ -656,7 +823,7 @@ function ChatEmpty({
               <button
                 type="button"
                 onClick={() => onSuggestion?.(s)}
-                className="w-full cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-left text-[13.5px] text-foreground outline-none transition-colors duration-120 hover:border-border-strong hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
+                className="w-full cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-left text-[13.5px] text-foreground transition-colors duration-120 outline-none hover:border-border-strong hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
               >
                 {s}
               </button>
@@ -671,7 +838,7 @@ function ChatEmpty({
 /** The whole chat: messages (or suggestions when empty) above the prompt. */
 function Chat({
   messages,
-  status = "ready",
+  status = 'ready',
   error,
   onSend,
   onStop,
@@ -693,7 +860,7 @@ function Chat({
   className,
   ...tools
 }: {
-  messages: ReadonlyArray<AiMessage>
+  messages: readonly AiMessage[]
   status?: AiChatStatus
   error?: Error | string | null
   onSend: (message: { text: string; files: File[] }) => void
@@ -716,17 +883,20 @@ function Chat({
   /** Put the cursor in the prompt on mount (default true: a chat page is for writing). */
   autoFocus?: boolean
   className?: string
-} & MessageOptions & ToolOptions) {
-  const empty = messages.filter((m) => m.role !== "system").length === 0
+} & MessageOptions &
+  ToolOptions) {
+  const empty = messages.filter((m) => m.role !== 'system').length === 0
   return (
-    <section data-slot="chat" className={cn("flex h-full min-h-0 flex-col", className)}>
+    <section data-slot="chat" className={cn('flex h-full min-h-0 flex-col', className)}>
       {header}
       {empty ? (
         <ChatEmpty
           title={emptyTitle}
           description={emptyDescription}
           suggestions={suggestions}
-          onSuggestion={(text) => onSend({ text, files: [] })}
+          onSuggestion={(text) => {
+            onSend({ text, files: [] })
+          }}
         />
       ) : (
         <ChatMessages
@@ -759,15 +929,26 @@ function Chat({
   )
 }
 
-type Conversation = { id: string; title: string; updatedAt: Date | string }
+interface Conversation {
+  id: string
+  title: string
+  updatedAt: Date | string
+}
 
 function groupConversations(conversations: Conversation[], now: Date) {
   const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
   const today = day(now)
-  const groups = { today: [] as Conversation[], yesterday: [] as Conversation[], week: [] as Conversation[], older: [] as Conversation[] }
-  for (const c of [...conversations].sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))) {
+  const groups = {
+    today: [] as Conversation[],
+    yesterday: [] as Conversation[],
+    week: [] as Conversation[],
+    older: [] as Conversation[],
+  }
+  for (const c of [...conversations].sort(
+    (a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt),
+  )) {
     const diff = Math.round((today - day(new Date(c.updatedAt))) / 86_400_000)
-    groups[diff <= 0 ? "today" : diff === 1 ? "yesterday" : diff < 7 ? "week" : "older"].push(c)
+    groups[diff <= 0 ? 'today' : diff === 1 ? 'yesterday' : diff < 7 ? 'week' : 'older'].push(c)
   }
   return groups
 }
@@ -798,17 +979,21 @@ function ConversationList({
 }) {
   const all = useCoreloomI18n().messages
   const t = all.ai.conversations
-  const [query, setQuery] = React.useState("")
+  const [query, setQuery] = React.useState('')
   const [renaming, setRenaming] = React.useState<string>()
   const [deleting, setDeleting] = React.useState<Conversation>()
-  const filtered = conversations.filter((c) => c.title.toLowerCase().includes(query.trim().toLowerCase()))
+  const filtered = conversations.filter((c) =>
+    c.title.toLowerCase().includes(query.trim().toLowerCase()),
+  )
   const groups = groupConversations(filtered, now ?? new Date())
 
   const row = (c: Conversation) => {
     const active = c.id === activeId
     const rowClass = cn(
-      "flex min-w-0 flex-1 items-center rounded-md px-2.5 py-1.5 text-left text-[13.5px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-      active ? "bg-primary-subtle font-medium text-foreground" : "text-fg-secondary hover:bg-accent hover:text-foreground"
+      'flex min-w-0 flex-1 items-center rounded-md px-2.5 py-1.5 text-left text-[13.5px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+      active
+        ? 'bg-primary-subtle font-medium text-foreground'
+        : 'text-fg-secondary hover:bg-accent hover:text-foreground',
     )
     return (
       <li key={c.id} className="group/row relative flex items-center">
@@ -818,10 +1003,12 @@ function ConversationList({
             defaultValue={c.title}
             aria-label={t.renameLabel}
             className="h-8 text-[13.5px]"
-            onBlur={() => setRenaming(undefined)}
+            onBlur={() => {
+              setRenaming(undefined)
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Escape") setRenaming(undefined)
-              if (e.key === "Enter") {
+              if (e.key === 'Escape') setRenaming(undefined)
+              if (e.key === 'Enter') {
                 const title = e.currentTarget.value.trim()
                 if (title) onRename?.(c.id, title)
                 setRenaming(undefined)
@@ -831,11 +1018,20 @@ function ConversationList({
         ) : (
           <>
             {href ? (
-              <AppLink href={href(c.id)} aria-current={active ? "page" : undefined} className={rowClass}>
+              <AppLink
+                href={href(c.id)}
+                aria-current={active ? 'page' : undefined}
+                className={rowClass}
+              >
                 <span className="truncate pr-6">{c.title}</span>
               </AppLink>
             ) : (
-              <button type="button" aria-current={active ? "true" : undefined} onClick={() => onSelect?.(c.id)} className={cn(rowClass, "cursor-pointer")}>
+              <button
+                type="button"
+                aria-current={active ? 'true' : undefined}
+                onClick={() => onSelect?.(c.id)}
+                className={cn(rowClass, 'cursor-pointer')}
+              >
                 <span className="truncate pr-6">{c.title}</span>
               </button>
             )}
@@ -853,13 +1049,24 @@ function ConversationList({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {onRename && (
-                    <DropdownMenuItem onSelect={() => setTimeout(() => setRenaming(c.id))}>
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        setTimeout(() => {
+                          setRenaming(c.id)
+                        })
+                      }
+                    >
                       <PencilIcon />
                       {t.rename}
                     </DropdownMenuItem>
                   )}
                   {onDelete && (
-                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(c)}>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => {
+                        setDeleting(c)
+                      }}
+                    >
                       <Trash2Icon />
                       {t.delete}
                     </DropdownMenuItem>
@@ -873,9 +1080,15 @@ function ConversationList({
     )
   }
 
-  const sections = (["today", "yesterday", "week", "older"] as const).filter((g) => groups[g].length)
+  const sections = (['today', 'yesterday', 'week', 'older'] as const).filter(
+    (g) => groups[g].length,
+  )
   return (
-    <nav data-slot="conversation-list" aria-label={t.title} className={cn("flex min-h-0 flex-col gap-3", className)}>
+    <nav
+      data-slot="conversation-list"
+      aria-label={t.title}
+      className={cn('flex min-h-0 flex-col gap-3', className)}
+    >
       {onNew && (
         <Button variant="outline" className="w-full justify-start" onClick={onNew}>
           <PlusIcon />
@@ -883,14 +1096,31 @@ function ConversationList({
         </Button>
       )}
       <div className="relative">
-        <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} aria-label={t.search} className="h-8 pl-8 text-[13px]" />
+        <SearchIcon
+          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <Input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+          }}
+          placeholder={t.search}
+          aria-label={t.search}
+          className="h-8 pl-8 text-[13px]"
+        />
       </div>
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
-        {sections.length === 0 && <p className="m-0 px-2.5 text-[13px] text-muted-foreground">{conversations.length ? t.noResults : t.empty}</p>}
+        {sections.length === 0 && (
+          <p className="m-0 px-2.5 text-[13px] text-muted-foreground">
+            {conversations.length ? t.noResults : t.empty}
+          </p>
+        )}
         {sections.map((g) => (
           <section key={g} className="flex flex-col gap-1">
-            <h3 className="m-0 px-2.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">{t[g]}</h3>
+            <h3 className="m-0 px-2.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+              {t[g]}
+            </h3>
             <ul className="m-0 flex list-none flex-col gap-0.5 p-0">{groups[g].map(row)}</ul>
           </section>
         ))}
@@ -905,7 +1135,10 @@ function ConversationList({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{all.common.cancel}</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={() => deleting && onDelete?.(deleting.id)}>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => deleting && onDelete?.(deleting.id)}
+            >
               {t.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -915,4 +1148,13 @@ function ConversationList({
   )
 }
 
-export { Chat, ChatEmpty, ChatMessage, ChatMessages, ConversationList, type Branch, type Conversation, type Feedback }
+export {
+  type Branch,
+  Chat,
+  ChatEmpty,
+  ChatMessage,
+  ChatMessages,
+  type Conversation,
+  ConversationList,
+  type Feedback,
+}

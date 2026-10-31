@@ -1,11 +1,10 @@
-"use client"
+'use client'
 
 // Coreloom UI — MultiSelect. Several values from a known list: a trigger that shows the picks as
 // chips, and a searchable checklist in a Popover (Command). For free-form values, use TagsInput.
-import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
 import {
   Command,
   CommandEmpty,
@@ -13,11 +12,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useCoreloomI18n } from "@/lib/i18n"
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type MultiSelectOption = {
+interface MultiSelectOption {
   value: string
   label: string
   icon?: React.ReactNode
@@ -40,9 +40,9 @@ function MultiSelect({
   className,
   id,
   onBlur,
-  "aria-invalid": ariaInvalid,
-  "aria-label": ariaLabel,
-  "aria-describedby": ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'aria-describedby': ariaDescribedBy,
 }: {
   options: MultiSelectOption[]
   value?: string[]
@@ -59,9 +59,9 @@ function MultiSelect({
   className?: string
   id?: string
   onBlur?: () => void
-  "aria-invalid"?: boolean | "true" | "false"
-  "aria-label"?: string
-  "aria-describedby"?: string
+  'aria-invalid'?: boolean | 'true' | 'false'
+  'aria-label'?: string
+  'aria-describedby'?: string
 }) {
   const { messages, formatNumber } = useCoreloomI18n()
   const t = messages.multiSelect
@@ -78,7 +78,9 @@ function MultiSelect({
     if (value === undefined) setInner(next)
     onValueChange?.(next)
   }
-  const toggle = (v: string) => commit(current.includes(v) ? current.filter((x) => x !== v) : [...current, v])
+  const toggle = (v: string) => {
+    commit(current.includes(v) ? current.filter((x) => x !== v) : [...current, v])
+  }
   const selectable = options.filter((o) => !o.disabled)
 
   return (
@@ -100,10 +102,10 @@ function MultiSelect({
           aria-describedby={ariaDescribedBy}
           disabled={disabled}
           data-slot="multi-select-trigger"
-          data-placeholder={selected.length ? undefined : ""}
+          data-placeholder={selected.length ? undefined : ''}
           className={cn(
-            "flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset py-1.5 pr-[13px] pl-2 text-left font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle data-[placeholder]:pl-[13px] data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            className
+            'flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset py-1.5 pr-[13px] pl-2 text-left font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle data-[placeholder]:pl-[13px] data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            className,
           )}
         >
           <span className="flex min-w-0 flex-wrap items-center gap-1">
@@ -144,13 +146,15 @@ function MultiSelect({
                     disabled={option.disabled || (full && !isSelected)}
                     aria-selected={isSelected}
                     data-checked={isSelected || undefined}
-                    onSelect={() => toggle(option.value)}
+                    onSelect={() => {
+                      toggle(option.value)
+                    }}
                   >
                     <span
                       aria-hidden
                       className={cn(
-                        "flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border-strong",
-                        isSelected && "border-primary bg-primary text-primary-foreground"
+                        'flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-border-strong',
+                        isSelected && 'border-primary bg-primary text-primary-foreground',
                       )}
                     >
                       {isSelected && <CheckIcon className="size-3 text-primary-foreground" />}
@@ -166,14 +170,18 @@ function MultiSelect({
           <div className="flex items-center justify-between gap-2 border-t border-border px-2 py-1.5 text-[12px] text-muted-foreground">
             <span role="status" aria-live="polite" className="font-mono">
               {t.selected(formatNumber(current.length), current.length)}
-              {maxSelected !== undefined && full && <span className="ml-1.5">{t.max(formatNumber(maxSelected))}</span>}
+              {maxSelected !== undefined && full && (
+                <span className="ml-1.5">{t.max(formatNumber(maxSelected))}</span>
+              )}
             </span>
             <span className="flex gap-1">
               {maxSelected === undefined && current.length < selectable.length && (
                 <button
                   type="button"
                   className="cursor-pointer rounded-sm px-1.5 py-1 text-primary-text outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
-                  onClick={() => commit(selectable.map((o) => o.value))}
+                  onClick={() => {
+                    commit(selectable.map((o) => o.value))
+                  }}
                 >
                   {t.selectAll}
                 </button>
@@ -182,7 +190,9 @@ function MultiSelect({
                 <button
                   type="button"
                   className="cursor-pointer rounded-sm px-1.5 py-1 text-primary-text outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
-                  onClick={() => commit([])}
+                  onClick={() => {
+                    commit([])
+                  }}
                 >
                   {t.clear}
                 </button>

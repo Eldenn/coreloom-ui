@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
 // Coreloom UI — VerifyForm (auth block). Enter the 6-digit code sent by email or SMS.
 // Built on @coreloom/form (TanStack Form, OTPField): submits by itself once the last digit is in;
 // the button stays for those who wait.
-import * as React from "react"
-import { REGEXP_ONLY_DIGITS } from "input-otp"
+import { REGEXP_ONLY_DIGITS } from 'input-otp'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAppForm } from "@/components/ui/form"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useAppForm } from '@/components/ui/form'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function VerifyForm({
   onSubmit,
@@ -38,7 +38,7 @@ function VerifyForm({
   const l = t.auth.verify
   const [wait, setWait] = React.useState(resendIn)
   const form = useAppForm({
-    defaultValues: { code: "" },
+    defaultValues: { code: '' },
     onSubmit: async ({ value }) => {
       await onSubmit(value.code)
     },
@@ -46,12 +46,16 @@ function VerifyForm({
 
   React.useEffect(() => {
     if (wait <= 0) return
-    const t = setTimeout(() => setWait((w) => w - 1), 1000)
-    return () => clearTimeout(t)
+    const t = setTimeout(() => {
+      setWait((w) => w - 1)
+    }, 1000)
+    return () => {
+      clearTimeout(t)
+    }
   }, [wait])
 
   return (
-    <Card className={cn("gap-5 px-6 py-6", className)}>
+    <Card className={cn('gap-5 px-6 py-6', className)}>
       <CardHeader className="text-center">
         <CardTitle asChild className="m-0 text-[22px]">
           <h1>{title ?? l.title}</h1>
@@ -74,7 +78,12 @@ function VerifyForm({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <form.AppField name="code" validators={{ onChange: ({ value }) => (value.length === 6 ? undefined : l.codeRequired) }}>
+          <form.AppField
+            name="code"
+            validators={{
+              onChange: ({ value }) => (value.length === 6 ? undefined : l.codeRequired),
+            }}
+          >
             {(field) => (
               <field.OTPField
                 label={l.code}
@@ -94,7 +103,7 @@ function VerifyForm({
           </form.AppForm>
           {onResend && (
             <p className="m-0 text-center text-[13px] text-muted-foreground">
-              {l.notReceived}{" "}
+              {l.notReceived}{' '}
               {wait > 0 ? (
                 <span className="font-mono text-[12px]">{l.resendIn(wait)}</span>
               ) : (

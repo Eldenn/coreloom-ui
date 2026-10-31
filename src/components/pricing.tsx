@@ -1,20 +1,27 @@
-"use client"
+'use client'
 
 // Coreloom UI — Pricing (pricing block). Plan cards with a monthly / yearly switch. Prices are
 // numbers; the currency and the locale format them ("€24", "24 €"). One plan can be featured.
-import * as React from "react"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { useCoreloomI18n } from "@/lib/i18n"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
-type Billing = "monthly" | "yearly"
+type Billing = 'monthly' | 'yearly'
 
-type PricingPlan = {
+interface PricingPlan {
   id: string
   name: string
   description?: React.ReactNode
@@ -32,9 +39,9 @@ type PricingPlan = {
 
 function PricingPlans({
   plans,
-  currency = "EUR",
+  currency = 'EUR',
   billing: billingProp,
-  defaultBilling = "monthly",
+  defaultBilling = 'monthly',
   onBillingChange,
   onSelect,
   className,
@@ -54,17 +61,24 @@ function PricingPlans({
   const [inner, setInner] = React.useState<Billing>(defaultBilling)
   const billing = billingProp ?? inner
   const money = (n: number) =>
-    new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: Number.isInteger(n) ? 0 : 2 }).format(n)
-  const percent = (n: number) => new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(n)
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: Number.isInteger(n) ? 0 : 2,
+    }).format(n)
+  const percent = (n: number) =>
+    new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(n)
 
   // The best yearly saving across plans, for the switch's badge.
   const saving = Math.max(
     0,
-    ...plans.map((p) => (p.monthly && p.yearly != null && p.yearly < p.monthly ? 1 - p.yearly / p.monthly : 0))
+    ...plans.map((p) =>
+      p.monthly && p.yearly != null && p.yearly < p.monthly ? 1 - p.yearly / p.monthly : 0,
+    ),
   )
 
   return (
-    <div data-slot="pricing" className={cn("flex w-full flex-col items-center gap-8", className)}>
+    <div data-slot="pricing" className={cn('flex w-full flex-col items-center gap-8', className)}>
       <div className="flex items-center gap-3">
         <ToggleGroup
           type="single"
@@ -86,14 +100,25 @@ function PricingPlans({
         </ToggleGroup>
         {saving > 0 && <Badge variant="success">{t.save(percent(saving))}</Badge>}
       </div>
-      <div className={cn("grid w-full gap-5", plans.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2", plans.length >= 4 && "xl:grid-cols-4")}>
+      <div
+        className={cn(
+          'grid w-full gap-5',
+          plans.length >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2',
+          plans.length >= 4 && 'xl:grid-cols-4',
+        )}
+      >
         {plans.map((plan) => {
-          const perMonth = billing === "yearly" ? (plan.yearly === undefined ? plan.monthly : plan.yearly) : plan.monthly
+          const perMonth =
+            billing === 'yearly'
+              ? plan.yearly === undefined
+                ? plan.monthly
+                : plan.yearly
+              : plan.monthly
           return (
             <Card
               key={plan.id}
               accent={plan.featured}
-              className={cn("relative gap-5", plan.featured && "md:-my-2 md:py-8")}
+              className={cn('relative gap-5', plan.featured && 'md:-my-2 md:py-8')}
             >
               <CardHeader>
                 <div className="flex items-center justify-between gap-2">
@@ -108,10 +133,12 @@ function PricingPlans({
                     <span className="font-display text-[36px] leading-none font-semibold tracking-[-0.02em] text-foreground tabular-nums">
                       {perMonth === null ? t.custom : money(perMonth)}
                     </span>
-                    {perMonth !== null && perMonth > 0 && <span className="text-[14px] text-muted-foreground">{t.perMonth}</span>}
+                    {perMonth !== null && perMonth > 0 && (
+                      <span className="text-[14px] text-muted-foreground">{t.perMonth}</span>
+                    )}
                   </div>
                   <span className="min-h-5 text-[13px] text-muted-foreground">
-                    {billing === "yearly" && perMonth ? t.billedYearly(money(perMonth * 12)) : " "}
+                    {billing === 'yearly' && perMonth ? t.billedYearly(money(perMonth * 12)) : ' '}
                   </span>
                 </div>
                 <ul className="flex flex-col gap-2.5">
@@ -124,7 +151,11 @@ function PricingPlans({
                 </ul>
               </CardContent>
               <CardFooter className="mt-auto">
-                <Button className="w-full" variant={plan.featured ? "default" : "secondary"} onClick={() => onSelect?.(plan, billing)}>
+                <Button
+                  className="w-full"
+                  variant={plan.featured ? 'default' : 'secondary'}
+                  onClick={() => onSelect?.(plan, billing)}
+                >
                   {plan.cta}
                 </Button>
               </CardFooter>
@@ -136,4 +167,4 @@ function PricingPlans({
   )
 }
 
-export { PricingPlans, type Billing, type PricingPlan }
+export { type Billing, type PricingPlan, PricingPlans }

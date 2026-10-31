@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Progress as ProgressPrimitive } from "radix-ui"
+import { Progress as ProgressPrimitive } from 'radix-ui'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 function Progress({
   className,
@@ -15,8 +15,8 @@ function Progress({
       data-slot="progress"
       value={value}
       className={cn(
-        "relative h-1.5 w-full overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset",
-        className
+        'relative h-1.5 w-full overflow-hidden rounded-pill bg-accent ring-1 ring-border ring-inset',
+        className,
       )}
       {...props}
     >

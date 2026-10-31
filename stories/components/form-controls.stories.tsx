@@ -1,20 +1,37 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 
 const meta = {
-  title: "Components/Forms/Inputs",
+  title: 'Components/Forms/Inputs',
   component: Field,
-  tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  tags: ['autodocs'],
+  parameters: { layout: 'padded' },
 } satisfies Meta<typeof Field>
 export default meta
 type Story = StoryObj<typeof meta>
@@ -41,12 +58,14 @@ export const TextFields: Story = {
 }
 
 export const SelectField: Story = {
-  name: "Select",
+  name: 'Select',
   render: () => (
     <Field className="max-w-xs">
       <FieldLabel htmlFor="region">Region</FieldLabel>
       <Select defaultValue="cdg1">
-        <SelectTrigger id="region" className="w-full"><SelectValue /></SelectTrigger>
+        <SelectTrigger id="region" className="w-full">
+          <SelectValue />
+        </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             <SelectLabel>Europe</SelectLabel>
@@ -64,7 +83,7 @@ export const SelectField: Story = {
 }
 
 export const Choices: Story = {
-  name: "Checkbox, Radio, Switch",
+  name: 'Checkbox, Radio, Switch',
   render: () => (
     <FieldGroup className="max-w-md">
       <Field orientation="horizontal">
@@ -77,8 +96,14 @@ export const Choices: Story = {
       <FieldSet>
         <FieldLegend>Module format</FieldLegend>
         <RadioGroup defaultValue="esm">
-          <div className="flex items-center gap-2.5"><RadioGroupItem value="esm" id="esm" /><Label htmlFor="esm">ES modules</Label></div>
-          <div className="flex items-center gap-2.5"><RadioGroupItem value="cjs" id="cjs" /><Label htmlFor="cjs">CommonJS</Label></div>
+          <div className="flex items-center gap-2.5">
+            <RadioGroupItem value="esm" id="esm" />
+            <Label htmlFor="esm">ES modules</Label>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <RadioGroupItem value="cjs" id="cjs" />
+            <Label htmlFor="cjs">CommonJS</Label>
+          </div>
         </RadioGroup>
       </FieldSet>
       <Field orientation="horizontal">
@@ -90,7 +115,7 @@ export const Choices: Story = {
 }
 
 export const SliderField: Story = {
-  name: "Slider",
+  name: 'Slider',
   render: () => (
     <Field className="max-w-sm">
       <FieldLabel>Build concurrency</FieldLabel>

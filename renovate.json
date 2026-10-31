@@ -8,7 +8,10 @@
   "internalChecksFilter": "strict",
   "prConcurrentLimit": 6,
   "rangeStrategy": "bump",
-  "lockFileMaintenance": { "enabled": true, "schedule": ["before 7am on the first day of the month"] },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 7am on the first day of the month"]
+  },
   "packageRules": [
     {
       "description": "The Playwright package and CI's Playwright container move together: screenshots depend on both. After merging, run the Visual baselines workflow.",

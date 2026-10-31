@@ -1,24 +1,28 @@
-"use client"
+'use client'
 
 // Coreloom UI — SiteHeader (marketing and docs blocks). Sticky, translucent top bar: brand,
 // links, actions; links move into a Sheet on phones.
-import * as React from "react"
-import { MenuIcon } from "lucide-react"
+import { MenuIcon } from 'lucide-react'
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
-import { AppLink } from "@/lib/link"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useCoreloomI18n } from "@/lib/i18n"
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { AppLink } from '@/lib/link'
+import { cn } from '@/lib/utils'
 
-type SiteLink = { label: string; href: string; active?: boolean }
+interface SiteLink {
+  label: string
+  href: string
+  active?: boolean
+}
 
 function SiteHeader({
   brand,
   links = [],
   actions,
   mobileActions,
-  maxWidth = "max-w-[1120px]",
+  maxWidth = 'max-w-[1120px]',
   className,
 }: {
   brand: React.ReactNode
@@ -34,8 +38,13 @@ function SiteHeader({
   const t = useCoreloomI18n().messages
   const [open, setOpen] = React.useState(false)
   return (
-    <header className={cn("sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md", className)}>
-      <div className={cn("mx-auto flex h-16 items-center gap-6 px-5 md:px-7", maxWidth)}>
+    <header
+      className={cn(
+        'sticky top-0 z-(--z-sticky) border-b border-border-subtle bg-background/85 backdrop-blur-md',
+        className,
+      )}
+    >
+      <div className={cn('mx-auto flex h-16 items-center gap-6 px-5 md:px-7', maxWidth)}>
         {brand}
         {links.length > 0 && (
           <nav className="hidden items-center gap-6 text-[14px] md:flex" aria-label="Main">
@@ -43,8 +52,11 @@ function SiteHeader({
               <AppLink
                 key={link.href}
                 href={link.href}
-                aria-current={link.active ? "page" : undefined}
-                className={cn("transition-colors hover:text-foreground", link.active ? "font-medium text-foreground" : "text-fg-secondary")}
+                aria-current={link.active ? 'page' : undefined}
+                className={cn(
+                  'transition-colors hover:text-foreground',
+                  link.active ? 'font-medium text-foreground' : 'text-fg-secondary',
+                )}
               >
                 {link.label}
               </AppLink>
@@ -56,7 +68,12 @@ function SiteHeader({
           {(links.length > 0 || mobileActions) && (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden" aria-label={t.common.openMenu}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  aria-label={t.common.openMenu}
+                >
                   <MenuIcon />
                 </Button>
               </SheetTrigger>
@@ -69,7 +86,9 @@ function SiteHeader({
                     <AppLink
                       key={link.href}
                       href={link.href}
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        setOpen(false)
+                      }}
                       className="rounded-sm px-2.5 py-2 text-[15px] text-fg-secondary hover:bg-accent hover:text-foreground"
                     >
                       {link.label}
