@@ -101,6 +101,16 @@ export const de: Messages = {
     donutSummary: (total) => `Gesamt ${total}. Werte je Anteil in der Legende.`,
     showAll: (n) => `Alle ${n} anzeigen`,
     showLess: 'Weniger anzeigen',
+    less: 'Weniger',
+    more: 'Mehr',
+    noData: 'Keine Daten',
+    weekOf: (date) => `Woche vom ${date}`,
+    cell: (name, value) => `${name}: ${value}`,
+    funnel: {
+      conversion: (rate) => `${rate} gehen weiter`,
+      dropped: (count) => `(${count} abgesprungen)`,
+      ofStartLabel: 'des ersten Schritts:',
+    },
     gauge: {
       ok: 'Normal',
       warning: 'Warnung',

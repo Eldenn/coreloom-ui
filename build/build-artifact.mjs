@@ -22,6 +22,8 @@ const COMPONENTS = [
   'DonutChart',
   'BarList',
   'Gauge',
+  'Heatmap',
+  'FunnelChart',
   'Checkbox',
   'Collapsible',
   'Combobox',
