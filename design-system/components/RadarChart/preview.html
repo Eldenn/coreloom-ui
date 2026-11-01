@@ -1,0 +1,26 @@
+<!-- @dsCard group="Data display" height=380 subtitle="Two models on six evals · chart-1, chart-2" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.RadarChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { RadarChart } = UI;
+      const data = [['Coding', 92, 78], ['Reasoning', 88, 72], ['Writing', 90, 81], ['Tool use', 94, 83], ['Speed', 64, 95], ['Cost', 55, 88]].map(([metric, sonnet, haiku]) => ({ metric, sonnet, haiku }));
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { style: { maxWidth: 520 } }, h(RadarChart, { data, angleKey: 'metric', max: 100, height: 320, series: [{ key: 'sonnet', label: 'Claude Sonnet' }, { key: 'haiku', label: 'Claude Haiku' }], 'aria-label': 'Two models on six evals' })));
+    }
+    render();
+  </script>
+</body>
+</html>

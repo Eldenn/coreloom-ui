@@ -1,0 +1,27 @@
+<!-- @dsCard group="Data display" height=420 subtitle="Tiles by value · four groups · labels in roomy tiles" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TreemapChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { TreemapChart } = UI;
+      const data = [['coreloom-web', 412, 'apps'], ['coreloom-api', 288, 'apps'], ['docs', 64, 'apps'], ['analytics-warehouse', 640, 'data'], ['event-archive', 355, 'data'], ['ml-features', 190, 'data'], ['backups-daily', 520, 'backups'], ['backups-weekly', 260, 'backups'], ['ci-cache', 140, 'build'], ['artifacts', 96, 'build'], ['logs', 48, 'build']].map(([name, value, group]) => ({ name, value, group }));
+      const groups = [{ key: 'apps', label: 'Apps' }, { key: 'data', label: 'Data' }, { key: 'backups', label: 'Backups' }, { key: 'build', label: 'Build' }];
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { style: { maxWidth: 720 } }, h(TreemapChart, { data, groups, height: 320, formatValue: (v) => v + ' GB', 'aria-label': 'Storage by bucket' })));
+    }
+    render();
+  </script>
+</body>
+</html>
