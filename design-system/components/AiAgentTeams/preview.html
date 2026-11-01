@@ -1,0 +1,48 @@
+<!-- @dsCard group="AI" height=820 subtitle="AgentTeams · graph, team filter, agent details" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AgentTeams || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const teams = [{ id: 'support', name: 'Support' }, { id: 'research', name: 'Research' }];
+      const agents = [
+        { id: 'concierge', name: 'Concierge', role: 'Supervisor', model: 'Claude Sonnet', status: 'active', description: 'Reads every request first and sends it to the team that can answer it.' },
+        { id: 'triage', name: 'Triage', role: 'Team lead', team: 'support', model: 'Claude Haiku', status: 'active', description: 'Sorts support tickets by topic and urgency.' },
+        { id: 'billing', name: 'Billing', role: 'Specialist', team: 'support', model: 'Claude Haiku', status: 'active' },
+        { id: 'tech', name: 'Tech support', role: 'Specialist', team: 'support', model: 'Claude Sonnet', status: 'active', description: 'Debugs failed deployments and walks customers through fixes.' },
+        { id: 'oncall', name: 'On-call engineer', kind: 'human', role: 'Escalation', team: 'support' },
+        { id: 'researcher', name: 'Researcher', role: 'Team lead', team: 'research', model: 'Claude Opus', status: 'active' },
+        { id: 'writer', name: 'Writer', role: 'Drafts answers', team: 'research', model: 'Claude Sonnet', status: 'active' },
+        { id: 'checker', name: 'Fact-checker', role: 'Reviews drafts', team: 'research', model: 'Claude Haiku', status: 'paused' },
+        { id: 'kb', name: 'Help center', kind: 'knowledge' },
+        { id: 'tickets', name: 'Ticketing', kind: 'tool' },
+        { id: 'stripe', name: 'Billing API', kind: 'tool' },
+        { id: 'web', name: 'Web search', kind: 'tool' },
+      ];
+      const E = (from, to, kind, label) => ({ from, to, kind, label });
+      const edges = [
+        E('concierge', 'triage', 'delegates'), E('concierge', 'researcher', 'delegates'),
+        E('triage', 'billing', 'delegates'), E('triage', 'tech', 'delegates'),
+        E('billing', 'tech', 'handoff', 'Bugs'), E('tech', 'oncall', 'handoff', 'Outages'),
+        E('researcher', 'writer', 'delegates'), E('writer', 'checker', 'handoff'),
+        E('triage', 'kb', 'uses'), E('triage', 'tickets', 'uses'), E('billing', 'stripe', 'uses'), E('billing', 'kb', 'uses'),
+        E('tech', 'kb', 'uses'), E('tech', 'tickets', 'uses'), E('researcher', 'web', 'uses'), E('checker', 'web', 'uses'),
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.AgentTeams, { agents, edges, teams, defaultSelectedId: 'tech', href: (id) => '#' + id, runsHref: (id) => '#' + id + '/runs' }));
+    }
+    render();
+  </script>
+</body>
+</html>
