@@ -178,3 +178,41 @@ test.describe('trend chart', () => {
     ).toHaveCount(1)
   })
 })
+
+test.describe('radar, scatter, treemap and sankey', () => {
+  test('each is a named image with its data as text for screen readers', async ({ page }) => {
+    await open(page, 'components-charts-radar-chart--default')
+    await expect(
+      page.getByRole('img', { name: 'Two models on six evals, score out of 100' }),
+    ).toBeVisible()
+    const radar = page.getByRole('table', { name: 'Two models on six evals, score out of 100' })
+    await expect(radar.getByRole('row', { name: /Coding\s+92\s+78/ })).toHaveCount(1)
+
+    await open(page, 'components-charts-scatter-chart--bubbles')
+    const scatter = page.getByRole('table', { name: /^Models: price against latency/ })
+    await expect(scatter.getByRole('row')).toHaveCount(8)
+    await expect(
+      scatter.getByRole('row', { name: /Anthropic, Claude Haiku\s+480\s+\$0.8\s+79/ }),
+    ).toHaveCount(1)
+
+    await open(page, 'components-charts-treemap-chart--default')
+    const tiles = page.getByRole('list', { name: 'Storage by bucket, in GB' })
+    await expect(tiles.getByRole('listitem')).toHaveCount(12)
+    await expect(tiles.getByRole('listitem').first()).toHaveText(
+      'analytics-warehouse (Data): 640 GB (21.2%)',
+    )
+
+    await open(page, 'components-charts-sankey-chart--default')
+    const flows = page.getByRole('list', { name: 'Visitors from source to page to plan, October' })
+    await expect(flows.getByRole('listitem')).toHaveCount(12)
+    await expect(flows.getByRole('listitem').first()).toHaveText('Search to Pricing page: 4,200')
+    await expect(page.locator('.recharts-sankey-nodes text', { hasText: 'Pro plan' })).toBeVisible()
+  })
+
+  test('the treemap and sankey say when there is nothing to draw', async ({ page }) => {
+    await open(page, 'components-charts-treemap-chart--empty')
+    await expect(page.getByText('No data')).toBeVisible()
+    await open(page, 'components-charts-sankey-chart--empty')
+    await expect(page.getByText('No data')).toBeVisible()
+  })
+})

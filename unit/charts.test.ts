@@ -5,6 +5,7 @@ import { donutParts } from '@/components/ui/donut-chart'
 import { funnelRates } from '@/components/ui/funnel-chart'
 import { gaugeStatus } from '@/components/ui/gauge'
 import { calendarWeeks, heatmapLevel, parseDay } from '@/components/ui/heatmap'
+import { longestPaths, sankeyData } from '@/components/ui/sankey-chart'
 import { sparklinePoints, sparklineSummary } from '@/components/ui/sparkline'
 
 describe('sparkline', () => {
@@ -174,5 +175,42 @@ describe('funnelRates', () => {
       { ofStart: 0, ofPrevious: 0 },
     ])
     expect(funnelRates([])).toEqual([])
+  })
+})
+
+describe('sankey', () => {
+  const nodes = [
+    { id: 'a', label: 'A' },
+    { id: 'b', label: 'B' },
+    { id: 'c', label: 'C' },
+  ]
+  it('keeps known, positive, non-looping links and maps ids to indexes', () => {
+    const { links, valid } = sankeyData(nodes, [
+      { source: 'a', target: 'b', value: 5 },
+      { source: 'b', target: 'c', value: 3 },
+      { source: 'a', target: 'a', value: 2 },
+      { source: 'a', target: 'zzz', value: 2 },
+      { source: 'b', target: 'c', value: 0 },
+      { source: 'b', target: 'a', value: Number.NaN },
+    ])
+    expect(links).toEqual([
+      { source: 0, target: 1, value: 5 },
+      { source: 1, target: 2, value: 3 },
+    ])
+    expect(valid).toHaveLength(2)
+  })
+  it('puts each node in the column of its longest path, and survives cycles', () => {
+    expect(
+      longestPaths(3, [
+        { source: 0, target: 1 },
+        { source: 1, target: 2 },
+        { source: 0, target: 2 },
+      ]),
+    ).toEqual([0, 1, 2])
+    const cyclic = longestPaths(2, [
+      { source: 0, target: 1 },
+      { source: 1, target: 0 },
+    ])
+    expect(Math.max(...cyclic)).toBeLessThan(2)
   })
 })
