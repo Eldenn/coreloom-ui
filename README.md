@@ -109,9 +109,20 @@ folder with `components.json`, which is where the server finds the `@coreloom` n
 ```
 
 Then ask in plain words: "add the Coreloom chat block and wire it to useChat", "which Coreloom
-component is a date range picker?". Each item's description ends with a link to its guide, so the
-assistant can read the rules before writing code. The starter ships with the server configured
-(`.mcp.json`).
+component is a date range picker?". Each item's description ends with a link to its guide, and every
+Storybook story file is published as a `*-demo` example item (`button-demo`, `overlays-demo`,
+`ai-chat-demo`…), so the assistant can read the rules and real usage code before writing any. The
+starter ships with the server configured (`.mcp.json`).
+
+To make coding agents follow the design system on every change, not only when they use the MCP
+server, install the rules at the app's root:
+
+```bash
+pnpm dlx shadcn@latest add @coreloom/rules   # writes AGENTS.md (asks before replacing yours)
+```
+
+`AGENTS.md` is read by Codex, Cursor, Copilot and most agents; for Claude Code, add `@AGENTS.md` to the
+app's `CLAUDE.md`. Edit it to fit the app.
 
 ## What's in the repo
 
