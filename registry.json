@@ -1997,6 +1997,33 @@
       ]
     },
     {
+      "name": "ai-artifact",
+      "type": "registry:block",
+      "title": "AI artifact panel",
+      "description": "A document or code a model wrote, in a panel beside the chat: versions, Preview / Source, a line diff of the changes, Copy, Download and Restore; with the card a message shows and a resizable chat-and-panel layout.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/markdown",
+        "@coreloom/resizable",
+        "@coreloom/spinner",
+        "@coreloom/tabs",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-artifact.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "ai-agents",
       "type": "registry:block",
       "title": "AI agents",

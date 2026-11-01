@@ -78,6 +78,7 @@ export * from '@/lib/ai'
 export * as Recharts from 'recharts'
 // Blocks (registry:block parts)
 export * from '@/components/ai-agents'
+export * from '@/components/ai-artifact'
 export * from '@/components/ai-chat'
 export * from '@/components/ai-chat-widget'
 export * from '@/components/ai-knowledge'
