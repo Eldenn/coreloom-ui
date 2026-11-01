@@ -94,15 +94,24 @@ a link to its guide (when to use it, props, accessibility rules);
 [`llms-full.txt`](https://eldenn.github.io/coreloom-ui/llms-full.txt) has all the guides in one file.
 Give either to your assistant as context.
 
-To let Claude Code, Cursor or VS Code browse and install `@coreloom/*` items themselves, add the
-namespace to `components.json` (as above) and turn on shadcn's MCP server in the app:
+To let an assistant browse, search and install `@coreloom/*` items itself, add the namespace to
+`components.json` (as above) and turn on shadcn's MCP server in the app:
 
 ```bash
-pnpm dlx shadcn@latest mcp init --client claude   # or cursor, vscode
+pnpm dlx shadcn@latest mcp init --client claude   # or cursor, vscode, codex, opencode
+```
+
+Any other MCP client: add a stdio server that runs `npx shadcn@latest mcp` from the app's root (the
+folder with `components.json`, which is where the server finds the `@coreloom` namespace):
+
+```json
+{ "mcpServers": { "shadcn": { "command": "npx", "args": ["shadcn@latest", "mcp"] } } }
 ```
 
 Then ask in plain words: "add the Coreloom chat block and wire it to useChat", "which Coreloom
-component is a date range picker?". The starter ships with the server configured (`.mcp.json`).
+component is a date range picker?". Each item's description ends with a link to its guide, so the
+assistant can read the rules before writing code. The starter ships with the server configured
+(`.mcp.json`).
 
 ## What's in the repo
 

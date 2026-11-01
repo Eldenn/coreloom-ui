@@ -62,7 +62,7 @@ export function guidesFor(item) {
   return [...new Set(named)].filter(exists)
 }
 
-const guideUrl = (guide) => `${SITE}/guides/${guide}.md`
+export const guideUrl = (guide) => `${SITE}/guides/${guide}.md`
 const readGuide = (guide) => fs.readFileSync(path.join(guidesDir, `${guide}.md`), 'utf8').trim()
 
 export function build() {

@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 
 // @ts-expect-error -- a Node build script without types; its exports are checked below.
 import { build, guidesFor } from '../build/gen-llms.mjs'
+// @ts-expect-error -- a Node build script without types.
+import { withGuides } from '../build/registry-guides.mjs'
 
 interface Item {
   name: string
@@ -41,5 +43,34 @@ describe('llms.txt', () => {
     expect(llms.full.length).toBeGreaterThan(llms.index.length * 3)
     expect(llms.full).toContain('### Button (`@coreloom/button`)')
     expect(llms.guides).toContain('AiSdk')
+  })
+})
+
+describe('registry guide links', () => {
+  const link = withGuides as (item: Item & { description?: string }) => {
+    description?: string
+    docs?: string
+  }
+
+  it('ends the description with the guide and keeps it in docs', () => {
+    const button = link({ name: 'button', type: 'registry:ui', title: 'Button', description: 'A.' })
+    const url = 'https://eldenn.github.io/coreloom-ui/guides/Button.md'
+    expect(button.description).toBe(`A. Guide: ${url}`)
+    expect(button.docs).toBe(`Guide: ${url}`)
+  })
+
+  it('lists every guide of an item documented by several', () => {
+    expect(link({ name: 'auth', type: 'registry:block', description: 'B.' }).docs).toMatch(
+      /^Guides: \S+LoginForm\.md, \S+PasswordReset\.md$/,
+    )
+  })
+
+  it('is idempotent and leaves items without a guide alone', () => {
+    const once = link({ name: 'button', type: 'registry:ui', title: 'Button', description: 'A.' })
+    expect(link({ ...once, name: 'button', type: 'registry:ui' }).description).toBe(
+      once.description,
+    )
+    const plain = { name: 'copy-button', type: 'registry:component', description: 'C.' }
+    expect(link(plain)).toBe(plain)
   })
 })
