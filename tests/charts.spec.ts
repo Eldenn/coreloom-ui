@@ -109,3 +109,110 @@ test.describe('gauge', () => {
     )
   })
 })
+
+test.describe('heatmap', () => {
+  test('is one tab stop; arrows move between named cells and the readout follows', async ({
+    page,
+  }) => {
+    await open(page, 'components-charts-heatmap--default')
+    const grid = page.getByRole('grid', { name: 'Deploys by weekday and hour' })
+    await expect(grid.getByRole('gridcell')).toHaveCount(7 * 24)
+    await page.keyboard.press('Tab')
+    const first = grid.getByRole('gridcell', { name: 'Mon, 00: 0' })
+    await expect(first).toBeFocused()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowRight')
+    await expect(grid.getByRole('gridcell', { name: /^Tue, 01: / })).toBeFocused()
+    await page.keyboard.press('End')
+    await expect(grid.getByRole('gridcell', { name: /^Tue, 23: / })).toBeFocused()
+    await page.keyboard.press('Control+Home')
+    await expect(first).toBeFocused()
+    await expect(page.getByText('Mon, 00: 0', { exact: true })).toBeVisible()
+    // Only one cell is in the tab order.
+    await expect(grid.locator('[tabindex="0"]')).toHaveCount(1)
+  })
+
+  test('names gaps "No data"', async ({ page }) => {
+    await open(page, 'components-charts-heatmap--matrix')
+    await expect(page.getByRole('gridcell', { name: 'search, Oct 11: No data' })).toHaveCount(1)
+  })
+
+  test('calendar cells say the full date and the value, in the locale', async ({ page }) => {
+    await open(page, 'components-charts-heatmap--calendar')
+    const grid = page.getByRole('grid', { name: 'Deploys per day, last year' })
+    await expect(grid.getByRole('row')).toHaveCount(8)
+    await expect(
+      grid.getByRole('gridcell', { name: /^Saturday, October 31, 2026: \d+ deploys?$/ }),
+    ).toHaveCount(1)
+    await open(page, 'components-charts-heatmap--french', 'fr')
+    await expect(
+      page.getByRole('gridcell', { name: /^samedi 31 octobre 2026 : \d+$/ }),
+    ).toHaveCount(1)
+  })
+})
+
+test.describe('funnel chart', () => {
+  test('lists the steps in order with counts, shares and what dropped', async ({ page }) => {
+    await open(page, 'components-charts-funnel-chart--default')
+    const steps = page
+      .getByRole('list', { name: 'Sign-up funnel, October 2026' })
+      .getByRole('listitem')
+    await expect(steps).toHaveCount(5)
+    await expect(steps.nth(0)).toContainText('Visited the pricing page')
+    await expect(steps.nth(0)).toContainText('12,480')
+    await expect(steps.nth(1)).toContainText('33.8% continue (8,268 dropped)')
+    await expect(steps.nth(1)).toContainText('of the first step: 33.8%')
+    await expect(steps.nth(4)).toContainText('of the first step: 3.9%')
+  })
+})
+
+test.describe('trend chart', () => {
+  test('stacked, percent and combo charts draw', async ({ page }) => {
+    for (const id of ['stacked-bars', 'percent-area', 'combo']) {
+      await open(page, `blocks-dashboard--${id}`)
+      await expect(page.locator('.recharts-surface').first()).toBeVisible()
+    }
+    // The combo has a second axis on the right with the error rate's format.
+    await expect(
+      page.locator('.recharts-cartesian-axis-tick-value').filter({ hasText: '1.8\u202f%' }),
+    ).toHaveCount(1)
+  })
+})
+
+test.describe('radar, scatter, treemap and sankey', () => {
+  test('each is a named image with its data as text for screen readers', async ({ page }) => {
+    await open(page, 'components-charts-radar-chart--default')
+    await expect(
+      page.getByRole('img', { name: 'Two models on six evals, score out of 100' }),
+    ).toBeVisible()
+    const radar = page.getByRole('table', { name: 'Two models on six evals, score out of 100' })
+    await expect(radar.getByRole('row', { name: /Coding\s+92\s+78/ })).toHaveCount(1)
+
+    await open(page, 'components-charts-scatter-chart--bubbles')
+    const scatter = page.getByRole('table', { name: /^Models: price against latency/ })
+    await expect(scatter.getByRole('row')).toHaveCount(8)
+    await expect(
+      scatter.getByRole('row', { name: /Anthropic, Claude Haiku\s+480\s+\$0.8\s+79/ }),
+    ).toHaveCount(1)
+
+    await open(page, 'components-charts-treemap-chart--default')
+    const tiles = page.getByRole('list', { name: 'Storage by bucket, in GB' })
+    await expect(tiles.getByRole('listitem')).toHaveCount(12)
+    await expect(tiles.getByRole('listitem').first()).toHaveText(
+      'analytics-warehouse (Data): 640 GB (21.2%)',
+    )
+
+    await open(page, 'components-charts-sankey-chart--default')
+    const flows = page.getByRole('list', { name: 'Visitors from source to page to plan, October' })
+    await expect(flows.getByRole('listitem')).toHaveCount(12)
+    await expect(flows.getByRole('listitem').first()).toHaveText('Search to Pricing page: 4,200')
+    await expect(page.locator('.recharts-sankey-nodes text', { hasText: 'Pro plan' })).toBeVisible()
+  })
+
+  test('the treemap and sankey say when there is nothing to draw', async ({ page }) => {
+    await open(page, 'components-charts-treemap-chart--empty')
+    await expect(page.getByText('No data')).toBeVisible()
+    await open(page, 'components-charts-sankey-chart--empty')
+    await expect(page.getByText('No data')).toBeVisible()
+  })
+})

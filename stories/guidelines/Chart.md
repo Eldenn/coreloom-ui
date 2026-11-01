@@ -12,7 +12,7 @@ Marks use `var(--color-<key>)`.
 
 - Series colors are the `chart-1` … `chart-5` tokens, in that order: teal, violet, orange, blue, magenta. They're validated for color-vision deficiency and for 3:1 contrast on `bg-1` and `surface-2` in both themes. Take the slots in order and never cycle them. Past five series, fold the rest into "Other". For scatter, pie and other charts where every series meets every other, stop at three.
 - Axis ticks are mono 12px in `fg-muted`. The grid is a `border-subtle` hairline. The tooltip is a `surface-1` card with values in mono.
-- For a trend next to a number use `Sparkline`; for parts of a whole, `DonutChart`; for a ranking, `BarList`; for one value against its range, `Gauge`. They share these tokens and need no `ChartContainer`.
+- For a trend next to a number use `Sparkline`; for parts of a whole, `DonutChart`; for a ranking, `BarList`; for one value against its range, `Gauge`; for density over two dimensions or a calendar, `Heatmap` / `CalendarHeatmap`; for the steps of a flow, `FunnelChart`; to compare a few things on several measures, `RadarChart`; for two measures across many items, `ScatterChart`; for many parts of a whole, `TreemapChart`; for flows between steps, `SankeyChart`. They share these tokens and need no `ChartContainer`.
 - `accessibilityLayer` adds keyboard focus to the marks. Pair a chart with a table view or direct labels when the numbers matter. Don't use `success` / `warning` / `danger` as series colors: they mean status.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/chart` and import from `@/components/ui/chart`.
