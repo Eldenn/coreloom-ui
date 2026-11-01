@@ -1,0 +1,33 @@
+<!-- @dsCard group="Data display" height=330 subtitle="Weekday × hour matrix · calendar of days · five steps" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Heatmap || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Heatmap, CalendarHeatmap, Card, CardHeader, CardTitle, CardDescription, CardContent } = UI;
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const hours = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0'));
+      const data = days.flatMap((row, d) => hours.map((column, h) => ({ row, column, value: d < 5 && h >= 9 && h <= 18 ? 6 + ((h * 7 + d * 3) % 9) : (h * d) % 3 })));
+      const year = Array.from({ length: 182 }, (_, i) => { const t = Date.UTC(2026, 9, 31) - (181 - i) * 864e5; const w = new Date(t).getUTCDay(); return { date: new Date(t).toISOString().slice(0, 10), value: w === 0 || w === 6 ? 0 : (i * 7) % 6 + (i > 130 ? 3 : 0) }; });
+      const card = (title, desc, body) => h(Card, { style: { flex: 1, minWidth: 320 } }, h(CardHeader, null, h(CardTitle, null, title), h(CardDescription, null, desc)), h(CardContent, null, body));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap' } },
+          card('Deploys by hour', 'Weekday × hour, October', h(Heatmap, { data, columnLabelEvery: 3, cellSize: 14, 'aria-label': 'Deploys by weekday and hour' })),
+          card('Deploys per day', 'Last 26 weeks', h(CalendarHeatmap, { data: year, to: '2026-10-31', weeks: 26, cellSize: 13, color: 'var(--chart-2)', 'aria-label': 'Deploys per day' }))));
+    }
+    render();
+  </script>
+</body>
+</html>

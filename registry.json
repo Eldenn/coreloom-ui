@@ -1022,6 +1022,32 @@
       ]
     },
     {
+      "name": "heatmap",
+      "type": "registry:ui",
+      "title": "Heatmap",
+      "description": "Values on a grid of squares in five steps of one chart color: a row × column matrix (weekday × hour) and CalendarHeatmap for a year of days. One tab stop with arrow keys, every cell named.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/heatmap.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "funnel-chart",
+      "type": "registry:ui",
+      "title": "Funnel chart",
+      "description": "Steps of a flow as an ordered list: a bar per step against the first, the count, the share of the start and the share that went on to the next step.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/funnel-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
@@ -1516,6 +1542,8 @@
         "@coreloom/donut-chart",
         "@coreloom/bar-list",
         "@coreloom/gauge",
+        "@coreloom/heatmap",
+        "@coreloom/funnel-chart",
         "@coreloom/form",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",
@@ -1837,7 +1865,7 @@
       "name": "dashboard",
       "type": "registry:block",
       "title": "Dashboard",
-      "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines) and an activity feed.",
+      "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines; stacked, 100 % or combo with a second axis) and an activity feed.",
       "categories": ["dashboard", "application"],
       "dependencies": ["lucide-react", "recharts@^3"],
       "registryDependencies": [
