@@ -11,10 +11,15 @@
 //   const weather: ToolComponent<{ city: string }, Weather> = { label: 'Weather', display: 'inline',
 //     render: (call) => call.state === 'output-available' ? <WeatherCard {...call.output} /> : <WeatherSkeleton /> }
 //   <ToolCall part={part} tool={weather} />
+//
+// Tools that ask the person first (no `execute` on the server) set `awaitsInput`: while the call
+// waits, `render` gets `submit(output)` and `cancel()`, wired to `onOutput` (`addToolOutput`).
+// ToolForm's `formTool()` builds such an entry with a form.
 import {
   CheckCircle2Icon,
   ChevronRightIcon,
   CircleAlertIcon,
+  PencilLineIcon,
   ShieldQuestionIcon,
   WrenchIcon,
   XCircleIcon,
@@ -79,7 +84,23 @@ type ToolRenderProps<Input = unknown, Output = unknown> = ToolRenderState<Input,
   part: AiToolPart
   /** Answer an approval from your own buttons; there while the state is 'approval-requested'. */
   respond?: (approved: boolean) => void
+  /** Send the tool's output (tools with `awaitsInput`, while the state is 'input-available'). */
+  submit?: ToolCallback<Output>
+  /** Give up instead: the tool fails with `reason` (default "The user cancelled the form."). */
+  cancel?: (reason?: string) => void
 }
+
+/**
+ * A callback checked bivariantly, like React's event handlers: a handler typed for one app's tools
+ * (`addToolOutput` from `useChat<MyMessage>()`, a `submit` for one tool's output) fits where any
+ * tool's answer goes.
+ */
+type ToolCallback<Arg> = { bivarianceHack(arg: Arg): void }['bivarianceHack']
+
+/** The answer to a tool that waits for the browser: what `addToolOutput` takes. */
+type ToolOutputResponse =
+  | { tool: string; toolCallId: string; state?: 'output-available'; output: unknown }
+  | { tool: string; toolCallId: string; state: 'output-error'; errorText: string }
 
 /** How one tool draws: a name, a component, and whether it sits inside the card or replaces it. */
 interface ToolComponent<Input = unknown, Output = unknown> {
@@ -89,6 +110,11 @@ interface ToolComponent<Input = unknown, Output = unknown> {
   render(props: ToolRenderProps<Input, Output>): React.ReactNode
   /** 'card' (default): inside the folded card, unfolded. 'inline': in place of the card. */
   display?: 'card' | 'inline'
+  /**
+   * The tool runs in the browser and waits for the person ('input-available' means "your turn",
+   * not "running"): `render` gets `submit` and `cancel`, and the card says "Waiting for you".
+   */
+  awaitsInput?: boolean
 }
 
 /**
@@ -108,6 +134,7 @@ function ToolCall({
   tool,
   renderOutput,
   onApprovalResponse,
+  onOutput,
   defaultOpen,
   className,
 }: {
@@ -121,12 +148,18 @@ function ToolCall({
   renderOutput?: (output: unknown) => React.ReactNode | undefined
   /** Allow / Deny on calls that ask for approval. */
   onApprovalResponse?: (response: { id: string; approved: boolean }) => void
+  /** The answer of a tool with `awaitsInput` (`submit` / `cancel`). Wire it to `addToolOutput`. */
+  onOutput?: ToolCallback<ToolOutputResponse>
   defaultOpen?: boolean
   className?: string
 }) {
-  const t = useCoreloomI18n().messages.ai.tool
+  const messages = useCoreloomI18n().messages.ai
+  const t = messages.tool
   const labelId = React.useId()
+  const awaiting = !!tool?.awaitsInput && part.state === 'input-available'
   const asking = part.state === 'approval-requested'
+  // Either way the person has to answer, and answering removes what had focus.
+  const waiting = asking || (awaiting && !!onOutput)
   const { approval } = part
   // Answering removes the buttons that had focus: remember it, and move focus to the call (below).
   const answered = React.useRef(false)
@@ -138,8 +171,37 @@ function ToolCall({
     onApprovalResponse({ id: approval.id, approved })
   }
   const respond = asking && approval && onApprovalResponse ? answer : undefined
-  // eslint-disable-next-line react-hooks/refs -- `respond` writes a ref when clicked, never during render.
-  const custom = tool?.render({ ...renderState(part), toolCallId: part.toolCallId, part, respond })
+  const output = (response: ToolOutputResponse) => {
+    answered.current = true
+    onOutput?.(response)
+  }
+  const toolId = toolName(part)
+  const submit =
+    awaiting && onOutput
+      ? (value: unknown) => {
+          output({ tool: toolId, toolCallId: part.toolCallId, output: value })
+        }
+      : undefined
+  const cancel =
+    awaiting && onOutput
+      ? (reason?: string) => {
+          output({
+            tool: toolId,
+            toolCallId: part.toolCallId,
+            state: 'output-error',
+            errorText: reason ?? messages.toolForm.cancelledReason,
+          })
+        }
+      : undefined
+  // eslint-disable-next-line react-hooks/refs -- `respond`, `submit` and `cancel` write a ref when clicked, never during render.
+  const custom = tool?.render({
+    ...renderState(part),
+    toolCallId: part.toolCallId,
+    part,
+    respond,
+    submit,
+    cancel,
+  })
   const isCustom = custom !== undefined && custom !== null && custom !== false
   const drawn = isCustom
     ? custom
@@ -148,12 +210,12 @@ function ToolCall({
       : undefined
   const isDrawn = drawn !== undefined && drawn !== null
   const [open, setOpen] = React.useState(
-    defaultOpen ?? (asking || part.state === 'output-error' || isDrawn),
+    defaultOpen ?? (waiting || part.state === 'output-error' || isDrawn),
   )
   React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when the call starts asking for approval.
-    if (asking) setOpen(true)
-  }, [asking])
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when the call starts asking.
+    if (waiting) setOpen(true)
+  }, [waiting])
   // A result drawn as UI is the answer: show it as soon as it arrives.
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when a drawn result arrives.
@@ -161,12 +223,12 @@ function ToolCall({
   }, [isDrawn, defaultOpen])
 
   React.useEffect(() => {
-    if (asking || !answered.current) return
+    if (waiting || !answered.current) return
     answered.current = false
     const focused = document.activeElement
     if (focused && focused !== document.body && root.current?.contains(focused)) return
     ;(trigger.current ?? root.current)?.focus()
-  }, [asking])
+  }, [waiting])
 
   const name = label ?? tool?.label ?? part.title ?? toolName(part)
 
@@ -179,7 +241,7 @@ function ToolCall({
         role="group"
         aria-labelledby={labelId}
         tabIndex={-1}
-        aria-busy={RUNNING.has(part.state) || undefined}
+        aria-busy={(RUNNING.has(part.state) && !awaiting) || undefined}
         data-slot="tool-call"
         data-display="inline"
         data-state-name={part.state}
@@ -216,6 +278,11 @@ function ToolCall({
     'output-error': { icon: <CircleAlertIcon className="size-3.5" />, tone: 'text-destructive' },
     'output-denied': { icon: <XCircleIcon className="size-3.5" />, tone: 'text-muted-foreground' },
   }[part.state]
+  const waitingStatus = {
+    icon: <PencilLineIcon className="size-3.5" />,
+    tone: 'text-warning',
+  }
+  const shown = awaiting ? waitingStatus : status
 
   return (
     <Collapsible
@@ -226,7 +293,7 @@ function ToolCall({
       data-state-name={part.state}
       className={cn(
         'rounded-md border border-border bg-card text-[13px]',
-        asking && 'border-warning/60',
+        (asking || awaiting) && 'border-warning/60',
         className,
       )}
     >
@@ -241,11 +308,11 @@ function ToolCall({
         <span
           className={cn(
             'inline-flex shrink-0 items-center gap-1.5 text-right text-[12px]',
-            status.tone,
+            shown.tone,
           )}
         >
-          {status.icon}
-          {t.states[part.state]}
+          {shown.icon}
+          {awaiting ? messages.toolForm.waiting : t.states[part.state]}
         </span>
         <ChevronRightIcon
           className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-180 group-data-[state=open]:rotate-90"
@@ -315,8 +382,10 @@ function ToolCall({
 
 export {
   ToolCall,
+  type ToolCallback,
   type ToolComponent,
   type ToolComponents,
+  type ToolOutputResponse,
   type ToolRenderProps,
   type ToolRenderState,
 }
