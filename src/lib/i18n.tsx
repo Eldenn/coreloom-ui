@@ -670,6 +670,29 @@ const en = {
     slashAsk: 'Ask AI…',
     slashResults: (n: number) =>
       `${n} ${n === 1 ? 'AI command' : 'AI commands'}. Up and down arrows to choose, Enter to run.`,
+    aiReview: 'Review changes',
+    aiReviewNone: 'The suggestion is the same as your text: nothing to review.',
+    review: 'Suggested changes',
+    reviewCount: (i: number, n: number) => `Change ${i} of ${n}`,
+    reviewReplace: (from: string, to: string) => `Replace “${from}” with “${to}”`,
+    reviewDelete: (text: string) => `Delete “${text}”`,
+    reviewInsert: (text: string) => `Insert “${text}”`,
+    reviewPrevious: 'Previous change',
+    reviewNext: 'Next change',
+    reviewAccept: 'Accept',
+    reviewReject: 'Reject',
+    reviewAcceptAll: 'Accept all',
+    reviewRejectAll: 'Reject all',
+    reviewStarted: (n: number) =>
+      n === 1
+        ? '1 suggested change. Accept or reject it below the text.'
+        : `${n} suggested changes. Accept or reject each one below the text.`,
+    reviewAccepted: (left: number) =>
+      `Change accepted. ${left === 0 ? 'All changes reviewed.' : `${left} left.`}`,
+    reviewRejected: (left: number) =>
+      `Change rejected. ${left === 0 ? 'All changes reviewed.' : `${left} left.`}`,
+    reviewAllAccepted: 'All changes accepted.',
+    reviewAllRejected: 'All changes rejected.',
   },
 }
 
@@ -1338,6 +1361,29 @@ const fr: Messages = {
     slashAsk: 'Demander à l’IA…',
     slashResults: (n) =>
       `${n} ${n > 1 ? 'commandes IA' : 'commande IA'}. Flèches haut et bas pour choisir, Entrée pour lancer.`,
+    aiReview: 'Revoir les modifications',
+    aiReviewNone: 'La suggestion est identique à votre texte : rien à revoir.',
+    review: 'Modifications suggérées',
+    reviewCount: (i, n) => `Modification ${i} sur ${n}`,
+    reviewReplace: (from, to) => `Remplacer « ${from} » par « ${to} »`,
+    reviewDelete: (text) => `Supprimer « ${text} »`,
+    reviewInsert: (text) => `Insérer « ${text} »`,
+    reviewPrevious: 'Modification précédente',
+    reviewNext: 'Modification suivante',
+    reviewAccept: 'Accepter',
+    reviewReject: 'Refuser',
+    reviewAcceptAll: 'Tout accepter',
+    reviewRejectAll: 'Tout refuser',
+    reviewStarted: (n) =>
+      n > 1
+        ? `${n} modifications suggérées. Acceptez ou refusez chacune sous le texte.`
+        : '1 modification suggérée. Acceptez-la ou refusez-la sous le texte.',
+    reviewAccepted: (left) =>
+      `Modification acceptée. ${left === 0 ? 'Toutes les modifications sont traitées.' : `Il en reste ${left}.`}`,
+    reviewRejected: (left) =>
+      `Modification refusée. ${left === 0 ? 'Toutes les modifications sont traitées.' : `Il en reste ${left}.`}`,
+    reviewAllAccepted: 'Toutes les modifications sont acceptées.',
+    reviewAllRejected: 'Toutes les modifications sont refusées.',
   },
 }
 

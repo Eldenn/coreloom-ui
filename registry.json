@@ -1126,7 +1126,7 @@
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
-      "description": "Tiptap editor with a toolbar (marks, headings, lists, quote, code, links, undo), an optional AI panel (⌘J) fed by your own onRequest, and RichTextField for the form kit; the value is HTML.",
+      "description": "Tiptap editor with a toolbar (marks, headings, lists, quote, code, links, undo), an optional AI panel (⌘J) fed by your own onRequest, with rewrites reviewed as changes to accept or reject, and RichTextField for the form kit; the value is HTML.",
       "dependencies": [
         "@tiptap/react@^3",
         "@tiptap/pm@^3",
@@ -1155,6 +1155,10 @@
         },
         {
           "path": "src/components/ui/rich-text-ai.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/rich-text-review.tsx",
           "type": "registry:ui"
         },
         {

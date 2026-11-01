@@ -657,5 +657,28 @@ export const de: Messages = {
     slashAsk: 'KI fragen…',
     slashResults: (n) =>
       `${n} ${n === 1 ? 'KI-Befehl' : 'KI-Befehle'}. Mit den Pfeiltasten nach oben und unten wählen, mit Eingabe ausführen.`,
+    aiReview: 'Änderungen prüfen',
+    aiReviewNone: 'Der Vorschlag entspricht deinem Text: Es gibt nichts zu prüfen.',
+    review: 'Vorgeschlagene Änderungen',
+    reviewCount: (i, n) => `Änderung ${i} von ${n}`,
+    reviewReplace: (from, to) => `„${from}“ durch „${to}“ ersetzen`,
+    reviewDelete: (text) => `„${text}“ löschen`,
+    reviewInsert: (text) => `„${text}“ einfügen`,
+    reviewPrevious: 'Vorherige Änderung',
+    reviewNext: 'Nächste Änderung',
+    reviewAccept: 'Annehmen',
+    reviewReject: 'Ablehnen',
+    reviewAcceptAll: 'Alle annehmen',
+    reviewRejectAll: 'Alle ablehnen',
+    reviewStarted: (n) =>
+      n === 1
+        ? '1 vorgeschlagene Änderung. Nimm sie unter dem Text an oder lehne sie ab.'
+        : `${n} vorgeschlagene Änderungen. Nimm jede unter dem Text an oder lehne sie ab.`,
+    reviewAccepted: (left) =>
+      `Änderung angenommen. ${left === 0 ? 'Alle Änderungen sind geprüft.' : `Noch ${left}.`}`,
+    reviewRejected: (left) =>
+      `Änderung abgelehnt. ${left === 0 ? 'Alle Änderungen sind geprüft.' : `Noch ${left}.`}`,
+    reviewAllAccepted: 'Alle Änderungen angenommen.',
+    reviewAllRejected: 'Alle Änderungen abgelehnt.',
   },
 }
