@@ -123,6 +123,7 @@ const en = {
     less: 'Less',
     more: 'More',
     noData: 'No data',
+    weekOf: (date: string) => `Week of ${date}`,
     cell: (name: string, value: string) => `${name}: ${value}`,
     funnel: {
       conversion: (rate: string) => `${rate} continue`,
@@ -952,6 +953,7 @@ const fr: Messages = {
     less: 'Moins',
     more: 'Plus',
     noData: 'Aucune donnée',
+    weekOf: (date) => `Semaine du ${date}`,
     cell: (name, value) => `${name} : ${value}`,
     funnel: {
       conversion: (rate) => `${rate} continuent`,
