@@ -1,0 +1,50 @@
+<!-- @dsCard group="Blocks" height=720 subtitle="WorkflowBuilder · name, Save, Run, editor" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.WorkflowBuilder || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const I = (d) => (p) => h('svg', Object.assign({ viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, p), h('path', { d }));
+      const kinds = [
+        { type: 'webhook', label: 'Webhook', description: 'Starts when your app calls a URL.', category: 'Triggers', inputs: [], icon: I('M4 12h16M12 4v16'),
+          fields: [{ name: 'path', label: 'Path', type: 'text', required: true }], summary: (d) => d.path ? 'POST /' + d.path : undefined },
+        { type: 'if', label: 'If', description: 'Sends items one way or the other.', category: 'Logic', icon: I('M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9'),
+          outputs: [{ id: 'true', label: 'true' }, { id: 'false', label: 'false' }],
+          fields: [{ name: 'condition', label: 'Condition', type: 'text', required: true }], summary: (d) => d.condition },
+        { type: 'http', label: 'HTTP request', description: 'Calls an API.', category: 'Actions', icon: I('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20'),
+          fields: [{ name: 'url', label: 'URL', type: 'text', required: true }], summary: (d) => d.url },
+        { type: 'email', label: 'Send email', description: 'Sends an email.', category: 'Actions', icon: I('M4 4h16v16H4zM22 6l-10 7L2 6'),
+          fields: [{ name: 'to', label: 'To', type: 'text', required: true }, { name: 'subject', label: 'Subject', type: 'text' }], summary: (d) => d.subject },
+      ];
+      const workflow = {
+        nodes: [
+          { id: 'webhook', type: 'webhook', name: 'New signup', position: { x: 0, y: 90 }, data: { path: 'signup' } },
+          { id: 'if', type: 'if', name: 'Business email?', position: { x: 340, y: 90 }, data: { condition: 'domain is not a free provider' } },
+          { id: 'http', type: 'http', name: 'Enrich company', position: { x: 700, y: 0 }, data: { url: 'https://api.example.com/companies' } },
+          { id: 'email', type: 'email', name: 'Welcome email', position: { x: 700, y: 200 }, data: { to: '{{email}}', subject: 'Welcome aboard' } },
+        ],
+        edges: [
+          { id: 'e1', source: 'webhook', target: 'if' },
+          { id: 'e2', source: 'if', sourcePort: 'true', target: 'http' },
+          { id: 'e3', source: 'if', sourcePort: 'false', target: 'email' },
+        ],
+      };
+      const runs = { webhook: { status: 'success', message: '1 item' }, if: { status: 'success', message: 'true' }, http: { status: 'running' }, email: { status: 'skipped' } };
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.WorkflowBuilder, { kinds, defaultValue: workflow, defaultName: 'Route new signups', runs, running: true, onRun: () => {}, onSave: () => Promise.resolve() }));
+    }
+    render();
+  </script>
+</body>
+</html>
