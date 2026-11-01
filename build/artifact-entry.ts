@@ -43,6 +43,7 @@ export * from '@/components/ui/model-picker'
 export * from '@/components/ui/money-input'
 export * from '@/components/ui/multi-select'
 export * from '@/components/ui/navigation-menu'
+export * from '@/components/ui/node-editor'
 export * from '@/components/ui/pagination'
 export * from '@/components/ui/phone-input'
 export * from '@/components/ui/popover'
@@ -80,6 +81,7 @@ export * from '@/lib/ai'
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from 'recharts'
 // Blocks (registry:block parts)
+export * from '@/components/ai-agent-builder'
 export * from '@/components/ai-agent-teams'
 export * from '@/components/ai-agents'
 export * from '@/components/ai-artifact'
@@ -123,6 +125,7 @@ export * from '@/components/stat-card'
 export * from '@/components/team'
 export * from '@/components/theme-toggle'
 export * from '@/components/verify-form'
+export * from '@/components/workflow-builder'
 export {
   CoreloomI18nProvider,
   en as messagesEn,
