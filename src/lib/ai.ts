@@ -57,6 +57,34 @@ export interface AiToolPart {
   approval?: { id: string; approved?: boolean; reason?: string; requestReason?: string }
 }
 
+/**
+ * A data part the app streams itself (`writer.write({ type: 'data-plan', id, data })`). Writing
+ * again with the same `id` replaces the part, so one part can follow a task as it moves.
+ */
+export interface AiDataPart<Data = unknown> {
+  type: `data-${string}`
+  id?: string
+  data: Data
+}
+
+/** Where a step of an agent's plan stands. */
+export type AiPlanStepStatus = 'pending' | 'running' | 'done' | 'failed' | 'skipped'
+
+/** One step of an agent's plan: what it does and where it stands. */
+export interface AiPlanStep {
+  id: string
+  title: string
+  status: AiPlanStepStatus
+  /** A line under the title: what the step found, why it failed. */
+  detail?: string
+}
+
+/** The plan an agent works through, streamed as a `data-plan` part and updated as it goes. */
+export interface AiPlan {
+  title?: string
+  steps: readonly AiPlanStep[]
+}
+
 /** Any part: the known ones above, or another kind (data-*, step-start…) the blocks skip. */
 export type AiMessagePart =
   | AiTextPart
@@ -65,6 +93,7 @@ export type AiMessagePart =
   | AiSourceUrlPart
   | AiSourceDocumentPart
   | AiToolPart
+  | AiDataPart
   | { type: string; [key: string]: unknown }
 
 /** Any message with an id, a role and parts — `UIMessage` from the AI SDK fits. */
@@ -81,6 +110,66 @@ export const isSourcePart = (p: AiMessagePart): p is AiSourceUrlPart | AiSourceD
   p.type === 'source-url' || p.type === 'source-document'
 export const isToolPart = (p: AiMessagePart): p is AiToolPart =>
   p.type === 'dynamic-tool' || p.type.startsWith('tool-')
+
+export const isDataPart = (p: AiMessagePart): p is AiDataPart =>
+  p.type.startsWith('data-') && 'data' in p
+
+// Other agents' names for the same statuses (the todo lists of coding agents use `in_progress` and
+// `completed`), so their plans can be passed as they are.
+const PLAN_STATUS: Record<string, AiPlanStepStatus | undefined> = {
+  pending: 'pending',
+  todo: 'pending',
+  running: 'running',
+  in_progress: 'running',
+  'in-progress': 'running',
+  active: 'running',
+  done: 'done',
+  completed: 'done',
+  complete: 'done',
+  failed: 'failed',
+  error: 'failed',
+  skipped: 'skipped',
+  cancelled: 'skipped',
+  canceled: 'skipped',
+}
+
+/**
+ * Reads a plan from untrusted data (a `data-plan` part, a tool's output): steps need a title;
+ * unknown statuses count as pending, missing ids fall back to the position. Undefined if it isn't a plan.
+ */
+export function readPlan(value: unknown): AiPlan | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const { title, steps } = value as { title?: unknown; steps?: unknown }
+  if (!Array.isArray(steps)) return undefined
+  const read: AiPlanStep[] = []
+  steps.forEach((raw: unknown, i) => {
+    if (typeof raw !== 'object' || raw === null) return
+    const step = raw as Record<string, unknown>
+    const text = step.title ?? step.content ?? step.text
+    if (typeof text !== 'string' || !text.trim()) return
+    const status =
+      typeof step.status === 'string' ? PLAN_STATUS[step.status.toLowerCase()] : undefined
+    read.push({
+      id: typeof step.id === 'string' || typeof step.id === 'number' ? String(step.id) : String(i),
+      title: text,
+      status: status ?? 'pending',
+      ...(typeof step.detail === 'string' && step.detail ? { detail: step.detail } : {}),
+    })
+  })
+  return { ...(typeof title === 'string' && title ? { title } : {}), steps: read }
+}
+
+/** How far a plan is: steps finished (done or skipped), the total, the step running, any failure. */
+export function planProgress(plan: AiPlan) {
+  const finished = plan.steps.filter((s) => s.status === 'done' || s.status === 'skipped').length
+  return {
+    finished,
+    total: plan.steps.length,
+    current: plan.steps.find((s) => s.status === 'running'),
+    failed: plan.steps.find((s) => s.status === 'failed'),
+    complete: plan.steps.length > 0 && finished === plan.steps.length,
+  }
+}
 
 /** The tool's name: `tool-searchDocs` → "searchDocs", or `toolName` on dynamic tools. */
 export function toolName(part: AiToolPart) {

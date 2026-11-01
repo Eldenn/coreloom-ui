@@ -5,7 +5,9 @@
 // instead of breaking apps silently. The runtime cases check the helpers read SDK-shaped values.
 import type {
   ChatAddToolApproveResponseFunction,
+  ChatAddToolOutputFunction,
   ChatStatus,
+  DataUIPart,
   DynamicToolUIPart,
   FileUIPart,
   InferUITools,
@@ -27,15 +29,19 @@ import type { PromptInput } from '@/components/ui/prompt-input'
 import type { ToolCall, ToolComponents, ToolRenderProps } from '@/components/ui/tool-call'
 import {
   type AiChatStatus,
+  type AiDataPart,
   type AiMessage,
   type AiToolPart,
   type AiToolState,
+  isDataPart,
   isFilePart,
   isReasoningPart,
   isSourcePart,
   isTextPart,
   isToolPart,
   messageText,
+  planProgress,
+  readPlan,
   toolName,
   usageDetails,
   usageTotal,
@@ -98,6 +104,25 @@ describe('AI SDK types go into the blocks as they are', () => {
     >()
     expectTypeOf<ChatAddToolApproveResponseFunction>().toExtend<
       NonNullable<Props<typeof ToolCall>['onApprovalResponse']>
+    >()
+  })
+
+  it('tool outputs: addToolOutput wires straight to onToolOutput, typed or not', () => {
+    expectTypeOf<ChatAddToolOutputFunction<UIMessage>>().toExtend<
+      NonNullable<Props<typeof Chat>['onToolOutput']>
+    >()
+    expectTypeOf<ChatAddToolOutputFunction<AppMessage>>().toExtend<
+      NonNullable<Props<typeof Chat>['onToolOutput']>
+    >()
+    expectTypeOf<ChatAddToolOutputFunction<AppMessage>>().toExtend<
+      NonNullable<Props<typeof ToolCall>['onOutput']>
+    >()
+  })
+
+  it('data parts: what renderData receives', () => {
+    expectTypeOf<DataUIPart<AppData>>().toExtend<AiDataPart>()
+    expectTypeOf<AiDataPart>().toEqualTypeOf<
+      Parameters<NonNullable<Props<typeof Chat>['renderData']>>[0]
     >()
   })
 
@@ -213,6 +238,23 @@ describe('the helpers read SDK messages', () => {
     expect(weather.output).toEqual({ city: 'Lyon', celsius: 14, sky: 'rain' })
     expect(search.approval).toEqual({ id: 'a1', requestReason: 'Searches the private wiki.' })
     expect(email.errorText).toBe('Mailbox full')
+  })
+
+  it('finds data parts, and reads a plan streamed as one', () => {
+    expect(ours.parts.filter(isDataPart).map((p) => p.id)).toEqual(['p1'])
+    const plan: DataUIPart<{ plan: { steps: { id: string; title: string; status: string }[] } }> = {
+      type: 'data-plan',
+      id: 'plan',
+      data: {
+        steps: [
+          { id: 'a', title: 'Read the logs', status: 'completed' },
+          { id: 'b', title: 'Find the bad build', status: 'in_progress' },
+        ],
+      },
+    }
+    const read = readPlan(plan.data)
+    expect(read?.steps.map((s) => s.status)).toEqual(['done', 'running'])
+    expect(read && planProgress(read).current?.title).toBe('Find the bad build')
   })
 
   it('copies the text parts only', () => {
