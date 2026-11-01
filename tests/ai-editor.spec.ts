@@ -54,13 +54,13 @@ test.describe('editor AI', () => {
     await expect(status).toHaveText('Suggestion ready.', { timeout: SUGGESTION_TIMEOUT })
     await expect(preview).not.toHaveAttribute('aria-busy')
     await expect(preview.locator('strong')).toHaveText('faster')
-    const replace = panel.getByRole('button', { name: 'Replace selection' })
-    await expect(replace).toBeFocused()
+    // A rewrite's main action is Review changes (see ai-editor-review.spec.ts); Replace is next to it.
+    await expect(panel.getByRole('button', { name: 'Review changes' })).toBeFocused()
     await expect(page.getByTestId('ai-last-request')).toHaveText(
       /Last request: improve on the selection/,
     )
 
-    await page.keyboard.press('Enter')
+    await panel.getByRole('button', { name: 'Replace selection' }).click()
     await expect(panel).toBeHidden()
     await expect(editor).toBeFocused()
     // The sentence was rewritten in place (inline, bold kept as a mark), the next paragraph untouched.
@@ -233,6 +233,7 @@ test.describe('editor AI', () => {
     })
     await expect(panel.getByRole('alert')).toHaveText(/The selected text changed/)
     await expect(panel.getByRole('button', { name: 'Replace selection' })).toBeDisabled()
+    await expect(panel.getByRole('button', { name: 'Review changes' })).toBeDisabled()
     await expect(panel.getByRole('button', { name: 'Insert below' })).toBeDisabled()
     await expect(panel.getByRole('button', { name: 'Try again' })).toBeDisabled()
     await expect(panel.getByRole('button', { name: 'Discard' })).toBeFocused()
