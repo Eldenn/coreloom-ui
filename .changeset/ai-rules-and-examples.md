@@ -9,3 +9,5 @@
 - Usage examples for assistants: every Storybook story file is published as a `registry:example`
   item (`button-demo`, `overlays-demo`, `ai-chat-demo`…, 42 in all, covering every component). shadcn's
   MCP server returns their code when an assistant asks for an example.
+- README: reading Coreloom from a remote MCP server (GitMCP, GitHub's MCP server) when there is no
+  local project, for example in claude.ai.

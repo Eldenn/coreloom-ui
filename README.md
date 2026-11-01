@@ -124,6 +124,16 @@ pnpm dlx shadcn@latest add @coreloom/rules   # writes AGENTS.md (asks before rep
 `AGENTS.md` is read by Codex, Cursor, Copilot and most agents; for Claude Code, add `@AGENTS.md` to the
 app's `CLAUDE.md`. Edit it to fit the app.
 
+Without a local project (claude.ai in the browser, or just to read the docs), two remote options need
+no setup on our side; they read the docs and code but can't install items:
+
+- [GitMCP](https://gitmcp.io), a free third-party service that serves a public repository as a remote
+  MCP server and reads `llms.txt` first: add `https://gitmcp.io/Eldenn/coreloom-ui` as a custom
+  connector (claude.ai: Settings → Connectors), or
+  `claude mcp add --transport http coreloom https://gitmcp.io/Eldenn/coreloom-ui` in Claude Code.
+- GitHub's own MCP server, if your assistant already has it: point it at `Eldenn/coreloom-ui`
+  (guides in `stories/guidelines/`, usage in `stories/`, items in `registry.json`).
+
 ## What's in the repo
 
 | Path                 | What                                                                                                 |
