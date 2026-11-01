@@ -964,6 +964,64 @@
       ]
     },
     {
+      "name": "sparkline",
+      "type": "registry:ui",
+      "title": "Sparkline",
+      "description": "Word-sized trend (line, area or bars) in plain SVG, with a screen-reader summary: for stat cards, table cells and list rows.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/sparkline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "donut-chart",
+      "type": "registry:ui",
+      "title": "Donut chart",
+      "description": "A whole split into a few parts: SVG ring with the total in the middle and a legend with each value and share; small parts fold into Other.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/donut-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "bar-list",
+      "type": "registry:ui",
+      "title": "Bar list",
+      "description": "Ranking as an HTML list: label over a proportional bar, value at the right, optional links and a Show all button past a limit.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/bar-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "gauge",
+      "type": "registry:ui",
+      "title": "Gauge",
+      "description": "One value against its range as an open ring (a meter), with optional warning and critical thresholds stated in words.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/gauge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
@@ -1454,6 +1512,10 @@
         "@coreloom/carousel",
         "@coreloom/drawer",
         "@coreloom/chart",
+        "@coreloom/sparkline",
+        "@coreloom/donut-chart",
+        "@coreloom/bar-list",
+        "@coreloom/gauge",
         "@coreloom/form",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",
@@ -1596,7 +1658,8 @@
         "@coreloom/badge",
         "@coreloom/card",
         "@coreloom/theme-toggle",
-        "@coreloom/command-menu"
+        "@coreloom/command-menu",
+        "@coreloom/sparkline"
       ],
       "files": [
         {
@@ -1783,7 +1846,8 @@
         "@coreloom/i18n",
         "@coreloom/badge",
         "@coreloom/card",
-        "@coreloom/chart"
+        "@coreloom/chart",
+        "@coreloom/sparkline"
       ],
       "files": [
         {
