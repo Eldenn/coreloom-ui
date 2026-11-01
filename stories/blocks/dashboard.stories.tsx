@@ -208,3 +208,76 @@ export const Overview: Story = {
     )
   },
 }
+
+const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'].map((month, i) => ({
+  month,
+  web: 320 + i * 48 + (i % 2) * 30,
+  api: 210 + i * 35,
+  mobile: 90 + i * 22 - (i % 3) * 10,
+  errorRate: [1.8, 1.4, 1.6, 1.1, 0.9, 0.7][i],
+}))
+
+/** Stacked bars: each bar is the month's total, split by platform. */
+export const StackedBars: Story = {
+  render: () => (
+    <div className="max-w-3xl p-6">
+      <ChartCard title="Requests by platform" description="Thousands, May – October 2026">
+        <TrendChart
+          data={months}
+          xKey="month"
+          type="bar"
+          stacked
+          series={[
+            { key: 'web', label: 'Web' },
+            { key: 'api', label: 'API' },
+            { key: 'mobile', label: 'Mobile' },
+          ]}
+          aria-label="Requests by platform per month, stacked, May to October 2026"
+        />
+      </ChartCard>
+    </div>
+  ),
+}
+
+/** Stacked to 100 %: how the mix changes, whatever the total. */
+export const PercentArea: Story = {
+  render: () => (
+    <div className="max-w-3xl p-6">
+      <ChartCard title="Platform mix" description="Share of requests, May – October 2026">
+        <TrendChart
+          data={months}
+          xKey="month"
+          type="area"
+          stacked="percent"
+          series={[
+            { key: 'web', label: 'Web' },
+            { key: 'api', label: 'API' },
+            { key: 'mobile', label: 'Mobile' },
+          ]}
+          aria-label="Share of requests by platform per month, May to October 2026"
+        />
+      </ChartCard>
+    </div>
+  ),
+}
+
+/** Combo: request bars on the left axis, the error rate as a line on its own right axis. */
+export const Combo: Story = {
+  render: () => (
+    <div className="max-w-3xl p-6">
+      <ChartCard title="Traffic and errors" description="May – October 2026">
+        <TrendChart
+          data={months}
+          xKey="month"
+          type="bar"
+          series={[
+            { key: 'web', label: 'Requests (k)' },
+            { key: 'errorRate', label: 'Error rate', type: 'line', axis: 'right' },
+          ]}
+          formatSecondaryValue={(v) => `${v.toFixed(1)}\u202f%`}
+          aria-label="Requests per month as bars and error rate as a line, May to October 2026"
+        />
+      </ChartCard>
+    </div>
+  ),
+}
