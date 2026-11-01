@@ -116,7 +116,7 @@ test.describe('Node editor (Components/Workflow/Node editor)', () => {
 
   test('French', async ({ page }) => {
     await open(page, 'components-workflow-node-editor--french', 'fr')
-    await expect(page.getByRole('button', { name: 'Ajouter un nœud' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Ajouter un nœud', exact: true })).toBeVisible()
     await expect(page.getByRole('complementary', { name: 'Réglages du nœud' })).toContainText(
       '« true » va vers',
     )
@@ -216,6 +216,123 @@ test.describe('Node data, expressions and fields (Components/Workflow/Node edito
     await expect(
       p.getByRole('group', { name: 'Row 2' }).getByRole('textbox', { name: 'Key' }),
     ).toBeFocused()
+  })
+})
+
+test.describe('Quick editing (Components/Workflow/Node editor)', () => {
+  test('the “+” after an open output adds a connected node, and focus lands on it', async ({
+    page,
+  }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    await expect(edges(page)).toHaveCount(4)
+    await page.getByRole('button', { name: 'Add a node after Tell sales' }).click()
+    await page.getByPlaceholder('Search nodes…').fill('wait')
+    await page.keyboard.press('Enter')
+    await expect(node(page, 'Wait')).toBeFocused()
+    await expect(edges(page)).toHaveCount(5)
+    await expect(panel(page)).toContainText('Tell sales')
+  })
+
+  test('the “+” on a connection puts a node in between', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    await page
+      .getByRole('button', { name: 'Add a node between New signup and Business email?' })
+      .click()
+    await page.getByPlaceholder('Search nodes…').fill('wait')
+    await page.keyboard.press('Enter')
+    await expect(edges(page)).toHaveCount(5)
+    await expect(
+      page.locator('.react-flow__edge[aria-label="From New signup to Wait"]'),
+    ).toHaveCount(1)
+    await expect(
+      page.locator('.react-flow__edge[aria-label="From Wait to Business email?"]'),
+    ).toHaveCount(1)
+  })
+
+  test('copy and paste a node with the keyboard', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    const email = node(page, 'Welcome email')
+    await email.focus()
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('ControlOrMeta+c')
+    await expect(page.getByText('Node copied.')).toBeAttached()
+    await page.keyboard.press('ControlOrMeta+v')
+    await expect(node(page, 'Welcome email 2')).toBeVisible()
+    await expect(page.getByText('Node pasted.')).toBeAttached()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(node(page, 'Welcome email 2')).toHaveCount(0)
+  })
+
+  test('right-click a node to disable it; D turns it back on', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    const sales = node(page, 'Tell sales')
+    await sales.click({ button: 'right' })
+    await page.getByRole('menuitem', { name: 'Disable' }).click()
+    await expect(sales).toHaveAccessibleName(/Disabled/)
+    await sales.focus()
+    await page.keyboard.press('d')
+    await expect(sales).not.toHaveAccessibleName(/Disabled/)
+    await expect(page.getByText('Tell sales enabled.')).toBeAttached()
+  })
+
+  test('right-click the canvas to add a node there', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    const box = await canvas(page).boundingBox()
+    if (!box) throw new Error('no canvas')
+    await page.mouse.click(box.x + 60, box.y + box.height - 60, { button: 'right' })
+    await page.getByRole('menuitem', { name: 'Add a node here' }).click()
+    await page.getByPlaceholder('Search nodes…').fill('schedule')
+    await page.keyboard.press('Enter')
+    await expect(node(page, 'Schedule')).toBeFocused()
+  })
+
+  test('sample data pinned to the trigger reaches the nodes after it', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--default')
+    await node(page, 'New signup').click()
+    const p = panel(page)
+    await p.getByRole('tab', { name: 'Output' }).click()
+    await p.getByRole('button', { name: 'Add sample data' }).click()
+    const json = p.getByRole('textbox', { name: 'Sample data (JSON)' })
+    await expect(json).toBeFocused()
+    await json.fill('[{ "email": "grace@navy.mil" ')
+    await expect(p.getByRole('button', { name: 'Pin', exact: true })).toBeDisabled()
+    await json.fill('[{ "email": "grace@navy.mil" }]')
+    await p.getByRole('button', { name: 'Pin', exact: true }).click()
+    await expect(node(page, 'New signup')).toHaveAccessibleName(/Pinned data/)
+    await expect(p.getByRole('tabpanel')).toContainText('grace@navy.mil')
+    // Two steps on, through the If: Welcome email's "To" is previewed from the pin.
+    await node(page, 'Welcome email').click()
+    await expect(panel(page)).toContainText('grace@navy.mil')
+    await node(page, 'New signup').click()
+    await panel(page).getByRole('tab', { name: 'Output' }).click()
+    await panel(page).getByRole('button', { name: 'Unpin' }).click()
+    await expect(node(page, 'New signup')).not.toHaveAccessibleName(/Pinned data/)
+  })
+
+  test('a run’s output can be pinned', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    await node(page, 'Enrich company').click()
+    await panel(page).getByRole('tab', { name: 'Output' }).click()
+    await panel(page).getByRole('button', { name: 'Pin this output' }).click()
+    await expect(node(page, 'Enrich company')).toHaveAccessibleName(/Pinned data/)
+  })
+
+  test('drag a field from Input onto a setting', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    const p = panel(page)
+    await p.getByRole('tab', { name: 'Input' }).click()
+    const field = p.getByRole('tabpanel').getByText('status', { exact: true })
+    await field.hover()
+    await page.mouse.down()
+    const tab = await p.getByRole('tab', { name: 'Settings' }).boundingBox()
+    if (!tab) throw new Error('no tab')
+    await page.mouse.move(tab.x + tab.width / 2, tab.y + tab.height / 2, { steps: 6 })
+    const channel = p.getByRole('textbox', { name: 'Channel' })
+    const box = await channel.boundingBox()
+    if (!box) throw new Error('no field')
+    await page.mouse.move(box.x + box.width - 50, box.y + box.height / 2, { steps: 6 })
+    await page.mouse.up()
+    await expect(channel).toHaveValue(/\{\{ status \}\}/)
   })
 })
 
