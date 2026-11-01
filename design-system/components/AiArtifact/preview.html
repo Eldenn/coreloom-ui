@@ -1,0 +1,48 @@
+<!-- @dsCard group="AI" height=760 subtitle="ArtifactLayout · Chat with an ArtifactPanel beside it" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ArtifactPanel || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const v1 = '# Release notes — 0.9\n\nThis release adds a review step to the editor.\n\n## Added\n\n- **Review changes**: accept or reject each passage a model rewrote.';
+      const v2 = '# Release notes — 0.9\n\nCoreloom 0.9 lets people review what a model changed before it lands in their text.\n\n## Added\n\n- **Review changes**: accept or reject each passage a model rewrote, one at a time or all at once.\n- `ai.review: false` turns the review off for an editor.';
+      const initial = { id: 'notes', title: 'Release notes — 0.9', kind: 'markdown', versions: [
+        { id: 'n1', content: v1, label: 'First draft' },
+        { id: 'n2', content: v2, label: 'Warmer intro' } ] };
+
+      function App() {
+        const [open, setOpen] = React.useState(true);
+        const [doc, setDoc] = React.useState(initial);
+        const messages = [
+          { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Draft the release notes for 0.9.' }] },
+          { id: 'a1', role: 'assistant', parts: [
+            { type: 'text', text: 'Here is a draft in the house style.', state: 'done' },
+            { type: 'tool-writeDocument', toolCallId: 'w1', state: 'output-available', input: {}, output: {} } ] },
+        ];
+        const tools = { writeDocument: { display: 'inline', render: () =>
+          h(UI.ArtifactCard, { title: doc.title, kind: doc.kind, versions: doc.versions.length, active: open, onOpen: () => setOpen(true) }) } };
+        const panel = h(UI.ArtifactPanel, { artifact: doc, onClose: () => setOpen(false),
+          onRestore: (v) => setDoc((d) => ({ ...d, versions: [...d.versions, { id: 'n' + (d.versions.length + 1), content: v.content, label: 'Restored' }] })) });
+        return h('div', { style: { height: 712 }, className: 'overflow-hidden rounded-lg border border-border bg-background' },
+          h(UI.ArtifactLayout, { open, panel },
+            h(UI.Chat, { messages, tools, onSend: () => {}, autoFocus: false })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(App)));
+    }
+    render();
+  </script>
+</body>
+</html>
