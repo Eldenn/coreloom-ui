@@ -84,6 +84,7 @@ const COMPONENTS = [
   'Chat',
   'ConversationList',
   'ChatWidget',
+  'ArtifactPanel',
   'AgentList',
   'AgentEditor',
   'RunList',
