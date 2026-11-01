@@ -13,8 +13,27 @@ registry attached, so a project can pin one by pointing the namespace there in
 `components.json` (dependencies between items resolve through the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.8.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.9.0/{name}.json" }
 ```
+
+## [0.9.0] - 2026-11-01
+
+### Added
+
+- Generative UI: `Chat` (and `ChatWidget`, `ChatMessages`, `ChatMessage`) take `tools`, a map from
+  tool name to `{ render, label, display }`, so a tool call shows as your own component (a weather
+  card, a list of results) instead of JSON. `render` gets the call in every state, narrowed by
+  `state` (`output` once it answers, a partial `input` while it streams, `respond(approved)` while it
+  asks); returning `undefined` keeps the usual card for that state. `display: 'inline'` draws the
+  component in place of the card, as a group named after the tool and busy until it answers.
+- `ToolCall`: a `tool` prop takes the same object. New types `ToolComponent`, `ToolComponents`
+  (typed from your tools: `ToolComponents<InferUITools<typeof tools>>`), `ToolRenderProps` and
+  `ToolRenderState`.
+- A Generative UI guide.
+
+### Fixed
+
+- `ToolCall`: after Allow or Deny, focus moves to the card instead of being lost with the buttons.
 
 ## [0.8.0] - 2026-10-31
 
@@ -279,6 +298,7 @@ registry attached, so a project can pin one by pointing the namespace there in
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
 [0.8.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.8.0
 [0.7.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.7.0
 [0.6.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.6.0
