@@ -2,7 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { NodeEditor } from '@/components/ui/node-editor'
 
-import { automationKinds, signupWorkflow, unfinishedWorkflow } from '../blocks/workflow-data'
+import {
+  automationKinds,
+  demoCredentials,
+  fakeRunNode,
+  signupRuns,
+  signupWorkflow,
+  unfinishedWorkflow,
+} from '../blocks/workflow-data'
 
 const meta = {
   title: 'Components/Workflow/Node editor',
@@ -12,11 +19,11 @@ const meta = {
     docs: {
       description: {
         component:
-          "A canvas of nodes joined by connections, n8n-style, on React Flow. The app declares its `kinds` of node (ports, settings, icon, a summary line); the editor lets people add them from a searchable list, drag them, draw connections from an output to an input, and configure the selected node in the side panel — which also lists and makes connections, so everything works from the keyboard. Undo and redo, tidy up, zoom. Pass `runs` to show what your app's run reports for each node. Nothing runs in the editor.",
+          "A canvas of nodes joined by connections, n8n-style, on React Flow. The app declares its `kinds` of node (ports, settings, icon, a summary line); the editor lets people add them from a searchable list, drag them, draw connections from an output to an input, and configure the selected node in the side panel — which also lists and makes connections, so everything works from the keyboard. Undo and redo, tidy up, zoom. Pass `runs` to show what your app's run reports for each node — with each node's `input` and `output`, the panel shows them and offers their fields in `{{ }}` expressions, with a preview. `onRunNode` adds “Test node”; `credentials` feed credential fields. Nothing runs in the editor.",
       },
     },
   },
-  args: { kinds: automationKinds, defaultValue: signupWorkflow },
+  args: { kinds: automationKinds, defaultValue: signupWorkflow, credentials: demoCredentials },
   argTypes: {
     readOnly: { control: 'boolean' },
     inspector: { control: 'boolean' },
@@ -25,6 +32,8 @@ const meta = {
     kinds: { control: 'object' },
     defaultValue: { control: 'object' },
     runs: { control: 'object' },
+    credentials: { control: 'object' },
+    variables: { control: 'object' },
   },
 } satisfies Meta<typeof NodeEditor>
 export default meta
@@ -57,6 +66,36 @@ export const Failed: Story = {
       webhook: { status: 'success', message: '1 item' },
       if: { status: 'success', message: 'true' },
       http: { status: 'error', message: '404 Not found' },
+    },
+  },
+}
+
+/**
+ * After a run with data: the selected node's message uses `{{ company.name }}` from the node before
+ * it, and the panel previews the result. Input and Output show what the node received and gave.
+ */
+export const WithData: Story = {
+  args: { runs: signupRuns, defaultSelectedId: 'chat' },
+}
+
+/** “Test node” runs the selected node alone through `onRunNode`, then shows its output. */
+export const TestNode: Story = {
+  args: {
+    runs: { webhook: signupRuns.webhook, if: signupRuns.if },
+    defaultSelectedId: 'http',
+    onRunNode: fakeRunNode,
+  },
+}
+
+/** Richer settings: a credential, key/value rows and a JSON body. */
+export const Fields: Story = {
+  args: {
+    defaultSelectedId: 'http',
+    defaultValue: {
+      ...signupWorkflow,
+      nodes: signupWorkflow.nodes.map((n) =>
+        n.id === 'http' ? { ...n, data: { ...n.data, method: 'POST', body: '{ "domain": ' } } : n,
+      ),
     },
   },
 }

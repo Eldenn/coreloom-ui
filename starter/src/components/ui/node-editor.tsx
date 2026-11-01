@@ -37,6 +37,7 @@ import {
   MaximizeIcon,
   MinusIcon,
   NetworkIcon,
+  PlayIcon,
   PlusIcon,
   Redo2Icon,
   Trash2Icon,
@@ -59,6 +60,21 @@ import {
 } from '@/components/ui/command'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  CodeControl,
+  ConditionsControl,
+  CredentialControl,
+  dataPaths,
+  DataView,
+  ExpressionInput,
+  type ExpressionScope,
+  type ExpressionVariable,
+  jsonError,
+  KeyValueControl,
+  type NodeCredential,
+  NodeFieldsContext,
+  type NodeFieldsEnv,
+} from '@/components/ui/node-editor-fields'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
@@ -68,6 +84,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -104,15 +121,31 @@ interface NodeFieldBase {
   required?: boolean
 }
 
-/** One setting of a node, drawn in the panel. Values live in the node's `data` under `name`. */
+/**
+ * One setting of a node, drawn in the panel. Values live in the node's `data` under `name`. Text
+ * fields take `{{ path }}` expressions unless `expression: false`.
+ */
 type NodeField =
-  | (NodeFieldBase & { type: 'text'; placeholder?: string })
-  | (NodeFieldBase & { type: 'textarea'; placeholder?: string; rows?: number })
+  | (NodeFieldBase & { type: 'text'; placeholder?: string; expression?: boolean })
+  | (NodeFieldBase & {
+      type: 'textarea'
+      placeholder?: string
+      rows?: number
+      expression?: boolean
+    })
   | (NodeFieldBase & { type: 'number'; min?: number; max?: number; step?: number })
   | (NodeFieldBase & { type: 'select'; options: NodeFieldOption[]; placeholder?: string })
   | (NodeFieldBase & { type: 'switch' })
   /** A list of short strings (`string[]`), typed as tags. */
   | (NodeFieldBase & { type: 'list'; placeholder?: string })
+  /** Rules matched all or any: `{ combinator: 'and' | 'or', rules: [{ left, operator, right }] }`. */
+  | (NodeFieldBase & { type: 'conditions' })
+  /** Rows of `{ key, value }` (headers, parameters); values take expressions. */
+  | (NodeFieldBase & { type: 'keyValue'; keyPlaceholder?: string; valuePlaceholder?: string })
+  /** JSON or code as text, monospace. `language: 'json'` (the default) checks it parses. */
+  | (NodeFieldBase & { type: 'code'; language?: string; rows?: number; placeholder?: string })
+  /** The id of one of the app's `credentials` of `credentialType`. */
+  | (NodeFieldBase & { type: 'credential'; credentialType: string })
   | (NodeFieldBase & { type: 'custom'; render: (props: NodeFieldRenderProps) => React.ReactNode })
 
 /** A kind of node the app offers: how it looks, its ports and its settings. */
@@ -173,11 +206,31 @@ interface NodeRun {
   status: NodeRunStatus
   /** A short result or error ("3 items", "Timed out"). */
   message?: string
+  /** What the node received: a list of items or one value. Shown under Input. */
+  input?: unknown
+  /** What it gave. Shown under Output; its fields are offered in the `{{ }}` of the nodes after it. */
+  output?: unknown
+}
+
+/** What `onRunNode` gets: the node, and the input it would receive (from the last run or test). */
+interface NodeTestRequest {
+  node: WorkflowNode
+  input: unknown
+  workflow: Workflow
+}
+
+/** What a test of one node gives back. */
+interface NodeTestResult {
+  /** Default: success. */
+  status?: 'success' | 'error'
+  output?: unknown
+  message?: string
 }
 
 /** Something to fix before the workflow can run. `validateWorkflow` returns these. */
 type WorkflowIssue =
   | { nodeId: string; code: 'required'; field: string }
+  | { nodeId: string; code: 'invalid'; field: string }
   | { nodeId: string; code: 'unconnectedInput' }
   | { nodeId: string; code: 'unconnectedOutput'; port: string }
   | { nodeId: string; code: 'tooMany'; max: number }
@@ -467,6 +520,29 @@ const isEmptyValue = (v: unknown) =>
   (typeof v === 'string' && !v.trim()) ||
   (Array.isArray(v) && v.length === 0)
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** Empty for a field: a conditions field without a rule, key/value rows without a key… */
+function isFieldEmpty(field: NodeField, v: unknown) {
+  if (field.type === 'conditions')
+    return !(
+      isRecord(v) &&
+      Array.isArray(v.rules) &&
+      (v.rules as unknown[]).some((r) => isRecord(r) && typeof r.left === 'string' && r.left.trim())
+    )
+  if (field.type === 'keyValue')
+    return !(
+      Array.isArray(v) &&
+      (v as unknown[]).some((r) => isRecord(r) && typeof r.key === 'string' && r.key.trim())
+    )
+  return isEmptyValue(v)
+}
+
+/** A setting that is there but wrong: JSON that doesn't parse. */
+const isFieldInvalid = (field: NodeField, v: unknown) =>
+  field.type === 'code' && (field.language ?? 'json') === 'json' && jsonError(v) !== null
+
 /**
  * What to fix before running: required settings left empty, nodes nothing leads to, named outputs
  * (routes) left unconnected, more nodes of a kind than its `max`.
@@ -479,8 +555,10 @@ function validateWorkflow(wf: Workflow, kinds: readonly NodeKind[]): WorkflowIss
     const kind = map.get(n.type)
     const data = n.data ?? EMPTY
     for (const f of kind?.fields ?? [])
-      if (f.required && isEmptyValue(data[f.name]))
+      if (f.required && isFieldEmpty(f, data[f.name]))
         issues.push({ nodeId: n.id, code: 'required', field: f.name })
+      else if (isFieldInvalid(f, data[f.name]))
+        issues.push({ nodeId: n.id, code: 'invalid', field: f.name })
     const { inputs, outputs } = nodePorts(kind, data)
     if (inputs.length && !wf.edges.some((e) => e.target === n.id))
       issues.push({ nodeId: n.id, code: 'unconnectedInput' })
@@ -811,6 +889,18 @@ function FieldControl({
   }
   switch (field.type) {
     case 'text':
+      if (field.expression !== false)
+        return (
+          <ExpressionInput
+            id={id}
+            value={typeof value === 'string' ? value : ''}
+            placeholder={field.placeholder}
+            readOnly={readOnly}
+            onValueChange={onChange}
+            aria-invalid={aria['aria-invalid']}
+            aria-describedby={describedBy}
+          />
+        )
       return (
         <Input
           id={id}
@@ -825,6 +915,20 @@ function FieldControl({
         />
       )
     case 'textarea':
+      if (field.expression !== false)
+        return (
+          <ExpressionInput
+            id={id}
+            multiline
+            rows={field.rows}
+            value={typeof value === 'string' ? value : ''}
+            placeholder={field.placeholder}
+            readOnly={readOnly}
+            onValueChange={onChange}
+            aria-invalid={aria['aria-invalid']}
+            aria-describedby={describedBy}
+          />
+        )
       return (
         <Textarea
           id={id}
@@ -904,6 +1008,57 @@ function FieldControl({
           {...aria}
         />
       )
+    case 'conditions':
+      return (
+        <ConditionsControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          describedBy={describedBy}
+        />
+      )
+    case 'keyValue':
+      return (
+        <KeyValueControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          describedBy={describedBy}
+          keyPlaceholder={field.keyPlaceholder}
+          valuePlaceholder={field.valuePlaceholder}
+        />
+      )
+    case 'code':
+      return (
+        <CodeControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          invalid={invalid}
+          describedBy={describedBy}
+          rows={field.rows}
+          placeholder={field.placeholder}
+        />
+      )
+    case 'credential':
+      return (
+        <CredentialControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          invalid={invalid}
+          describedBy={describedBy}
+          credentialType={field.credentialType}
+        />
+      )
     case 'custom':
       return field.render({ id, labelId, value, onChange, invalid, describedBy, data })
   }
@@ -920,17 +1075,23 @@ function NodeInspector({
   onChange,
   onDelete,
   onDuplicate,
+  input,
+  onTest,
   className,
 }: {
   workflow: Workflow
   node: WorkflowNode
   kinds: readonly NodeKind[]
-  run?: NodeRun
+  run?: NodeRun | undefined
   issues: WorkflowIssue[]
   readOnly: boolean
   onChange: (next: Workflow, announce?: string) => void
   onDelete: () => void
   onDuplicate?: () => void
+  /** What the node receives (its last run's input, or the output of the node before it). */
+  input?: unknown
+  /** Runs this node alone; shown as "Test node". */
+  onTest?: (() => Promise<unknown>) | undefined
   className?: string
 }) {
   const t = useCoreloomI18n().messages.nodeEditor
@@ -947,7 +1108,9 @@ function NodeInspector({
   const Icon = kind?.icon ?? WorkflowIcon
   const Run = run ? RUN[run.status] : null
   const issueText = useIssueText(kinds)
-  const nodeIssues = issues.filter((i) => i.nodeId === node.id && i.code !== 'required')
+  const nodeIssues = issues.filter(
+    (i) => i.nodeId === node.id && i.code !== 'required' && i.code !== 'invalid',
+  )
   const outgoing = (port: string) =>
     workflow.edges.filter((e) => e.source === node.id && sourcePortOf(e, map, workflow) === port)
   const incoming = workflow.edges.filter((e) => e.target === node.id)
@@ -958,9 +1121,12 @@ function NodeInspector({
   const atMax =
     kind?.max !== undefined && workflow.nodes.filter((n) => n.type === node.type).length >= kind.max
   const removable = kind?.removable !== false
+  const [tab, setTab] = React.useState('settings')
+  const testing = run?.status === 'running'
+  const output = run?.output
 
   return (
-    <div data-slot="node-inspector" className={cn('flex min-w-0 flex-col gap-5 p-4', className)}>
+    <div data-slot="node-inspector" className={cn('flex min-w-0 flex-col gap-4 p-4', className)}>
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden
@@ -976,202 +1142,271 @@ function NodeInspector({
         </div>
       </div>
 
-      {Run && run && (
-        <p className={cn('m-0 flex items-center gap-1.5 text-[12.5px]', Run.className)}>
-          <Run.icon aria-hidden className={cn('size-3.5', Run.spin && 'animate-spin')} />
-          {t.run[run.status]}
-          {run.message ? ` · ${run.message}` : ''}
-        </p>
-      )}
-
-      {nodeIssues.length > 0 && (
-        <ul className="m-0 flex list-none flex-col gap-1 rounded-md bg-warning-subtle p-2.5 text-[12.5px] text-foreground">
-          {nodeIssues.map((i) => (
-            <li key={`${i.code}-${'port' in i ? i.port : ''}`} className="flex items-start gap-1.5">
-              <CircleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-warning" />
-              {issueText(i, workflow)}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <FieldGroup className="gap-4">
-        <Field>
-          <FieldLabel htmlFor={`${baseId}-name`}>{t.name}</FieldLabel>
-          <Input
-            id={`${baseId}-name`}
-            value={node.name ?? ''}
-            placeholder={kind?.label}
-            readOnly={readOnly}
-            autoComplete="off"
-            onChange={(e) => {
-              onChange(updateNode(workflow, node.id, { name: e.target.value || undefined }, kinds))
-            }}
-          />
-        </Field>
-        {(kind?.fields ?? []).map((f) => {
-          const id = `${baseId}-f-${f.name}`
-          const missing = f.required === true && isEmptyValue(data[f.name])
-          const described =
-            [f.description ? `${id}-desc` : '', missing ? `${id}-err` : '']
-              .filter(Boolean)
-              .join(' ') || undefined
-          const control = (
-            <FieldControl
-              field={f}
-              id={id}
-              labelId={`${id}-label`}
-              describedBy={described}
-              invalid={missing}
-              data={data}
-              readOnly={readOnly}
-              onChange={(v) => {
-                onChange(updateNode(workflow, node.id, { data: { ...data, [f.name]: v } }, kinds))
-              }}
-            />
-          )
-          return f.type === 'switch' ? (
-            <Field key={f.name} orientation="horizontal">
-              {control}
-              <div className="flex flex-col gap-0.5">
-                <FieldLabel id={`${id}-label`} htmlFor={id}>
-                  {f.label}
-                </FieldLabel>
-                {f.description && (
-                  <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
-                )}
-              </div>
-            </Field>
+      {(Run && run) || onTest ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {Run && run ? (
+            <p className={cn('m-0 flex items-center gap-1.5 text-[12.5px]', Run.className)}>
+              <Run.icon aria-hidden className={cn('size-3.5', Run.spin && 'animate-spin')} />
+              {t.run[run.status]}
+              {run.message ? ` · ${run.message}` : ''}
+            </p>
           ) : (
-            <Field key={f.name}>
-              <FieldLabel id={`${id}-label`} htmlFor={id}>
-                {f.label}
-                {f.required && <span className="sr-only"> ({t.requiredMark})</span>}
-              </FieldLabel>
-              {control}
-              {f.description && (
-                <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
-              )}
-              {missing && (
-                <p id={`${id}-err`} className="m-0 text-[11px] text-destructive">
-                  {t.required}
-                </p>
-              )}
-            </Field>
-          )
-        })}
-      </FieldGroup>
-
-      <div className="flex flex-col gap-3">
-        <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-          {t.connections}
-        </p>
-        {inputs.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <p className="m-0 text-[12.5px] font-medium text-fg-secondary">{t.comesFrom}</p>
-            {incoming.length ? (
-              <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-                {incoming.map((e) => (
-                  <ConnectionChip
-                    key={e.id}
-                    label={nameOf(e.source)}
-                    removeLabel={t.removeConnection(nameOf(e.source), name)}
-                    readOnly={readOnly}
-                    onRemove={() => {
-                      onChange(
-                        removeEdges(workflow, [e.id]),
-                        t.announce.disconnected(nameOf(e.source), name),
-                      )
-                    }}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
-            )}
-          </div>
-        )}
-        {outputs.map((p) => {
-          const out = outgoing(p.id)
-          const options = targets.filter((n) => !out.some((e) => e.target === n.id))
-          const selectId = `${baseId}-to-${p.id}`
-          return (
-            <div key={p.id} className="flex flex-col gap-1.5">
-              <p
-                id={`${selectId}-label`}
-                className="m-0 text-[12.5px] font-medium text-fg-secondary"
-              >
-                {outputs.length > 1 ? t.outputTo(p.label ?? p.id) : t.goesTo}
-              </p>
-              {out.length > 0 && (
-                <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-                  {out.map((e) => (
-                    <ConnectionChip
-                      key={e.id}
-                      label={nameOf(e.target)}
-                      removeLabel={t.removeConnection(name, nameOf(e.target))}
-                      readOnly={readOnly}
-                      onRemove={() => {
-                        onChange(
-                          removeEdges(workflow, [e.id]),
-                          t.announce.disconnected(name, nameOf(e.target)),
-                        )
-                      }}
-                    />
-                  ))}
-                </ul>
-              )}
-              {!readOnly && options.length > 0 && (
-                <Select
-                  value=""
-                  onValueChange={(target) => {
-                    onChange(
-                      connectNodes(workflow, { source: node.id, sourcePort: p.id, target }, kinds),
-                      t.announce.connected(name, nameOf(target)),
-                    )
-                  }}
-                >
-                  <SelectTrigger
-                    size="sm"
-                    className="w-full"
-                    aria-labelledby={`${selectId}-label ${selectId}`}
-                    id={selectId}
-                  >
-                    <SelectValue placeholder={t.connectTo} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((n) => (
-                      <SelectItem key={n.id} value={n.id}>
-                        {displayName(n, map.get(n.type))}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {readOnly && out.length === 0 && (
-                <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {!readOnly && (
-        <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
-          {onDuplicate && (
-            <Button variant="outline" size="sm" disabled={atMax} onClick={onDuplicate}>
-              <CopyIcon aria-hidden />
-              {t.duplicate}
-            </Button>
+            <span />
           )}
-          {removable && (
-            <Button variant="destructive" size="sm" onClick={onDelete}>
-              <Trash2Icon aria-hidden />
-              {t.remove}
+          {onTest && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={testing}
+              aria-busy={testing || undefined}
+              onClick={() => {
+                void onTest().then(() => {
+                  setTab('output')
+                })
+              }}
+            >
+              {testing ? (
+                <Loader2Icon aria-hidden className="animate-spin" />
+              ) : (
+                <PlayIcon aria-hidden />
+              )}
+              {testing ? t.testing : t.test}
             </Button>
           )}
         </div>
-      )}
+      ) : null}
+
+      <Tabs value={tab} onValueChange={setTab} className="gap-4">
+        <TabsList
+          variant="line"
+          className="w-full justify-start gap-4 border-b border-border-subtle"
+        >
+          <TabsTrigger value="settings">{t.settingsTab}</TabsTrigger>
+          <TabsTrigger value="input">{t.inputTab}</TabsTrigger>
+          <TabsTrigger value="output">{t.outputTab}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="input" className="outline-none">
+          {input === undefined ? (
+            <p className="m-0 text-[12.5px] text-muted-foreground">
+              {inputs.length ? t.noInput : t.noInputTrigger}
+            </p>
+          ) : (
+            <DataView value={input} />
+          )}
+        </TabsContent>
+        <TabsContent value="output" className="outline-none">
+          {output === undefined ? (
+            <p className="m-0 text-[12.5px] text-muted-foreground">
+              {onTest ? t.noOutputTest : t.noOutput}
+            </p>
+          ) : (
+            <DataView value={output} />
+          )}
+        </TabsContent>
+        <TabsContent value="settings" className="flex flex-col gap-5 outline-none">
+          {nodeIssues.length > 0 && (
+            <ul className="m-0 flex list-none flex-col gap-1 rounded-md bg-warning-subtle p-2.5 text-[12.5px] text-foreground">
+              {nodeIssues.map((i) => (
+                <li
+                  key={`${i.code}-${'port' in i ? i.port : ''}`}
+                  className="flex items-start gap-1.5"
+                >
+                  <CircleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-warning" />
+                  {issueText(i, workflow)}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <FieldGroup className="gap-4">
+            <Field>
+              <FieldLabel htmlFor={`${baseId}-name`}>{t.name}</FieldLabel>
+              <Input
+                id={`${baseId}-name`}
+                value={node.name ?? ''}
+                placeholder={kind?.label}
+                readOnly={readOnly}
+                autoComplete="off"
+                onChange={(e) => {
+                  onChange(
+                    updateNode(workflow, node.id, { name: e.target.value || undefined }, kinds),
+                  )
+                }}
+              />
+            </Field>
+            {(kind?.fields ?? []).map((f) => {
+              const id = `${baseId}-f-${f.name}`
+              const missing = f.required === true && isFieldEmpty(f, data[f.name])
+              const wrong = !missing && isFieldInvalid(f, data[f.name])
+              const grouped = f.type === 'conditions' || f.type === 'keyValue'
+              const described =
+                [f.description ? `${id}-desc` : '', missing || wrong ? `${id}-err` : '']
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              const control = (
+                <FieldControl
+                  field={f}
+                  id={id}
+                  labelId={`${id}-label`}
+                  describedBy={described}
+                  invalid={missing || wrong}
+                  data={data}
+                  readOnly={readOnly}
+                  onChange={(v) => {
+                    onChange(
+                      updateNode(workflow, node.id, { data: { ...data, [f.name]: v } }, kinds),
+                    )
+                  }}
+                />
+              )
+              return f.type === 'switch' ? (
+                <Field key={f.name} orientation="horizontal">
+                  {control}
+                  <div className="flex flex-col gap-0.5">
+                    <FieldLabel id={`${id}-label`} htmlFor={id}>
+                      {f.label}
+                    </FieldLabel>
+                    {f.description && (
+                      <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
+                    )}
+                  </div>
+                </Field>
+              ) : (
+                <Field key={f.name}>
+                  <FieldLabel id={`${id}-label`} htmlFor={grouped ? undefined : id}>
+                    {f.label}
+                    {f.required && <span className="sr-only"> ({t.requiredMark})</span>}
+                  </FieldLabel>
+                  {control}
+                  {f.description && (
+                    <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
+                  )}
+                  {missing || wrong ? (
+                    <p id={`${id}-err`} className="m-0 text-[11px] text-destructive">
+                      {missing ? t.required : t.invalidJson}
+                    </p>
+                  ) : null}
+                </Field>
+              )
+            })}
+          </FieldGroup>
+
+          <div className="flex flex-col gap-3">
+            <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+              {t.connections}
+            </p>
+            {inputs.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <p className="m-0 text-[12.5px] font-medium text-fg-secondary">{t.comesFrom}</p>
+                {incoming.length ? (
+                  <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                    {incoming.map((e) => (
+                      <ConnectionChip
+                        key={e.id}
+                        label={nameOf(e.source)}
+                        removeLabel={t.removeConnection(nameOf(e.source), name)}
+                        readOnly={readOnly}
+                        onRemove={() => {
+                          onChange(
+                            removeEdges(workflow, [e.id]),
+                            t.announce.disconnected(nameOf(e.source), name),
+                          )
+                        }}
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
+                )}
+              </div>
+            )}
+            {outputs.map((p) => {
+              const out = outgoing(p.id)
+              const options = targets.filter((n) => !out.some((e) => e.target === n.id))
+              const selectId = `${baseId}-to-${p.id}`
+              return (
+                <div key={p.id} className="flex flex-col gap-1.5">
+                  <p
+                    id={`${selectId}-label`}
+                    className="m-0 text-[12.5px] font-medium text-fg-secondary"
+                  >
+                    {outputs.length > 1 ? t.outputTo(p.label ?? p.id) : t.goesTo}
+                  </p>
+                  {out.length > 0 && (
+                    <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                      {out.map((e) => (
+                        <ConnectionChip
+                          key={e.id}
+                          label={nameOf(e.target)}
+                          removeLabel={t.removeConnection(name, nameOf(e.target))}
+                          readOnly={readOnly}
+                          onRemove={() => {
+                            onChange(
+                              removeEdges(workflow, [e.id]),
+                              t.announce.disconnected(name, nameOf(e.target)),
+                            )
+                          }}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                  {!readOnly && options.length > 0 && (
+                    <Select
+                      value=""
+                      onValueChange={(target) => {
+                        onChange(
+                          connectNodes(
+                            workflow,
+                            { source: node.id, sourcePort: p.id, target },
+                            kinds,
+                          ),
+                          t.announce.connected(name, nameOf(target)),
+                        )
+                      }}
+                    >
+                      <SelectTrigger
+                        size="sm"
+                        className="w-full"
+                        aria-labelledby={`${selectId}-label ${selectId}`}
+                        id={selectId}
+                      >
+                        <SelectValue placeholder={t.connectTo} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {options.map((n) => (
+                          <SelectItem key={n.id} value={n.id}>
+                            {displayName(n, map.get(n.type))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {readOnly && out.length === 0 && (
+                    <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {!readOnly && (
+            <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
+              {onDuplicate && (
+                <Button variant="outline" size="sm" disabled={atMax} onClick={onDuplicate}>
+                  <CopyIcon aria-hidden />
+                  {t.duplicate}
+                </Button>
+              )}
+              {removable && (
+                <Button variant="destructive" size="sm" onClick={onDelete}>
+                  <Trash2Icon aria-hidden />
+                  {t.remove}
+                </Button>
+              )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
@@ -1216,6 +1451,8 @@ function useIssueText(kinds: readonly NodeKind[]) {
       switch (issue.code) {
         case 'required':
           return t.required(kind?.fields?.find((f) => f.name === issue.field)?.label ?? issue.field)
+        case 'invalid':
+          return t.invalid(kind?.fields?.find((f) => f.name === issue.field)?.label ?? issue.field)
         case 'unconnectedInput':
           return t.unconnectedInput
         case 'unconnectedOutput': {
@@ -1261,7 +1498,49 @@ interface NodeEditorProps {
   height?: number
   /** Names the canvas for screen readers (default: "Workflow"). */
   label?: string
+  /**
+   * Runs one node in your app with the input it would get, for "Test node". Its result shows under
+   * Output and feeds the `{{ }}` suggestions of the nodes after it. Without it, no "Test node".
+   */
+  onRunNode?: (request: NodeTestRequest) => Promise<NodeTestResult>
+  /** Values every node's expressions can use (`{{ topic }}`), with a sample for the preview. */
+  variables?: ExpressionVariable[]
+  /** The saved credentials `credential` fields offer (id and name only — never secrets). */
+  credentials?: NodeCredential[]
+  /** "New credential": your app asks for it (a dialog of its own) and resolves with what it saved. */
+  onCreateCredential?: (type: string) => Promise<NodeCredential | undefined>
   className?: string
+}
+
+const NO_VARIABLES: ExpressionVariable[] = []
+const NO_CREDENTIALS: NodeCredential[] = []
+
+/** The nodes that lead to `id`, nearest first. */
+function ancestors(wf: Workflow, id: string) {
+  const seen = new Set<string>([id])
+  const out: string[] = []
+  let frontier = [id]
+  while (frontier.length) {
+    const next: string[] = []
+    for (const f of frontier)
+      for (const e of wf.edges)
+        if (e.target === f && !seen.has(e.source)) {
+          seen.add(e.source)
+          out.push(e.source)
+          next.push(e.source)
+        }
+    frontier = next
+  }
+  return out
+}
+
+/** What a node receives: its run's input, or else the output of the first node before it that has one. */
+function nodeInput(wf: Workflow, runs: Partial<Record<string, NodeRun>>, id: string): unknown {
+  const own = runs[id]?.input
+  if (own !== undefined) return own
+  for (const e of wf.edges)
+    if (e.target === id && runs[e.source]?.output !== undefined) return runs[e.source]?.output
+  return undefined
 }
 
 function NodeEditorInner({
@@ -1279,6 +1558,10 @@ function NodeEditorInner({
   actions,
   height = 560,
   label,
+  onRunNode,
+  variables = NO_VARIABLES,
+  credentials = NO_CREDENTIALS,
+  onCreateCredential,
   className,
 }: NodeEditorProps) {
   const t = useCoreloomI18n().messages.nodeEditor
@@ -1291,6 +1574,14 @@ function NodeEditorInner({
   const [past, setPast] = React.useState<Workflow[]>([])
   const [future, setFuture] = React.useState<Workflow[]>([])
   const [message, setMessage] = React.useState('')
+  // Results of "Test node", over the app's `runs` until the app reports a new run.
+  const [tests, setTests] = React.useState<Partial<Record<string, NodeRun>>>({})
+  const [testsFor, setTestsFor] = React.useState(runs)
+  if (testsFor !== runs) {
+    setTestsFor(runs)
+    setTests({})
+  }
+  const allRuns = React.useMemo(() => ({ ...runs, ...tests }), [runs, tests])
 
   const [selState, setSelState] = React.useState<string | null>(defaultSelectedId)
   const selected = selectedProp !== undefined ? selectedProp : selState
@@ -1392,7 +1683,7 @@ function NodeEditorInner({
         const nodeIssues = issues
           .filter((i) => i.nodeId === n.id)
           .map((i) => issueText(i, workflow))
-        const run = runs[n.id]
+        const run = allRuns[n.id]
         const name = displayName(n, kind)
         return {
           id: n.id,
@@ -1413,15 +1704,15 @@ function NodeEditorInner({
             .join(', '),
         }
       }),
-    [workflow, map, issues, issueText, runs, readOnly, selected, multi, measured, t],
+    [workflow, map, issues, issueText, allRuns, readOnly, selected, multi, measured, t],
   )
 
   const rfEdges = React.useMemo<Edge[]>(
     () =>
       workflow.edges.map((e) => {
         const active =
-          runs[e.source]?.status === 'success' &&
-          (runs[e.target]?.status === 'running' || runs[e.target]?.status === 'success')
+          allRuns[e.source]?.status === 'success' &&
+          (allRuns[e.target]?.status === 'running' || allRuns[e.target]?.status === 'success')
         return {
           id: e.id,
           type: 'flow',
@@ -1431,7 +1722,8 @@ function NodeEditorInner({
           targetHandle: targetPortOf(e, map, workflow) ?? null,
           selected: selectedEdges.has(e.id),
           deletable: !readOnly,
-          animated: runs[e.target]?.status === 'running' && runs[e.source]?.status === 'success',
+          animated:
+            allRuns[e.target]?.status === 'running' && allRuns[e.source]?.status === 'success',
           className: active ? 'is-active' : undefined,
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -1443,7 +1735,7 @@ function NodeEditorInner({
         }
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nameOf reads workflow, listed
-    [workflow, map, runs, selectedEdges, readOnly, t],
+    [workflow, map, allRuns, selectedEdges, readOnly, t],
   )
 
   const dragStart = React.useRef<Workflow | null>(null)
@@ -1588,6 +1880,73 @@ function NodeEditorInner({
   }, [])
 
   const selectedNode = selected !== null ? workflow.nodes.find((n) => n.id === selected) : undefined
+  const selectedInput = selectedNode ? nodeInput(workflow, allRuns, selectedNode.id) : undefined
+
+  // What the open node's fields can reach: its input's fields, the app's variables, and the output
+  // of every node that leads to it.
+  const fieldsEnv = React.useMemo<NodeFieldsEnv>(() => {
+    const suggestions: ExpressionVariable[] = []
+    const seen = new Set<string>()
+    const push = (v: ExpressionVariable) => {
+      if (seen.has(v.path)) return
+      seen.add(v.path)
+      suggestions.push(v)
+    }
+    const nodes: Record<string, unknown> = {}
+    for (const [id, r] of Object.entries(allRuns)) if (r?.output !== undefined) nodes[id] = r.output
+    if (selectedNode) {
+      for (const p of dataPaths(selectedInput)) push({ ...p, group: t.inputGroup })
+      for (const v of variables) push({ group: t.variablesGroup, ...v })
+      for (const id of ancestors(workflow, selectedNode.id)) {
+        const n = workflow.nodes.find((x) => x.id === id)
+        if (!n || nodes[id] === undefined) continue
+        const group = displayName(n, map.get(n.type))
+        for (const p of dataPaths(nodes[id], 40))
+          push({ ...p, path: `$node.${id}.${p.path}`, group })
+      }
+    }
+    const vars: Record<string, unknown> = {}
+    for (const v of variables) if (v.sample !== undefined) vars[v.path] = v.sample
+    const scope: ExpressionScope | null =
+      selectedInput !== undefined || Object.keys(vars).length || Object.keys(nodes).length
+        ? { input: selectedInput, nodes, variables: vars }
+        : null
+    return {
+      suggestions,
+      scope,
+      credentials,
+      onCreateCredential,
+      announce: setMessage,
+    }
+  }, [
+    allRuns,
+    selectedNode,
+    selectedInput,
+    variables,
+    workflow,
+    map,
+    credentials,
+    onCreateCredential,
+    t,
+  ])
+
+  const testNode = async (node: WorkflowNode) => {
+    if (!onRunNode) return
+    const input = nodeInput(workflow, allRuns, node.id)
+    const name = nameOf(node.id)
+    setTests((prev) => ({ ...prev, [node.id]: { status: 'running', input } }))
+    let run: NodeRun
+    try {
+      const r = await onRunNode({ node, input, workflow })
+      run = { status: r.status ?? 'success', input }
+      if (r.output !== undefined) run.output = r.output
+      if (r.message !== undefined) run.message = r.message
+    } catch (e) {
+      run = { status: 'error', input, message: e instanceof Error ? e.message : t.testFailed }
+    }
+    setTests((prev) => ({ ...prev, [node.id]: run }))
+    setMessage(t.announce.tested(name, t.run[run.status]))
+  }
   const issueTotal = new Set(issues.map((i) => i.nodeId)).size
 
   const ariaLabelConfig = React.useMemo(
@@ -1801,31 +2160,35 @@ function NodeEditorInner({
             style={stacked ? undefined : { height }}
           >
             {selectedNode ? (
-              <NodeInspector
-                key={selectedNode.id}
-                workflow={workflow}
-                node={selectedNode}
-                kinds={kinds}
-                run={runs[selectedNode.id]}
-                issues={issues}
-                readOnly={readOnly}
-                onChange={commit}
-                onDuplicate={() => {
-                  const { workflow: next, id } = duplicateNode(workflow, selectedNode.id, kinds)
-                  if (next === workflow) return
-                  commit(next, t.announce.added(nameOf(selectedNode.id)))
-                  select(id)
-                }}
-                onDelete={() => {
-                  const name = nameOf(selectedNode.id)
-                  commit(
-                    removeNodes(workflow, [selectedNode.id], kinds),
-                    t.announce.removedNamed(name),
-                  )
-                  select(null)
-                  keepFocus()
-                }}
-              />
+              <NodeFieldsContext value={fieldsEnv}>
+                <NodeInspector
+                  key={selectedNode.id}
+                  workflow={workflow}
+                  node={selectedNode}
+                  kinds={kinds}
+                  run={allRuns[selectedNode.id]}
+                  input={selectedInput}
+                  onTest={onRunNode ? () => testNode(selectedNode) : undefined}
+                  issues={issues}
+                  readOnly={readOnly}
+                  onChange={commit}
+                  onDuplicate={() => {
+                    const { workflow: next, id } = duplicateNode(workflow, selectedNode.id, kinds)
+                    if (next === workflow) return
+                    commit(next, t.announce.added(nameOf(selectedNode.id)))
+                    select(id)
+                  }}
+                  onDelete={() => {
+                    const name = nameOf(selectedNode.id)
+                    commit(
+                      removeNodes(workflow, [selectedNode.id], kinds),
+                      t.announce.removedNamed(name),
+                    )
+                    select(null)
+                    keepFocus()
+                  }}
+                />
+              </NodeFieldsContext>
             ) : (
               <p className="m-0 px-4 py-10 text-center text-[13px] text-muted-foreground">
                 {t.selectNode}
@@ -1847,6 +2210,7 @@ function NodeEditor(props: NodeEditorProps) {
   )
 }
 
+export { type ExpressionVariable, type NodeCredential } from '@/components/ui/node-editor-fields'
 export {
   addNode,
   canConnect,
@@ -1865,6 +2229,8 @@ export {
   nodePorts,
   type NodeRun,
   type NodeRunStatus,
+  type NodeTestRequest,
+  type NodeTestResult,
   removeEdges,
   removeNodes,
   updateNode,

@@ -13,9 +13,35 @@ import {
 } from 'lucide-react'
 
 import type { LangGraphJSON } from '@/components/ai-agent-builder'
-import type { NodeKind, Workflow } from '@/components/ui/node-editor'
+import type {
+  NodeCredential,
+  NodeKind,
+  NodeRun,
+  NodeTestRequest,
+  NodeTestResult,
+  Workflow,
+} from '@/components/ui/node-editor'
+import { asConditions, keyValuesToObject } from '@/components/ui/node-editor-fields'
 
 const text = (v: unknown) => (typeof v === 'string' ? v : '')
+/** "{{ email }} does not contain @gmail.com" — the first rule, for the card. */
+const firstRule = (v: unknown) => {
+  const r = asConditions(v).rules.at(0)
+  if (!r?.left) return undefined
+  const ops: Record<string, string> = {
+    equals: '=',
+    notEquals: '≠',
+    contains: 'contains',
+    notContains: 'doesn’t contain',
+    startsWith: 'starts with',
+    endsWith: 'ends with',
+    gt: '>',
+    lt: '<',
+    isEmpty: 'is empty',
+    isNotEmpty: 'is set',
+  }
+  return [r.left, ops[r.operator], r.right].filter(Boolean).join(' ')
+}
 
 export const automationKinds: NodeKind[] = [
   {
@@ -73,16 +99,8 @@ export const automationKinds: NodeKind[] = [
       { id: 'true', label: 'true' },
       { id: 'false', label: 'false' },
     ],
-    fields: [
-      {
-        name: 'condition',
-        label: 'Condition',
-        type: 'text',
-        placeholder: 'email ends with @gmail.com',
-        required: true,
-      },
-    ],
-    summary: (d) => text(d.condition) || undefined,
+    fields: [{ name: 'conditions', label: 'Conditions', type: 'conditions', required: true }],
+    summary: (d) => firstRule(d.conditions),
   },
   {
     type: 'filter',
@@ -90,8 +108,8 @@ export const automationKinds: NodeKind[] = [
     description: 'Keeps the items that match.',
     category: 'Logic',
     icon: FilterIcon,
-    fields: [{ name: 'condition', label: 'Keep when', type: 'text', required: true }],
-    summary: (d) => text(d.condition) || undefined,
+    fields: [{ name: 'conditions', label: 'Keep when', type: 'conditions', required: true }],
+    summary: (d) => firstRule(d.conditions),
   },
   {
     type: 'wait',
@@ -123,15 +141,15 @@ export const automationKinds: NodeKind[] = [
     icon: PencilLineIcon,
     fields: [
       {
-        name: 'keep',
-        label: 'Fields to keep',
-        type: 'list',
-        placeholder: 'Add a field…',
-        description: 'Press Enter after each one.',
+        name: 'values',
+        label: 'Fields to set',
+        type: 'keyValue',
+        keyPlaceholder: 'name',
+        valuePlaceholder: '{{ name }}',
       },
       { name: 'dropOthers', label: 'Drop the other fields', type: 'switch' },
     ],
-    summary: (d) => (Array.isArray(d.keep) && d.keep.length ? d.keep.join(', ') : undefined),
+    summary: (d) => Object.keys(keyValuesToObject(d.values)).join(', ') || undefined,
   },
   {
     type: 'http',
@@ -154,6 +172,9 @@ export const automationKinds: NodeKind[] = [
         placeholder: 'https://api.example.com/…',
         required: true,
       },
+      { name: 'auth', label: 'Credential', type: 'credential', credentialType: 'api' },
+      { name: 'query', label: 'Query parameters', type: 'keyValue' },
+      { name: 'body', label: 'Body', type: 'code', language: 'json', placeholder: '{ }' },
     ],
     summary: (d) => text(d.url) || undefined,
   },
@@ -164,6 +185,7 @@ export const automationKinds: NodeKind[] = [
     category: 'Actions',
     icon: MailIcon,
     fields: [
+      { name: 'account', label: 'Send from', type: 'credential', credentialType: 'smtp' },
       { name: 'to', label: 'To', type: 'text', required: true },
       { name: 'subject', label: 'Subject', type: 'text' },
       { name: 'body', label: 'Message', type: 'textarea' },
@@ -199,28 +221,38 @@ export const signupWorkflow: Workflow = {
       type: 'if',
       name: 'Business email?',
       position: { x: 340, y: 90 },
-      data: { condition: 'email domain is not a free provider' },
+      data: {
+        conditions: {
+          combinator: 'and',
+          rules: [{ left: '{{ email }}', operator: 'notContains', right: '@gmail.com' }],
+        },
+      },
     },
     {
       id: 'http',
       type: 'http',
       name: 'Enrich company',
       position: { x: 700, y: 0 },
-      data: { method: 'GET', url: 'https://api.example.com/companies' },
+      data: {
+        method: 'GET',
+        url: 'https://api.example.com/companies',
+        auth: 'crm-key',
+        query: [{ key: 'domain', value: '{{ company.domain }}' }],
+      },
     },
     {
       id: 'chat',
       type: 'chat',
       name: 'Tell sales',
       position: { x: 1060, y: 0 },
-      data: { channel: '#sales', message: 'New signup from {{company}}' },
+      data: { channel: '#sales', message: 'New signup from {{ company.name }}' },
     },
     {
       id: 'email',
       type: 'email',
       name: 'Welcome email',
       position: { x: 700, y: 200 },
-      data: { to: '{{email}}', subject: 'Welcome aboard' },
+      data: { account: 'smtp-main', to: '{{ email }}', subject: 'Welcome aboard, {{ name }}' },
     },
   ],
   edges: [
@@ -245,6 +277,52 @@ export const unfinishedWorkflow: Workflow = {
     { id: 'wait', type: 'wait', position: { x: 1060, y: 200 }, data: { amount: 2, unit: 'days' } },
   ],
   edges: signupWorkflow.edges.filter((e) => e.id !== 'e4'),
+}
+
+export const demoCredentials: NodeCredential[] = [
+  { id: 'crm-key', name: 'CRM API key', type: 'api' },
+  { id: 'smtp-main', name: 'hello@acme.io', type: 'smtp' },
+]
+
+const signup = {
+  name: 'Ada Lovelace',
+  email: 'ada@analytical.io',
+  company: { name: 'Analytical', domain: 'analytical.io', size: 42 },
+}
+
+/** A finished run: what each node received and gave, for the Input and Output tabs. */
+export const signupRuns: Partial<Record<string, NodeRun>> = {
+  webhook: { status: 'success', message: '1 item', output: [signup] },
+  if: { status: 'success', message: 'true', input: [signup], output: [signup] },
+  http: {
+    status: 'success',
+    message: '200',
+    input: [signup],
+    output: [
+      { status: 200, company: { name: 'Analytical', industry: 'Computing', employees: 42 } },
+    ],
+  },
+  chat: { status: 'success', message: 'Posted' },
+  email: { status: 'skipped' },
+}
+
+/**
+ * A stand-in for the app's own "run this node": waits a little, then echoes what the node would do
+ * with its input. Real apps call their backend here.
+ */
+export function fakeRunNode({ node, input }: NodeTestRequest): Promise<NodeTestResult> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (node.type === 'http')
+        resolve({
+          message: '200',
+          output: [{ status: 200, company: { name: 'Analytical', employees: 42 } }],
+        })
+      else if (node.type === 'email')
+        resolve({ message: 'Sent', output: [{ id: 'msg_1', accepted: true }] })
+      else resolve({ output: input ?? [] })
+    }, 400)
+  })
 }
 
 export const demoTools = [
