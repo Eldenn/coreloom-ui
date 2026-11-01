@@ -4,6 +4,13 @@
 // where it stands (preparing, running, done, failed, waiting for approval), with its input and
 // output underneath. Takes an AI SDK tool part as it is. When the call needs approval, the card
 // opens with Allow / Deny; wire them to `addToolApprovalResponse`.
+//
+// Generative UI: `tool` draws the call as your own component (a skeleton while `getWeather` runs,
+// a weather card once it answers), inside the card or, with `display: 'inline'`, in place of it:
+//
+//   const weather: ToolComponent<{ city: string }, Weather> = { label: 'Weather', display: 'inline',
+//     render: (call) => call.state === 'output-available' ? <WeatherCard {...call.output} /> : <WeatherSkeleton /> }
+//   <ToolCall part={part} tool={weather} />
 import {
   CheckCircle2Icon,
   ChevronRightIcon,
@@ -17,9 +24,23 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Spinner } from '@/components/ui/spinner'
-import { type AiToolPart, toolName } from '@/lib/ai'
+import { type AiToolPart, type AiToolState, toolName } from '@/lib/ai'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+
+/** States in which the tool hasn't answered yet. */
+const RUNNING = new Set<AiToolState>(['input-streaming', 'input-available', 'approval-responded'])
+
+/** The part's state, input and output, in the narrowed shape a tool's component reads. */
+function renderState(part: AiToolPart) {
+  if (part.state === 'output-error')
+    return { state: part.state, input: part.input, errorText: part.errorText ?? '' }
+  // The part is the SDK's discriminated union, flattened: put it back together by state.
+  return { state: part.state, input: part.input, output: part.output } as ToolRenderState<
+    unknown,
+    unknown
+  >
+}
 
 function Json({ value }: { value: unknown }) {
   const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
@@ -30,9 +51,61 @@ function Json({ value }: { value: unknown }) {
   )
 }
 
+/** An object with every field optional, all the way down: a tool's input while it streams in. */
+type PartialDeep<T> = T extends readonly (infer Item)[]
+  ? readonly PartialDeep<Item>[]
+  : T extends object
+    ? { [K in keyof T]?: PartialDeep<T[K]> }
+    : T
+
+/** What happens to the call: the input arrives, it runs, maybe asks first, then answers or fails. */
+type ToolRenderState<Input, Output> =
+  | { state: 'input-streaming'; input: PartialDeep<Input> | undefined; output?: undefined }
+  | {
+      state: 'input-available' | 'approval-requested' | 'approval-responded' | 'output-denied'
+      input: Input
+      output?: undefined
+    }
+  | { state: 'output-available'; input: Input; output: Output }
+  | { state: 'output-error'; input: Input | undefined; output?: undefined; errorText: string }
+
+/**
+ * What a tool's component gets: the call as it stands, narrowed by `state` — `output` is there
+ * once the state is 'output-available', the input is partial while it's 'input-streaming'.
+ */
+type ToolRenderProps<Input = unknown, Output = unknown> = ToolRenderState<Input, Output> & {
+  toolCallId: string
+  /** The part as it came, for anything else (`title`, `approval`, provider fields). */
+  part: AiToolPart
+  /** Answer an approval from your own buttons; there while the state is 'approval-requested'. */
+  respond?: (approved: boolean) => void
+}
+
+/** How one tool draws: a name, a component, and whether it sits inside the card or replaces it. */
+interface ToolComponent<Input = unknown, Output = unknown> {
+  /** A human name ("Weather"), on the card and for screen readers; defaults to the tool's id. */
+  label?: React.ReactNode
+  /** Draw the call (any state). Return undefined to keep the card's own view for that state. */
+  render(props: ToolRenderProps<Input, Output>): React.ReactNode
+  /** 'card' (default): inside the folded card, unfolded. 'inline': in place of the card. */
+  display?: 'card' | 'inline'
+}
+
+/**
+ * Components by tool name, typed from the app's tools:
+ * `const tools: ToolComponents<InferUITools<typeof myTools>> = { getWeather: { render: … } }`.
+ */
+type ToolComponents<
+  Tools extends { [K in keyof Tools]: { input: unknown; output: unknown } } = Record<
+    string,
+    { input: unknown; output: unknown }
+  >,
+> = { [K in keyof Tools]?: ToolComponent<Tools[K]['input'], Tools[K]['output']> }
+
 function ToolCall({
   part,
   label,
+  tool,
   renderOutput,
   onApprovalResponse,
   defaultOpen,
@@ -42,7 +115,9 @@ function ToolCall({
   part: AiToolPart
   /** A human name for the tool ("Search the docs"); defaults to its id. */
   label?: React.ReactNode
-  /** Draw the output yourself (a chart, a card); return undefined for JSON. A drawn output shows unfolded. */
+  /** Generative UI: draw the call as your own component (`render`), in the card or in place of it. */
+  tool?: ToolComponent
+  /** Draw the output only (a chart, a card); return undefined for JSON. `tool` takes precedence. */
   renderOutput?: (output: unknown) => React.ReactNode | undefined
   /** Allow / Deny on calls that ask for approval. */
   onApprovalResponse?: (response: { id: string; approved: boolean }) => void
@@ -50,10 +125,27 @@ function ToolCall({
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.tool
+  const labelId = React.useId()
   const asking = part.state === 'approval-requested'
   const { approval } = part
-  const drawn =
-    part.state === 'output-available' && renderOutput ? renderOutput(part.output) : undefined
+  // Answering removes the buttons that had focus: remember it, and move focus to the call (below).
+  const answered = React.useRef(false)
+  const root = React.useRef<HTMLDivElement>(null)
+  const trigger = React.useRef<HTMLButtonElement>(null)
+  const answer = (approved: boolean) => {
+    if (!approval || !onApprovalResponse) return
+    answered.current = true
+    onApprovalResponse({ id: approval.id, approved })
+  }
+  const respond = asking && approval && onApprovalResponse ? answer : undefined
+  // eslint-disable-next-line react-hooks/refs -- `respond` writes a ref when clicked, never during render.
+  const custom = tool?.render({ ...renderState(part), toolCallId: part.toolCallId, part, respond })
+  const isCustom = custom !== undefined && custom !== null && custom !== false
+  const drawn = isCustom
+    ? custom
+    : part.state === 'output-available' && renderOutput
+      ? renderOutput(part.output)
+      : undefined
   const isDrawn = drawn !== undefined && drawn !== null
   const [open, setOpen] = React.useState(
     defaultOpen ?? (asking || part.state === 'output-error' || isDrawn),
@@ -67,6 +159,41 @@ function ToolCall({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when a drawn result arrives.
     if (isDrawn && defaultOpen === undefined) setOpen(true)
   }, [isDrawn, defaultOpen])
+
+  React.useEffect(() => {
+    if (asking || !answered.current) return
+    answered.current = false
+    const focused = document.activeElement
+    if (focused && focused !== document.body && root.current?.contains(focused)) return
+    ;(trigger.current ?? root.current)?.focus()
+  }, [asking])
+
+  const name = label ?? tool?.label ?? part.title ?? toolName(part)
+
+  // Inline: the component is the call. It's labelled with the tool's name for screen readers, and
+  // busy while the input streams in or the tool runs.
+  if (tool?.display === 'inline' && isCustom)
+    return (
+      <div
+        ref={root}
+        role="group"
+        aria-labelledby={labelId}
+        tabIndex={-1}
+        aria-busy={RUNNING.has(part.state) || undefined}
+        data-slot="tool-call"
+        data-display="inline"
+        data-state-name={part.state}
+        className={cn(
+          'min-w-0 rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+          className,
+        )}
+      >
+        <p id={labelId} className="sr-only">
+          {name}
+        </p>
+        {custom}
+      </div>
+    )
 
   const status = {
     'input-streaming': {
@@ -92,6 +219,7 @@ function ToolCall({
 
   return (
     <Collapsible
+      ref={root}
       open={open}
       onOpenChange={setOpen}
       data-slot="tool-call"
@@ -102,10 +230,13 @@ function ToolCall({
         className,
       )}
     >
-      <CollapsibleTrigger className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring">
+      <CollapsibleTrigger
+        ref={trigger}
+        className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
+      >
         <WrenchIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
         <span className="min-w-0 flex-1 font-mono text-[12.5px] break-words text-foreground">
-          {label ?? part.title ?? toolName(part)}
+          {name}
         </span>
         <span
           className={cn(
@@ -123,7 +254,8 @@ function ToolCall({
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="flex flex-col gap-3 border-t border-border-subtle px-3 pt-2.5 pb-3">
-          {part.input !== undefined && (
+          {isCustom && custom}
+          {!isCustom && part.input !== undefined && (
             <div className="flex flex-col gap-1.5">
               <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                 {t.input}
@@ -140,20 +272,24 @@ function ToolCall({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => onApprovalResponse?.({ id: approval.id, approved: false })}
+                  onClick={() => {
+                    answer(false)
+                  }}
                 >
                   {t.deny}
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => onApprovalResponse?.({ id: approval.id, approved: true })}
+                  onClick={() => {
+                    answer(true)
+                  }}
                 >
                   {t.approve}
                 </Button>
               </div>
             </div>
           )}
-          {part.state === 'output-available' && (
+          {!isCustom && part.state === 'output-available' && (
             <div className="flex flex-col gap-1.5">
               <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                 {t.output}
@@ -161,7 +297,7 @@ function ToolCall({
               {isDrawn ? drawn : <Json value={part.output} />}
             </div>
           )}
-          {part.state === 'output-error' && (
+          {!isCustom && part.state === 'output-error' && (
             <div className="flex flex-col gap-1.5">
               <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-destructive uppercase">
                 {t.error}
@@ -177,4 +313,10 @@ function ToolCall({
   )
 }
 
-export { ToolCall }
+export {
+  ToolCall,
+  type ToolComponent,
+  type ToolComponents,
+  type ToolRenderProps,
+  type ToolRenderState,
+}

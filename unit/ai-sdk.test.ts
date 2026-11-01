@@ -24,7 +24,7 @@ import type { ChatWidget } from '@/components/ai-chat-widget'
 import type { ContextMeter } from '@/components/ui/context-meter'
 import type { CitationSource } from '@/components/ui/inline-citation'
 import type { PromptInput } from '@/components/ui/prompt-input'
-import type { ToolCall } from '@/components/ui/tool-call'
+import type { ToolCall, ToolComponents, ToolRenderProps } from '@/components/ui/tool-call'
 import {
   type AiChatStatus,
   type AiMessage,
@@ -108,6 +108,38 @@ describe('AI SDK types go into the blocks as they are', () => {
 
   it('usage: LanguageModelUsage in ContextMeter', () => {
     expectTypeOf<LanguageModelUsage>().toExtend<Props<typeof ContextMeter>['used']>()
+  })
+})
+
+describe("generative UI is typed from the app's tools", () => {
+  it('a ToolComponents map built from InferUITools goes into Chat and ChatWidget', () => {
+    expectTypeOf<ToolComponents<AppUITools>>().toExtend<NonNullable<Props<typeof Chat>['tools']>>()
+    expectTypeOf<ToolComponents<AppUITools>>().toExtend<
+      NonNullable<Props<typeof ChatWidget>['tools']>
+    >()
+  })
+
+  it('narrows input and output by state', () => {
+    type Weather = ToolRenderProps<AppUITools['getWeather']['input'], WeatherOutput>
+    expectTypeOf<
+      Extract<Weather, { state: 'output-available' }>['output']
+    >().toEqualTypeOf<WeatherOutput>()
+    expectTypeOf<
+      Extract<
+        Weather,
+        { state: 'input-available' | 'approval-requested' | 'approval-responded' | 'output-denied' }
+      >['input']
+    >().toEqualTypeOf<{
+      city: string
+    }>()
+    expectTypeOf<Extract<Weather, { state: 'input-streaming' }>['input']>().toEqualTypeOf<
+      { city?: string } | undefined
+    >()
+    expectTypeOf<Extract<Weather, { state: 'output-error' }>['errorText']>().toBeString()
+  })
+
+  it('draws each state the SDK has', () => {
+    expectTypeOf<ToolRenderProps['state']>().toEqualTypeOf<ToolUIPart['state']>()
   })
 })
 

@@ -10,7 +10,10 @@
 // Parts: Chat (the whole thing), ChatMessages (the scrolling log), ChatMessage (one message: text in
 // Markdown with inline citations, reasoning, tool calls, files, sources; a user's message can be edited,
 // and a message with other versions shows "‹ 2 / 3 ›"), ChatEmpty (suggestions) and ConversationList (the
-// history beside it).
+// history beside it). `tools` draws tool calls as your own components (generative UI):
+//
+//   <Chat … tools={{ getWeather: { label: 'Weather', display: 'inline', render: ({ state, output }) =>
+//     state === 'output-available' ? <WeatherCard {...output} /> : <WeatherCardSkeleton /> } }} />
 import {
   ArrowDownIcon,
   CheckIcon,
@@ -55,7 +58,7 @@ import { Markdown } from '@/components/ui/markdown'
 import { PromptInput } from '@/components/ui/prompt-input'
 import { Reasoning } from '@/components/ui/reasoning'
 import { Textarea } from '@/components/ui/textarea'
-import { ToolCall } from '@/components/ui/tool-call'
+import { ToolCall, type ToolComponents } from '@/components/ui/tool-call'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   type AiChatStatus,
@@ -95,9 +98,14 @@ interface MessageOptions {
 }
 
 interface ToolOptions {
-  /** Human names for tools, by id: { searchDocs: "Search the docs" }. */
+  /**
+   * Generative UI: a component per tool, by name, drawn for the call in any state — inside its card
+   * or in place of it (`display: 'inline'`). Type it from your tools with `ToolComponents<…>`.
+   */
+  tools?: ToolComponents
+  /** Human names for tools, by id: { searchDocs: "Search the docs" }. `tools[name].label` wins. */
   toolLabels?: Record<string, React.ReactNode>
-  /** Draw a tool's output yourself (by tool id); JSON otherwise. */
+  /** Draw a tool's output yourself (by tool id); JSON otherwise. `tools` takes precedence. */
   renderToolOutput?: (toolName: string, output: unknown) => React.ReactNode | undefined
   onToolApprovalResponse?: (response: { id: string; approved: boolean }) => void
 }
@@ -340,6 +348,7 @@ function ChatMessage({
   branch,
   onBranchChange,
   busy = false,
+  tools,
   toolLabels,
   renderToolOutput,
   onToolApprovalResponse,
@@ -505,11 +514,13 @@ function ChatMessage({
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- narrows the union for TS 7 (TS 6, which the linter runs on, narrows it already)
             const tool = part as AiToolPart
             const name = tool.type === 'dynamic-tool' ? (tool.toolName ?? '') : tool.type.slice(5)
+            const ui = tools?.[name]
             return (
               <ToolCall
                 key={tool.toolCallId}
                 part={tool}
-                label={toolLabels?.[name]}
+                label={ui?.label ?? toolLabels?.[name]}
+                tool={ui}
                 renderOutput={
                   renderToolOutput ? (output) => renderToolOutput(name, output) : undefined
                 }
@@ -649,7 +660,7 @@ function ChatMessages({
   branches,
   onBranchChange,
   className,
-  ...tools
+  ...toolOptions
 }: {
   messages: readonly AiMessage[]
   status?: AiChatStatus
@@ -756,7 +767,7 @@ function ChatMessages({
               branch={branches?.[m.id]}
               onBranchChange={onBranchChange && changeBranch(i)}
               busy={busy}
-              {...tools}
+              {...toolOptions}
             />
           ))}
           {status === 'submitted' && <TypingIndicator />}
@@ -865,7 +876,7 @@ function Chat({
   header,
   autoFocus = true,
   className,
-  ...tools
+  ...toolOptions
 }: {
   messages: readonly AiMessage[]
   status?: AiChatStatus
@@ -917,7 +928,7 @@ function Chat({
           onEdit={onEdit}
           branches={branches}
           onBranchChange={onBranchChange}
-          {...tools}
+          {...toolOptions}
         />
       )}
       <div className="mx-auto w-full max-w-3xl px-4 pb-4">
