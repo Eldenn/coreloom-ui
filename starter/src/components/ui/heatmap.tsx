@@ -31,8 +31,9 @@ function levelColor(level: number, color: string) {
 
 interface GridColumn {
   key: string
-  /** Shown above the column; empty for none. */
+  /** Shown above the column; empty for none (the `name` is still read). */
   label?: React.ReactNode
+  name: string
 }
 
 interface GridRow {
@@ -126,7 +127,14 @@ function HeatmapGrid({
                   className="h-4 p-0 text-left align-bottom font-mono text-[10.5px] font-normal whitespace-nowrap text-muted-foreground"
                   style={{ width: cellSize, maxWidth: cellSize }}
                 >
-                  <span className="block overflow-visible">{col.label}</span>
+                  {col.label != null ? (
+                    <span className="block overflow-visible">
+                      <span aria-hidden>{col.label}</span>
+                      <span className="sr-only">{col.name}</span>
+                    </span>
+                  ) : (
+                    <span className="sr-only">{col.name}</span>
+                  )}
                 </th>
               ))}
             </tr>
@@ -136,10 +144,10 @@ function HeatmapGrid({
               <tr key={row.key}>
                 <th
                   scope="row"
-                  aria-label={row.name}
                   className="pr-1.5 text-right font-mono text-[10.5px] font-normal whitespace-nowrap text-muted-foreground"
                 >
-                  {row.label}
+                  <span aria-hidden>{row.label}</span>
+                  <span className="sr-only">{row.name}</span>
                 </th>
                 {columns.map((col, c) => {
                   const value = valueAt(r, c)
@@ -272,7 +280,7 @@ function Heatmap({
   return (
     <HeatmapGrid
       rows={rowKeys.map((key) => ({ key, label: key, name: key }))}
-      columns={colKeys.map((key, i) => ({ key, label: i % every === 0 ? key : null }))}
+      columns={colKeys.map((key, i) => ({ key, label: i % every === 0 ? key : null, name: key }))}
       valueAt={valueAt}
       nameAt={(r, c) => {
         const v = valueAt(r, c)
@@ -371,7 +379,7 @@ function CalendarHeatmap({
         : firstOfMonth !== undefined
           ? month.format(firstOfMonth)
           : null
-    return { key: String(week[0]), label }
+    return { key: String(week[0]), label, name: t.weekOf(full.format(week[0])) }
   })
   // Labels on Monday, Wednesday and Friday only, like most calendars: the rows are too thin for all.
   const rows = grid[0].map((d, i) => ({
