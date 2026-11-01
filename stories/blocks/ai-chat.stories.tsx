@@ -14,9 +14,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDemoChat } from '@/hooks/use-demo-chat'
-import { type AiChatStatus, type AiMessage, messageText } from '@/lib/ai'
+import { type AiChatStatus, type AiMessage, type AiToolPart, messageText } from '@/lib/ai'
 
 import { catalog, usage } from './ai-models'
+import { demoTools, docHits, lyon, meeting } from './ai-tool-ui'
 
 const answer = `Your last three deployments of **coreloom-api** failed at the same step: the type check.
 
@@ -787,6 +788,168 @@ export const WithModelPicker: Story = {
               <ContextMeter used={usage} model={current} />
             </>
           }
+        />
+      </Frame>
+    )
+  },
+}
+
+/** A conversation whose tools draw themselves (`tools`): weather in place of the call, docs inside it,
+ *  and a booking that asks with its own buttons. */
+function generativeConversation(booking: AiToolPart): AiMessage[] {
+  return [
+    { id: 'g1', role: 'user', parts: [{ type: 'text', text: 'Will it rain in Lyon this week?' }] },
+    {
+      id: 'g2',
+      role: 'assistant',
+      parts: [
+        {
+          type: 'tool-getWeather',
+          toolCallId: 'gw',
+          state: 'output-available',
+          input: { city: 'Lyon' },
+          output: lyon,
+        },
+        { type: 'text', text: 'Rain today, then dry and warmer from Friday.', state: 'done' },
+      ],
+    },
+    {
+      id: 'g3',
+      role: 'user',
+      parts: [{ type: 'text', text: 'How do I roll back? Then book a review with the team.' }],
+    },
+    {
+      id: 'g4',
+      role: 'assistant',
+      parts: [
+        {
+          type: 'tool-searchDocs',
+          toolCallId: 'gd',
+          state: 'output-available',
+          input: { query: 'rollback' },
+          output: docHits,
+        },
+        {
+          type: 'text',
+          text: 'Rolling back is one step from the deployment page. Here is a slot for the review:',
+          state: 'done',
+        },
+        booking,
+      ],
+    },
+  ]
+}
+
+const askToBook: AiToolPart = {
+  type: 'tool-bookMeeting',
+  toolCallId: 'gb',
+  state: 'approval-requested',
+  input: meeting,
+  approval: { id: 'gap' },
+}
+
+/** Generative UI: `tools` maps tool names to components, so results read as UI, not JSON. Try Book it. */
+export const GenerativeUi: Story = {
+  name: 'Generative UI',
+  render: function GenerativeChat() {
+    const [booking, setBooking] = React.useState(askToBook)
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          onSend={() => {}}
+          messages={generativeConversation(booking)}
+          tools={demoTools}
+          onToolApprovalResponse={({ approved }) => {
+            setBooking((p) =>
+              approved
+                ? {
+                    ...p,
+                    state: 'output-available',
+                    approval: { id: 'gap', approved },
+                    output: { id: 'mtg_1' },
+                  }
+                : { ...p, state: 'output-denied', approval: { id: 'gap', approved } },
+            )
+          }}
+        />
+      </Frame>
+    )
+  },
+}
+
+/** The same in French: the components format dates and temperatures for the locale. */
+export const GenerativeUiFrench: Story = {
+  name: 'Generative UI (French)',
+  globals: { locale: 'fr' },
+  render: () => (
+    <Frame>
+      <Chat
+        autoFocus={false}
+        onSend={() => {}}
+        messages={generativeConversation(askToBook)}
+        tools={demoTools}
+        onToolApprovalResponse={() => {}}
+      />
+    </Frame>
+  ),
+}
+
+/** While the tool runs, the weather component shows its skeleton. Frozen, so it can be tested. */
+export const GenerativeUiRunning: Story = {
+  name: 'Generative UI (running)',
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        onSend={() => {}}
+        onStop={() => {}}
+        status="streaming"
+        tools={demoTools}
+        messages={[
+          { id: 'r1', role: 'user', parts: [{ type: 'text', text: 'Weather in Lyon?' }] },
+          {
+            id: 'r2',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'tool-getWeather',
+                toolCallId: 'rw',
+                state: 'input-available',
+                input: { city: 'Lyon' },
+              },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+/** Try it: the simulated model (useDemoChat) calls getWeather; the card shows its skeleton, then the
+ *  forecast. */
+export const GenerativeUiLive: Story = {
+  name: 'Generative UI (live)',
+  render: function LiveGenerativeChat() {
+    const chat = useDemoChat({
+      script: {
+        reasoning: 'Look up the forecast for the city.',
+        tool: { name: 'getWeather', input: () => ({ city: 'Lyon' }), output: lyon },
+        answer: () => 'Rain today in **Lyon**, then dry and warmer from Friday.',
+      },
+    })
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          messages={chat.messages}
+          status={chat.status}
+          error={chat.error}
+          onSend={chat.sendMessage}
+          onStop={chat.stop}
+          onRegenerate={chat.regenerate}
+          suggestions={['Will it rain in Lyon this week?']}
+          tools={demoTools}
         />
       </Frame>
     )

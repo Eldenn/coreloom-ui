@@ -58,7 +58,8 @@ One tool invocation in a conversation: its name, a status (preparing, running, d
 **The consumer provides** the AI SDK tool `part` as is (`tool-<name>` or `dynamic-tool`), plus optionally:
 
 - `label` — a human name ("Search the docs") instead of the tool's identifier;
-- `renderOutput(output)` to show a result as UI (a table, a card) instead of JSON — return `undefined` to keep the JSON; a drawn result shows unfolded;
+- `tool` — generative UI: `{ render(call), label?, display? }` draws the call as your own component in any state, inside the card (`display: 'card'`, default) or in place of it (`'inline'`); `render` returning `undefined` keeps the card's view. Type it with `ToolComponent<Input, Output>`; see Generative UI;
+- `renderOutput(output)` to show a result as UI (a table, a card) instead of JSON — return `undefined` to keep the JSON; a drawn result shows unfolded (`tool` takes precedence);
 - `onApprovalResponse({ id, approved })` for tools that ask first — wire `addToolApprovalResponse` from `useChat`;
 - `defaultOpen`.
 

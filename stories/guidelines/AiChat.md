@@ -6,7 +6,7 @@ A conversation with an assistant: messages with their reasoning, tool calls, sou
 
 - `onStop`, `onRegenerate` and `error` (shows an alert with Retry) — `stop`, `regenerate` and `error` from `useChat`;
 - `feedback` and `onFeedback(id, "good" | "bad")` for thumbs on answers;
-- `onToolApprovalResponse`, `toolLabels` and `renderToolOutput` for tool calls;
+- `tools` to draw tool calls as your own components (generative UI: a map from tool name to `{ render, label, display }`, see Generative UI), plus `onToolApprovalResponse`, `toolLabels` and `renderToolOutput`;
 - `suggestions`, `emptyTitle` and `emptyDescription` for the empty state;
 - `header`, `toolbar`, `allowAttachments`, `accept` and `placeholder`;
 - `onEdit(id, text)` to let people edit a message they sent;

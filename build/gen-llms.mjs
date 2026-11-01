@@ -29,6 +29,7 @@ const GUIDE_FOR = {
 /** Guides about the system rather than one item, listed under "Guides". */
 const TOPICS = [
   'AiSdk',
+  'GenerativeUi',
   'EditorAi',
   'Accents',
   'ThemeGenerator',
