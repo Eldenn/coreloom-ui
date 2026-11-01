@@ -1257,7 +1257,7 @@ interface NodeEditorProps {
   showIssues?: boolean
   /** Buttons for the toolbar's end: Run, Save… */
   actions?: React.ReactNode
-  /** The canvas's height in px (default: 560). Below 720 px of width the panel goes underneath. */
+  /** The canvas's height in px (default: 560). Below 720 px of width the panel goes underneath and the canvas is at most 420 px tall. */
   height?: number
   /** Names the canvas for screen readers (default: "Workflow"). */
   label?: string
@@ -1330,17 +1330,21 @@ function NodeEditorInner({
     }
   }, [])
   const stacked = width > 0 && width < 720
-  // The canvas changes shape when the panel moves under it (and on first measure): fit again.
+  // The canvas mounts once its width is known (so the first fit sees the right layout); when the
+  // panel later moves under it or back, fit again.
+  const lastStacked = React.useRef<boolean | null>(null)
   React.useEffect(() => {
     if (!width) return
+    const before = lastStacked.current
+    lastStacked.current = stacked
+    if (before === null || before === stacked) return
     const id = requestAnimationFrame(() => {
       void flow.fitView({ padding: 0.2, maxZoom: 1 })
     })
     return () => {
       cancelAnimationFrame(id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the layout switches
-  }, [stacked, width > 0])
+  }, [stacked, width, flow])
 
   const emit = (next: Workflow) => {
     setState(next)
@@ -1710,74 +1714,77 @@ function NodeEditorInner({
             // Stacked, the canvas keeps its height; side by side it takes the room the panel leaves.
             stacked ? 'w-full flex-none' : 'flex-1',
           )}
-          style={{ height }}
+          // Stacked on a phone, a shorter canvas leaves room for the panel below.
+          style={{ height: stacked ? Math.min(height, 420) : height }}
         >
-          <ReactFlow<CardNode>
-            nodes={rfNodes}
-            edges={rfEdges}
-            nodeTypes={NODE_TYPES}
-            edgeTypes={EDGE_TYPES}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            isValidConnection={(c) =>
-              canConnect(
-                workflow,
-                {
-                  source: c.source,
-                  target: c.target,
-                  ...(c.sourceHandle ? { sourcePort: c.sourceHandle } : {}),
-                  ...(c.targetHandle ? { targetPort: c.targetHandle } : {}),
-                },
-                kinds,
-              )
-            }
-            onNodeDragStart={() => {
-              dragStart.current = workflow
-            }}
-            onNodeDragStop={() => {
-              const before = dragStart.current
-              dragStart.current = null
-              if (before && before !== workflow) {
-                setPast((p) => [...p.slice(-99), before])
-                setFuture([])
+          {width > 0 && (
+            <ReactFlow<CardNode>
+              nodes={rfNodes}
+              edges={rfEdges}
+              nodeTypes={NODE_TYPES}
+              edgeTypes={EDGE_TYPES}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              isValidConnection={(c) =>
+                canConnect(
+                  workflow,
+                  {
+                    source: c.source,
+                    target: c.target,
+                    ...(c.sourceHandle ? { sourcePort: c.sourceHandle } : {}),
+                    ...(c.targetHandle ? { targetPort: c.targetHandle } : {}),
+                  },
+                  kinds,
+                )
               }
-            }}
-            onPaneClick={() => {
-              select(null)
-              setMulti(new Set())
-            }}
-            nodesDraggable={!readOnly}
-            nodesConnectable={!readOnly}
-            elementsSelectable
-            deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
-            multiSelectionKeyCode="Shift"
-            fitView
-            fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
-            minZoom={0.25}
-            maxZoom={1.75}
-            proOptions={{ hideAttribution: true }}
-            ariaLabelConfig={ariaLabelConfig}
-            aria-label={label ?? t.label}
-            style={
-              {
-                '--xy-edge-stroke-default': 'var(--edge-color)',
-                '--xy-edge-stroke-selected-default': 'var(--color-primary)',
-                '--xy-edge-stroke-width-default': '1.75',
-                '--xy-connectionline-stroke-default': 'var(--color-primary)',
-                '--xy-selection-background-color-default':
-                  'color-mix(in oklab, var(--color-primary) 8%, transparent)',
-                '--xy-selection-border-default': '1px dashed var(--color-primary)',
-              } as React.CSSProperties
-            }
-          >
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={20}
-              size={1.2}
-              color="var(--color-border-strong)"
-            />
-          </ReactFlow>
+              onNodeDragStart={() => {
+                dragStart.current = workflow
+              }}
+              onNodeDragStop={() => {
+                const before = dragStart.current
+                dragStart.current = null
+                if (before && before !== workflow) {
+                  setPast((p) => [...p.slice(-99), before])
+                  setFuture([])
+                }
+              }}
+              onPaneClick={() => {
+                select(null)
+                setMulti(new Set())
+              }}
+              nodesDraggable={!readOnly}
+              nodesConnectable={!readOnly}
+              elementsSelectable
+              deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
+              multiSelectionKeyCode="Shift"
+              fitView
+              fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+              minZoom={0.15}
+              maxZoom={1.75}
+              proOptions={{ hideAttribution: true }}
+              ariaLabelConfig={ariaLabelConfig}
+              aria-label={label ?? t.label}
+              style={
+                {
+                  '--xy-edge-stroke-default': 'var(--edge-color)',
+                  '--xy-edge-stroke-selected-default': 'var(--color-primary)',
+                  '--xy-edge-stroke-width-default': '1.75',
+                  '--xy-connectionline-stroke-default': 'var(--color-primary)',
+                  '--xy-selection-background-color-default':
+                    'color-mix(in oklab, var(--color-primary) 8%, transparent)',
+                  '--xy-selection-border-default': '1px dashed var(--color-primary)',
+                } as React.CSSProperties
+              }
+            >
+              <Background
+                variant={BackgroundVariant.Dots}
+                gap={20}
+                size={1.2}
+                color="var(--color-border-strong)"
+              />
+            </ReactFlow>
+          )}
           {!workflow.nodes.length && (
             <p className="pointer-events-none absolute inset-x-6 top-1/2 m-0 -translate-y-1/2 text-center text-[13px] text-muted-foreground">
               {t.empty}

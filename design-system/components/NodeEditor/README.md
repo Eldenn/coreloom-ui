@@ -5,7 +5,7 @@ An n8n-style canvas on React Flow. The app declares its `kinds` of node — labe
 **`NodeEditor` takes** `kinds`, `value` / `defaultValue` / `onValueChange` (a `Workflow`: `nodes` and `edges`, plain data), and optionally `runs`, `selectedId` / `defaultSelectedId` / `onSelectedChange`, `readOnly`, `inspector` (true), `showIssues` (true), `actions`, `height` (560) and `label`.
 
 - Helpers for your own code: `addNode`, `connectNodes`, `canConnect`, `removeNodes`, `updateNode`, `duplicateNode`, `layoutWorkflow`, `validateWorkflow`, `nodePorts`.
-- Below 720 px of width the panel goes under the canvas.
+- Below 720 px of width the panel goes under the canvas, which is then at most 420 px tall.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/node-editor`.
 

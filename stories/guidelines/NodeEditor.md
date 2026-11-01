@@ -13,7 +13,7 @@ An n8n-style canvas, on React Flow: nodes joined by connections, and a side pane
 - Missing settings, nodes nothing leads to, unconnected routes and too many of a kind are flagged on the cards, in the panel and in the toolbar. `validateWorkflow(workflow, kinds)` gives the same list to your code.
 - A connection back to an earlier node (a loop) runs below the cards instead of across them.
 - Actions are announced in one polite live region; focus never falls to the page when a node goes away.
-- Below 720 px of width the panel goes under the canvas.
+- Below 720 px of width the panel goes under the canvas, which is then at most 420 px tall.
 - Helpers for your own code: `addNode`, `connectNodes`, `canConnect`, `removeNodes`, `updateNode`, `duplicateNode`, `layoutWorkflow`, `nodePorts`.
 - Don't use it to show how agents relate (AgentGraph) or a list of steps (AgentPlan): it's for building graphs.
 
