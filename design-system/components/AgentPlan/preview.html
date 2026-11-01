@@ -1,0 +1,49 @@
+<!-- @dsCard group="AI" height=520 subtitle="AgentPlan · a data-plan part, live: to do, in progress, done, failed, skipped" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AgentPlan || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const titles = ['Read the last three build logs', 'Find the change that broke the type check', 'Rename slug to handle in settings.tsx', 'Run the type check', 'Open a pull request'];
+      const plan = (done) => ({
+        title: 'Fix the failing deploys',
+        steps: titles.map((title, i) => ({ id: String(i), title, status: i < done ? 'done' : i === done ? 'running' : 'pending', detail: i === 0 && done > 0 ? 'All three fail on TS2339.' : undefined })),
+      });
+      const failed = {
+        title: 'Roll back production',
+        steps: [
+          { id: '1', title: 'Find the last green build', status: 'done', detail: 'dpl_5t3q, 2 days ago' },
+          { id: '2', title: 'Check the database migrations', status: 'skipped' },
+          { id: '3', title: 'Promote dpl_5t3q to production', status: 'failed', detail: 'Deployment protection requires an approval from an owner.' },
+          { id: '4', title: 'Tell the team in #releases', status: 'pending' },
+        ],
+      };
+      function App() {
+        const [done, setDone] = React.useState(0);
+        React.useEffect(() => {
+          const timer = setTimeout(() => setDone((d) => (d + 1) % 6), 1200);
+          return () => clearTimeout(timer);
+        }, [done]);
+        return h('div', { className: 'grid gap-6', style: { gridTemplateColumns: '1fr 1fr' } },
+          h('div', null, h('p', { className: 'cap' }, 'Live'), h(UI.AgentPlan, { plan: plan(done), active: done < 5 })),
+          h('div', null, h('p', { className: 'cap' }, 'Failed'), h(UI.AgentPlan, { plan: failed, active: false })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+    }
+    render();
+  </script>
+</body>
+</html>

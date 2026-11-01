@@ -16,6 +16,7 @@ import {
 import { useDemoChat } from '@/hooks/use-demo-chat'
 import { type AiChatStatus, type AiMessage, type AiToolPart, messageText } from '@/lib/ai'
 
+import { agentTools, deployPlan } from './ai-agent-ui'
 import { catalog, usage } from './ai-models'
 import { demoTools, docHits, lyon, meeting } from './ai-tool-ui'
 
@@ -950,6 +951,201 @@ export const GenerativeUiLive: Story = {
           onRegenerate={chat.regenerate}
           suggestions={['Will it rain in Lyon this week?']}
           tools={demoTools}
+        />
+      </Frame>
+    )
+  },
+}
+
+const fixRequest: AiMessage = {
+  id: 'p1',
+  role: 'user',
+  parts: [{ type: 'text', text: 'Fix the failing deploys of coreloom-api.' }],
+}
+
+/** The agent's plan, streamed as a `data-plan` part: steps tick off as it works. Frozen mid-run. */
+export const AgentPlanStory: Story = {
+  name: 'Agent plan',
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        onSend={() => {}}
+        onStop={() => {}}
+        status="streaming"
+        toolLabels={toolLabels}
+        messages={[
+          fixRequest,
+          {
+            id: 'p2',
+            role: 'assistant',
+            parts: [
+              { type: 'text', text: 'I’ll work through it step by step.', state: 'done' },
+              { type: 'data-plan', id: 'plan', data: deployPlan(2) },
+              {
+                type: 'tool-searchDeployments',
+                toolCallId: 'ps',
+                state: 'output-available',
+                input: { project: 'coreloom-api', status: 'failed' },
+                output: { count: 3 },
+              },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+/** Try it: send the suggestion and watch the plan move. The story rewrites the `data-plan` part
+ *  with the same id, as a server's `writer.write` would. */
+export const AgentPlanLive: Story = {
+  name: 'Agent plan (live)',
+  render: function LivePlanChat() {
+    const [done, setDone] = React.useState<number>()
+    React.useEffect(() => {
+      if (done === undefined || done >= 5) return
+      const timer = setTimeout(() => {
+        setDone(done + 1)
+      }, 900)
+      return () => {
+        clearTimeout(timer)
+      }
+    }, [done])
+    const finished = done === 5
+    const messages: AiMessage[] =
+      done === undefined
+        ? []
+        : [
+            fixRequest,
+            {
+              id: 'p2',
+              role: 'assistant',
+              parts: [
+                { type: 'data-plan', id: 'plan', data: deployPlan(done) },
+                ...(finished
+                  ? [
+                      {
+                        type: 'text' as const,
+                        text: 'Done: the type check passes again and the fix is in **#482**.',
+                        state: 'done' as const,
+                      },
+                    ]
+                  : []),
+              ],
+            },
+          ]
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          messages={messages}
+          status={done === undefined || finished ? 'ready' : 'streaming'}
+          onSend={() => {
+            setDone(0)
+          }}
+          onStop={() => {
+            setDone(5)
+          }}
+          suggestions={['Fix the failing deploys of coreloom-api.']}
+        />
+      </Frame>
+    )
+  },
+}
+
+function useScheduling(locale: 'en' | 'fr') {
+  const [part, setPart] = React.useState<AiToolPart>({
+    type: 'tool-scheduleCall',
+    toolCallId: 'sc',
+    state: 'input-available',
+    input: { topic: locale === 'fr' ? 'Bilan du retour en arrière' : 'Rollback review' },
+  })
+  const fr = locale === 'fr'
+  const after =
+    part.state === 'output-available'
+      ? fr
+        ? 'C’est noté, l’invitation part à toute l’équipe.'
+        : 'Done, the invite is on its way to the team.'
+      : part.state === 'output-error'
+        ? fr
+          ? 'D’accord, je ne planifie rien.'
+          : 'Okay, I won’t schedule anything.'
+        : undefined
+  const messages: AiMessage[] = [
+    {
+      id: 'f1',
+      role: 'user',
+      parts: [
+        {
+          type: 'text',
+          text: fr
+            ? 'Organise un point sur le retour en arrière avec l’équipe.'
+            : 'Set up a rollback review with the team.',
+        },
+      ],
+    },
+    {
+      id: 'f2',
+      role: 'assistant',
+      parts: [
+        {
+          type: 'text',
+          text: fr ? 'Il me faut juste quelques précisions.' : 'I just need a few details.',
+          state: 'done',
+        },
+        part,
+        ...(after ? [{ type: 'text' as const, text: after, state: 'done' as const }] : []),
+      ],
+    },
+  ]
+  return {
+    messages,
+    onToolOutput: (
+      answer: Parameters<NonNullable<React.ComponentProps<typeof Chat>['onToolOutput']>>[0],
+    ) => {
+      setPart((p) =>
+        answer.state === 'output-error'
+          ? { ...p, state: 'output-error', errorText: answer.errorText }
+          : { ...p, state: 'output-available', output: answer.output },
+      )
+    },
+  }
+}
+
+/** A tool that asks with a form (`formTool`): the answer goes back through `onToolOutput`
+ *  (`addToolOutput`) and the agent carries on. Try it. */
+export const ToolFormStory: Story = {
+  name: 'Tool form',
+  render: function SchedulingChat() {
+    const { messages, onToolOutput } = useScheduling('en')
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          onSend={() => {}}
+          messages={messages}
+          tools={agentTools('en')}
+          onToolOutput={onToolOutput}
+        />
+      </Frame>
+    )
+  },
+}
+
+export const ToolFormFrench: Story = {
+  name: 'Tool form (French)',
+  globals: { locale: 'fr' },
+  render: function SchedulingChatFrench() {
+    const { messages, onToolOutput } = useScheduling('fr')
+    return (
+      <Frame>
+        <Chat
+          autoFocus={false}
+          onSend={() => {}}
+          messages={messages}
+          tools={agentTools('fr')}
+          onToolOutput={onToolOutput}
         />
       </Frame>
     )

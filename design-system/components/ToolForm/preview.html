@@ -1,0 +1,40 @@
+<!-- @dsCard group="AI" height=640 subtitle="ToolForm · formTool · a tool asks with a form, the answer is its output" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ToolForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const fields = [
+        { name: 'day', label: 'Day', type: 'date', required: true },
+        { name: 'time', label: 'Time', type: 'select', required: true, options: [{ value: '09:30', label: '9:30 AM' }, { value: '14:00', label: '2:00 PM' }] },
+        { name: 'notes', label: 'Anything to prepare?', type: 'textarea' },
+        { name: 'remind', label: 'Remind me 10 minutes before', type: 'checkbox', defaultValue: true },
+      ];
+      const tool = UI.formTool({ label: 'Schedule a call', title: 'When should we talk about the rollback?', submitLabel: 'Schedule', fields });
+      function App() {
+        const [part, setPart] = React.useState({ type: 'tool-scheduleCall', toolCallId: '1', state: 'input-available', input: {} });
+        const answer = (a) => setPart((p) => a.state === 'output-error' ? { ...p, state: 'output-error', errorText: a.errorText } : { ...p, state: 'output-available', output: a.output });
+        return h('div', { className: 'grid gap-6', style: { gridTemplateColumns: '1fr 1fr' } },
+          h('div', null, h('p', { className: 'cap' }, 'Asking'), h(UI.ToolCall, { part, tool, onOutput: answer })),
+          h('div', null, h('p', { className: 'cap' }, 'Answered'),
+            h(UI.ToolForm, { fields, title: 'When should we talk about the rollback?', values: { day: '2026-10-16', time: '14:00', notes: null, remind: true } })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(App)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as ChatStories from '../blocks/ai-chat.stories'
+import * as Stories from '../components/agent-plan.stories'
+import guide from './AgentPlan.md?raw'
+
+<Meta title="Guidelines/AI/Agent Plan" />
+
+{/* How an agent's plan shows; kept in sync with agent-plan.tsx by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Default} />
+
+## When a step fails
+
+<Canvas of={Stories.Failed} />
+
+## In the chat
+
+<Canvas of={ChatStories.AgentPlanStory} />

@@ -6,7 +6,8 @@ A tool call drawn as your own component: `getWeather` shows a weather card, `sea
 
 - `render(call)` — returns the component for the call as it stands, or `undefined` to keep the card's own view for that state. `call` has `state`, `input`, `output` (once the state is `output-available`), `errorText` (on `output-error`), `toolCallId`, the raw `part`, and `respond(approved)` while the call waits for approval;
 - `label` — the tool's human name, on the card and for screen readers (wins over `toolLabels`);
-- `display` — `'card'` (default): inside the folded card, unfolded, in place of the JSON; `'inline'`: in place of the card, with no frame around it.
+- `display` — `'card'` (default): inside the folded card, unfolded, in place of the JSON; `'inline'`: in place of the card, with no frame around it;
+- `awaitsInput` — the tool runs in the browser and waits for the person (no `execute` on the server). While its state is `input-available`, `render` also gets `submit(output)` and `cancel(reason?)`, wired to `onToolOutput` (`addToolOutput`), and the card says "Waiting for you". `formTool()` builds such an entry with a form; see Tool Form.
 
 A single `ToolCall` takes the same object as `tool`.
 
