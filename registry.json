@@ -1354,6 +1354,26 @@
       ]
     },
     {
+      "name": "agent-graph",
+      "type": "registry:ui",
+      "title": "AgentGraph",
+      "description": "A multi-agent system as a graph: agents as cards, teams as frames, links for delegation, handoffs and the tools and knowledge they use. Laid out in layers without a graph library; keyboard navigation, a list view, zoom, and a run shown live.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/toggle-group"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/agent-graph.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "context-meter",
       "type": "registry:ui",
       "title": "ContextMeter",
@@ -1453,7 +1473,8 @@
         "@coreloom/inline-citation",
         "@coreloom/model-picker",
         "@coreloom/model-field",
-        "@coreloom/context-meter"
+        "@coreloom/context-meter",
+        "@coreloom/agent-graph"
       ],
       "dependencies": []
     },
@@ -2125,6 +2146,30 @@
       "files": [
         {
           "path": "src/components/ai-runs.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-agent-teams",
+      "type": "registry:block",
+      "title": "AI agent teams",
+      "description": "Agents and their teams as a graph with a team filter and a panel on the selected agent (role, model, who it reports to, delegates and hands off to, what it uses), plus agentActivityFromSpans to show a run live from its trace.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/agent-graph",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/select"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-agent-teams.tsx",
           "type": "registry:component"
         }
       ]

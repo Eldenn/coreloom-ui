@@ -152,6 +152,8 @@ interface TraceSpan {
   parentId?: string
   kind: SpanKind
   name: string
+  /** For `agent` spans in a multi-agent run: the agent's id, so AgentTeams can show who is working. */
+  agentId?: string
   /** Start, in ms from the run's start. */
   startMs: number
   durationMs: number

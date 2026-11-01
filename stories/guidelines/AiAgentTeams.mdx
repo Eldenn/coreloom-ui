@@ -1,0 +1,17 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/ai-agent-teams.stories'
+import guide from './AiAgentTeams.md?raw'
+
+<Meta title="Guidelines/AI/Agent Teams" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Default} />
+
+## A run read from its trace
+
+<Canvas of={Stories.LiveRun} />
