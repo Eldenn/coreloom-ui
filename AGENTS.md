@@ -42,7 +42,7 @@ pnpm format                  # Prettier writes (format:check in CI)
 pnpm lint                    # ESLint, type-aware (lint:fix applies the safe fixes)
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
-pnpm registry:build          # validates registry.json, writes public/r/
+pnpm registry:build          # validates registry.json, writes public/r/ (descriptions link the guides)
 pnpm llms                    # public/llms.txt, llms-full.txt and guides/ from registry.json + guides
 pnpm brand "#ff5a1f" --name orange > brand.css   # an accent family from one brand colour
 pnpm changeset               # describe a change for the next release (changeset:check in CI)
