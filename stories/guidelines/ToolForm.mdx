@@ -1,0 +1,22 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as ChatStories from '../blocks/ai-chat.stories'
+import * as Stories from '../components/tool-form.stories'
+import guide from './ToolForm.md?raw'
+
+<Meta title="Guidelines/AI/Tool Form" />
+
+{/* How tools ask the person with a form; kept in sync with tool-form.tsx by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={ChatStories.ToolFormStory} />
+
+## Written by the model
+
+<Canvas of={Stories.WrittenByTheModel} />
+
+## Once answered
+
+<Canvas of={Stories.Sent} />
