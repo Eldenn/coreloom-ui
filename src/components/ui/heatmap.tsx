@@ -55,7 +55,7 @@ interface GridProps {
   cellSize: number
   className?: string
   'aria-label'?: string
-  /** Scrolls to the right end on mount (calendars: the latest weeks first). */
+  /** Starts scrolled to the right end when it doesn't fit (calendars: the latest weeks first). */
   scrollToEnd?: boolean
 }
 
@@ -76,10 +76,6 @@ function HeatmapGrid({
   const scroller = React.useRef<HTMLDivElement>(null)
   const [focus, setFocus] = React.useState<[number, number]>([0, 0])
   const [active, setActive] = React.useState<[number, number] | null>(null)
-
-  React.useEffect(() => {
-    if (scrollToEnd && scroller.current) scroller.current.scrollLeft = scroller.current.scrollWidth
-  }, [scrollToEnd])
 
   function move(row: number, column: number) {
     const r = Math.min(rows.length - 1, Math.max(0, row))
@@ -109,11 +105,19 @@ function HeatmapGrid({
 
   return (
     <div data-slot="heatmap" className={cn('grid w-fit max-w-full min-w-0 gap-2', className)}>
-      <div ref={scroller} className="min-w-0 overflow-x-auto pb-1">
+      {/* A right-to-left scroller starts at its right end with no script, so it never depends on
+          when fonts finish loading; the table inside stays left to right. The table's right margin
+          leaves room for the last month's name, which is wider than its column. */}
+      <div
+        ref={scroller}
+        dir={scrollToEnd ? 'rtl' : undefined}
+        className="min-w-0 overflow-x-auto pb-1"
+      >
         <table
+          dir="ltr"
           role="grid"
           aria-label={ariaLabel}
-          className="border-separate"
+          className="mr-4 border-separate"
           style={{ borderSpacing: Math.max(2, Math.round(cellSize / 6)) }}
           onKeyDown={onKeyDown}
         >
