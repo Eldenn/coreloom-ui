@@ -123,6 +123,9 @@ const en = {
     less: 'Less',
     more: 'More',
     noData: 'No data',
+    item: 'Item',
+    share: (name: string, value: string, share: string) => `${name}: ${value} (${share})`,
+    flow: (from: string, to: string, value: string) => `${from} to ${to}: ${value}`,
     weekOf: (date: string) => `Week of ${date}`,
     cell: (name: string, value: string) => `${name}: ${value}`,
     funnel: {
@@ -953,6 +956,9 @@ const fr: Messages = {
     less: 'Moins',
     more: 'Plus',
     noData: 'Aucune donnée',
+    item: 'Élément',
+    share: (name, value, share) => `${name} : ${value} (${share})`,
+    flow: (from, to, value) => `De ${from} vers ${to} : ${value}`,
     weekOf: (date) => `Semaine du ${date}`,
     cell: (name, value) => `${name} : ${value}`,
     funnel: {

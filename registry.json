@@ -1048,6 +1048,82 @@
       ]
     },
     {
+      "name": "radar-chart",
+      "type": "registry:ui",
+      "title": "Radar chart",
+      "description": "Two or three series compared on the same measures, one axis each around a circle; values also in a hidden table.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/radar-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scatter-chart",
+      "type": "registry:ui",
+      "title": "Scatter chart",
+      "description": "Two measures across many items, up to three groups and an optional size measure (bubbles); every point in a hidden table.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/scatter-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "treemap-chart",
+      "type": "registry:ui",
+      "title": "Treemap chart",
+      "description": "Many parts of a whole as tiles sized by value, colored by up to five groups, labels in roomy tiles; every item with its share in a hidden list.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/treemap-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sankey-chart",
+      "type": "registry:ui",
+      "title": "Sankey chart",
+      "description": "Flows between nodes in columns, bands as wide as the flow, colored by source column; every flow in a hidden list.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sankey-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
@@ -1544,6 +1620,10 @@
         "@coreloom/gauge",
         "@coreloom/heatmap",
         "@coreloom/funnel-chart",
+        "@coreloom/radar-chart",
+        "@coreloom/scatter-chart",
+        "@coreloom/treemap-chart",
+        "@coreloom/sankey-chart",
         "@coreloom/form",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",

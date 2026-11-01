@@ -104,6 +104,9 @@ export const de: Messages = {
     less: 'Weniger',
     more: 'Mehr',
     noData: 'Keine Daten',
+    item: 'Element',
+    share: (name, value, share) => `${name}: ${value} (${share})`,
+    flow: (from, to, value) => `Von ${from} nach ${to}: ${value}`,
     weekOf: (date) => `Woche vom ${date}`,
     cell: (name, value) => `${name}: ${value}`,
     funnel: {
