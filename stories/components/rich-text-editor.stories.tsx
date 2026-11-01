@@ -448,3 +448,60 @@ export const SlashInScrollingPanel: Story = {
     )
   },
 }
+
+// ——— Review changes: a rewrite shown as a diff in the text, accepted or rejected change by change.
+
+const reviewDraft = `<p>our new release make the build faster and it also fix a lot of small bugs that people was reporting since last month.</p><p>Thanks to everyone who tested <a href="https://eldenn.github.io/coreloom-ui/">the beta</a> — <s>three</s> four weeks of it.</p>`
+
+const plainText = (html: string) => html.replace(/<[^>]+>/g, '')
+
+function ReviewEditor({ label }: { label: string }) {
+  const [html, setHtml] = React.useState(reviewDraft)
+  const id = React.useId()
+  return (
+    <div className="min-h-[360px]">
+      <Field className="max-w-2xl">
+        <FieldLabel id={id}>{label}</FieldLabel>
+        <RichTextEditor
+          value={html}
+          onValueChange={setHtml}
+          aria-labelledby={id}
+          minHeight={100}
+          ai={{
+            onRequest: (request) => Promise.resolve(cannedAnswer(request)),
+            defaultOpen: { action: 'fixGrammar' },
+          }}
+        />
+        <FieldDescription data-testid="review-value">
+          {/* Text only: the editor normalises the HTML (link attributes) as it loads. */}
+          {plainText(html) === plainText(reviewDraft)
+            ? 'The value stays as it is until you accept a change.'
+            : 'The value now has the changes you accepted.'}
+        </FieldDescription>
+      </Field>
+    </div>
+  )
+}
+
+// Runs "Fix spelling and grammar" on the whole draft and presses Review changes, as a person would.
+const startReviewPlay = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const review = await within(canvasElement.ownerDocument.body).findByRole('button', {
+    name: /^(Review changes|Revoir les modifications)$/,
+  })
+  await userEvent.click(review)
+}
+
+/** "Review changes" after a rewrite: each change is drawn in the text (struck through, then underlined), and the bar under it steps through them — Accept, Reject, or all at once. The value only changes as changes are accepted. */
+export const ReviewChanges: Story = {
+  name: 'AI suggestions to review',
+  render: () => <ReviewEditor label="Announcement" />,
+  play: startReviewPlay,
+}
+
+export const ReviewChangesFrench: Story = {
+  name: 'AI suggestions to review (French)',
+  tags: ['!autodocs'],
+  globals: { locale: 'fr' },
+  render: () => <ReviewEditor label="Annonce" />,
+  play: startReviewPlay,
+}
