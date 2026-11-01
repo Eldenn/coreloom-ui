@@ -1,5 +1,6 @@
 // Entry for the design-system artifact: every component part on one global.
 export * from '@/components/ui/accordion'
+export * from '@/components/ui/agent-graph'
 export * from '@/components/ui/agent-plan'
 export * from '@/components/ui/alert'
 export * from '@/components/ui/alert-dialog'
@@ -79,6 +80,7 @@ export * from '@/lib/ai'
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from 'recharts'
 // Blocks (registry:block parts)
+export * from '@/components/ai-agent-teams'
 export * from '@/components/ai-agents'
 export * from '@/components/ai-artifact'
 export * from '@/components/ai-chat'
