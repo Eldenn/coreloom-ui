@@ -123,6 +123,102 @@ test.describe('Node editor (Components/Workflow/Node editor)', () => {
   })
 })
 
+test.describe('Node data, expressions and fields (Components/Workflow/Node editor)', () => {
+  test('Input and Output show what the node received and gave', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    const p = panel(page)
+    await p.getByRole('tab', { name: 'Input' }).click()
+    await expect(p.getByRole('tabpanel')).toContainText('1 item')
+    await expect(p.getByRole('tabpanel')).toContainText('Analytical')
+    await p.getByRole('tab', { name: 'Output' }).click()
+    await expect(p.getByRole('tabpanel')).toContainText('No output yet.')
+    await node(page, 'Enrich company').click()
+    await panel(page).getByRole('tab', { name: 'Output' }).click()
+    await expect(panel(page).getByRole('tabpanel')).toContainText('Computing')
+  })
+
+  test('typing {{ suggests the input’s fields; Enter inserts one and the preview fills it', async ({
+    page,
+  }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    const message = panel(page).getByRole('textbox', { name: 'Message' })
+    await expect(panel(page)).toContainText('New signup from Analytical')
+    await message.fill('')
+    await message.pressSequentially('Sector: {{ company.ind')
+    const list = page.getByRole('listbox', { name: 'Insert a value' })
+    await expect(list.getByRole('option').first()).toHaveText(/^company\.industry/)
+    await expect(message).toHaveAttribute('aria-activedescendant', /.+/)
+    await page.keyboard.press('Enter')
+    await expect(list).toHaveCount(0)
+    await expect(message).toHaveValue('Sector: {{ company.industry }}')
+    await expect(panel(page)).toContainText('Sector: Computing')
+    // Escape closes the list and leaves the text alone.
+    await message.pressSequentially(' {{ ')
+    await expect(list).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(list).toHaveCount(0)
+    await expect(message).toHaveValue('Sector: {{ company.industry }} {{ ')
+  })
+
+  test('the braces button opens the list where the caret is', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    await panel(page).getByRole('button', { name: 'Insert a value' }).first().click()
+    const list = page.getByRole('listbox', { name: 'Insert a value' })
+    await expect(list.getByRole('option', { name: /^\$node\.webhook\.email/ })).toBeAttached()
+    await list.getByRole('option', { name: /^status/ }).click()
+    await expect(panel(page).getByRole('textbox', { name: 'Channel' })).toHaveValue(
+      '#sales{{ status }}',
+    )
+  })
+
+  test('Test node runs the node through the app and shows its output', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--test-node')
+    const p = panel(page)
+    await p.getByRole('button', { name: 'Test node' }).click()
+    await expect(p.getByRole('tab', { name: 'Output' })).toHaveAttribute('aria-selected', 'true')
+    await expect(p.getByRole('tabpanel')).toContainText('employees')
+    await expect(node(page, 'Enrich company')).toHaveAccessibleName(/Done/)
+    await expect(page.getByText('Enrich company tested: Done.')).toBeAttached()
+  })
+
+  test('conditions: add one, match all or any, remove it; the sample says if they hold', async ({
+    page,
+  }) => {
+    await open(page, 'components-workflow-node-editor--with-data')
+    await node(page, 'Business email\\?').click()
+    const p = panel(page)
+    await expect(p).toContainText('With the sample input: true.')
+    await p.getByRole('button', { name: 'Add a condition' }).click()
+    const second = p.getByRole('group', { name: 'Condition 2' })
+    await expect(second.getByRole('textbox', { name: 'Value' })).toBeFocused()
+    await expect(p.getByRole('combobox', { name: 'Match' })).toBeVisible()
+    await second.getByRole('button', { name: 'Remove condition 2' }).click()
+    await expect(second).toHaveCount(0)
+    await expect(p.getByRole('button', { name: 'Add a condition' })).toBeFocused()
+  })
+
+  test('a JSON body that doesn’t parse is flagged until fixed', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--fields')
+    const body = panel(page).getByRole('textbox', { name: 'Body' })
+    await expect(body).toHaveAttribute('aria-invalid', 'true')
+    await expect(body).toHaveAccessibleDescription('Not valid JSON.')
+    await expect(page.getByText('1 node needs attention')).toBeVisible()
+    await body.fill('{ "domain": "analytical.io" }')
+    await expect(body).not.toHaveAttribute('aria-invalid')
+    await expect(page.getByText('1 node needs attention')).toHaveCount(0)
+  })
+
+  test('key/value rows: add one, its key takes focus', async ({ page }) => {
+    await open(page, 'components-workflow-node-editor--fields')
+    const p = panel(page)
+    await expect(p.getByRole('combobox', { name: 'Credential' })).toHaveText('CRM API key')
+    await p.getByRole('button', { name: 'Add a row' }).click()
+    await expect(
+      p.getByRole('group', { name: 'Row 2' }).getByRole('textbox', { name: 'Key' }),
+    ).toBeFocused()
+  })
+})
+
 test.describe('Workflow builder (Blocks/Workflow/Workflow builder)', () => {
   test('Run waits until the flagged nodes are fixed', async ({ page }) => {
     await open(page, 'blocks-workflow-workflow-builder--needs-attention')
