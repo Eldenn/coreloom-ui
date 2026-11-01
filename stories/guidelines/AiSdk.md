@@ -41,15 +41,15 @@ export function Assistant({ id, initialMessages }: { id: string; initialMessages
 
 **What each part becomes:**
 
-| Part                            | Rendered as                                                                 |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| `text`                          | `Markdown`, with a caret while `state` is `streaming`                       |
-| `reasoning`                     | `Reasoning`, open while it streams, then folded                             |
-| `tool-<name>`, `dynamic-tool`   | `ToolCall`; `toolLabels` names them, `renderToolOutput` draws results as UI |
-| `approval-requested` state      | Allow / Deny, wired to `addToolApprovalResponse`                            |
-| `file`                          | An image, or a file chip that links to it                                   |
-| `source-url`, `source-document` | The numbered sources under the answer                                       |
-| `step-start`, `data-*`, others  | Skipped                                                                     |
+| Part                            | Rendered as                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `text`                          | `Markdown`, with a caret while `state` is `streaming`                                      |
+| `reasoning`                     | `Reasoning`, open while it streams, then folded                                            |
+| `tool-<name>`, `dynamic-tool`   | `ToolCall`; `tools` draws them as your components (generative UI), `toolLabels` names them |
+| `approval-requested` state      | Allow / Deny, wired to `addToolApprovalResponse`                                           |
+| `file`                          | An image, or a file chip that links to it                                                  |
+| `source-url`, `source-document` | The numbered sources under the answer                                                      |
+| `step-start`, `data-*`, others  | Skipped                                                                                    |
 
 - Tools that change things (send, delete, deploy, pay) should need approval on the server (the AI SDK's tool approval); the chat then shows Allow / Deny and waits for the user.
 - Keep provider keys on the server. The playground and agent screens edit settings; your backend decides what they may do.

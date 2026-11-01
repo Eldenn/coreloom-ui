@@ -5,6 +5,8 @@ import { Badge, BadgeDot } from '@/components/ui/badge'
 import { ToolCall } from '@/components/ui/tool-call'
 import type { AiToolPart } from '@/lib/ai'
 
+import { demoTools, docHits, lyon, meeting } from '../blocks/ai-tool-ui'
+
 const meta = {
   title: 'Components/AI/Tool call',
   component: ToolCall,
@@ -155,5 +157,82 @@ export const CustomOutput: Story = {
         ))}
       </ul>
     ),
+  },
+}
+
+/** Generative UI, inline: `tool.render` draws the call as the app's own component, in place of the card. */
+export const GenerativeInline: Story = {
+  args: {
+    tool: demoTools.getWeather,
+    part: {
+      type: 'tool-getWeather',
+      toolCallId: 'w1',
+      state: 'output-available',
+      input: { city: 'Lyon' },
+      output: lyon,
+    },
+  },
+}
+
+/** The same component while the tool runs: a skeleton the size of the card, busy for screen readers. */
+export const GenerativeLoading: Story = {
+  args: GenerativeInline.args,
+  render: (args) => (
+    <div data-frozen className="flex flex-col gap-2">
+      <ToolCall
+        {...args}
+        part={{
+          type: 'tool-getWeather',
+          toolCallId: 'w2',
+          state: 'input-available',
+          input: { city: 'Lyon' },
+        }}
+      />
+    </div>
+  ),
+}
+
+/** In the card (`display: 'card'`, the default): the results replace the JSON, the header stays. */
+export const GenerativeInCard: Story = {
+  args: {
+    tool: demoTools.searchDocs,
+    part: {
+      type: 'tool-searchDocs',
+      toolCallId: 'd1',
+      state: 'output-available',
+      input: { query: 'rollback' },
+      output: docHits,
+    },
+  },
+}
+
+/** A component that asks: `respond(approved)` answers the approval from its own buttons. Try it. */
+export const GenerativeApproval: Story = {
+  render: function Booking() {
+    const [part, setPart] = React.useState<AiToolPart>({
+      type: 'tool-bookMeeting',
+      toolCallId: 'b1',
+      state: 'approval-requested',
+      input: meeting,
+      approval: { id: 'ap1' },
+    })
+    return (
+      <ToolCall
+        part={part}
+        tool={demoTools.bookMeeting}
+        onApprovalResponse={({ approved }) => {
+          setPart((p) =>
+            approved
+              ? {
+                  ...p,
+                  state: 'output-available',
+                  approval: { id: 'ap1', approved },
+                  output: { id: 'mtg_1' },
+                }
+              : { ...p, state: 'output-denied', approval: { id: 'ap1', approved } },
+          )
+        }}
+      />
+    )
   },
 }
