@@ -4,6 +4,7 @@
 // strikethrough, inline code, two heading levels, lists, quote, code block, links, undo / redo.
 // Optional AI (`ai`): an "AI" button and ⌘J / Ctrl+J open a panel that edits the selection
 // through the app's own model call, and "/" at the start of a line opens a menu of AI commands.
+// A rewrite can be reviewed as changes in the text, each one accepted or rejected.
 // The value is HTML. Sanitize it on the server before you render it anywhere else.
 import { Placeholder } from '@tiptap/extensions'
 import { type Editor, EditorContent, useEditor, useEditorState } from '@tiptap/react'
@@ -43,6 +44,7 @@ import {
   RichTextAiSlashMenu,
   type SlashHandlers,
 } from '@/components/ui/rich-text-ai'
+import { AiReview, REVIEW_CONTENT, RichTextReview } from '@/components/ui/rich-text-review'
 import { Separator } from '@/components/ui/separator'
 import { Toggle } from '@/components/ui/toggle'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -248,6 +250,7 @@ function RichTextEditor({
       // Always there (inert until the AI panel paints a selection, or the "/" menu mounts), so `ai`
       // can be turned on after mount.
       AiSelectionHighlight,
+      AiReview,
       // eslint-disable-next-line react-hooks/refs -- the getter runs in ProseMirror's key and input handlers, never during render.
       AiSlashCommand.configure({ handlers: () => slashHandlersRef.current }),
     ],
@@ -488,8 +491,10 @@ function RichTextEditor({
           'px-[13px] py-2.5 text-[14px] leading-[1.6] text-foreground',
           CONTENT,
           ai && AI_CONTENT,
+          REVIEW_CONTENT,
         )}
       />
+      {editor && <RichTextReview editor={editor} disabled={disabled} />}
       {ai && editor && ai.slashCommand !== false && !disabled && (
         <RichTextAiSlashMenu
           editor={editor}

@@ -653,5 +653,28 @@ export const es: Messages = {
     slashAsk: 'Preguntar a la IA…',
     slashResults: (n) =>
       `${n} ${n === 1 ? 'comando de IA' : 'comandos de IA'}. Flechas arriba y abajo para elegir, Intro para ejecutar.`,
+    aiReview: 'Revisar los cambios',
+    aiReviewNone: 'La sugerencia es igual a tu texto: no hay nada que revisar.',
+    review: 'Cambios sugeridos',
+    reviewCount: (i, n) => `Cambio ${i} de ${n}`,
+    reviewReplace: (from, to) => `Reemplazar «${from}» por «${to}»`,
+    reviewDelete: (text) => `Eliminar «${text}»`,
+    reviewInsert: (text) => `Insertar «${text}»`,
+    reviewPrevious: 'Cambio anterior',
+    reviewNext: 'Cambio siguiente',
+    reviewAccept: 'Aceptar',
+    reviewReject: 'Rechazar',
+    reviewAcceptAll: 'Aceptar todo',
+    reviewRejectAll: 'Rechazar todo',
+    reviewStarted: (n) =>
+      n === 1
+        ? '1 cambio sugerido. Acéptalo o recházalo debajo del texto.'
+        : `${n} cambios sugeridos. Acepta o rechaza cada uno debajo del texto.`,
+    reviewAccepted: (left) =>
+      `Cambio aceptado. ${left === 0 ? 'Revisaste todos los cambios.' : left === 1 ? 'Queda 1.' : `Quedan ${left}.`}`,
+    reviewRejected: (left) =>
+      `Cambio rechazado. ${left === 0 ? 'Revisaste todos los cambios.' : left === 1 ? 'Queda 1.' : `Quedan ${left}.`}`,
+    reviewAllAccepted: 'Se aceptaron todos los cambios.',
+    reviewAllRejected: 'Se rechazaron todos los cambios.',
   },
 }

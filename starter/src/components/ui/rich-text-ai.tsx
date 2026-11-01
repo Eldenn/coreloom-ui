@@ -2,11 +2,12 @@
 
 // Coreloom UI — RichTextAi. The AI panel of RichTextEditor: ask for an edit, or pick a quick action
 // (improve, shorten, translate…), watch the answer stream in, then replace the selection or insert
-// it below. The app sends the request to its model through `onRequest`; nothing here calls an API.
+// it below, or review it as changes in the text (accepted or rejected one by one: RichTextReview).
+// The app sends the request to its model through `onRequest`; nothing here calls an API.
 // The model's text is read as light Markdown and inserted as text nodes, never as HTML.
 // Typing "/" at the start of a line (or after a space) opens a small menu of AI commands at the caret.
 import { closeHistory } from '@tiptap/pm/history'
-import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Fragment, type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { type Editor, Extension, type JSONContent, useEditorState } from '@tiptap/react'
@@ -30,6 +31,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
+import { startReview } from '@/components/ui/rich-text-review'
 import { Spinner } from '@/components/ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -75,6 +77,9 @@ interface RichTextAiOptions {
   /** The "/" menu. `false` turns it off; a list picks the actions shown after "Ask AI…", in order.
    *  Default: "continue", then `actions` without "translate" (it needs a language: Ask AI… has it). */
   slashCommand?: boolean | RichTextAiSlashAction[]
+  /** "Review changes": a rewrite of existing text shows as a diff in the text, to accept or reject
+   *  change by change. It is the main action for rewrites; `false` leaves Replace as the main action. Default: true. */
+  review?: boolean
 }
 
 /** An action the "/" menu can run straight away. */
@@ -708,6 +713,8 @@ function RichTextAi({
   const [translateOpen, setTranslateOpen] = React.useState(false)
   // The selection was edited away while the panel was open (a reload, a controlled value): nothing to replace.
   const [lost, setLost] = React.useState(false)
+  // "Review changes" found nothing to change: the answer is the text as it is.
+  const [unchanged, setUnchanged] = React.useState(false)
   const scopeRef = React.useRef<'selection' | 'document'>('document')
   const controller = React.useRef<AbortController | null>(null)
   const runId = React.useRef(0)
@@ -781,6 +788,7 @@ function RichTextAi({
     const id = ++runId.current
     const live = () => id === runId.current && !ac.signal.aborted
     setLast(command)
+    setUnchanged(false)
     setAnswer('')
     answerRef.current = ''
     setErrorText(null)
@@ -838,6 +846,7 @@ function RichTextAi({
     setPrompt('')
     setTranslateOpen(false)
     setLost(false)
+    setUnchanged(false)
   }
 
   // Opening takes the selection (or the whole document); closing lets go of it and of any stream.
@@ -888,19 +897,20 @@ function RichTextAi({
   // Buttons that disappear (or turn off) take focus with them: hand it to what replaces them.
   React.useEffect(() => {
     if (!open || (document.activeElement === inputRef.current && !followRun.current)) return
-    const next = lost
-      ? discardRef.current
-        ? discardRef
-        : inputRef
-      : status === 'streaming'
-        ? stopRef
-        : status === 'done'
-          ? primaryRef
-          : status === 'error'
-            ? retryRef
-            : inputRef
+    const next =
+      lost || unchanged
+        ? discardRef.current
+          ? discardRef
+          : inputRef
+        : status === 'streaming'
+          ? stopRef
+          : status === 'done'
+            ? primaryRef
+            : status === 'error'
+              ? retryRef
+              : inputRef
     next.current?.focus()
-  }, [status, open, lost])
+  }, [status, open, lost, unchanged])
 
   const close = () => {
     onOpenChange(false)
@@ -908,26 +918,52 @@ function RichTextAi({
 
   const nodes = () => toNodes(parseAnswer(answerRef.current))
 
-  const replace = () => {
-    const range = target()
-    if (!range) {
-      setLost(true)
-      return
-    }
+  /** What goes in place of the range: one paragraph inside one paragraph stays inline (the sentence
+   *  is rewritten, not split); anything else is blocks. */
+  const replacement = (range: Range) => {
     const blocks = parseAnswer(answerRef.current)
     const $from = editor.state.doc.resolve(range.from)
     const $to = editor.state.doc.resolve(range.to)
-    // One paragraph inside one paragraph stays inline: the sentence is rewritten, not split.
     const inline =
       scopeRef.current === 'selection' &&
       blocks.length === 1 &&
       blocks[0].type === 'paragraph' &&
       $from.sameParent($to) &&
       $from.parent.isTextblock
-    const content = inline && blocks[0].type === 'paragraph' ? textNodes(blocks[0].inline) : nodes()
+    return inline && blocks[0].type === 'paragraph' ? textNodes(blocks[0].inline) : nodes()
+  }
+
+  const replace = () => {
+    const range = target()
+    if (!range) {
+      setLost(true)
+      return
+    }
+    const content = replacement(range)
     editor.view.dispatch(editor.state.tr.setMeta(highlightKey, null).setMeta(caretKey, null))
     editor.chain().focus().insertContentAt(range, content).run()
     refocusEditor.current = false
+    close()
+  }
+
+  /** The same replacement, shown as changes in the text to accept or reject one by one. */
+  const review = () => {
+    const range = target()
+    if (!range) {
+      setLost(true)
+      return
+    }
+    const content = Fragment.fromArray(
+      replacement(range).map((json) => editor.schema.nodeFromJSON(json)),
+    )
+    const after = editor.state.tr.replaceWith(range.from, range.to, content).doc
+    editor.view.dispatch(editor.state.tr.setMeta(highlightKey, null).setMeta(caretKey, null))
+    if (!startReview(editor, after)) {
+      setUnchanged(true)
+      return
+    }
+    // The panel closes onto the text, the caret on the first change.
+    refocusEditor.current = true
     close()
   }
 
@@ -974,12 +1010,16 @@ function RichTextAi({
   // Summaries and continuations are new text, and from the "/" menu the person is writing at that
   // spot: inserting is the main (focused) action there; Replace all stays a deliberate second choice.
   const insertFirst = last?.action === 'summarise' || continuing || atCaret
+  // A rewrite of existing text is best read as changes to it; a translation changes every word.
+  const reviewable = options.review !== false && !insertFirst && last?.action !== 'translate'
   const announcement = busy
     ? t.aiWriting
     : status === 'done'
-      ? stopped
-        ? t.aiStopped
-        : t.aiDone
+      ? unchanged
+        ? t.aiReviewNone
+        : stopped
+          ? t.aiStopped
+          : t.aiDone
       : ''
 
   return (
@@ -1193,12 +1233,23 @@ function RichTextAi({
               )}
               {status === 'done' && (
                 <>
-                  {!continuing && (
+                  {reviewable && (
                     <Button
-                      ref={insertFirst ? undefined : primaryRef}
+                      ref={primaryRef}
                       type="button"
                       size="sm"
-                      variant={insertFirst ? 'outline' : 'default'}
+                      onClick={review}
+                      disabled={lost || unchanged}
+                    >
+                      {t.aiReview}
+                    </Button>
+                  )}
+                  {!continuing && (
+                    <Button
+                      ref={insertFirst || reviewable ? undefined : primaryRef}
+                      type="button"
+                      size="sm"
+                      variant={insertFirst || reviewable ? 'outline' : 'default'}
                       onClick={replace}
                       disabled={lost}
                     >
@@ -1256,7 +1307,11 @@ function RichTextAi({
                 </>
               )}
             </div>
-            {status === 'done' && <p className="text-[12px] text-muted-foreground">{t.aiHint}</p>}
+            {status === 'done' && (
+              <p className="text-[12px] text-muted-foreground">
+                {unchanged ? t.aiReviewNone : t.aiHint}
+              </p>
+            )}
           </>
         )}
       </PopoverContent>
