@@ -14,6 +14,9 @@
 //
 //   <Chat … tools={{ getWeather: { label: 'Weather', display: 'inline', render: ({ state, output }) =>
 //     state === 'output-available' ? <WeatherCard {...output} /> : <WeatherCardSkeleton /> } }} />
+//
+// `data-plan` parts show as a live AgentPlan (steps ticked off as the agent works); `renderData` draws
+// other data parts. Tools that ask the person first (`formTool()`) answer through `onToolOutput`.
 import {
   ArrowDownIcon,
   CheckIcon,
@@ -34,6 +37,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import { AgentPlan } from '@/components/ui/agent-plan'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -58,20 +62,28 @@ import { Markdown } from '@/components/ui/markdown'
 import { PromptInput } from '@/components/ui/prompt-input'
 import { Reasoning } from '@/components/ui/reasoning'
 import { Textarea } from '@/components/ui/textarea'
-import { ToolCall, type ToolComponents } from '@/components/ui/tool-call'
+import {
+  ToolCall,
+  type ToolCallback,
+  type ToolComponents,
+  type ToolOutputResponse,
+} from '@/components/ui/tool-call'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   type AiChatStatus,
+  type AiDataPart,
   type AiMessage,
   type AiSourceDocumentPart,
   type AiSourceUrlPart,
   type AiToolPart,
+  isDataPart,
   isFilePart,
   isReasoningPart,
   isSourcePart,
   isTextPart,
   isToolPart,
   messageText,
+  readPlan,
 } from '@/lib/ai'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { AppLink } from '@/lib/link'
@@ -108,6 +120,13 @@ interface ToolOptions {
   /** Draw a tool's output yourself (by tool id); JSON otherwise. `tools` takes precedence. */
   renderToolOutput?: (toolName: string, output: unknown) => React.ReactNode | undefined
   onToolApprovalResponse?: (response: { id: string; approved: boolean }) => void
+  /** Answers from tools that wait for the person (`awaitsInput`, `formTool()`): wire `addToolOutput`. */
+  onToolOutput?: ToolCallback<ToolOutputResponse>
+  /**
+   * Draw a data part (`data-<name>`) yourself; return undefined to leave it to the chat, which draws
+   * `data-plan` as an AgentPlan and skips the others, or null to hide it.
+   */
+  renderData?: (part: AiDataPart) => React.ReactNode
 }
 
 function IconAction({
@@ -352,6 +371,8 @@ function ChatMessage({
   toolLabels,
   renderToolOutput,
   onToolApprovalResponse,
+  onToolOutput,
+  renderData,
   className,
 }: {
   message: AiMessage
@@ -525,8 +546,17 @@ function ChatMessage({
                   renderToolOutput ? (output) => renderToolOutput(name, output) : undefined
                 }
                 onApprovalResponse={onToolApprovalResponse}
+                onOutput={onToolOutput}
               />
             )
+          }
+          if (isDataPart(part)) {
+            // Parts with an id are rewritten in place as the server updates them; key on it.
+            const key = part.id ?? `${part.type}-${String(i)}`
+            const custom = renderData?.(part)
+            if (custom !== undefined) return <React.Fragment key={key}>{custom}</React.Fragment>
+            const plan = part.type === 'data-plan' ? readPlan(part.data) : undefined
+            return plan ? <AgentPlan key={key} plan={plan} active={streaming} /> : null
           }
           // eslint-disable-next-line @eslint-react/no-array-index-key -- parts only get appended, never reordered
           if (isFilePart(part)) return <Attachment key={i} part={part} />
