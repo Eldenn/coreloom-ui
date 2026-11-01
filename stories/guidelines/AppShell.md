@@ -14,4 +14,4 @@ The product layout as one installable block: sidebar, header, ⌘K palette, them
 
 - The sidebar collapses to an icon rail with Ctrl / ⌘ + B and becomes a sheet below 768px. The header is sticky. Content is centered at `--container-app` with 32px gutters (16px on phones).
 - Links render as `<a href>`. In Next.js, Inertia or TanStack Router, swap in their `Link` with `asChild` in `app-sidebar.tsx` (`NavLinks`). The file is yours.
-- Mount `TooltipProvider` and one `Toaster` at the root (see Getting started). `StatCard` takes `label`, `value`, `delta`, `trend` (`up` / `down`), `good` and `note`: a falling build time is good news, so set `good`.
+- Mount `TooltipProvider` and one `Toaster` at the root (see Getting started). `StatCard` takes `label`, `value`, `delta`, `trend` (`up` / `down`), `good`, `note` and `sparkline` (recent values, drawn under the number): a falling build time is good news, so set `good`.

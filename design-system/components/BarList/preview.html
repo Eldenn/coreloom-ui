@@ -1,0 +1,30 @@
+<!-- @dsCard group="Data display" height=330 subtitle="Ranking · links · Show all past a limit" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.BarList || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { BarList, Card, CardHeader, CardTitle, CardDescription, CardContent } = UI;
+      const data = [['/', 31420], ['/pricing', 18204], ['/docs/getting-started', 12880], ['/blog/coreloom-1-0', 6310], ['/changelog', 4112], ['/docs/registry', 3870], ['/careers', 1204]]
+        .map(([label, value]) => ({ label, value, href: '#' + label }));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Card, { style: { maxWidth: 440 } },
+          h(CardHeader, null, h(CardTitle, null, 'Top pages'), h(CardDescription, null, 'Views, last 30 days')),
+          h(CardContent, null, h(BarList, { data, limit: 5, 'aria-label': 'Top pages by views' }))));
+    }
+    render();
+  </script>
+</body>
+</html>
