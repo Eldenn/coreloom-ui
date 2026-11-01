@@ -120,6 +120,15 @@ const en = {
     donutSummary: (total: string) => `Total ${total}. Values by part in the legend.`,
     showAll: (n: number) => `Show all ${n}`,
     showLess: 'Show less',
+    less: 'Less',
+    more: 'More',
+    noData: 'No data',
+    cell: (name: string, value: string) => `${name}: ${value}`,
+    funnel: {
+      conversion: (rate: string) => `${rate} continue`,
+      dropped: (count: string) => `(${count} dropped)`,
+      ofStartLabel: 'of the first step:',
+    },
     gauge: {
       ok: 'Normal',
       warning: 'Warning',
@@ -940,6 +949,15 @@ const fr: Messages = {
     donutSummary: (total) => `Total ${total}. Valeurs par part dans la légende.`,
     showAll: (n) => `Tout afficher (${n})`,
     showLess: 'Afficher moins',
+    less: 'Moins',
+    more: 'Plus',
+    noData: 'Aucune donnée',
+    cell: (name, value) => `${name} : ${value}`,
+    funnel: {
+      conversion: (rate) => `${rate} continuent`,
+      dropped: (count) => `(${count} abandons)`,
+      ofStartLabel: 'de la première étape :',
+    },
     gauge: {
       ok: 'Normal',
       warning: 'Attention',

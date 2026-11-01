@@ -109,3 +109,72 @@ test.describe('gauge', () => {
     )
   })
 })
+
+test.describe('heatmap', () => {
+  test('is one tab stop; arrows move between named cells and the readout follows', async ({
+    page,
+  }) => {
+    await open(page, 'components-charts-heatmap--default')
+    const grid = page.getByRole('grid', { name: 'Deploys by weekday and hour' })
+    await expect(grid.getByRole('gridcell')).toHaveCount(7 * 24)
+    await page.keyboard.press('Tab')
+    const first = grid.getByRole('gridcell', { name: 'Mon, 00: 0' })
+    await expect(first).toBeFocused()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowRight')
+    await expect(grid.getByRole('gridcell', { name: /^Tue, 01: / })).toBeFocused()
+    await page.keyboard.press('End')
+    await expect(grid.getByRole('gridcell', { name: /^Tue, 23: / })).toBeFocused()
+    await page.keyboard.press('Control+Home')
+    await expect(first).toBeFocused()
+    await expect(page.getByText('Mon, 00: 0', { exact: true })).toBeVisible()
+    // Only one cell is in the tab order.
+    await expect(grid.locator('[tabindex="0"]')).toHaveCount(1)
+  })
+
+  test('names gaps "No data"', async ({ page }) => {
+    await open(page, 'components-charts-heatmap--matrix')
+    await expect(page.getByRole('gridcell', { name: 'search, Oct 11: No data' })).toHaveCount(1)
+  })
+
+  test('calendar cells say the full date and the value, in the locale', async ({ page }) => {
+    await open(page, 'components-charts-heatmap--calendar')
+    const grid = page.getByRole('grid', { name: 'Deploys per day, last year' })
+    await expect(grid.getByRole('row')).toHaveCount(8)
+    await expect(
+      grid.getByRole('gridcell', { name: /^Saturday, October 31, 2026: \d+ deploys?$/ }),
+    ).toHaveCount(1)
+    await open(page, 'components-charts-heatmap--french', 'fr')
+    await expect(
+      page.getByRole('gridcell', { name: /^samedi 31 octobre 2026 : \d+$/ }),
+    ).toHaveCount(1)
+  })
+})
+
+test.describe('funnel chart', () => {
+  test('lists the steps in order with counts, shares and what dropped', async ({ page }) => {
+    await open(page, 'components-charts-funnel-chart--default')
+    const steps = page
+      .getByRole('list', { name: 'Sign-up funnel, October 2026' })
+      .getByRole('listitem')
+    await expect(steps).toHaveCount(5)
+    await expect(steps.nth(0)).toContainText('Visited the pricing page')
+    await expect(steps.nth(0)).toContainText('12,480')
+    await expect(steps.nth(1)).toContainText('33.8% continue (8,268 dropped)')
+    await expect(steps.nth(1)).toContainText('of the first step: 33.8%')
+    await expect(steps.nth(4)).toContainText('of the first step: 3.9%')
+  })
+})
+
+test.describe('trend chart', () => {
+  test('stacked, percent and combo charts draw', async ({ page }) => {
+    for (const id of ['stacked-bars', 'percent-area', 'combo']) {
+      await open(page, `blocks-dashboard--${id}`)
+      await expect(page.locator('.recharts-surface').first()).toBeVisible()
+    }
+    // The combo has a second axis on the right with the error rate's format.
+    await expect(
+      page.locator('.recharts-cartesian-axis-tick-value').filter({ hasText: '1.8\u202f%' }),
+    ).toHaveCount(1)
+  })
+})
