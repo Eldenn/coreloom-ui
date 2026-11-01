@@ -22,7 +22,8 @@
 
 - **70 components** on Radix and Tailwind CSS v4: forms, overlays, navigation, tables (sorting, server-driven
   or virtual), date, money and phone inputs, a rich text editor with an optional AI panel, and AI pieces
-  (prompt, Markdown output with citations, reasoning, tool calls, model picker, context meter).
+  (prompt, Markdown output with citations, reasoning, tool calls, tool forms, agent plans, model picker,
+  context meter).
 - **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
   pages, notifications, team, billing, kanban, calendar, marketing and docs.
 - **AI blocks**: chat with conversation history, edits and branches, a floating chat widget, agent

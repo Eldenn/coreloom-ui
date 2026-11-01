@@ -73,6 +73,8 @@ const COMPONENTS = [
   'PromptInput',
   'Reasoning',
   'ToolCall',
+  'AgentPlan',
+  'ToolForm',
   'InlineCitation',
   'ModelPicker',
   'ContextMeter',

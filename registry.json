@@ -1250,6 +1250,55 @@
       ]
     },
     {
+      "name": "agent-plan",
+      "type": "registry:ui",
+      "title": "AgentPlan",
+      "description": "The steps an agent works through, ticked off live (to do, in progress, done, failed, skipped) from a `data-plan` part.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/collapsible",
+        "@coreloom/progress",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/agent-plan.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tool-form",
+      "type": "registry:ui",
+      "title": "ToolForm",
+      "description": "A tool that asks the person with a form (date, choice, text) before it goes on; the answer becomes the tool's output (`addToolOutput`).",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/tool-call",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/checkbox",
+        "@coreloom/date-picker",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/select",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tool-form.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "inline-citation",
       "type": "registry:ui",
       "title": "InlineCitation",
@@ -1399,6 +1448,8 @@
         "@coreloom/prompt-input",
         "@coreloom/reasoning",
         "@coreloom/tool-call",
+        "@coreloom/agent-plan",
+        "@coreloom/tool-form",
         "@coreloom/inline-citation",
         "@coreloom/model-picker",
         "@coreloom/model-field",
@@ -1945,7 +1996,7 @@
       "name": "ai-chat",
       "type": "registry:block",
       "title": "AI chat",
-      "description": "A conversation with a model for the AI SDK's useChat: Markdown answers, reasoning, tool calls with approval, sources, files, copy / regenerate / feedback, suggestions, and the conversation history.",
+      "description": "A conversation with a model for the AI SDK's useChat: Markdown answers, reasoning, tool calls with approval, live agent plans, sources, files, copy / regenerate / feedback, suggestions, and the conversation history.",
       "categories": ["ai"],
       "dependencies": ["lucide-react"],
       "registryDependencies": [
@@ -1958,6 +2009,7 @@
         "@coreloom/prompt-input",
         "@coreloom/reasoning",
         "@coreloom/tool-call",
+        "@coreloom/agent-plan",
         "@coreloom/alert",
         "@coreloom/alert-dialog",
         "@coreloom/button",
