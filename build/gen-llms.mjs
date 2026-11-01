@@ -39,7 +39,10 @@ const TOPICS = [
 ]
 
 const SECTIONS = [
-  ['Foundations', (i) => ['registry:item', 'registry:lib', 'registry:hook'].includes(i.type)],
+  [
+    'Foundations',
+    (i) => ['registry:item', 'registry:file', 'registry:lib', 'registry:hook'].includes(i.type),
+  ],
   ['Components', (i) => i.type === 'registry:ui'],
   ['Block parts', (i) => i.type === 'registry:component'],
   ['Blocks', (i) => i.type === 'registry:block'],

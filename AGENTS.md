@@ -42,7 +42,7 @@ pnpm format                  # Prettier writes (format:check in CI)
 pnpm lint                    # ESLint, type-aware (lint:fix applies the safe fixes)
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
-pnpm registry:build          # validates registry.json, writes public/r/ (descriptions link the guides)
+pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
 pnpm llms                    # public/llms.txt, llms-full.txt and guides/ from registry.json + guides
 pnpm brand "#ff5a1f" --name orange > brand.css   # an accent family from one brand colour
 pnpm changeset               # describe a change for the next release (changeset:check in CI)
@@ -124,6 +124,9 @@ A change is finished when all of this is true:
 
 ## Design rules
 
+Apps get these rules (and the accessibility and text ones below) through `@coreloom/rules`
+(`src/rules/AGENTS.md`): when a rule here changes, change it there too.
+
 - **Tokens only.** Colours through the semantic utilities: `text-foreground`, `text-muted-foreground`,
   `text-fg-secondary`, `bg-background`, `bg-card`, `bg-inset`, `bg-secondary`, `border-border`,
   `border-border-subtle`, `border-border-strong`, `bg-primary` / `text-primary-text` /
@@ -169,6 +172,9 @@ A change is finished when all of this is true:
   clean.
 
 ## Stories
+
+Story files are also published as `*-demo` example items that assistants read as usage code
+(`build/registry-examples.mjs`): write them as code an app could copy, importing from `@/…`.
 
 - `title`: `Components/<Group>/<Name>` or `Blocks/<Area>/<Name>`; `tags: ["autodocs"]`; a
   `parameters.docs.description.component` that says what it is and what the consumer wires.
