@@ -530,6 +530,7 @@ export const es: Messages = {
       handsOffTo: 'Pasa el relevo a',
       uses: 'Usa',
       usedBy: 'Lo usa',
+      edit: 'Editar el grafo',
       openAgent: 'Abrir agente',
       runs: 'Ver ejecuciones',
       empty: 'Aún no hay agentes.',
