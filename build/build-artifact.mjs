@@ -89,6 +89,7 @@ const COMPONENTS = [
   'ModelPicker',
   'ContextMeter',
   'AgentGraph',
+  'NodeEditor',
   'AppShell',
   'LoginForm',
   'SettingsLayout',
@@ -103,6 +104,8 @@ const COMPONENTS = [
   'RunList',
   'RunTrace',
   'AgentTeams',
+  'AgentBuilder',
+  'WorkflowBuilder',
   'Playground',
   'KnowledgeBase',
   'RetrievalTest',
@@ -135,10 +138,16 @@ const r = await esbuild.build({
   define: { 'process.env.NODE_ENV': '"production"' },
   plugins: [globals],
   write: false,
+  // Needed for the stylesheets components import (React Flow's base styles): esbuild emits them as
+  // a .css next to the bundle. Nothing is written here; both outputs are handled below.
+  outdir: path.dirname(path.resolve(out)),
   legalComments: 'none',
   metafile: true,
 })
-let code = r.outputFiles[0].text
+let code = r.outputFiles.find((f) => f.path.endsWith('.js')).text
+// The components' own stylesheets, concatenated into dist/bundle.css by artifact:build.
+const css = r.outputFiles.find((f) => f.path.endsWith('.css'))
+fs.writeFileSync(path.join(path.dirname(out), 'components.css'), css ? css.text : '')
 const header = { format: 3, namespace: NS, components: COMPONENTS.map((name) => ({ name })) }
 code = `/* @ds-bundle: ${JSON.stringify(header)} */\n/* Coreloom UI on shadcn/ui (Radix). Built from components/src — do not edit by hand. */\n${code}\nwindow.${NS} = Object.assign(window.${NS} || {}, __coreloom);\n`
 for (const bad of ['</script', '<!--'])

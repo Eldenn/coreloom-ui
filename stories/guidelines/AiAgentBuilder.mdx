@@ -1,0 +1,17 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/ai-agent-builder.stories'
+import guide from './AiAgentBuilder.md?raw'
+
+<Meta title="Guidelines/AI/Agent Builder" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.AgentSelected} />
+
+## Imported from LangGraph
+
+<Canvas of={Stories.ImportedFromLangGraph} />
