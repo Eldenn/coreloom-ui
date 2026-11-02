@@ -39,7 +39,10 @@ const TOPICS = [
 ]
 
 const SECTIONS = [
-  ['Foundations', (i) => ['registry:item', 'registry:lib', 'registry:hook'].includes(i.type)],
+  [
+    'Foundations',
+    (i) => ['registry:item', 'registry:file', 'registry:lib', 'registry:hook'].includes(i.type),
+  ],
   ['Components', (i) => i.type === 'registry:ui'],
   ['Block parts', (i) => i.type === 'registry:component'],
   ['Blocks', (i) => i.type === 'registry:block'],
@@ -62,7 +65,7 @@ export function guidesFor(item) {
   return [...new Set(named)].filter(exists)
 }
 
-const guideUrl = (guide) => `${SITE}/guides/${guide}.md`
+export const guideUrl = (guide) => `${SITE}/guides/${guide}.md`
 const readGuide = (guide) => fs.readFileSync(path.join(guidesDir, `${guide}.md`), 'utf8').trim()
 
 export function build() {
