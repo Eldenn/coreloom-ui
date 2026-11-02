@@ -109,9 +109,30 @@ folder with `components.json`, which is where the server finds the `@coreloom` n
 ```
 
 Then ask in plain words: "add the Coreloom chat block and wire it to useChat", "which Coreloom
-component is a date range picker?". Each item's description ends with a link to its guide, so the
-assistant can read the rules before writing code. The starter ships with the server configured
-(`.mcp.json`).
+component is a date range picker?". Each item's description ends with a link to its guide, and every
+Storybook story file is published as a `*-demo` example item (`button-demo`, `overlays-demo`,
+`ai-chat-demo`…), so the assistant can read the rules and real usage code before writing any. The
+starter ships with the server configured (`.mcp.json`).
+
+To make coding agents follow the design system on every change, not only when they use the MCP
+server, install the rules at the app's root:
+
+```bash
+pnpm dlx shadcn@latest add @coreloom/rules   # writes AGENTS.md (asks before replacing yours)
+```
+
+`AGENTS.md` is read by Codex, Cursor, Copilot and most agents; for Claude Code, add `@AGENTS.md` to the
+app's `CLAUDE.md`. Edit it to fit the app.
+
+Without a local project (claude.ai in the browser, or just to read the docs), two remote options need
+no setup on our side; they read the docs and code but can't install items:
+
+- [GitMCP](https://gitmcp.io), a free third-party service that serves a public repository as a remote
+  MCP server and reads `llms.txt` first: add `https://gitmcp.io/Eldenn/coreloom-ui` as a custom
+  connector (claude.ai: Settings → Connectors), or
+  `claude mcp add --transport http coreloom https://gitmcp.io/Eldenn/coreloom-ui` in Claude Code.
+- GitHub's own MCP server, if your assistant already has it: point it at `Eldenn/coreloom-ui`
+  (guides in `stories/guidelines/`, usage in `stories/`, items in `registry.json`).
 
 ## What's in the repo
 
