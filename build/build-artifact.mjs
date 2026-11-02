@@ -191,6 +191,11 @@ const COMPONENTS = [
   'Playground',
   'KnowledgeBase',
   'RetrievalTest',
+  'EvalSuiteList',
+  'EvalRunReport',
+  'FileManager',
+  'Inbox',
+  'Spreadsheet',
 ]
 
 const globals = {

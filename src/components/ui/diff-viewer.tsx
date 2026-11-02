@@ -225,7 +225,8 @@ function DiffViewer({
   const added = lines.filter((l) => l.type === 'add').length
   const removed = lines.filter((l) => l.type === 'remove').length
   const textCell = cn(
-    'pr-4 text-foreground',
+    // align-top: in the split view a short side would otherwise centre against a long, wrapped one.
+    'pr-4 align-top text-foreground',
     wrap ? '[overflow-wrap:anywhere] whitespace-pre-wrap' : 'whitespace-pre',
   )
 
