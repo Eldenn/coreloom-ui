@@ -39,12 +39,24 @@ test.describe('form renderer', () => {
   })
 })
 
+test('the newer field types render and submit JSON', async ({ page }) => {
+  await open(page, 'components-forms-form-renderer--more-fields')
+  await page.getByRole('radio', { name: /Team/ }).check()
+  await page.getByRole('checkbox', { name: 'Tuesday' }).check()
+  await page.getByRole('button', { name: 'Submit' }).click()
+  const values = page.getByLabel('Submitted values')
+  await expect(values).toContainText('"plan": "team"')
+  await expect(values).toContainText('"tue"')
+  await expect(values).toContainText('"rank": [')
+  await expect(values).toContainText('"frequency": "week"')
+})
+
 const BUILDER = 'blocks-forms-form-builder--'
 
 test.describe('form builder', () => {
   test('add a field, set it in the inspector, see it in Preview and JSON', async ({ page }) => {
     await open(page, `${BUILDER}empty`)
-    await page.getByRole('button', { name: 'Add field: Number' }).click()
+    await page.getByRole('button', { name: 'Add field: Number', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Edit Number' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -84,7 +96,10 @@ test.describe('form builder', () => {
     const handle = page.getByRole('button', { name: 'Move Full name' })
     await handle.focus()
     await page.keyboard.press('Space')
+    // dnd-kit measures the items before it moves: wait until it announces the starting position.
+    await expect(page.getByText('Full name is at position 1.')).toBeAttached()
     await page.keyboard.press('ArrowRight')
+    await expect(page.getByText('Full name is at position 2.')).toBeAttached()
     await page.keyboard.press('Space')
     await page.getByRole('tab', { name: 'JSON' }).click()
     await expect(page.getByLabel('Form as JSON')).toHaveValue(

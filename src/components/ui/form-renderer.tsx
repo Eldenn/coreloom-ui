@@ -20,25 +20,49 @@
 // JSON Schema (and a react-jsonschema-form style UI schema) into a FormSpec; `toJSONSchema` goes back.
 import {
   AlignLeftIcon,
+  ArrowLeftRightIcon,
+  ArrowRightLeftIcon,
   AtSignIcon,
   CalendarClockIcon,
+  CalendarDaysIcon,
+  CalendarFoldIcon,
   CalendarIcon,
   CalendarRangeIcon,
   ChevronsUpDownIcon,
   CircleDotIcon,
+  Clock3Icon,
   ClockIcon,
   CoinsIcon,
+  CreditCardIcon,
+  FileJsonIcon,
+  GalleryHorizontalIcon,
+  GaugeIcon,
+  GlobeIcon,
   HashIcon,
+  ImageIcon,
   KeyRoundIcon,
+  LayoutListIcon,
   LinkIcon,
   ListChecksIcon,
+  ListOrderedIcon,
+  ListTodoIcon,
+  ListTreeIcon,
   type LucideIcon,
+  MessageSquareIcon,
+  PaletteIcon,
   PaperclipIcon,
   PhoneIcon,
   RectangleEllipsisIcon,
+  RepeatIcon,
+  RulerIcon,
+  SlidersHorizontalIcon,
   SquareCheckIcon,
+  StarIcon,
+  TableIcon,
+  TagIcon,
   TagsIcon,
   TextSearchIcon,
+  TimerIcon,
   ToggleRightIcon,
   TypeIcon,
 } from 'lucide-react'
@@ -48,26 +72,51 @@ import type { DateRange } from '@/components/ui/date-range-picker'
 import { FieldDescription, FieldLegend, FieldSet } from '@/components/ui/field'
 import {
   CheckboxField,
+  CheckboxGroupField,
+  ChipField,
+  ColorField,
   ComboboxField,
   DateField,
   DateRangeField,
   DateTimeField,
+  DurationField,
   FileField,
+  ImageField,
+  JsonField,
+  KeyValueField,
+  MaskedField,
+  MentionField,
   MoneyField,
+  MonthField,
   MultiSelectField,
   NumberField,
+  NumberRangeField,
   OTPField,
   PasswordField,
   PhoneField,
+  RadioCardField,
   RadioGroupField,
+  RatingField,
+  RecurrenceField,
+  ScaleField,
+  SegmentedField,
   SelectField,
+  SliderField,
+  SortableField,
   SwitchField,
   TagsField,
   TextareaField,
   TextField,
   TimeField,
+  TimeRangeField,
+  TimezoneField,
+  TransferField,
+  TreeSelectField,
+  UnitField,
   useAppForm,
+  WeekField,
 } from '@/components/ui/form'
+import { parseJson } from '@/components/ui/json-input'
 import { isValidPhone } from '@/components/ui/phone-input'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -82,6 +131,8 @@ interface FormOption {
   label: string
   description?: string
   disabled?: boolean
+  /** Sub-options, for a tree select. */
+  children?: FormOption[]
 }
 
 /** How a condition compares the other field's value. */
@@ -158,7 +209,8 @@ type FormValues = Record<string, unknown>
 /** A setting the FormBuilder's inspector offers for a type. Its label comes from the i18n messages. */
 interface FormFieldSetting {
   key: string
-  kind: 'text' | 'number' | 'boolean' | 'select'
+  /** `list` is a string[] (typed comma-separated in the builder). */
+  kind: 'text' | 'number' | 'boolean' | 'select' | 'list'
   /** For `select`. */
   choices?: readonly { value: string; label: string }[]
 }
@@ -176,6 +228,12 @@ interface FormFieldType {
   group: 'text' | 'number' | 'choice' | 'date' | 'other'
   /** The control's value when nothing is entered. */
   empty: unknown
+  /** The empty value when it depends on the field's settings (a single or multiple pick). */
+  emptyOf?: (field: FormFieldSpec) => unknown
+  /** Whether a submitted value counts as not filled in, when "", null, [] and false aren't enough. */
+  isEmpty?: (value: unknown, field: FormFieldSpec) => boolean
+  /** The input the builder shows for a `dateRange` check's bounds (default "date"). */
+  rangeInput?: 'date' | 'month' | 'week'
   /** The field draws its label beside the control (checkbox, switch): no "optional" mark. */
   inline?: boolean
   /** It picks from `options`. */
@@ -197,7 +255,7 @@ type FormFieldTypes = Record<string, FormFieldType>
 
 /** What's wrong with a value: the locale turns it into a sentence. */
 type FormFieldError =
-  | { type: 'required' | 'checked' | 'email' | 'url' | 'phone' | 'pattern' }
+  | { type: 'required' | 'checked' | 'email' | 'url' | 'phone' | 'pattern' | 'json' }
   | {
       type: 'minLength' | 'maxLength' | 'min' | 'max' | 'minItems' | 'maxItems'
       limit: number | string
@@ -237,6 +295,23 @@ function dateTimeFromJSON(value: unknown) {
 }
 
 const options = (field: FormFieldSpec) => field.options ?? []
+const strings = (v: unknown) =>
+  Array.isArray(v) && v.length ? v.filter((x): x is string => typeof x === 'string') : undefined
+
+interface TreeOption {
+  value: string
+  label: string
+  disabled?: boolean
+  children?: TreeOption[]
+}
+function toTree(list: FormOption[]): TreeOption[] {
+  return list.map((o) => ({
+    value: o.value,
+    label: o.label,
+    ...(o.disabled ? { disabled: true } : {}),
+    ...(o.children?.length ? { children: toTree(o.children) } : {}),
+  }))
+}
 const commonProps = (field: FormFieldSpec, label: React.ReactNode) => ({
   label,
   description: field.description,
@@ -586,6 +661,429 @@ const formFieldTypes: FormFieldTypes = {
     fromJSON: dateTimeFromJSON,
     toJSON: dateTimeToJSON,
   },
+  masked: {
+    type: 'masked',
+    label: 'Masked number',
+    icon: CreditCardIcon,
+    group: 'text',
+    empty: '',
+    placeholder: true,
+    settings: [
+      {
+        key: 'preset',
+        kind: 'select',
+        choices: [
+          { value: 'iban', label: 'IBAN' },
+          { value: 'card', label: 'Card' },
+          { value: 'siren', label: 'SIREN' },
+          { value: 'siret', label: 'SIRET' },
+        ],
+      },
+    ],
+    render: (f, label) => (
+      <MaskedField
+        {...commonProps(f, label)}
+        placeholder={f.placeholder}
+        preset={
+          f.preset === 'card' || f.preset === 'siren' || f.preset === 'siret' ? f.preset : 'iban'
+        }
+      />
+    ),
+  },
+  mention: {
+    type: 'mention',
+    label: 'Text with mentions',
+    icon: MessageSquareIcon,
+    group: 'text',
+    empty: '',
+    placeholder: true,
+    hasOptions: true,
+    settings: [
+      { key: 'trigger', kind: 'text' },
+      { key: 'rows', kind: 'number' },
+    ],
+    checks: ['length'],
+    render: (f, label) => (
+      <MentionField
+        {...commonProps(f, label)}
+        placeholder={f.placeholder}
+        options={options(f).map((o) => ({ value: o.value, label: o.label }))}
+        trigger={str(f.trigger)}
+        rows={num(f.rows)}
+      />
+    ),
+  },
+  json: {
+    type: 'json',
+    label: 'JSON',
+    icon: FileJsonIcon,
+    group: 'other',
+    empty: '',
+    placeholder: true,
+    settings: [
+      { key: 'rows', kind: 'number' },
+      { key: 'formatOnBlur', kind: 'boolean' },
+    ],
+    render: (f, label) => (
+      <JsonField
+        {...commonProps(f, label)}
+        placeholder={f.placeholder}
+        rows={num(f.rows)}
+        formatOnBlur={bool(f.formatOnBlur)}
+      />
+    ),
+    validate: (v) => (typeof v === 'string' && parseJson(v).ok ? undefined : { type: 'json' }),
+  },
+  rating: {
+    type: 'rating',
+    label: 'Rating',
+    icon: StarIcon,
+    group: 'number',
+    empty: 0,
+    settings: [{ key: 'max', kind: 'number' }],
+    render: (f, label) => <RatingField {...commonProps(f, label)} max={num(f.max)} />,
+    // 0 stars is no score.
+    isEmpty: (v) => v === 0,
+  },
+  slider: {
+    type: 'slider',
+    label: 'Slider',
+    icon: SlidersHorizontalIcon,
+    group: 'number',
+    empty: undefined,
+    emptyOf: (f) => num(f.min) ?? 0,
+    settings: [{ key: 'step', kind: 'number' }],
+    checks: ['range'],
+    // Its label also names the slider, so it stays plain text.
+    render: (f) => (
+      <SliderField
+        label={f.label}
+        description={f.description}
+        min={num(f.min)}
+        max={num(f.max)}
+        step={num(f.step)}
+      />
+    ),
+  },
+  scale: {
+    type: 'scale',
+    label: 'Scale',
+    icon: GaugeIcon,
+    group: 'number',
+    empty: null,
+    settings: [
+      { key: 'minLabel', kind: 'text' },
+      { key: 'maxLabel', kind: 'text' },
+      { key: 'labels', kind: 'list' },
+    ],
+    checks: ['range'],
+    render: (f, label) => (
+      <ScaleField
+        {...commonProps(f, label)}
+        min={num(f.min)}
+        max={num(f.max)}
+        minLabel={str(f.minLabel)}
+        maxLabel={str(f.maxLabel)}
+        labels={strings(f.labels)}
+      />
+    ),
+  },
+  unit: {
+    type: 'unit',
+    label: 'Number with unit',
+    icon: RulerIcon,
+    group: 'number',
+    empty: undefined,
+    emptyOf: (f) => ({ value: null, unit: strings(f.units)?.[0] ?? '' }),
+    placeholder: true,
+    settings: [
+      { key: 'units', kind: 'list' },
+      { key: 'step', kind: 'number' },
+    ],
+    render: (f, label) => (
+      <UnitField
+        {...commonProps(f, label)}
+        placeholder={f.placeholder}
+        units={(strings(f.units) ?? []).map((u) => ({ value: u }))}
+        step={num(f.step)}
+      />
+    ),
+    isEmpty: (v) => isRecord(v) && v.value === null,
+  },
+  numberrange: {
+    type: 'numberrange',
+    label: 'Number range',
+    icon: ArrowLeftRightIcon,
+    group: 'number',
+    empty: undefined,
+    settings: [{ key: 'step', kind: 'number' }],
+    render: (f, label) => (
+      <NumberRangeField
+        {...commonProps(f, label)}
+        min={num(f.min)}
+        max={num(f.max)}
+        step={num(f.step)}
+      />
+    ),
+    isEmpty: (v) => isRecord(v) && v.min == null && v.max == null,
+  },
+  segmented: {
+    type: 'segmented',
+    label: 'Segmented control',
+    icon: GalleryHorizontalIcon,
+    group: 'choice',
+    empty: '',
+    hasOptions: true,
+    render: (f, label) => <SegmentedField {...commonProps(f, label)} options={options(f)} />,
+  },
+  radiocards: {
+    type: 'radiocards',
+    label: 'Choice cards',
+    icon: LayoutListIcon,
+    group: 'choice',
+    empty: '',
+    hasOptions: true,
+    settings: [
+      {
+        key: 'orientation',
+        kind: 'select',
+        choices: [
+          { value: 'vertical', label: 'vertical' },
+          { value: 'horizontal', label: 'horizontal' },
+        ],
+      },
+    ],
+    render: (f, label) => (
+      <RadioCardField
+        {...commonProps(f, label)}
+        orientation={f.orientation === 'horizontal' ? 'horizontal' : 'vertical'}
+        options={options(f).map((o) => ({
+          value: o.value,
+          title: o.label,
+          description: o.description,
+          disabled: o.disabled,
+        }))}
+      />
+    ),
+  },
+  checkboxes: {
+    type: 'checkboxes',
+    label: 'Checkbox group',
+    icon: ListTodoIcon,
+    group: 'choice',
+    empty: [],
+    hasOptions: true,
+    checks: ['items'],
+    render: (f, label) => <CheckboxGroupField {...commonProps(f, label)} options={options(f)} />,
+  },
+  chips: {
+    type: 'chips',
+    label: 'Chips',
+    icon: TagIcon,
+    group: 'choice',
+    empty: [],
+    emptyOf: (f) => (f.single === true ? '' : []),
+    hasOptions: true,
+    settings: [{ key: 'single', kind: 'boolean' }],
+    checks: ['items'],
+    render: (f, label) => (
+      <ChipField
+        {...commonProps(f, label)}
+        options={options(f)}
+        type={f.single === true ? 'single' : 'multiple'}
+      />
+    ),
+  },
+  treeselect: {
+    type: 'treeselect',
+    label: 'Tree select',
+    icon: ListTreeIcon,
+    group: 'choice',
+    empty: '',
+    emptyOf: (f) => (f.multiple === true ? [] : ''),
+    hasOptions: true,
+    placeholder: true,
+    settings: [{ key: 'multiple', kind: 'boolean' }],
+    checks: ['items'],
+    render: (f, label) => (
+      <TreeSelectField
+        {...commonProps(f, label)}
+        placeholder={f.placeholder}
+        multiple={bool(f.multiple)}
+        nodes={toTree(options(f))}
+      />
+    ),
+  },
+  transfer: {
+    type: 'transfer',
+    label: 'Transfer list',
+    icon: ArrowRightLeftIcon,
+    group: 'choice',
+    empty: [],
+    hasOptions: true,
+    settings: [
+      { key: 'availableLabel', kind: 'text' },
+      { key: 'selectedLabel', kind: 'text' },
+    ],
+    checks: ['items'],
+    render: (f, label) => (
+      <TransferField
+        {...commonProps(f, label)}
+        options={options(f)}
+        availableLabel={str(f.availableLabel)}
+        selectedLabel={str(f.selectedLabel)}
+      />
+    ),
+  },
+  sortable: {
+    type: 'sortable',
+    label: 'Ranking',
+    icon: ListOrderedIcon,
+    group: 'choice',
+    empty: undefined,
+    hasOptions: true,
+    settings: [{ key: 'numbered', kind: 'boolean' }],
+    render: (f, label) => (
+      <SortableField
+        {...commonProps(f, label)}
+        options={options(f).map((o) => ({
+          value: o.value,
+          label: o.label,
+          description: o.description,
+        }))}
+        numbered={bool(f.numbered)}
+      />
+    ),
+    // Untouched, the ranking is the options' own order.
+    toJSON: (v, f) =>
+      Array.isArray(v) && v.length ? (v as unknown[]) : options(f).map((o) => o.value),
+  },
+  month: {
+    type: 'month',
+    label: 'Month',
+    icon: CalendarDaysIcon,
+    group: 'date',
+    empty: '',
+    checks: ['dateRange'],
+    rangeInput: 'month',
+    render: (f, label) => (
+      <MonthField {...commonProps(f, label)} min={str(f.min)} max={str(f.max)} />
+    ),
+  },
+  week: {
+    type: 'week',
+    label: 'Week',
+    icon: CalendarFoldIcon,
+    group: 'date',
+    empty: '',
+    checks: ['dateRange'],
+    rangeInput: 'week',
+    render: (f, label) => <WeekField {...commonProps(f, label)} />,
+  },
+  timerange: {
+    type: 'timerange',
+    label: 'Time range',
+    icon: Clock3Icon,
+    group: 'date',
+    empty: undefined,
+    settings: [
+      { key: 'step', kind: 'number' },
+      { key: 'overnight', kind: 'boolean' },
+    ],
+    render: (f, label) => (
+      <TimeRangeField
+        {...commonProps(f, label)}
+        step={num(f.step)}
+        overnight={bool(f.overnight)}
+        min={typeof f.min === 'string' && TIME.test(f.min) ? f.min : undefined}
+        max={typeof f.max === 'string' && TIME.test(f.max) ? f.max : undefined}
+      />
+    ),
+    isEmpty: (v) => isRecord(v) && !v.start && !v.end,
+  },
+  duration: {
+    type: 'duration',
+    label: 'Duration',
+    icon: TimerIcon,
+    group: 'date',
+    empty: null,
+    placeholder: true,
+    checks: ['range'],
+    render: (f, label) => <DurationField {...commonProps(f, label)} placeholder={f.placeholder} />,
+  },
+  recurrence: {
+    type: 'recurrence',
+    label: 'Recurrence',
+    icon: RepeatIcon,
+    group: 'date',
+    empty: undefined,
+    emptyOf: () => ({ frequency: 'week', interval: 1, weekdays: [1], end: { type: 'never' } }),
+    settings: [{ key: 'frequencies', kind: 'list' }],
+    render: (f, label) => (
+      <RecurrenceField
+        {...commonProps(f, label)}
+        frequencies={strings(f.frequencies)?.filter((x): x is 'day' | 'week' | 'month' | 'year' =>
+          ['day', 'week', 'month', 'year'].includes(x),
+        )}
+      />
+    ),
+  },
+  timezone: {
+    type: 'timezone',
+    label: 'Time zone',
+    icon: GlobeIcon,
+    group: 'date',
+    empty: '',
+    placeholder: true,
+    render: (f, label) => <TimezoneField {...commonProps(f, label)} placeholder={f.placeholder} />,
+  },
+  color: {
+    type: 'color',
+    label: 'Color',
+    icon: PaletteIcon,
+    group: 'other',
+    empty: '',
+    render: (f, label) => <ColorField {...commonProps(f, label)} />,
+  },
+  image: {
+    type: 'image',
+    label: 'Image',
+    icon: ImageIcon,
+    group: 'other',
+    empty: null,
+    settings: [
+      {
+        key: 'shape',
+        kind: 'select',
+        choices: [
+          { value: 'square', label: 'square' },
+          { value: 'circle', label: 'circle' },
+          { value: 'wide', label: 'wide' },
+        ],
+      },
+      { key: 'accept', kind: 'text' },
+      { key: 'maxSize', kind: 'number' },
+    ],
+    render: (f, label) => (
+      <ImageField
+        {...commonProps(f, label)}
+        shape={f.shape === 'circle' || f.shape === 'wide' ? f.shape : 'square'}
+        accept={str(f.accept)}
+        maxSize={num(f.maxSize)}
+      />
+    ),
+  },
+  keyvalue: {
+    type: 'keyvalue',
+    label: 'Key-value pairs',
+    icon: TableIcon,
+    group: 'other',
+    empty: undefined,
+    render: (f, label) => <KeyValueField {...commonProps(f, label)} />,
+    // Rows without a key are left out.
+    toJSON: (v) =>
+      Array.isArray(v) ? (v as { key: string }[]).filter((row) => row.key.trim() !== '') : [],
+  },
   file: {
     type: 'file',
     label: 'File',
@@ -627,13 +1125,23 @@ function isEmptyValue(value: unknown) {
   )
 }
 
+function emptyOf(type: FormFieldType | undefined, field: FormFieldSpec): unknown {
+  return type?.emptyOf ? type.emptyOf(field) : type?.empty
+}
+
+/** Whether a submitted value counts as not filled in, for its type. */
+function isEmptyFor(type: FormFieldType | undefined, field: FormFieldSpec, value: unknown) {
+  return isEmptyValue(value) || (type?.isEmpty?.(value, field) ?? false)
+}
+
 /** The value a field submits, as JSON: empty optional fields become null (lists stay [], toggles false). */
 function toSubmitted(field: FormFieldSpec, value: unknown, types: FormFieldTypes): unknown {
   const type = types[field.type] as FormFieldType | undefined
   const json = type?.toJSON ? type.toJSON(value, field) : value
-  if (Array.isArray(type?.empty)) return Array.isArray(json) ? json : []
-  if (type?.empty === false) return json === true
-  return isEmptyValue(json) ? null : json
+  const empty = emptyOf(type, field)
+  if (Array.isArray(empty)) return Array.isArray(json) ? json : []
+  if (empty === false) return json === true
+  return isEmptyFor(type, field, json) ? null : json
 }
 
 /** Whether `condition` holds for these submitted values. Missing or broken conditions hold. */
@@ -722,7 +1230,7 @@ function initialFormValues(
     allFields(spec).map((f) => {
       const type = types[f.type] as FormFieldType | undefined
       const json = f.name in defaultValues ? defaultValues[f.name] : f.defaultValue
-      if (json === undefined || json === null) return [f.name, type?.empty]
+      if (json === undefined || json === null) return [f.name, emptyOf(type, f)]
       return [f.name, type?.fromJSON ? type.fromJSON(json, f) : json]
     }),
   )
@@ -750,13 +1258,13 @@ function checkFormField(
   types: FormFieldTypes = formFieldTypes,
 ): FormFieldError | undefined {
   const type = types[field.type] as FormFieldType | undefined
-  if (isEmptyValue(value)) {
+  if (isEmptyFor(type, field, value)) {
     if (!field.required) return undefined
-    return { type: type?.empty === false ? 'checked' : 'required' }
+    return { type: emptyOf(type, field) === false ? 'checked' : 'required' }
   }
   if (typeof value === 'string') {
-    const isDate =
-      DATE.test(value) && (field.type === 'date' || type?.checks?.includes('dateRange'))
+    // Dates, months and weeks are ISO strings: they compare as text.
+    const isDate = type?.checks?.includes('dateRange') ?? false
     const isTime = TIME.test(value) && type?.checks?.includes('timeRange')
     if (isDate || isTime) {
       const prefix = isDate ? 'date' : 'time'
@@ -866,9 +1374,8 @@ function readCondition(value: unknown, depth = 0): FormCondition | undefined {
   return ok ? { field, op, ...(v === undefined ? {} : { value: v }) } : undefined
 }
 
-function readOptions(value: unknown): FormOption[] {
-  if (!Array.isArray(value)) return []
-  const seen = new Set<string>()
+function readOptions(value: unknown, seen = new Set<string>(), depth = 0): FormOption[] {
+  if (!Array.isArray(value) || depth > 5) return []
   return (value as unknown[]).flatMap((o): FormOption[] => {
     const option: FormOption | undefined =
       typeof o === 'string' && o
@@ -883,7 +1390,8 @@ function readOptions(value: unknown): FormOption[] {
           : undefined
     if (!option || option.value === '' || seen.has(option.value)) return []
     seen.add(option.value)
-    return [option]
+    const children = isRecord(o) ? readOptions(o.children, seen, depth + 1) : []
+    return [children.length ? { ...option, children } : option]
   })
 }
 
@@ -976,9 +1484,14 @@ function readFormSpec(
         if (condition) field.visibleWhen = condition
         else issues.push({ path, code: 'badCondition', detail: name })
       }
-      // Type settings: kept as long as they are plain JSON scalars.
+      // Type settings: kept as long as they are plain JSON scalars or lists of strings.
       for (const [key, v] of Object.entries(raw))
-        if (!COMMON_KEYS.has(key) && isJSONScalar(v) && v !== null) field[key] = v
+        if (
+          !COMMON_KEYS.has(key) &&
+          ((isJSONScalar(v) && v !== null) ||
+            (Array.isArray(v) && v.length <= 500 && v.every((x) => typeof x === 'string')))
+        )
+          field[key] = v
       section.fields.push(field)
     })
     spec.sections.push(section)

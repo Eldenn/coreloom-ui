@@ -298,3 +298,64 @@ describe('editing a spec', () => {
     expect(next.sections[0].fields.map((f) => f.name)).toContain('seats')
   })
 })
+
+describe('types from the input primitives', () => {
+  it('know when they are empty, and what they submit', () => {
+    const f = (type: string, extra: Record<string, unknown> = {}) => ({
+      name: 'x',
+      type,
+      label: 'X',
+      ...extra,
+    })
+    const one = (type: string, value: unknown, extra: Record<string, unknown> = {}) =>
+      formSpecValues(
+        { version: 1, sections: [{ id: 'a', fields: [f(type, extra)] }] },
+        { x: value },
+      ).x
+    expect(one('rating', 0)).toBeNull()
+    expect(one('unit', { value: null, unit: 'kg' })).toBeNull()
+    expect(one('unit', { value: 3, unit: 'kg' })).toEqual({ value: 3, unit: 'kg' })
+    expect(one('numberrange', { min: null, max: null })).toBeNull()
+    expect(one('timerange', {})).toBeNull()
+    expect(one('chips', undefined, { single: true })).toBeNull()
+    expect(one('chips', undefined)).toEqual([])
+    expect(
+      one('keyvalue', [
+        { key: ' ', value: 'a' },
+        { key: 'k', value: 'v' },
+      ]),
+    ).toEqual([{ key: 'k', value: 'v' }])
+    expect(
+      one('sortable', undefined, {
+        options: [
+          { value: 'a', label: 'A' },
+          { value: 'b', label: 'B' },
+        ],
+      }),
+    ).toEqual(['a', 'b'])
+    expect(checkFormField(f('rating', { required: true }), 0)).toEqual({ type: 'required' })
+    expect(checkFormField(f('json'), '{nope')).toEqual({ type: 'json' })
+    expect(checkFormField(f('month', { min: '2026-01' }), '2025-12')).toEqual({
+      type: 'dateMin',
+      limit: '2026-01',
+    })
+  })
+
+  it('reads nested options and list settings', () => {
+    const { spec: read } = readFormSpec({
+      fields: [
+        {
+          name: 'team',
+          type: 'treeselect',
+          options: [{ value: 'eng', label: 'Eng', children: [{ value: 'web', label: 'Web' }] }],
+        },
+        { name: 'w', type: 'unit', units: ['kg', 'g', 3] },
+      ],
+    })
+    expect(read.sections[0].fields[0].options).toEqual([
+      { value: 'eng', label: 'Eng', children: [{ value: 'web', label: 'Web' }] },
+    ])
+    // A list holding something other than strings isn't a setting.
+    expect(read.sections[0].fields[1]).not.toHaveProperty('units')
+  })
+})
