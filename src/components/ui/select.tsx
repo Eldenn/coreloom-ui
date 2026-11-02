@@ -1,9 +1,10 @@
 'use client'
 
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from 'lucide-react'
 import { Select as SelectPrimitive } from 'radix-ui'
 import * as React from 'react'
 
+import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
@@ -22,17 +23,26 @@ function SelectTrigger({
   className,
   size = 'default',
   children,
+  onClear,
+  clearLabel,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: 'sm' | 'default'
+  /** Shows a clear button while a value is picked; set the Select's `value` to "" in it. With it,
+   *  `className` goes on a wrapper around the trigger and the button. */
+  onClear?: () => void
+  /** Accessible name of the clear button; defaults to the i18n text ("Clear"). */
+  clearLabel?: string
 }) {
-  return (
+  const t = useCoreloomI18n().messages.inputs
+  const wrapperRef = React.useRef<HTMLDivElement>(null)
+  const trigger = (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       data-size={size}
       className={cn(
         "flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset px-[13px] font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground data-[size=default]:h-[42px] data-[size=sm]:h-8 data-[size=sm]:text-[13px] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 data-[state=open]:border-primary [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
-        className,
+        onClear ? 'not-data-[placeholder]:*:data-[slot=select-value]:mr-7' : className,
       )}
       {...props}
     >
@@ -41,6 +51,30 @@ function SelectTrigger({
         <ChevronDownIcon className="size-4" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
+  )
+  if (!onClear) return trigger
+  return (
+    <div
+      ref={wrapperRef}
+      data-slot="select-trigger-wrapper"
+      className={cn('group/select relative w-full', className)}
+    >
+      {trigger}
+      {/* Hidden while the placeholder shows (nothing to clear) or the select is disabled. */}
+      <button
+        type="button"
+        aria-label={clearLabel ?? t.clear}
+        data-slot="select-clear"
+        className="absolute top-1/2 right-9 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none group-has-[[data-placeholder]]/select:hidden group-has-[[data-slot=select-trigger]:disabled]/select:hidden hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring [&_svg]:size-3.5"
+        onClick={() => {
+          onClear()
+          // The button hides once the value is gone; keep focus on the select.
+          wrapperRef.current?.querySelector<HTMLElement>('[data-slot=select-trigger]')?.focus()
+        }}
+      >
+        <XIcon />
+      </button>
+    </div>
   )
 }
 

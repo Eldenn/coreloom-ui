@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/character-count.stories'
+import guide from './CharacterCount.md?raw'
+
+<Meta title="Guidelines/Forms/Character Count" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />

@@ -133,3 +133,105 @@ test.describe('time picker', () => {
     await expect(page.getByLabel('Heure', { exact: true })).toHaveValue('09:30')
   })
 })
+
+test.describe('more fields', () => {
+  test('number input: holding + repeats the step', async ({ page }) => {
+    await open(page, `${NUMBER}sides`)
+    const guests = page.getByRole('spinbutton', { name: 'Guests' })
+    const plus = page.getByRole('button', { name: 'Increase' })
+    await plus.hover()
+    await page.mouse.down()
+    // Repeats until the bound (8) while held.
+    await expect(guests).toHaveValue('8', { timeout: 3000 })
+    await page.mouse.up()
+    await expect(plus).toBeDisabled()
+  })
+
+  test('select and combobox clear back to the placeholder, focus stays', async ({ page }) => {
+    await open(page, 'components-forms-clearable-select-and-combobox--default')
+    await page.getByRole('button', { name: 'Clear', exact: true }).click()
+    await expect(page.getByText('Value: none').first()).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Region' })).toBeFocused()
+    await expect(page.getByRole('button', { name: 'Clear', exact: true })).toBeHidden()
+    await page.getByRole('button', { name: 'Clear React' }).click()
+    await expect(page.getByRole('combobox', { name: 'Framework' })).toHaveText(/Any framework/)
+    await expect(page.getByRole('combobox', { name: 'Framework' })).toBeFocused()
+  })
+
+  test('character count announces only when a threshold is crossed', async ({ page }) => {
+    await open(page, 'components-forms-character-count--default')
+    const field = page.getByLabel('Status')
+    await expect(field).toHaveAccessibleDescription(/of 80 characters/)
+    await field.fill('x'.repeat(75))
+    await expect(page.getByRole('status')).toHaveText('5 characters left')
+    await field.fill('x'.repeat(83))
+    await expect(page.getByRole('status')).toHaveText('3 characters too many')
+  })
+
+  test('editable text: Enter saves, Escape restores, focus comes back', async ({ page }) => {
+    await open(page, 'components-forms-editable-text--default')
+    await page.getByRole('button', { name: /Edit project name/ }).click()
+    const input = page.getByRole('textbox', { name: 'project name' })
+    await input.fill('Acme v2')
+    await input.press('Enter')
+    await expect(page.getByText('Saved 1 times · value: Acme v2')).toBeVisible()
+    const button = page.getByRole('button', { name: /Acme v2, Edit project name/ })
+    await expect(button).toBeFocused()
+    await button.press('Enter')
+    await input.fill('Nope')
+    await input.press('Escape')
+    await expect(page.getByRole('button', { name: /Acme v2, Edit project name/ })).toBeFocused()
+    await expect(page.getByText('Saved 1 times')).toBeVisible()
+  })
+
+  test('slider input: typing moves the slider', async ({ page }) => {
+    await open(page, 'components-forms-slider-input--default')
+    const field = page.getByRole('spinbutton', { name: 'Temperature' })
+    await field.fill('1.5')
+    await field.blur()
+    await expect(page.getByRole('slider', { name: 'Temperature' })).toHaveAttribute(
+      'aria-valuenow',
+      '1.5',
+    )
+  })
+
+  test('masked input: groups typing, keeps the raw value and checks it', async ({ page }) => {
+    await open(page, 'components-forms-masked-input--presets')
+    const iban = page.getByLabel('IBAN')
+    await iban.fill('de89370400440532013000')
+    await expect(iban).toHaveValue('DE89 3704 0044 0532 0130 00')
+    await expect(page.getByText('Value: DE89370400440532013000 · valid')).toBeVisible()
+    await iban.fill('DE89370400440532013001')
+    await iban.blur()
+    await expect(iban).toHaveAttribute('aria-invalid', 'true')
+    await expect(page.getByText('Check this number: it isn’t valid.')).toBeVisible()
+  })
+
+  test('color picker: a swatch and a typed hex both set the value', async ({ page }) => {
+    await open(page, 'components-forms-color-picker--default')
+    await page.getByRole('button', { name: 'Label color' }).click()
+    await page.getByRole('radio', { name: 'Purple' }).check()
+    await expect(page.getByText(/^Value:/)).toHaveText('Value: #a855f7')
+    const hex = page.getByLabel('Hex code')
+    await hex.fill('123abc')
+    await expect(page.getByText(/^Value:/)).toHaveText('Value: #123abc')
+  })
+
+  test('rating: arrows change the score and clicking it again clears it', async ({ page }) => {
+    await open(page, 'components-forms-rating--default')
+    const four = page.getByRole('radio', { name: /^4 stars/ })
+    await expect(four).toBeChecked()
+    await four.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByText(/Score: 5/)).toBeVisible()
+    await page.getByRole('radio', { name: /^5 stars/ }).click({ force: true })
+    await expect(page.getByText(/Score: none/)).toBeVisible()
+  })
+
+  test('form fields: errors show on submit with the new fields', async ({ page }) => {
+    await open(page, 'components-forms-form-fields-password-number-time-counter--with-errors')
+    await expect(page.getByText('Use at least 12 characters.')).toBeVisible()
+    await expect(page.getByText('Pick a time.')).toBeVisible()
+    await expect(page.getByRole('spinbutton', { name: 'Seats' })).toHaveValue('5')
+  })
+})

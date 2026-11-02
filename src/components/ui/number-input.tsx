@@ -134,6 +134,12 @@ function NumberInput({
   const current = value !== undefined ? value : inner
   const display = (n: number | null) => (n === null ? '' : format.format(n))
   const [text, setText] = React.useState(() => display(current))
+  // The latest text, for steps repeated by a held button (they run between renders).
+  const draft = React.useRef(text)
+  const setDraft = (next: string) => {
+    draft.current = next
+    setText(next)
+  }
   const [focused, setFocused] = React.useState(false)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const fallbackId = React.useId()
@@ -141,7 +147,7 @@ function NumberInput({
 
   // Follow outside changes (a reset, a new locale) while the field isn't being typed in.
   React.useEffect(() => {
-    if (!focused) setText(display(current))
+    if (!focused) setDraft(display(current))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- display() is recreated each render; format covers it.
   }, [current, format])
 
@@ -151,14 +157,22 @@ function NumberInput({
   }
   const stepBy = (delta: number, size = step) => {
     if (disabled || readOnly) return
-    const n = stepNumber(parseNumber(text, locale, { percent }) ?? current, delta, {
+    const n = stepNumber(parseNumber(draft.current, locale, { percent }) ?? current, delta, {
       step: size,
       min,
       max,
     })
     commit(n)
-    setText(display(n))
+    setDraft(display(n))
   }
+  // Holding a button repeats the step: a pause, then about 15 steps a second.
+  const repeat = React.useRef<{ timer?: ReturnType<typeof setTimeout>; stepped: boolean }>({
+    stepped: false,
+  })
+  const stopRepeat = () => {
+    clearTimeout(repeat.current.timer)
+  }
+  React.useEffect(() => stopRepeat, [])
   const atMin = current !== null && min !== undefined && current <= min
   const atMax = current !== null && max !== undefined && current >= max
 
@@ -184,9 +198,24 @@ function NumberInput({
           // Keep focus (and the caret) in the field.
           e.preventDefault()
           inputRef.current?.focus()
-        }}
-        onClick={() => {
+          if (e.button !== 0) return
           stepBy(direction)
+          repeat.current.stepped = true
+          const again = (delay: number) => {
+            repeat.current.timer = setTimeout(() => {
+              stepBy(direction)
+              again(65)
+            }, delay)
+          }
+          again(400)
+        }}
+        onPointerUp={stopRepeat}
+        onPointerLeave={stopRepeat}
+        onPointerCancel={stopRepeat}
+        onClick={() => {
+          // A pointer press already stepped; a click without one (a screen reader's) steps here.
+          if (repeat.current.stepped) repeat.current.stepped = false
+          else stepBy(direction)
         }}
         className={cn(
           'flex shrink-0 cursor-pointer items-center justify-center text-muted-foreground outline-none hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:text-faint-foreground disabled:hover:bg-transparent [&_svg]:pointer-events-none',
@@ -240,7 +269,7 @@ function NumberInput({
         }}
         onChange={(e) => {
           const next = e.target.value
-          setText(next)
+          setDraft(next)
           const n = parseNumber(next, locale, { percent })
           if (n !== null || next.trim() === '') commit(n)
         }}
@@ -263,12 +292,12 @@ function NumberInput({
           if (min !== undefined)
             moves.Home = () => {
               commit(min)
-              setText(display(min))
+              setDraft(display(min))
             }
           if (max !== undefined)
             moves.End = () => {
               commit(max)
-              setText(display(max))
+              setDraft(display(max))
             }
           const move = moves[e.key]
           if (move && !readOnly) {
@@ -285,7 +314,7 @@ function NumberInput({
             n = clamp(Number(n.toFixed(digits)), min, max)
           }
           commit(n)
-          setText(display(n))
+          setDraft(display(n))
           onBlur?.()
         }}
       />

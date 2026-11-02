@@ -433,7 +433,7 @@ function DateTimePicker({
         onBlur={onBlur}
         aria-invalid={ariaInvalid}
         aria-label={t.time}
-        className="w-36 flex-none"
+        className="w-40 flex-none"
       />
     </div>
   )

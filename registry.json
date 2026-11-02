@@ -332,9 +332,9 @@
       "name": "select",
       "type": "registry:ui",
       "title": "Select",
-      "description": "Styled, keyboard-navigable listbox.",
+      "description": "Styled, keyboard-navigable listbox. `onClear` on the trigger adds a clear button.",
       "dependencies": ["lucide-react", "radix-ui"],
-      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
       "files": [
         {
           "path": "src/components/ui/select.tsx",
@@ -796,7 +796,7 @@
       "name": "combobox",
       "type": "registry:ui",
       "title": "Combobox",
-      "description": "Searchable select built from Popover and Command.",
+      "description": "Searchable select built from Popover and Command. `clearable` adds a clear button.",
       "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1140,7 +1140,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text, textarea, select, combobox, multi-select, date (picked or typed), date range, tags, file, money, phone, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, select, combobox, multi-select, date (picked or typed), time, date and time, date range, tags, file, money, phone, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
       "dependencies": ["@tanstack/react-form@^1", "input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1164,7 +1164,11 @@
         "@coreloom/file-upload",
         "@coreloom/multi-select",
         "@coreloom/money-input",
-        "@coreloom/phone-input"
+        "@coreloom/phone-input",
+        "@coreloom/input-group",
+        "@coreloom/number-input",
+        "@coreloom/time-picker",
+        "@coreloom/character-count"
       ],
       "files": [
         {
@@ -1388,6 +1392,100 @@
       "files": [
         {
           "path": "src/components/ui/time-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "character-count",
+      "type": "registry:ui",
+      "title": "CharacterCount",
+      "description": "\"120/280\" under a text field: amber near the limit, red past it, announced to screen readers only at thresholds.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/character-count.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "editable-text",
+      "type": "registry:ui",
+      "title": "EditableText",
+      "description": "Text that becomes a field when clicked: Enter or blur saves, Escape restores, focus returns to the text. Inherits the surrounding font.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/editable-text.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider-input",
+      "type": "registry:ui",
+      "title": "SliderInput",
+      "description": "A Slider and a NumberInput on one value: drag for a rough value, type an exact one.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/slider",
+        "@coreloom/number-input"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/slider-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "masked-input",
+      "type": "registry:ui",
+      "title": "MaskedInput",
+      "description": "A field that groups what people type (IBAN, card, SIREN, SIRET or your own pattern) and checks it (mod 97, Luhn); the value is the raw characters.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/masked-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "color-picker",
+      "type": "registry:ui",
+      "title": "ColorPicker",
+      "description": "A colour as \"#rrggbb\": swatches, a hex field and the system colour dialog, in a popover.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/color-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "rating",
+      "type": "registry:ui",
+      "title": "Rating",
+      "description": "Stars to give a score (radio buttons: arrows, click again to clear) or to show one read-only, halves included.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/rating.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1782,6 +1880,12 @@
         "@coreloom/native-select",
         "@coreloom/aspect-ratio",
         "@coreloom/time-picker",
+        "@coreloom/character-count",
+        "@coreloom/editable-text",
+        "@coreloom/slider-input",
+        "@coreloom/masked-input",
+        "@coreloom/color-picker",
+        "@coreloom/rating",
         "@coreloom/rich-text-editor",
         "@coreloom/markdown",
         "@coreloom/prompt-input",

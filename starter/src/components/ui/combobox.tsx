@@ -2,7 +2,8 @@
 
 // Coreloom UI — Combobox. A searchable Select, composed from Popover + Command (Radix + cmdk),
 // following shadcn's combobox pattern. Single value; for several, compose the same parts.
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+// With `clearable`, a × button next to the chevron empties it (to "").
+import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -39,6 +40,7 @@ function Combobox({
   className,
   contentClassName,
   id,
+  clearable = false,
   'aria-invalid': ariaInvalid,
   'aria-label': ariaLabel,
 }: {
@@ -53,6 +55,9 @@ function Combobox({
   className?: string
   contentClassName?: string
   id?: string
+  /** Shows a clear button once something is picked; clearing sends "". With it, `className`
+   *  goes on a wrapper around the trigger and the button. */
+  clearable?: boolean
   'aria-invalid'?: boolean | 'true' | 'false'
   'aria-label'?: string
 }) {
@@ -65,16 +70,18 @@ function Combobox({
   const current = value ?? inner
   const selected = options.find((o) => o.value === current)
 
+  const triggerRef = React.useRef<HTMLButtonElement>(null)
   const pick = (next: string) => {
     if (value === undefined) setInner(next)
     onValueChange?.(next)
     setOpen(false)
   }
 
-  return (
+  const popover = (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
+          ref={triggerRef}
           type="button"
           // eslint-disable-next-line jsx-a11y/role-has-required-aria-props -- aria-controls is added by PopoverTrigger.
           role="combobox"
@@ -87,10 +94,15 @@ function Combobox({
           data-placeholder={selected ? undefined : ''}
           className={cn(
             "flex h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset px-[13px] font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-            className,
+            !clearable && className,
           )}
         >
-          <span className="flex min-w-0 items-center gap-2 truncate">
+          <span
+            className={cn(
+              'flex min-w-0 items-center gap-2 truncate',
+              clearable && selected && 'mr-7',
+            )}
+          >
             {selected?.icon}
             {selected ? selected.label : placeholder}
           </span>
@@ -131,6 +143,27 @@ function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
+  )
+  if (!clearable) return popover
+  return (
+    <div data-slot="combobox" className={cn('relative w-full', className)}>
+      {popover}
+      {selected && !disabled && (
+        <button
+          type="button"
+          aria-label={`${t.inputs.clear} ${selected.label}`}
+          data-slot="combobox-clear"
+          className="absolute top-1/2 right-9 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring [&_svg]:size-3.5"
+          onClick={() => {
+            pick('')
+            // The button goes away with the value; keep focus on the field.
+            triggerRef.current?.focus()
+          }}
+        >
+          <XIcon />
+        </button>
+      )}
+    </div>
   )
 }
 

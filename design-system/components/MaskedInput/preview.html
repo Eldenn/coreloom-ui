@@ -1,0 +1,30 @@
+<!-- @dsCard group="Forms" height=230 subtitle="IBAN, card, SIREN, SIRET · checked" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.MaskedInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { MaskedInput, Field, FieldLabel, FieldGroup } = UI;
+      function Demo() {
+        return h(FieldGroup, { style: { maxWidth: 340 }, className: 'gap-4' },
+          h(Field, null, h(FieldLabel, { htmlFor: 'iban' }, 'IBAN'), h(MaskedInput, { id: 'iban', preset: 'iban', defaultValue: 'FR7630006000011234567890189' })),
+          h(Field, null, h(FieldLabel, { htmlFor: 'siret' }, 'SIRET'), h(MaskedInput, { id: 'siret', preset: 'siret', defaultValue: '73282932000074' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
