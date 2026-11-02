@@ -91,6 +91,37 @@ export const es: Messages = {
     scrollable: 'Tabla, desplazable',
   },
   virtualList: { loadingMore: 'Cargando más…', end: 'Fin de la lista' },
+  charts: {
+    empty: 'Sin datos',
+    sparkline: (first, last, low, high) =>
+      `Evolución de ${first} a ${last}. Mínimo ${low}, máximo ${high}.`,
+    total: 'Total',
+    other: 'Otros',
+    legend: 'Leyenda',
+    donutSummary: (total) => `Total ${total}. Valores por parte en la leyenda.`,
+    showAll: (n) => `Mostrar todo (${n})`,
+    showLess: 'Mostrar menos',
+    less: 'Menos',
+    more: 'Más',
+    noData: 'Sin datos',
+    item: 'Elemento',
+    share: (name, value, share) => `${name}: ${value} (${share})`,
+    flow: (from, to, value) => `De ${from} a ${to}: ${value}`,
+    weekOf: (date) => `Semana del ${date}`,
+    cell: (name, value) => `${name}: ${value}`,
+    funnel: {
+      conversion: (rate) => `${rate} continúan`,
+      dropped: (count) => `(${count} abandonos)`,
+      ofStartLabel: 'del primer paso:',
+    },
+    gauge: {
+      ok: 'Normal',
+      warning: 'Atención',
+      critical: 'Crítico',
+      valueText: (value, max) => `${value} de ${max}`,
+      valueTextStatus: (value, max, status) => `${value} de ${max}, ${status.toLowerCase()}`,
+    },
+  },
   ai: {
     code: {
       copy: 'Copiar el código',

@@ -1,0 +1,30 @@
+<!-- @dsCard group="Data display" height=470 subtitle="Steps of a flow · share of start · share that continued" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.FunnelChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { FunnelChart, Card, CardHeader, CardTitle, CardDescription, CardContent } = UI;
+      const steps = [['visit', 'Visited the pricing page', 12480], ['start', 'Started sign-up', 4212], ['verify', 'Verified email', 3390], ['project', 'Created a project', 2105], ['paid', 'Upgraded to Pro', 486]]
+        .map(([key, label, value]) => ({ key, label, value }));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Card, { style: { maxWidth: 520 } },
+          h(CardHeader, null, h(CardTitle, null, 'Sign-up funnel'), h(CardDescription, null, 'October 2026')),
+          h(CardContent, null, h(FunnelChart, { steps, 'aria-label': 'Sign-up funnel' }))));
+    }
+    render();
+  </script>
+</body>
+</html>

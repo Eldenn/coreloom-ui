@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/bar-list.stories'
+import guide from './BarList.md?raw'
+
+<Meta title="Guidelines/Data display/Bar List" />
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Default} />
+
+## With a limit
+
+<Canvas of={Stories.WithLimit} />
