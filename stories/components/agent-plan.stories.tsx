@@ -36,6 +36,14 @@ export const Failed: Story = { args: { plan: failedPlan, active: false } }
 /** The agent stopped (Stop, an error) with a step still in progress: it shows as stopped. */
 export const Stopped: Story = { args: { plan: deployPlan(3), active: false } }
 
+/** `avatar`: the agent working the plan, thinking on its step. */
+export const WithAvatar: Story = { args: { avatar: { seed: 'deploy-agent' } } }
+
+/** Its avatar smiles when every step is done. */
+export const CompleteWithAvatar: Story = {
+  args: { plan: deployPlan(5), active: false, avatar: { seed: 'deploy-agent' } },
+}
+
 /** Before anything starts: every step to do. */
 export const NotStarted: Story = { args: { plan: deployPlan(0) } }
 

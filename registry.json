@@ -2288,6 +2288,19 @@
       ]
     },
     {
+      "name": "agent-avatar",
+      "type": "registry:ui",
+      "title": "AgentAvatar",
+      "description": "A small animated face for an AI agent (face or dots): idle, thinking, speaking, done, error, offline, with a stable colour and eyes per seed.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/agent-avatar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "agent-plan",
       "type": "registry:ui",
       "title": "AgentPlan",
@@ -2300,7 +2313,8 @@
         "@coreloom/ai",
         "@coreloom/collapsible",
         "@coreloom/progress",
-        "@coreloom/spinner"
+        "@coreloom/spinner",
+        "@coreloom/agent-avatar"
       ],
       "files": [
         {
@@ -2425,7 +2439,8 @@
         "@coreloom/utils",
         "@coreloom/i18n",
         "@coreloom/button",
-        "@coreloom/toggle-group"
+        "@coreloom/toggle-group",
+        "@coreloom/agent-avatar"
       ],
       "files": [
         {
@@ -2588,6 +2603,7 @@
         "@coreloom/prompt-input",
         "@coreloom/reasoning",
         "@coreloom/tool-call",
+        "@coreloom/agent-avatar",
         "@coreloom/agent-plan",
         "@coreloom/tool-form",
         "@coreloom/form-renderer",
@@ -3292,7 +3308,8 @@
         "@coreloom/input",
         "@coreloom/tooltip",
         "@coreloom/inline-citation",
-        "@coreloom/textarea"
+        "@coreloom/textarea",
+        "@coreloom/agent-avatar"
       ],
       "files": [
         {
@@ -3420,7 +3437,8 @@
         "@coreloom/agent-graph",
         "@coreloom/badge",
         "@coreloom/button",
-        "@coreloom/select"
+        "@coreloom/select",
+        "@coreloom/agent-avatar"
       ],
       "files": [
         {
