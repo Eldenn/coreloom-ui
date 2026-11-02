@@ -1,0 +1,31 @@
+<!-- @dsCard group="Data display" height=150 subtitle="Clock · boxes · text · onComplete" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Countdown || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Countdown } = UI;
+      function Demo() {
+        const [to] = React.useState(() => Date.now() + ((2 * 24 + 5) * 3600 + 14 * 60 + 7) * 1000);
+        return h('div', { style: { display: 'grid', gap: 12, fontSize: 14 } },
+          h(Countdown, { to, variant: 'boxes' }),
+          h('span', null, 'Ends in ', h(Countdown, { to, variant: 'text' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
