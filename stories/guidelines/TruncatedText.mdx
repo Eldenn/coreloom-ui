@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/truncated-text.stories'
+import guide from './TruncatedText.md?raw'
+
+<Meta title="Guidelines/Data display/Truncated text" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Search} />
