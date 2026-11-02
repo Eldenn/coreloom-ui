@@ -4,6 +4,7 @@ import {
   emptyAgentGraph,
   fromLangGraphJSON,
   type LangGraphJSON,
+  toLangGraphConfig,
   toLangGraphJSON,
 } from '@/components/ai-agent-builder'
 import {
@@ -322,5 +323,65 @@ describe('toLangGraphJSON', () => {
       edges: wf.edges.map((e) => `${e.source}:${e.sourcePort ?? ''}>${e.target}`).sort(),
     })
     expect(norm(back?.workflow ?? emptyAgentGraph())).toEqual(norm(graph))
+  })
+  it('carries the agent settings and the graph config through an export and back', () => {
+    const agent = {
+      model: 'm',
+      outputSchema: '{"type":"object","properties":{"title":{"type":"string"}}}',
+      toolArgs: { web_search: { query: '{{ topic }}' } },
+      askFirst: ['send_email'],
+      reads: ['topic'],
+      writes: ['brief'],
+      maxSteps: 8,
+      pause: 'after',
+    }
+    const wf: Workflow = {
+      ...graph,
+      nodes: graph.nodes.map((n) => (n.id === 'agent' ? { ...n, data: agent } : n)),
+    }
+    const back = fromLangGraphJSON(
+      JSON.stringify(toLangGraphJSON(wf, state, { recursionLimit: 40 })),
+    )
+    expect(back?.config).toEqual({ recursionLimit: 40 })
+    expect(back?.workflow.nodes.find((n) => n.id === 'agent')?.data).toEqual(agent)
+  })
+})
+
+describe('toLangGraphConfig', () => {
+  const node = (id: string, pause?: string, disabled?: boolean) => ({
+    id,
+    type: 'function',
+    position: { x: 0, y: 0 },
+    ...(pause ? { data: { pause } } : {}),
+    ...(disabled ? { disabled } : {}),
+  })
+
+  it('lists the nodes that pause before and after, leaving out disabled ones', () => {
+    const wf: Workflow = {
+      nodes: [
+        node('a', 'before'),
+        node('b', 'after'),
+        node('c', 'none'),
+        node('d', 'before', true),
+      ],
+      edges: [],
+    }
+    expect(toLangGraphConfig(wf, { recursionLimit: 12 })).toEqual({
+      interrupt_before: ['a'],
+      interrupt_after: ['b'],
+      recursion_limit: 12,
+    })
+  })
+
+  it('drops a recursion limit that is not a positive integer', () => {
+    expect(toLangGraphConfig(emptyAgentGraph(), { recursionLimit: 0 })).toEqual({
+      interrupt_before: [],
+      interrupt_after: [],
+    })
+  })
+
+  it('ignores a bad config on import', () => {
+    const json = toLangGraphJSON(emptyAgentGraph(), [], { recursionLimit: -3 })
+    expect(fromLangGraphJSON(json)?.config).toEqual({})
   })
 })
