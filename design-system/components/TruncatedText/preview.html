@@ -1,0 +1,31 @@
+<!-- @dsCard group="Data display" height=170 subtitle="Show more · search highlight" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TruncatedText || !UI.Highlight || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { TruncatedText, Highlight } = UI;
+      function Demo() {
+        const text = 'We moved our whole team to the new workspace in an afternoon. The import kept our folders, comments and history, and the permissions mapped one to one. Six weeks in, nobody wants to go back: search is fast and the weekly digest replaced two meetings.';
+        return h('div', { style: { maxWidth: 420, display: 'grid', gap: 12, fontSize: 14 } },
+          h(TruncatedText, { lines: 2 }, text),
+          h(Highlight, { text: 'Écoles et universités : tarifs éducation', query: 'ecole tarif' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

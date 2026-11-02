@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/status-indicator.stories'
+import guide from './StatusIndicator.md?raw'
+
+<Meta title="Guidelines/Data display/Status indicator" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
