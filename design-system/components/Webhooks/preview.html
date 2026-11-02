@@ -1,0 +1,41 @@
+<!-- @dsCard group="Blocks" width=1280 height=820 subtitle="settings block · endpoints · deliveries · redeliver" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Webhooks || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { Webhooks, TooltipProvider, Toaster } = UI;
+      const at = (h1, m1) => new Date(2026, 9, 14, h1, m1);
+      const events = ['deployment.created', 'deployment.succeeded', 'deployment.failed', 'invoice.paid'].map((v) => ({ value: v, label: v }));
+      const deliveries = [
+        { id: 'd1', endpointId: 'e1', event: 'deployment.succeeded', status: 'succeeded', statusCode: 200, at: at(9, 41), durationMs: 182, payload: { type: 'deployment.succeeded', project: 'coreloom-web' }, response: '{"ok":true}' },
+        { id: 'd2', endpointId: 'e1', event: 'deployment.failed', status: 'failed', statusCode: 500, at: at(8, 3), durationMs: 3012, attempt: 3, payload: { type: 'deployment.failed' }, response: 'Internal Server Error' }];
+      function Demo() {
+        const [endpoints, setEndpoints] = React.useState([
+          { id: 'e1', url: 'https://hooks.acme.dev/coreloom/deploys', description: 'Posts deploys to #releases', events: ['deployment.created', 'deployment.succeeded', 'deployment.failed'], enabled: true, secret: 'cl_whs_demo0000000000000000b7e1' },
+          { id: 'e2', url: 'https://billing.acme.dev/webhooks', events: ['invoice.paid'], enabled: false }]);
+        return h('div', { style: { maxWidth: 860, margin: '0 auto' } }, h(Webhooks, { endpoints, deliveries, events, defaultOpenId: 'e1',
+          onCreate: (i) => setEndpoints((l) => l.concat([Object.assign({ id: 'n' + l.length, enabled: true }, i)])),
+          onToggle: (id, enabled) => setEndpoints((l) => l.map((e) => e.id === id ? Object.assign({}, e, { enabled }) : e)),
+          onDelete: (id) => setEndpoints((l) => l.filter((e) => e.id !== id)),
+          onRedeliver: () => new Promise((r) => setTimeout(r, 600)), onSendTest: () => {} }), h(Toaster));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

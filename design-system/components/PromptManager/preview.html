@@ -1,0 +1,39 @@
+<!-- @dsCard group="AI" width=1280 height=720 subtitle="PromptManager · versions · variables · diff · test" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.PromptManager || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { PromptManager, TooltipProvider } = UI;
+      const at = (m, d) => new Date(2026, m - 1, d);
+      const v1 = 'You are the support assistant for {{product}}.\nAnswer the question.\n\nQuestion: {{question}}';
+      const v2 = 'You are the support assistant for {{product}}.\nAnswer in a friendly tone, in {{language}}.\nIf you don\'t know, say so.\n\nQuestion: {{question}}';
+      function Demo() {
+        const [versions, setVersions] = React.useState([
+          { id: 'p1', version: 1, text: v1, message: 'First version', author: 'Ada Lovelace', createdAt: at(9, 2), labels: ['production'] },
+          { id: 'p2', version: 2, text: v2, message: 'Friendlier, in the customer language', author: 'Grace Hopper', createdAt: at(10, 13) }]);
+        return h(PromptManager, { name: 'support-answer', versions, labels: ['production'],
+          defaultValues: { product: 'Coreloom', language: 'English', question: 'How do I roll back?' },
+          onSave: ({ text, message }) => { const v = { id: 'p' + (versions.length + 1), version: versions.length + 1, text, message, author: 'You', createdAt: new Date() }; setVersions((l) => l.concat([v])); return v; },
+          onDeploy: (id, label) => setVersions((l) => l.map((v) => Object.assign({}, v, { labels: v.id === id ? [label] : [] }))),
+          onTest: ({ filled }) => new Promise((r) => setTimeout(() => r('Open the Deployments page, pick the last good deploy and choose Promote to production.'), 600)) });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
