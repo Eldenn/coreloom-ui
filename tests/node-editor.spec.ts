@@ -437,4 +437,83 @@ test.describe('Agent builder (Blocks/AI/Agent builder)', () => {
     await expect(node(page, 'Tools', graph)).toBeVisible()
     await expect(node(page, 'Researcher', graph)).toHaveCount(0)
   })
+  test('an agent fixes a tool parameter and names the state it writes', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-builder--agent-selected')
+    const p = panel(page)
+    const params = p.getByRole('group', { name: 'Tool parameters' })
+    await expect(params.getByRole('textbox', { name: /^max_results/ })).toHaveValue('5')
+    await params.getByRole('textbox', { name: /^query/ }).fill('{{ topic }} news')
+    await expect(params.getByRole('textbox', { name: /^query/ })).toHaveValue('{{ topic }} news')
+    await expect(p.getByRole('combobox', { name: 'Writes' })).toContainText('sources')
+    await expect(node(page, 'Researcher', graph)).toContainText('→ sources')
+  })
+
+  test('structured output must be valid JSON', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-builder--structured-output')
+    await expect(node(page, 'Writer', graph)).toContainText('Structured')
+    const schema = panel(page).getByRole('textbox', { name: /^Structured output/ })
+    await schema.fill('{ "type": ')
+    await expect(panel(page)).toContainText('JSON')
+    await expect(schema).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  test('picking a sensitive tool asks before running it', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-builder--agent-selected')
+    const p = panel(page)
+    await p.getByRole('combobox', { name: 'Tools' }).click()
+    await page.getByRole('option', { name: 'Send email' }).click()
+    await page.keyboard.press('Escape')
+    await expect(p.getByRole('combobox', { name: 'Ask before running' })).toContainText(
+      'Send email',
+    )
+  })
+
+  test('a node set to pause shows in the LangGraph JSON and the state dialog has a limit', async ({
+    page,
+  }) => {
+    await open(page, 'blocks-ai-agent-builder--agent-selected')
+    await panel(page).getByRole('combobox', { name: 'Pause the run' }).click()
+    await page.getByRole('option', { name: 'After this step' }).click()
+    await expect(node(page, 'Researcher', graph)).toContainText('Pauses')
+
+    await page.getByRole('button', { name: 'State' }).click()
+    const state = page.getByRole('dialog', { name: 'State' })
+    await state.getByRole('spinbutton', { name: 'Recursion limit' }).fill('40')
+    await state.getByRole('button', { name: 'Done' }).click()
+
+    await page.getByRole('button', { name: 'LangGraph JSON' }).click()
+    const json = page.getByRole('textbox', { name: 'LangGraph JSON' })
+    await expect(json).toHaveValue(/"pause": "after"/)
+    await expect(json).toHaveValue(/"recursionLimit": 40/)
+  })
+
+  test('a paused tool call: edit the arguments, then send the decision', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-builder--awaiting-approval')
+    const dialog = page.getByRole('dialog', { name: 'Approval needed' })
+    await expect(dialog).toContainText('send_email')
+    await dialog.getByRole('radio', { name: 'Edit' }).check()
+    const args = dialog.getByRole('textbox', { name: 'Arguments (JSON)' })
+    await args.fill('not json')
+    await dialog.getByRole('button', { name: 'Send' }).click()
+    await expect(dialog.getByRole('alert')).toContainText('JSON object')
+    await expect(args).toBeFocused()
+    await args.fill('{ "to": "me@example.com" }')
+    await dialog.getByRole('button', { name: 'Send' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(page.locator('output')).toContainText(
+      '"type":"edit","edited_action":{"name":"send_email","args":{"to":"me@example.com"}}',
+    )
+    await expect(page.getByRole('button', { name: 'Review', exact: true })).toHaveCount(0)
+  })
+
+  test('“Later” closes the review; Review opens it again', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-builder--human-review')
+    const dialog = page.getByRole('dialog', { name: 'Approval needed' })
+    await expect(dialog).toContainText('Publish this brief?')
+    await expect(dialog.getByRole('button', { name: 'Send' })).toBeDisabled()
+    await dialog.getByRole('button', { name: 'Later' }).click()
+    await expect(dialog).toHaveCount(0)
+    await page.getByRole('button', { name: 'Review', exact: true }).click()
+    await expect(dialog.getByRole('button', { name: 'Approve' })).toBeVisible()
+  })
 })
