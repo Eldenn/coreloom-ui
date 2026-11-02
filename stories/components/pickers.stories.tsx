@@ -44,6 +44,36 @@ export const Default: Story = {
   ),
 }
 
+/** `onCreate`: a search no label matches offers "Create “…”", which adds the option. */
+export const Creatable: Story = {
+  render: () => {
+    const [labels, setLabels] = React.useState([
+      { value: 'bug', label: 'Bug' },
+      { value: 'feature', label: 'Feature' },
+      { value: 'docs', label: 'Docs' },
+    ])
+    const [value, setValue] = React.useState('bug')
+    return (
+      <Field className="max-w-xs">
+        <FieldLabel htmlFor="cb-create">Label</FieldLabel>
+        <Combobox
+          id="cb-create"
+          options={labels}
+          value={value}
+          onValueChange={setValue}
+          searchPlaceholder="Search or create…"
+          onCreate={(label) => {
+            const created = label.toLowerCase().replace(/\s+/g, '-')
+            setLabels((prev) => [...prev, { value: created, label }])
+            return created
+          }}
+        />
+        <FieldDescription>Value: {value}</FieldDescription>
+      </Field>
+    )
+  },
+}
+
 export const DatePickerStory: Story = {
   name: 'DatePicker',
   render: () => {

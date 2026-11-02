@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/choice-card.stories'
+import guide from './ChoiceCard.md?raw'
+
+<Meta title="Guidelines/Forms/Choice card" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Checkboxes} />

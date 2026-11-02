@@ -796,7 +796,7 @@
       "name": "combobox",
       "type": "registry:ui",
       "title": "Combobox",
-      "description": "Searchable select built from Popover and Command. `clearable` adds a clear button.",
+      "description": "Searchable select built from Popover and Command. `clearable` adds a clear button; `onCreate` offers to create what was searched.",
       "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1140,7 +1140,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, select, combobox, multi-select, date (picked or typed), time, date and time, date range, tags, file, money, phone, radio, checkbox, switch and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, masked (IBAN, card, SIRET), unit, duration, slider, select, segmented, combobox, multi-select, date (picked or typed), time, date and time, month, week, date range, tags, file, money, phone, colour, rating, radio, radio cards, checkbox, checkbox group, switch, key-value, chips, survey scale, number range, time range, JSON, mentions, tree select, transfer list, image, ranking, recurrence, time zone and one-time-code fields, a submit button and form-level errors.",
       "dependencies": ["@tanstack/react-form@^1", "input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1168,7 +1168,29 @@
         "@coreloom/input-group",
         "@coreloom/number-input",
         "@coreloom/time-picker",
-        "@coreloom/character-count"
+        "@coreloom/character-count",
+        "@coreloom/choice-card",
+        "@coreloom/color-picker",
+        "@coreloom/duration-input",
+        "@coreloom/key-value-editor",
+        "@coreloom/masked-input",
+        "@coreloom/month-picker",
+        "@coreloom/rating",
+        "@coreloom/segmented-control",
+        "@coreloom/slider-input",
+        "@coreloom/unit-input",
+        "@coreloom/week-picker",
+        "@coreloom/chip-group",
+        "@coreloom/scale-input",
+        "@coreloom/range-inputs",
+        "@coreloom/json-input",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-select",
+        "@coreloom/transfer-list",
+        "@coreloom/image-input",
+        "@coreloom/sortable-list",
+        "@coreloom/recurrence-input",
+        "@coreloom/timezone-select"
       ],
       "files": [
         {
@@ -1303,7 +1325,7 @@
       "name": "input-group",
       "type": "registry:ui",
       "title": "InputGroup",
-      "description": "A field with addons inside its border (icon, prefix, unit, button, kbd, a toolbar above or below a textarea), plus ready-made PasswordInput (show/hide) and SearchInput (clear).",
+      "description": "A field with addons inside its border (icon, prefix, unit, button, kbd, a toolbar above or below a textarea), plus ready-made PasswordInput (show/hide) and SearchInput (clear); `CopyInput` for a read-only value with a copy button.",
       "dependencies": ["class-variance-authority", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1486,6 +1508,380 @@
       "files": [
         {
           "path": "src/components/ui/rating.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "choice-card",
+      "type": "registry:ui",
+      "title": "ChoiceCard",
+      "description": "Radio buttons and checkboxes drawn as cards with a title, a description and an icon (RadioCardGroup, RadioCard, CheckboxCard).",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/choice-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "segmented-control",
+      "type": "registry:ui",
+      "title": "SegmentedControl",
+      "description": "Two to five options in one pill, exactly one picked (\"Day · Week · Month\"): a radio group, arrows change the pick.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/segmented-control.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "unit-input",
+      "type": "registry:ui",
+      "title": "UnitInput",
+      "description": "A number with its unit picked beside it (\"12 px\", \"80 kg\"); optional conversion when the unit changes.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/number-input"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/unit-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "duration-input",
+      "type": "registry:ui",
+      "title": "DurationInput",
+      "description": "A duration typed the way people say it (\"1h30\", \"90\", \"1:30\"); the value is minutes, shown back in the locale.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/duration-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "month-picker",
+      "type": "registry:ui",
+      "title": "MonthPicker",
+      "description": "A month of a year (\"YYYY-MM\") from a twelve-month grid, with min and max.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/month-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "week-picker",
+      "type": "registry:ui",
+      "title": "WeekPicker",
+      "description": "An ISO week (\"YYYY-Www\") from a calendar with week numbers; clicking a day picks its week.",
+      "dependencies": ["date-fns", "lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/calendar",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/week-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "key-value-editor",
+      "type": "registry:ui",
+      "title": "KeyValueEditor",
+      "description": "Rows of key and value people add and remove (headers, variables); flags repeated keys and splits pasted \"KEY=value\" lines.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/key-value-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "emoji-picker",
+      "type": "registry:ui",
+      "title": "EmojiPicker",
+      "description": "A built-in set of common emoji by category, searchable, with arrow-key navigation; as a popover button or a panel.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/emoji-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "signature-pad",
+      "type": "registry:ui",
+      "title": "SignaturePad",
+      "description": "A box to sign with a finger, pen or mouse, or type one's name instead; the value is a PNG data URL.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/signature-pad.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "password-strength",
+      "type": "registry:ui",
+      "title": "PasswordStrength",
+      "description": "A strength meter and rule checklist under a new-password field; announced only when the level changes.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/password-strength.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "chip-group",
+      "type": "registry:ui",
+      "title": "ChipGroup",
+      "description": "Pills that toggle on and off (filters, interests): checkboxes with type=\"multiple\", radios with type=\"single\".",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/chip-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scale-input",
+      "type": "registry:ui",
+      "title": "ScaleInput",
+      "description": "A survey scale, NPS 0–10 or a worded Likert scale: a radio group with end labels.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/scale-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "range-inputs",
+      "type": "registry:ui",
+      "title": "NumberRangeInput / TimeRangePicker",
+      "description": "Two fields for the two ends of a range (a price filter, opening hours); an upside-down range is flagged, overnight allowed.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/number-input",
+        "@coreloom/time-picker"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/range-inputs.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "json-input",
+      "type": "registry:ui",
+      "title": "JsonInput",
+      "description": "A code field for JSON: says where it breaks (line, column), Format re-indents, Tab indents.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/json-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "mention-textarea",
+      "type": "registry:ui",
+      "title": "MentionTextarea",
+      "description": "A textarea where \"@\" suggests people (or \"#\" channels); arrows and Enter insert the handle. mentionsIn lists them.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/mention-textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tree-select",
+      "type": "registry:ui",
+      "title": "TreeSelect",
+      "description": "A select whose options nest, with an APG tree in the popover; one value or several.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tree-select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "transfer-list",
+      "type": "registry:ui",
+      "title": "TransferList",
+      "description": "Two filterable lists, Available and Selected, with buttons to move ticked items between them.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/transfer-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "image-input",
+      "type": "registry:ui",
+      "title": "ImageInput",
+      "description": "One image with its preview (avatar, logo, cover): click or drop to choose, replace or remove; type and size checked.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/file-upload"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/image-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sortable-list",
+      "type": "registry:ui",
+      "title": "SortableList",
+      "description": "Items to put in order (a ranking): drag by the handle, with the keyboard, or with up and down buttons; announced to screen readers.",
+      "dependencies": [
+        "lucide-react",
+        "@dnd-kit/core@^6",
+        "@dnd-kit/sortable@^10",
+        "@dnd-kit/utilities@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sortable-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "recurrence-input",
+      "type": "registry:ui",
+      "title": "RecurrenceInput",
+      "description": "How often something repeats (every 2 weeks on Mon and Wed, until a date or N times), read back as a sentence; toRRule and parseRRule convert to iCalendar RRULE.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chip-group",
+        "@coreloom/date-picker",
+        "@coreloom/native-select",
+        "@coreloom/number-input"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/recurrence-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timezone-select",
+      "type": "registry:ui",
+      "title": "TimezoneSelect",
+      "description": "Searchable IANA time zones with their UTC offsets, the person's own zone marked. Built on Combobox.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/combobox"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/timezone-select.tsx",
           "type": "registry:ui"
         }
       ]
@@ -1925,7 +2321,28 @@
         "@coreloom/model-field",
         "@coreloom/context-meter",
         "@coreloom/agent-graph",
-        "@coreloom/node-editor"
+        "@coreloom/node-editor",
+        "@coreloom/choice-card",
+        "@coreloom/segmented-control",
+        "@coreloom/unit-input",
+        "@coreloom/duration-input",
+        "@coreloom/month-picker",
+        "@coreloom/week-picker",
+        "@coreloom/key-value-editor",
+        "@coreloom/emoji-picker",
+        "@coreloom/signature-pad",
+        "@coreloom/password-strength",
+        "@coreloom/chip-group",
+        "@coreloom/scale-input",
+        "@coreloom/range-inputs",
+        "@coreloom/json-input",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-select",
+        "@coreloom/transfer-list",
+        "@coreloom/image-input",
+        "@coreloom/sortable-list",
+        "@coreloom/recurrence-input",
+        "@coreloom/timezone-select"
       ],
       "dependencies": []
     },
