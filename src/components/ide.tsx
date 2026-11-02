@@ -8,6 +8,7 @@
 // Mod-Shift-P opens the commands, Mod-B shows or hides the explorer, Mod-J the panel.
 import type { EditorView } from '@codemirror/view'
 import {
+  CheckIcon,
   CircleXIcon,
   FileBracesIcon,
   FileCodeIcon,
@@ -42,11 +43,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
+  CODE_EDITOR_LANGUAGES,
   CodeEditor,
   type CodeEditorCursor,
   type CodeEditorDiagnostic,
   type CodeEditorLanguage,
   languageFromPath,
+  useLanguageName,
 } from '@/components/ui/code-editor'
 import {
   CommandDialog,
@@ -100,18 +103,6 @@ interface IdePanel {
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed'
-
-const LANGUAGE_NAMES: Record<Exclude<CodeEditorLanguage, 'text'>, string> = {
-  javascript: 'JavaScript',
-  jsx: 'JavaScript JSX',
-  typescript: 'TypeScript',
-  tsx: 'TypeScript JSX',
-  json: 'JSON',
-  css: 'CSS',
-  html: 'HTML',
-  markdown: 'Markdown',
-  python: 'Python',
-}
 
 function baseName(path: string) {
   return path.split('/').pop() ?? path
@@ -332,6 +323,7 @@ function Ide({
 }: IdeProps) {
   const t = useCoreloomI18n().messages.ide
   const common = useCoreloomI18n().messages.common
+  const nameOf = useLanguageName()
   const id = React.useId()
   const rootRef = React.useRef<HTMLDivElement>(null)
   const compact = useCompact(rootRef, 640)
@@ -375,7 +367,7 @@ function Ide({
   const [panel, setPanel] = React.useState(defaultPanel)
   const [wrap, setWrap] = React.useState(defaultWrap)
   const [cursor, setCursor] = React.useState<CodeEditorCursor>({ line: 1, column: 1, selected: 0 })
-  const [palette, setPalette] = React.useState<'files' | 'commands' | null>(null)
+  const [palette, setPalette] = React.useState<'files' | 'commands' | 'language' | null>(null)
   const [pathDialog, setPathDialog] = React.useState<{
     mode: 'new' | 'rename'
     from?: string
@@ -460,6 +452,11 @@ function Ide({
   const updateContent = (path: string, content: string) => {
     setFiles(files.map((f) => (f.path === path ? { ...f, content } : f)))
     if (saveState !== 'saving') setSaveState('idle')
+  }
+
+  const setLanguage = (path: string, language: CodeEditorLanguage) => {
+    setFiles(files.map((f) => (f.path === path ? { ...f, language } : f)))
+    requestAnimationFrame(() => viewRef.current?.focus())
   }
 
   const createOrRename = (path: string) => {
@@ -594,6 +591,15 @@ function Ide({
       run: () => {
         setPanelOpen((o) => !o)
       },
+    },
+    {
+      id: 'language',
+      label: t.changeLanguage,
+      icon: <FileCodeIcon />,
+      run: () => {
+        setPalette('language')
+      },
+      hidden: !active,
     },
     {
       id: 'wrap',
@@ -898,12 +904,10 @@ function Ide({
     </Tabs>
   )
 
-  const languageName = activeFile
-    ? (() => {
-        const lang = activeFile.language ?? languageFromPath(activeFile.path)
-        return lang === 'text' ? t.plainText : LANGUAGE_NAMES[lang]
-      })()
-    : null
+  const activeLanguage = activeFile
+    ? (activeFile.language ?? languageFromPath(activeFile.path))
+    : undefined
+  const languageName = activeLanguage ? nameOf(activeLanguage) : null
 
   const visibleCommands = commands.filter((c) => !c.hidden)
 
@@ -1085,7 +1089,16 @@ function Ide({
               {cursor.selected > 0 ? ` ${t.selected(cursor.selected)}` : ''}
             </span>
             <span className="hidden sm:inline">{t.spaces(tabSize)}</span>
-            <span>{languageName}</span>
+            <button
+              type="button"
+              aria-label={`${t.changeLanguage}: ${languageName ?? ''}`}
+              className="rounded-sm px-1 outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
+              onClick={() => {
+                setPalette('language')
+              }}
+            >
+              {languageName}
+            </button>
           </span>
         ) : null}
       </div>
@@ -1109,10 +1122,24 @@ function Ide({
         onOpenChange={(o) => {
           if (!o) setPalette(null)
         }}
-        title={palette === 'commands' ? t.commands : t.goToFile}
+        title={
+          palette === 'commands'
+            ? t.commands
+            : palette === 'language'
+              ? t.changeLanguage
+              : t.goToFile
+        }
         description={t.paletteDescription}
       >
-        <CommandInput placeholder={palette === 'commands' ? t.searchCommands : t.searchFiles} />
+        <CommandInput
+          placeholder={
+            palette === 'commands'
+              ? t.searchCommands
+              : palette === 'language'
+                ? t.searchLanguages
+                : t.searchFiles
+          }
+        />
         <CommandList>
           <CommandEmpty>{common.noResults}</CommandEmpty>
           {palette === 'files' ? (
@@ -1137,22 +1164,43 @@ function Ide({
               ))}
             </CommandGroup>
           ) : null}
-          <CommandGroup heading={t.commands}>
-            {visibleCommands.map((c) => (
-              <CommandItem
-                key={c.id}
-                value={`> ${c.label}`}
-                onSelect={() => {
-                  setPalette(null)
-                  c.run()
-                }}
-              >
-                {c.icon}
-                {c.label}
-                {c.keys ? <CommandShortcut>{c.keys.join(' ')}</CommandShortcut> : null}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {palette === 'language' && active ? (
+            <CommandGroup heading={t.languages}>
+              {CODE_EDITOR_LANGUAGES.map(({ value }) => (
+                <CommandItem
+                  key={value}
+                  value={`${nameOf(value)} ${value}`}
+                  onSelect={() => {
+                    setPalette(null)
+                    setLanguage(active, value)
+                  }}
+                >
+                  {nameOf(value)}
+                  {value === activeLanguage ? (
+                    <CheckIcon className="ml-auto" aria-label={t.current} />
+                  ) : null}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ) : null}
+          {palette === 'language' ? null : (
+            <CommandGroup heading={t.commands}>
+              {visibleCommands.map((c) => (
+                <CommandItem
+                  key={c.id}
+                  value={`> ${c.label}`}
+                  onSelect={() => {
+                    setPalette(null)
+                    c.run()
+                  }}
+                >
+                  {c.icon}
+                  {c.label}
+                  {c.keys ? <CommandShortcut>{c.keys.join(' ')}</CommandShortcut> : null}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </CommandList>
       </CommandDialog>
 

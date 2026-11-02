@@ -1533,6 +1533,8 @@ export const es: Messages = {
       n === 1 ? 'Corrige 1 nodo antes de ejecutar.' : `Corrige ${n} nodos antes de ejecutar.`,
   },
   codeEditor: {
+    language: 'Lenguaje',
+    plainText: 'Texto sin formato',
     phrases: {
       Find: 'Buscar',
       Replace: 'Reemplazar',
@@ -1627,7 +1629,10 @@ export const es: Messages = {
     position: (line, column) => `Lín ${line}, Col ${column}`,
     selected: (n) => `(${n} seleccionados)`,
     spaces: (n) => `Espacios: ${n}`,
-    plainText: 'Texto sin formato',
+    changeLanguage: 'Cambiar el lenguaje del archivo',
+    searchLanguages: 'Escribe un lenguaje…',
+    languages: 'Lenguajes',
+    current: 'actual',
     readOnly: 'Solo lectura',
   },
   kanban: {
