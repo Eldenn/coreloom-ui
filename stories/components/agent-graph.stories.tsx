@@ -53,6 +53,20 @@ export const Failed: Story = {
   },
 }
 
+/** `avatars`: each agent gets its own animated face, which follows the run. */
+export const WithAvatars: Story = {
+  args: {
+    avatars: 'face',
+    activity: { concierge: 'waiting', triage: 'waiting', billing: 'done', tech: 'working' },
+    activePath: ['concierge', 'triage', 'billing', 'tech'],
+  },
+}
+
+/** The dots variant, in the list view. */
+export const ListWithAvatars: Story = {
+  args: { avatars: 'dots', defaultView: 'list', activity: { researcher: 'failed' } },
+}
+
 /** The same system as text: each agent with who it reports to, delegates to and uses. */
 export const ListView: Story = { args: { defaultView: 'list' } }
 

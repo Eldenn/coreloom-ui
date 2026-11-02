@@ -2,7 +2,7 @@
 
 A multi-agent system at a glance: `AgentTeams` puts the agent graph next to a panel on the selected agent — its role, team, model, status, who it reports to and delegates to, who it hands off to and takes over from, the tools and knowledge it uses — with links to its page and its runs. A team filter narrows the graph to one team and the tools it uses. `AgentDetails` is the panel on its own.
 
-**`AgentTeams` takes** `agents` (as in the agent graph, plus a `description`), `edges` and `teams`, and optionally `href(id)` and `runsHref(id)`, `defaultSelectedId`, `defaultTeam` (`'all'`), `defaultView` (left out, a list on a box too narrow to read the graph), `activity` / `activePath` to show a run, and `onEdit(selectedId)`, which adds an **Edit graph** button for your agent builder.
+**`AgentTeams` takes** `agents` (as in the agent graph, plus a `description`), `edges` and `teams`, and optionally `href(id)` and `runsHref(id)`, `defaultSelectedId`, `defaultTeam` (`'all'`), `defaultView` (left out, a list on a box too narrow to read the graph), `activity` / `activePath` to show a run, `onEdit(selectedId)`, which adds an **Edit graph** button for your agent builder, and `avatars` (`face` or `dots`) to draw the agents as animated Agent Avatars in the graph and the details.
 
 **`agentActivityFromSpans(spans, agents)`** turns a run's trace spans (the `TraceSpan`s of ai-runs, or any spans with `id`, `parentId`, `kind`, `name`, `startMs`, `status`) into `{ activity, path }`: an agent span still running is _working_, or _waiting_ while an agent it started runs; finished spans are _done_ or _failed_. Spans are matched to agents by `agentId`, else by name.
 

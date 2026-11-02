@@ -314,6 +314,51 @@ export const Answering: Story = {
   ),
 }
 
+/** `assistantAvatar`: the assistant as an animated AgentAvatar that talks while it writes. Frozen, so it can be tested. */
+export const WithAgentAvatar: Story = {
+  render: () => (
+    <Frame frozen>
+      <Chat
+        autoFocus={false}
+        status="streaming"
+        onSend={() => {}}
+        onStop={() => {}}
+        assistantAvatar={{ seed: 'support-agent' }}
+        messages={[
+          conversation[0],
+          {
+            id: 'm2',
+            role: 'assistant',
+            parts: [
+              {
+                type: 'text',
+                text: 'Your last three deployments of **coreloom-api** failed at the same step: the',
+                state: 'streaming',
+              },
+            ],
+          },
+        ]}
+      />
+    </Frame>
+  ),
+}
+
+/** The dots variant while the answer is on its way. */
+export const WaitingWithDots: Story = {
+  render: () => (
+    <Frame>
+      <Chat
+        autoFocus={false}
+        messages={conversation.slice(0, 1)}
+        status="submitted"
+        assistantAvatar={{ variant: 'dots' }}
+        onSend={() => {}}
+        onStop={() => {}}
+      />
+    </Frame>
+  ),
+}
+
 // A small chart as an image attachment (an SVG data URL, so the story needs no network).
 const chart = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="0 0 320 160"><rect width="320" height="160" fill="#101418"/><polyline fill="none" stroke="#00c2b8" stroke-width="4" points="10,130 60,110 110,118 160,70 210,84 260,40 310,52"/></svg>',
