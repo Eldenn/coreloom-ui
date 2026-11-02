@@ -4,6 +4,7 @@ import * as React from 'react'
 
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import {
+  CopyInput,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
@@ -24,7 +25,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A field with addons inside its border: an icon, a prefix or unit, a button, a keyboard hint, or a toolbar above or below a textarea. `PasswordInput` and `SearchInput` are ready-made groups. The consumer wires the field like any `Input` (value, onChange, aria-invalid) and gives buttons an `aria-label`.',
+          'A field with addons inside its border: an icon, a prefix or unit, a button, a keyboard hint, or a toolbar above or below a textarea. `PasswordInput`, `SearchInput` and `CopyInput` are ready-made groups. The consumer wires the field like any `Input` (value, onChange, aria-invalid) and gives buttons an `aria-label`.',
       },
     },
   },
@@ -160,6 +161,22 @@ export const Search: Story = {
       </Field>
     )
   },
+}
+
+export const Copy: Story = {
+  render: () => (
+    <FieldGroup className="max-w-md">
+      <Field>
+        <FieldLabel htmlFor="ig-copy">Invite link</FieldLabel>
+        <CopyInput id="ig-copy" value="https://coreloom.dev/join/7f3a9c2e" />
+        <FieldDescription>Anyone with the link can join this workspace.</FieldDescription>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="ig-copy-key">API key</FieldLabel>
+        <CopyInput id="ig-copy-key" value="cl_live_51Hc8…f2a" copyLabel="Copy API key" />
+      </Field>
+    </FieldGroup>
+  ),
 }
 
 export const Invalid: Story = {

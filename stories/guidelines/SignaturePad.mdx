@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/signature-pad.stories'
+import guide from './SignaturePad.md?raw'
+
+<Meta title="Guidelines/Forms/Signature pad" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />

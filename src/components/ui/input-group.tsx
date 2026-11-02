@@ -2,10 +2,10 @@
 
 // Coreloom UI — InputGroup. A field with things attached inside its border: an icon, a unit, a
 // prefix like "https://", a button, a keyboard hint, or a toolbar above or below a textarea. It
-// follows shadcn's input-group parts. `PasswordInput` and `SearchInput` are the two groups every
-// app writes by hand (show/hide, clear), built from those parts.
+// follows shadcn's input-group parts. `PasswordInput`, `SearchInput` and `CopyInput` are the groups
+// every app writes by hand (show/hide, clear, copy), built from those parts.
 import { cva, type VariantProps } from 'class-variance-authority'
-import { EyeIcon, EyeOffIcon, SearchIcon, XIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, SearchIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -256,7 +256,79 @@ function SearchInput({
   )
 }
 
+/**
+ * A read-only value with a copy button: an API key, an invite link, a webhook URL. Clicking the
+ * field selects all of it; the button copies it, shows a tick and says "Copied" to screen readers.
+ */
+function CopyInput({
+  className,
+  value,
+  copyLabel,
+  onCopy,
+  onFocus,
+  ...props
+}: Omit<
+  React.ComponentProps<'input'>,
+  'type' | 'value' | 'defaultValue' | 'onChange' | 'readOnly'
+> & {
+  value: string
+  /** Accessible name of the copy button; defaults to the i18n text ("Copy"). */
+  copyLabel?: string
+  /** Called after the value was copied (to log it, or show a toast). */
+  onCopy?: () => void
+}) {
+  const t = useCoreloomI18n().messages.inputs
+  const [copied, setCopied] = React.useState(false)
+  React.useEffect(() => {
+    if (!copied) return
+    const timer = setTimeout(() => {
+      setCopied(false)
+    }, 1600)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [copied])
+  return (
+    <InputGroup className={className} data-slot="copy-input">
+      <InputGroupInput
+        type="text"
+        readOnly
+        value={value}
+        spellCheck={false}
+        className="font-mono text-[13px]"
+        onFocus={(e) => {
+          e.currentTarget.select()
+          onFocus?.(e)
+        }}
+        {...props}
+      />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton
+          size="icon-sm"
+          aria-label={copyLabel ?? t.copy}
+          disabled={props.disabled}
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(value)
+              setCopied(true)
+              onCopy?.()
+            } catch {
+              /* clipboard unavailable: the field is selectable, people can copy by hand */
+            }
+          }}
+        >
+          {copied ? <CheckIcon className="text-success" /> : <CopyIcon />}
+        </InputGroupButton>
+      </InputGroupAddon>
+      <span role="status" className="sr-only">
+        {copied ? t.copied : ''}
+      </span>
+    </InputGroup>
+  )
+}
+
 export {
+  CopyInput,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
