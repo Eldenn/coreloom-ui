@@ -1,0 +1,32 @@
+<!-- @dsCard group="Forms" height=300 subtitle="Icons, prefixes, units, buttons · password · search" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.InputGroup || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText, PasswordInput, SearchInput, Field, FieldLabel, FieldGroup } = UI;
+      function Demo() {
+        return h(FieldGroup, { style: { maxWidth: 340 }, className: 'gap-4' },
+          h(Field, null, h(FieldLabel, { htmlFor: 'site' }, 'Website'),
+            h(InputGroup, null, h(InputGroupAddon, null, h(InputGroupText, null, 'https://')), h(InputGroupInput, { id: 'site', defaultValue: 'coreloom.dev' }))),
+          h(Field, null, h(FieldLabel, { htmlFor: 'pw' }, 'Password'), h(PasswordInput, { id: 'pw', defaultValue: 'correct horse' })),
+          h(Field, null, h(FieldLabel, { htmlFor: 'q' }, 'Find a component'), h(SearchInput, { id: 'q', defaultValue: 'gauge' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

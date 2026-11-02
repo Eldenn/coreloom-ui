@@ -1,0 +1,30 @@
+<!-- @dsCard group="Forms" height=150 subtitle="Slider and number field on one value" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.SliderInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { SliderInput, Field, FieldLabel } = UI;
+      function Demo() {
+        const [v, setV] = React.useState(0.7);
+        return h(Field, { style: { maxWidth: 380 } }, h(FieldLabel, { htmlFor: 'temp' }, 'Temperature'),
+          h(SliderInput, { id: 'temp', label: 'Temperature', value: v, onValueChange: setV, min: 0, max: 2, step: 0.1 }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

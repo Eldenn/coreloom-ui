@@ -1,0 +1,32 @@
+<!-- @dsCard group="Actions" height=170 subtitle="Joined buttons · split button · vertical" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ButtonGroup || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, Button } = UI;
+      function Demo() {
+        return h('div', { className: 'flex flex-wrap items-start gap-4' },
+          h(ButtonGroup, { 'aria-label': 'Message actions' }, h(Button, { variant: 'outline' }, 'Archive'), h(Button, { variant: 'outline' }, 'Reply'), h(Button, { variant: 'outline' }, 'Delete')),
+          h(ButtonGroup, null, h(Button, null, 'Deploy'), h(ButtonGroupSeparator, { className: 'bg-primary-press' }), h(Button, { size: 'icon', 'aria-label': 'More deploy options' }, '▾')),
+          h(ButtonGroup, null, h(Button, { variant: 'secondary' }, 'Save draft'), h(ButtonGroupSeparator), h(Button, { variant: 'secondary', size: 'icon', 'aria-label': 'More save options' }, '▾')),
+          h(ButtonGroup, { 'aria-label': 'Seats' }, h(Button, { variant: 'outline', size: 'icon', 'aria-label': 'Remove a seat' }, '−'), h(ButtonGroupText, null, '3 seats'), h(Button, { variant: 'outline', size: 'icon', 'aria-label': 'Add a seat' }, '+')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
