@@ -1,0 +1,31 @@
+<!-- @dsCard group="Forms" height=180 subtitle="Radio and checkbox cards" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.RadioCardGroup || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { RadioCardGroup, RadioCard } = UI;
+      function Demo() {
+        const [plan, setPlan] = React.useState('team');
+        return h(RadioCardGroup, { 'aria-label': 'Plan', value: plan, onValueChange: setPlan, orientation: 'horizontal' },
+          h(RadioCard, { value: 'starter', title: 'Starter', description: 'One project, free.' }),
+          h(RadioCard, { value: 'team', title: 'Team', description: '€12 / seat / month.' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

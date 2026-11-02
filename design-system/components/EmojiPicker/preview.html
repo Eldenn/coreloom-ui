@@ -1,0 +1,29 @@
+<!-- @dsCard group="Forms" height=120 subtitle="Searchable grid · popover or panel" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.EmojiPicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { EmojiPicker } = UI;
+      function Demo() {
+        const [v, setV] = React.useState('');
+        return h('div', { className: 'flex items-center gap-2' }, h(EmojiPicker, { onSelect: (e) => setV(v + e.emoji) }), h('span', null, v || 'Pick an emoji'));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
