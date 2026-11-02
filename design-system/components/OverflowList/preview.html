@@ -1,0 +1,30 @@
+<!-- @dsCard group="Data display" height=110 subtitle="Fits one line · +N popover" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.OverflowList || !UI.Badge || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { OverflowList, Badge } = UI;
+      function Demo() {
+        const labels = ['Design', 'Frontend', 'Accessibility', 'Q4 roadmap', 'Customer request', 'Billing', 'Mobile'];
+        return h('div', { style: { width: 300, border: '1px dashed var(--border-1)', borderRadius: 8, padding: 8 } },
+          h(OverflowList, { 'aria-label': 'Labels', items: labels, renderItem: (l) => h(Badge, { key: l }, l) }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

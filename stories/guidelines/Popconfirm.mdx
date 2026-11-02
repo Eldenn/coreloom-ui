@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/popconfirm.stories'
+import guide from './Popconfirm.md?raw'
+
+<Meta title="Guidelines/Overlays/Popconfirm" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Neutral} />

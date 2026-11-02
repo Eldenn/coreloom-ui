@@ -23,6 +23,7 @@ const GUIDE_FOR = {
   'theme-toggle': ['Accents'],
   'command-menu': ['Command'],
   highlight: ['TruncatedText'],
+  format: ['FormatNumber'],
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
   vscode: ['VsCode'],

@@ -22,6 +22,11 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import {
+  AgentAvatar,
+  type AgentAvatarState,
+  type AgentAvatarVariant,
+} from '@/components/ui/agent-avatar'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -405,6 +410,15 @@ function agentRelations(id: string, edges: AgentGraphEdge[]) {
 
 type AgentRelations = ReturnType<typeof agentRelations>
 
+/** The face an agent's avatar makes for its activity in the run, or its status outside one. */
+function agentAvatarState(node: AgentGraphNode, activity?: AgentActivity): AgentAvatarState {
+  if (activity === 'working') return 'thinking'
+  if (activity === 'done') return 'done'
+  if (activity === 'failed') return 'error'
+  if (activity === 'waiting') return 'idle'
+  return node.status === 'paused' ? 'offline' : 'idle'
+}
+
 const KIND_ICON = { agent: BotIcon, human: UserIcon, tool: WrenchIcon, knowledge: BookOpenIcon }
 
 const ACTIVITY = {
@@ -499,6 +513,7 @@ function AgentGraph({
   onViewChange,
   maxHeight = 560,
   legend = true,
+  avatars,
   label,
   className,
 }: {
@@ -522,6 +537,11 @@ function AgentGraph({
   /** The graph scrolls beyond this height (px). */
   maxHeight?: number
   legend?: boolean
+  /**
+   * Draw agents as animated AgentAvatars (`face` or `dots`), seeded by id, that follow their
+   * activity: working thinks, done smiles, failed frowns, paused sleeps. Off: a robot icon.
+   */
+  avatars?: AgentAvatarVariant
   /** Names the graph for screen readers (default: "Agents and how they work together"). */
   label?: string
   className?: string
@@ -1014,18 +1034,27 @@ function AgentGraph({
                     )}
                     style={{ left: p.x, top: p.y, width: p.w, height: p.h }}
                   >
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'flex shrink-0 items-center justify-center rounded-md',
-                        resource
-                          ? 'size-5 text-muted-foreground'
-                          : 'size-8 bg-secondary text-fg-secondary',
-                        act === 'working' && !resource && 'bg-primary-subtle text-primary-text',
-                      )}
-                    >
-                      <Icon className={resource ? 'size-3.5' : 'size-4'} />
-                    </span>
+                    {avatars && kind === 'agent' ? (
+                      <AgentAvatar
+                        variant={avatars}
+                        seed={n.id}
+                        state={agentAvatarState(n, act)}
+                        decorative
+                      />
+                    ) : (
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'flex shrink-0 items-center justify-center rounded-md',
+                          resource
+                            ? 'size-5 text-muted-foreground'
+                            : 'size-8 bg-secondary text-fg-secondary',
+                          act === 'working' && !resource && 'bg-primary-subtle text-primary-text',
+                        )}
+                      >
+                        <Icon className={resource ? 'size-3.5' : 'size-4'} />
+                      </span>
+                    )}
                     <span className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate text-[13px] leading-5 font-semibold text-foreground">
                         {n.name}
@@ -1107,10 +1136,21 @@ function AgentGraph({
                           isSelected ? 'bg-primary-subtle' : 'hover:bg-accent/60',
                         )}
                       >
-                        <Icon
-                          aria-hidden
-                          className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                        />
+                        {avatars && (n.kind ?? 'agent') === 'agent' ? (
+                          <AgentAvatar
+                            variant={avatars}
+                            seed={n.id}
+                            state={agentAvatarState(n, act)}
+                            size="xs"
+                            decorative
+                            className="mt-0.5"
+                          />
+                        ) : (
+                          <Icon
+                            aria-hidden
+                            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                          />
+                        )}
                         <span className="flex min-w-0 flex-col gap-0.5">
                           <span className="text-[13px] font-semibold text-foreground">
                             {n.name}
@@ -1153,6 +1193,7 @@ function AgentGraph({
 
 export {
   type AgentActivity,
+  agentAvatarState,
   type AgentEdgeKind,
   AgentGraph,
   type AgentGraphEdge,
