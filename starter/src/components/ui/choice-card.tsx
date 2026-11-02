@@ -49,7 +49,7 @@ function CardBody({
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-[14px] leading-tight font-medium text-foreground">{title}</span>
         {description ? (
-          <span id={descriptionId} className="text-[13px] leading-snug text-muted-foreground">
+          <span id={descriptionId} className="text-[13px] leading-snug text-muted-foreground group-has-checked/choice-card:text-fg-secondary">
             {description}
           </span>
         ) : null}

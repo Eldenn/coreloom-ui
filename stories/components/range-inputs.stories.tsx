@@ -34,13 +34,7 @@ export const Default: Story = {
       <FieldGroup className="max-w-md">
         <Field>
           <FieldLabel htmlFor="rg-price">Price</FieldLabel>
-          <NumberRangeInput
-            id="rg-price"
-            value={price}
-            onValueChange={setPrice}
-            min={0}
-            formatOptions={{ style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }}
-          />
+          <NumberRangeInput id="rg-price" value={price} onValueChange={setPrice} min={0} />
           <FieldDescription>
             {price.min ?? '…'} to {price.max ?? '…'}
           </FieldDescription>
