@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { NodeEditor } from '@/components/ui/node-editor'
 
 import {
+  annotatedWorkflow,
   automationKinds,
   demoCredentials,
   fakeRunNode,
@@ -28,6 +29,7 @@ const meta = {
     readOnly: { control: 'boolean' },
     inspector: { control: 'boolean' },
     showIssues: { control: 'boolean' },
+    minimap: { control: 'boolean' },
     height: { control: 'number' },
     kinds: { control: 'object' },
     defaultValue: { control: 'object' },
@@ -127,6 +129,16 @@ export const NeedsAttention: Story = {
 
 /** For showing a workflow: no dragging, connecting or editing. */
 export const ReadOnly: Story = { args: { readOnly: true, defaultSelectedId: 'chat' } }
+
+/**
+ * A note for the team and a group framing the sales steps. Add them from the toolbar (or right-click
+ * the canvas; Ctrl/⌘+G groups the selection); dragging a group's header moves what's inside.
+ * Ctrl/⌘+F finds a node, a note or a group; the minimap in the corner pans and zooms.
+ */
+export const NotesAndGroups: Story = { args: { defaultValue: annotatedWorkflow } }
+
+/** Notes and groups read-only: their text shows, nothing moves. */
+export const NotesReadOnly: Story = { args: { defaultValue: annotatedWorkflow, readOnly: true } }
 
 export const Empty: Story = { args: { defaultValue: { nodes: [], edges: [] } } }
 
