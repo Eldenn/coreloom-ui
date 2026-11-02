@@ -100,9 +100,21 @@ const levelTags: Record<LogLevel, string> = {
   info: 'text-primary-text',
   debug: 'text-muted-foreground',
 }
+const levelDots: Record<LogLevel, string> = {
+  error: 'bg-destructive',
+  warn: 'bg-warning',
+  info: 'bg-primary',
+  debug: 'bg-border-strong',
+}
 const levelRows: Partial<Record<LogLevel, string>> = {
   error: 'bg-destructive-subtle/60',
   warn: 'bg-warning-subtle/50',
+}
+// The line number sticks over the row when it scrolls sideways, so it needs an opaque background:
+// the surface, with the row's tint drawn on top.
+const levelNumbers: Partial<Record<LogLevel, string>> = {
+  error: 'bg-linear-to-r from-destructive-subtle/60 to-destructive-subtle/60',
+  warn: 'bg-linear-to-r from-warning-subtle/50 to-warning-subtle/50',
 }
 
 function IconToggle({
@@ -271,12 +283,10 @@ function LogViewer({
                 >
                   <span
                     aria-hidden
-                    className={cn('font-mono text-[10.5px] font-semibold', levelTags[level])}
-                  >
-                    {t.tags[level]}
-                  </span>
-                  {t.levelNames[level]}
-                  <span className="text-muted-foreground tabular-nums">
+                    className={cn('size-2 shrink-0 rounded-full', levelDots[level])}
+                  />
+                  {t.levelFilters[level]}
+                  <span className="text-fg-secondary tabular-nums">
                     {counts[level].toLocaleString(locale)}
                   </span>
                 </Toggle>
@@ -370,14 +380,23 @@ function LogViewer({
                   {lineNumbers ? (
                     <span
                       aria-hidden
-                      className="sticky left-0 shrink-0 bg-inset pl-3 text-right text-muted-foreground tabular-nums select-none"
+                      className={cn(
+                        'sticky left-0 shrink-0 bg-inset pl-3 text-right text-muted-foreground tabular-nums select-none',
+                        level ? levelNumbers[level] : undefined,
+                      )}
                       style={{ width: `calc(${String(numberWidth)}ch + 0.75rem)` }}
                     >
                       {index + 1}
                     </span>
                   ) : null}
                   {entry.time !== undefined ? (
-                    <span className="shrink-0 text-muted-foreground tabular-nums">
+                    <span
+                      className={cn(
+                        'shrink-0 tabular-nums',
+                        // On a tinted row, muted grey loses its contrast.
+                        level && levelRows[level] ? 'text-fg-secondary' : 'text-muted-foreground',
+                      )}
+                    >
                       {formatTime(entry.time)}
                     </span>
                   ) : null}
