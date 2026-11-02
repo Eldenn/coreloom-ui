@@ -1,0 +1,31 @@
+<!-- @dsCard group="Feedback" height=150 subtitle="Tones · action · dismiss" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Banner || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Banner } = UI;
+      function Demo() {
+        const [shown, setShown] = React.useState(true);
+        return h('div', { style: { display: 'grid', gap: 8 } },
+          shown ? h(Banner, { tone: 'info', title: 'Maintenance', onDismiss: () => setShown(false) }, 'Sunday 02:00 to 04:00 (CET).') : null,
+          h(Banner, { tone: 'warning', floating: true }, 'Your last payment failed. Update your card before Oct 20.'));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
