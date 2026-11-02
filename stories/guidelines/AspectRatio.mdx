@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/aspect-ratio.stories'
+import guide from './AspectRatio.md?raw'
+
+<Meta title="Guidelines/Layout/Aspect Ratio" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Ratios} />

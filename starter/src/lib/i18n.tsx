@@ -95,6 +95,39 @@ const en = {
     searchCountry: 'Search a country…',
     number: 'Phone number',
   },
+  inputs: {
+    showPassword: 'Show password',
+    clearSearch: 'Clear search',
+    increase: 'Increase',
+    decrease: 'Decrease',
+    time: {
+      openList: 'Choose from a list',
+      times: 'Times',
+      /** Shown under a typed time that can't be read; `format` is the expected shape ("hh:mm"). */
+      invalid: (format: string) => `Enter a time as ${format}.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Date', time: 'Time' },
+    clear: 'Clear',
+    count: {
+      used: (n: number, max: number) => `${n} of ${max} characters`,
+      left: (n: number) => (n === 1 ? '1 character left' : `${n} characters left`),
+      over: (n: number) => (n === 1 ? '1 character too many' : `${n} characters too many`),
+    },
+    editable: { edit: (label: string) => `Edit ${label}`, empty: 'Empty' },
+    masked: { invalid: 'Check this number: it isn’t valid.' },
+    color: {
+      open: 'Choose a color',
+      swatches: 'Swatches',
+      hex: 'Hex code',
+      custom: 'Custom color',
+      invalid: 'Enter a color as #rrggbb.',
+    },
+    rating: {
+      value: (n: number, max: number) => `${n} out of ${max}`,
+      star: (n: number) => (n === 1 ? '1 star' : `${n} stars`),
+    },
+  },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -1240,6 +1273,38 @@ const fr: Messages = {
     country: 'Pays',
     searchCountry: 'Rechercher un pays…',
     number: 'Numéro de téléphone',
+  },
+  inputs: {
+    showPassword: 'Afficher le mot de passe',
+    clearSearch: 'Effacer la recherche',
+    increase: 'Augmenter',
+    decrease: 'Diminuer',
+    time: {
+      openList: 'Choisir dans une liste',
+      times: 'Heures',
+      invalid: (format: string) => `Saisissez une heure au format ${format}.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Date', time: 'Heure' },
+    clear: 'Effacer',
+    count: {
+      used: (n: number, max: number) => `${n} sur ${max} caractères`,
+      left: (n: number) => (n <= 1 ? `${n} caractère restant` : `${n} caractères restants`),
+      over: (n: number) => (n <= 1 ? `${n} caractère en trop` : `${n} caractères en trop`),
+    },
+    editable: { edit: (label: string) => `Modifier ${label}`, empty: 'Vide' },
+    masked: { invalid: 'Vérifiez ce numéro : il n’est pas valide.' },
+    color: {
+      open: 'Choisir une couleur',
+      swatches: 'Nuancier',
+      hex: 'Code hexadécimal',
+      custom: 'Couleur personnalisée',
+      invalid: 'Saisissez une couleur au format #rrggbb.',
+    },
+    rating: {
+      value: (n: number, max: number) => `${n} sur ${max}`,
+      star: (n: number) => (n <= 1 ? `${n} étoile` : `${n} étoiles`),
+    },
   },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
   dataTable: {

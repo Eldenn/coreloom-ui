@@ -1,0 +1,31 @@
+<!-- @dsCard group="Forms" height=170 subtitle="The browser select, styled like the fields" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NativeSelect || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { NativeSelect, NativeSelectOption, NativeSelectOptGroup, Field, FieldLabel } = UI;
+      function Demo() {
+        return h(Field, { style: { maxWidth: 280 } }, h(FieldLabel, { htmlFor: 'region' }, 'Region'),
+          h(NativeSelect, { id: 'region', defaultValue: 'cdg1' },
+            h(NativeSelectOptGroup, { label: 'Europe' }, h(NativeSelectOption, { value: 'cdg1' }, 'Paris (cdg1)'), h(NativeSelectOption, { value: 'fra1' }, 'Frankfurt (fra1)')),
+            h(NativeSelectOptGroup, { label: 'Americas' }, h(NativeSelectOption, { value: 'iad1' }, 'Washington (iad1)'))));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
