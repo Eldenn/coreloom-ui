@@ -1547,6 +1547,33 @@
       ]
     },
     {
+      "name": "node-editor",
+      "type": "registry:ui",
+      "title": "NodeEditor",
+      "description": "An n8n-style canvas on React Flow: the app's node kinds (ports, settings, icon), add from a searchable list, drag, connect output to input, configure and connect from a side panel (the keyboard path), undo/redo, tidy up, zoom, issues flagged, a run's state shown per node. Nothing runs inside.",
+      "dependencies": ["@xyflow/react@^12", "lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/popover",
+        "@coreloom/select",
+        "@coreloom/switch",
+        "@coreloom/tags-input",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/node-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "context-meter",
       "type": "registry:ui",
       "title": "ContextMeter",
@@ -1657,7 +1684,8 @@
         "@coreloom/model-picker",
         "@coreloom/model-field",
         "@coreloom/context-meter",
-        "@coreloom/agent-graph"
+        "@coreloom/agent-graph",
+        "@coreloom/node-editor"
       ],
       "dependencies": []
     },
@@ -2179,6 +2207,30 @@
       ]
     },
     {
+      "name": "workflow-builder",
+      "type": "registry:block",
+      "title": "Workflow builder",
+      "description": "An automation's page: its name, Save and Run (waiting until no node needs attention) above the node editor with your app's node kinds; onRun hands the graph to your app, which reports each node's state through runs.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/node-editor",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/workflow-builder.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "event-calendar",
       "type": "registry:block",
       "title": "Event calendar",
@@ -2355,6 +2407,37 @@
       "files": [
         {
           "path": "src/components/ai-agent-teams.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-agent-builder",
+      "type": "registry:block",
+      "title": "AI agent builder",
+      "description": "Design an agent graph the LangGraph way: shared state with replace/append reducers, agent, tools, function, router (one output per route), human review and subgraph nodes between START and END; LangGraph JSON export and import (the shape of get_graph().to_json()).",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/node-editor",
+        "@coreloom/workflow-builder",
+        "@coreloom/ai-agents",
+        "@coreloom/copy-button",
+        "@coreloom/button",
+        "@coreloom/dialog",
+        "@coreloom/input",
+        "@coreloom/model-picker",
+        "@coreloom/multi-select",
+        "@coreloom/select",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-agent-builder.tsx",
           "type": "registry:component"
         }
       ]

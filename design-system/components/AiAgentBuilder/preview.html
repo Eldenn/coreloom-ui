@@ -1,0 +1,45 @@
+<!-- @dsCard group="AI" height=740 subtitle="AgentBuilder · LangGraph-style graph, state, JSON" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AgentBuilder || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const models = [
+        { id: 'claude-sonnet', name: 'Claude Sonnet', provider: 'Anthropic' },
+        { id: 'claude-haiku', name: 'Claude Haiku', provider: 'Anthropic' },
+      ];
+      const tools = [{ id: 'web_search', name: 'Web search' }, { id: 'fetch_page', name: 'Fetch page' }];
+      const graph = {
+        nodes: [
+          { id: '__start__', type: 'start', position: { x: 0, y: 120 } },
+          { id: 'agent', type: 'agent', name: 'Researcher', position: { x: 280, y: 100 }, data: { model: 'claude-sonnet', instructions: 'Find sources on {{topic}}.', tools: ['web_search', 'fetch_page'] } },
+          { id: 'route', type: 'router', name: 'Use tools?', position: { x: 620, y: 100 }, data: { routes: ['tools', 'done'] } },
+          { id: 'tools', type: 'tool', position: { x: 960, y: 0 }, data: { tools: ['web_search', 'fetch_page'] } },
+          { id: '__end__', type: 'end', position: { x: 960, y: 220 } },
+        ],
+        edges: [
+          { id: 'a', source: '__start__', target: 'agent' },
+          { id: 'b', source: 'agent', target: 'route' },
+          { id: 'c', source: 'route', sourcePort: 'tools', target: 'tools' },
+          { id: 'd', source: 'route', sourcePort: 'done', target: '__end__' },
+          { id: 'e', source: 'tools', target: 'agent' },
+        ],
+      };
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.AgentBuilder, { models, tools, defaultValue: graph, defaultName: 'ReAct agent', defaultSelectedId: 'agent', onRun: () => {}, onSave: () => Promise.resolve() }));
+    }
+    render();
+  </script>
+</body>
+</html>
