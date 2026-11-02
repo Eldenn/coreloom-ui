@@ -24,6 +24,7 @@ const GUIDE_FOR = {
   'command-menu': ['Command'],
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
+  vscode: ['VsCode'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */
