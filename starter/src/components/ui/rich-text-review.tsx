@@ -359,8 +359,9 @@ const AiReview = Extension.create({
 
 let nextId = 1
 
-/** Shows the changes from `before` (the editor's document) to `after` as suggestions. Returns how many. */
-function startReview(editor: Editor, after: ProseMirrorNode) {
+/** Shows the changes from the editor's document to `after` as suggestions. Returns how many.
+ *  `select` puts the caret on the first one and scrolls to it (after the person asked for it). */
+function startReview(editor: Editor, after: ProseMirrorNode, { select = true } = {}) {
   const doc = editor.state.doc
   const suggestions = suggestChanges(doc, after).map((c): RichTextSuggestion => ({
     ...c,
@@ -369,7 +370,8 @@ function startReview(editor: Editor, after: ProseMirrorNode) {
   }))
   const tr = editor.state.tr.setMeta(reviewKey, { type: 'start', suggestions } satisfies ReviewMeta)
   const first = suggestions.at(0)
-  if (first) tr.setSelection(TextSelection.near(tr.doc.resolve(first.from))).scrollIntoView()
+  if (first && select)
+    tr.setSelection(TextSelection.near(tr.doc.resolve(first.from))).scrollIntoView()
   editor.view.dispatch(tr)
   return suggestions.length
 }
@@ -390,7 +392,22 @@ const clip = (text: string, max = 48) => {
   return flat.length > max ? `${flat.slice(0, max - 1).trimEnd()}…` : flat
 }
 
-function RichTextReview({ editor, disabled }: { editor: Editor; disabled?: boolean }) {
+/** How a review ended: how many changes were accepted and rejected (the rest were edited away). */
+interface RichTextReviewResult {
+  accepted: number
+  rejected: number
+}
+
+function RichTextReview({
+  editor,
+  disabled,
+  onEnd,
+}: {
+  editor: Editor
+  disabled?: boolean
+  /** Called once the last change is accepted, rejected or edited away. */
+  onEnd?: (result: RichTextReviewResult) => void
+}) {
   const t = useCoreloomI18n().messages.editor
   const review = useEditorState({
     editor,
@@ -413,6 +430,16 @@ function RichTextReview({ editor, disabled }: { editor: Editor; disabled?: boole
     suggestions.findIndex((s) => s.id === review?.current),
   )
   const current = suggestions.at(index)
+
+  // Counted as the person decides; reported when nothing is left to review.
+  const counts = React.useRef<RichTextReviewResult>({ accepted: 0, rejected: 0 })
+  const seen = React.useRef({ round: 0, pending: 0 })
+  const pending = suggestions.length
+  React.useEffect(() => {
+    if (round !== seen.current.round) counts.current = { accepted: 0, rejected: 0 }
+    if (seen.current.pending && !pending) onEnd?.({ ...counts.current })
+    seen.current = { round, pending }
+  }, [round, pending, onEnd])
 
   const dispatch = (build: (tr: typeof editor.state.tr) => void) => {
     const tr = editor.state.tr
@@ -450,6 +477,7 @@ function RichTextReview({ editor, disabled }: { editor: Editor; disabled?: boole
         tr.setSelection(TextSelection.near(tr.doc.resolve(at))).scrollIntoView()
       }
     })
+    counts.current[accept ? 'accepted' : 'rejected']++
     const left = suggestions.length - 1
     setMessage(accept ? t.reviewAccepted(left) : t.reviewRejected(left))
     settle(left)
@@ -460,6 +488,7 @@ function RichTextReview({ editor, disabled }: { editor: Editor; disabled?: boole
       if (accept) for (const s of [...suggestions].reverse()) apply(tr, s)
       tr.setMeta(reviewKey, { type: 'clear' } satisfies ReviewMeta)
     })
+    counts.current[accept ? 'accepted' : 'rejected'] += suggestions.length
     setMessage(accept ? t.reviewAllAccepted : t.reviewAllRejected)
     settle(0)
   }
@@ -578,6 +607,7 @@ export {
   AiReview,
   REVIEW_CONTENT,
   RichTextReview,
+  type RichTextReviewResult,
   type RichTextSuggestion,
   startReview,
   suggestChanges,
