@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/code-viewer.stories'
+import guide from './CodeViewer.md?raw'
+
+<Meta title="Guidelines/Data display/Code viewer" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Log} />

@@ -256,6 +256,34 @@ export const es: Messages = {
       local: 'Tu zona horaria',
     },
   },
+  display: {
+    timeline: { label: 'Actividad' },
+    tree: { label: 'Árbol' },
+    diff: {
+      noChanges: 'Sin diferencias.',
+      linesAdded: (n) => (n === 1 ? '1 línea añadida' : `${n} líneas añadidas`),
+      linesRemoved: (n) => (n === 1 ? '1 línea eliminada' : `${n} líneas eliminadas`),
+      showUnchanged: (n) =>
+        n === 1 ? 'Mostrar 1 línea sin cambios' : `Mostrar ${n} líneas sin cambios`,
+      added: 'Añadida',
+      removed: 'Eliminada',
+      before: 'Antes',
+      after: 'Después',
+    },
+    code: {
+      label: 'Código',
+      highlighted: 'Resaltada',
+      wrap: 'Ajustar líneas',
+    },
+    json: {
+      label: 'JSON',
+      expandAll: 'Desplegar todo',
+      collapseAll: 'Plegar todo',
+      copy: 'Copiar JSON',
+      items: (n) => (n === 1 ? '1 elemento' : `${n} elementos`),
+      keys: (n) => (n === 1 ? '1 clave' : `${n} claves`),
+    },
+  },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {
     filter: 'Filtrar…',
@@ -539,12 +567,6 @@ export const es: Messages = {
       firstVersion: 'Es la primera versión, así que aún no hay nada que comparar.',
       comparedWith: (n) => `Comparada con la v${n}`,
       noChanges: 'Sin cambios respecto a la versión anterior.',
-      linesAdded: (n) => (n === 1 ? '1 línea añadida' : `${n} líneas añadidas`),
-      linesRemoved: (n) => (n === 1 ? '1 línea eliminada' : `${n} líneas eliminadas`),
-      showUnchanged: (n) =>
-        n === 1 ? 'Mostrar 1 línea sin cambios' : `Mostrar ${n} líneas sin cambios`,
-      added: 'Añadida',
-      removed: 'Eliminada',
     },
     agentGraph: {
       label: 'Los agentes y cómo trabajan juntos',

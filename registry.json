@@ -1887,6 +1887,101 @@
       ]
     },
     {
+      "name": "relative-time",
+      "type": "registry:ui",
+      "title": "RelativeTime",
+      "description": "A date said the way people say it (\"5 minutes ago\", \"yesterday\"), kept up to date, with the full date in its tooltip.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/relative-time.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Events in order on a line: icon or dot markers tinted by tone, title, time, description and any content below.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/timeline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tree-view",
+      "type": "registry:ui",
+      "title": "TreeView",
+      "description": "A hierarchy to browse (files, pages, an organisation): APG tree keyboard, icons and trailing meta, read only or with single or multiple selection.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/tree-view.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "diff-viewer",
+      "type": "registry:ui",
+      "title": "DiffViewer",
+      "description": "What changed between two texts, line by line, unified or split, with unchanged runs folded; diffLines is exported.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/diff-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "code-viewer",
+      "type": "registry:ui",
+      "title": "CodeViewer",
+      "description": "Code to read with line numbers, highlighted lines, wrap toggle and Copy; colour it per line with your highlighter.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button",
+        "@coreloom/toggle",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/code-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "json-viewer",
+      "type": "registry:ui",
+      "title": "JsonViewer",
+      "description": "JSON to explore: objects and arrays fold, values coloured by type, Expand all, Collapse all and Copy.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button",
+        "@coreloom/button",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/json-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2319,7 +2414,13 @@
         "@coreloom/image-input",
         "@coreloom/sortable-list",
         "@coreloom/recurrence-input",
-        "@coreloom/timezone-select"
+        "@coreloom/timezone-select",
+        "@coreloom/relative-time",
+        "@coreloom/timeline",
+        "@coreloom/tree-view",
+        "@coreloom/diff-viewer",
+        "@coreloom/code-viewer",
+        "@coreloom/json-viewer"
       ],
       "dependencies": []
     },
@@ -2954,6 +3055,7 @@
         "@coreloom/copy-button",
         "@coreloom/badge",
         "@coreloom/button",
+        "@coreloom/diff-viewer",
         "@coreloom/markdown",
         "@coreloom/resizable",
         "@coreloom/spinner",

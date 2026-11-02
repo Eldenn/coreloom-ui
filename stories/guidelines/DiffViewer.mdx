@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/diff-viewer.stories'
+import guide from './DiffViewer.md?raw'
+
+<Meta title="Guidelines/Data display/Diff viewer" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Split} />
