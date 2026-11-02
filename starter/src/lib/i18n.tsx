@@ -1288,6 +1288,8 @@ const en = {
       n === 1 ? 'Fix 1 node before running.' : `Fix ${n} nodes before running.`,
   },
   codeEditor: {
+    language: 'Language',
+    plainText: 'Plain text',
     /** CodeMirror's own words (search panel, folding, lint, completion), by their English text. */
     phrases: {} as Record<string, string>,
   },
@@ -1351,7 +1353,10 @@ const en = {
     position: (line: number, column: number) => `Ln ${line}, Col ${column}`,
     selected: (n: number) => `(${n} selected)`,
     spaces: (n: number) => `Spaces: ${n}`,
-    plainText: 'Plain text',
+    changeLanguage: 'Change the file’s language',
+    searchLanguages: 'Type a language…',
+    languages: 'Languages',
+    current: 'current',
     readOnly: 'Read only',
   },
   kanban: {
@@ -2775,6 +2780,8 @@ const fr: Messages = {
       n === 1 ? 'Corrigez 1 nœud avant d’exécuter.' : `Corrigez ${n} nœuds avant d’exécuter.`,
   },
   codeEditor: {
+    language: 'Langage',
+    plainText: 'Texte brut',
     phrases: {
       Find: 'Rechercher',
       Replace: 'Remplacer',
@@ -2869,7 +2876,10 @@ const fr: Messages = {
     position: (line, column) => `Ln ${line}, Col ${column}`,
     selected: (n) => `(${n} sélectionnés)`,
     spaces: (n) => `Espaces : ${n}`,
-    plainText: 'Texte brut',
+    changeLanguage: 'Changer le langage du fichier',
+    searchLanguages: 'Tapez un langage…',
+    languages: 'Langages',
+    current: 'actuel',
     readOnly: 'Lecture seule',
   },
   kanban: {

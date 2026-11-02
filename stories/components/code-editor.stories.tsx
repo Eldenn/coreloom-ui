@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
-import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
+import {
+  CodeEditor,
+  type CodeEditorDiagnostic,
+  type CodeEditorLanguage,
+  CodeEditorLanguageSelect,
+} from '@/components/ui/code-editor'
 import { Label } from '@/components/ui/label'
 
 const component = `import * as React from 'react'
@@ -86,6 +91,29 @@ export const Default: Story = {
   render: function Render(args) {
     const [value, setValue] = React.useState(component)
     return <CodeEditor {...args} className="max-w-2xl" value={value} onChange={setValue} />
+  },
+}
+
+/** A header with a language picker: people choose how the code is coloured and completed. */
+export const WithLanguageSelect: Story = {
+  render: function Render() {
+    const [language, setLanguage] = React.useState<CodeEditorLanguage>('python')
+    const [value, setValue] = React.useState(query)
+    return (
+      <div className="max-w-2xl overflow-hidden rounded-lg border border-border bg-inset">
+        <div className="flex items-center gap-2 border-b border-border-subtle py-1.5 pr-1.5 pl-4">
+          <p className="mr-auto font-mono text-[12px] text-muted-foreground">snippet</p>
+          <CodeEditorLanguageSelect value={language} onValueChange={setLanguage} />
+        </div>
+        <CodeEditor
+          aria-label="Snippet"
+          language={language}
+          value={value}
+          onChange={setValue}
+          className="rounded-none border-0"
+        />
+      </div>
+    )
   },
 }
 

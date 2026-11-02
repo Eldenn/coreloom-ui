@@ -1303,6 +1303,8 @@ export const de: Messages = {
         : `Korrigiere ${n} Knoten vor dem Ausführen.`,
   },
   codeEditor: {
+    language: 'Sprache',
+    plainText: 'Nur Text',
     phrases: {
       Find: 'Suchen',
       Replace: 'Ersetzen',
@@ -1397,7 +1399,10 @@ export const de: Messages = {
     position: (line, column) => `Z. ${line}, Sp. ${column}`,
     selected: (n) => `(${n} ausgewählt)`,
     spaces: (n) => `Leerzeichen: ${n}`,
-    plainText: 'Nur Text',
+    changeLanguage: 'Sprache der Datei ändern',
+    searchLanguages: 'Sprache eingeben…',
+    languages: 'Sprachen',
+    current: 'aktuell',
     readOnly: 'Schreibgeschützt',
   },
   kanban: {
