@@ -54,6 +54,22 @@ export const LiveRun: Story = {
   },
 }
 
+/** `avatars`: every agent with its own animated face, in the graph and the details. */
+export const WithAvatars: Story = {
+  render: (args) => {
+    const { activity, path } = agentActivityFromSpans(liveSpans, args.agents)
+    return (
+      <AgentTeams
+        {...args}
+        avatars="face"
+        activity={activity}
+        activePath={path}
+        defaultSelectedId="tech"
+      />
+    )
+  },
+}
+
 export const ListView: Story = { args: { defaultView: 'list', defaultSelectedId: 'billing' } }
 
 export const Empty: Story = { args: { agents: [], edges: [] } }
