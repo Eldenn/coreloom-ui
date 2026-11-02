@@ -10,6 +10,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  ComposedChart,
   Line,
   LineChart,
   XAxis,
@@ -85,19 +86,26 @@ function ChartCard({
 interface TrendSeries {
   key: string
   label: string
+  /** Draws this series as its own mark: bars with a line on top make a combo chart. */
+  type?: 'area' | 'bar' | 'line'
+  /** `right` puts the series on a second axis, for a unit or scale of its own (a rate over counts). */
+  axis?: 'left' | 'right'
 }
 
 /**
- * Up to five series over a category axis, in the chart-1…5 order. `type` picks area, bar or line.
- * Numbers on the axis and in the tooltip follow the i18n locale.
+ * Up to five series over a category axis, in the chart-1…5 order. `type` picks area, bar or line;
+ * a series' own `type` mixes them (combo), `stacked` piles areas and bars up (or to 100 %).
+ * Numbers on the axes and in the tooltip follow the i18n locale.
  */
 function TrendChart<T extends object>({
   data,
   xKey,
   series,
   type = 'area',
+  stacked = false,
   height = 260,
   formatValue,
+  formatSecondaryValue,
   className,
   'aria-label': ariaLabel,
 }: {
@@ -105,19 +113,38 @@ function TrendChart<T extends object>({
   xKey: keyof T & string
   series: TrendSeries[]
   type?: 'area' | 'bar' | 'line'
+  /** Stacks the area and bar series: `true` adds them up, `'percent'` shows each one's share. */
+  stacked?: boolean | 'percent'
   height?: number
   /** Formats values on the axis and in the tooltip (default: the locale's number format). */
   formatValue?: (value: number) => string
+  /** Formats the right axis and its series (default: `formatValue`). */
+  formatSecondaryValue?: (value: number) => string
   className?: string
   /** What the chart shows, for screen readers ("Deployments per day, last 30 days"). */
   'aria-label'?: string
 }) {
-  const { formatNumber } = useCoreloomI18n()
+  const { formatNumber, locale } = useCoreloomI18n()
   const fmt = formatValue ?? formatNumber
+  const fmtRight = formatSecondaryValue ?? fmt
+  const shown = series.slice(0, 5)
   const config = Object.fromEntries(
-    series.slice(0, 5).map((s, i) => [s.key, { label: s.label, color: `var(--chart-${i + 1})` }]),
+    shown.map((s, i) => [s.key, { label: s.label, color: `var(--chart-${i + 1})` }]),
   ) satisfies ChartConfig
-  const common = { data, accessibilityLayer: true, margin: { left: 4, right: 8, top: 8 } }
+  const kinds = new Set(shown.map((s) => s.type ?? type))
+  const hasRight = shown.some((s) => s.axis === 'right')
+  // One kind on one axis keeps its dedicated chart; a mix or a second axis needs ComposedChart.
+  const kind = kinds.size === 1 && !hasRight ? [...kinds][0] : 'composed'
+  const percent = stacked === 'percent'
+  const pct = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 })
+  const labels = new Map(shown.map((s) => [s.key, s.label]))
+  const rightKeys = new Set(shown.filter((s) => s.axis === 'right').map((s) => s.key))
+  const common = {
+    data,
+    accessibilityLayer: true,
+    margin: { left: 4, right: hasRight ? 4 : 8, top: 8 },
+    stackOffset: percent ? ('expand' as const) : undefined,
+  }
   const axes = (
     <>
       <CartesianGrid vertical={false} />
@@ -129,11 +156,92 @@ function TrendChart<T extends object>({
         tickMargin={8}
         minTickGap={24}
       />
-      <YAxis tickLine={false} axisLine={false} width={44} tickFormatter={(v: number) => fmt(v)} />
-      <ChartTooltip content={<ChartTooltipContent formatter={(v) => fmt(Number(v))} />} />
-      {series.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
+      <YAxis
+        yAxisId="left"
+        tickLine={false}
+        axisLine={false}
+        width={44}
+        tickFormatter={(v: number) => (percent ? pct.format(v) : fmt(v))}
+      />
+      {hasRight && (
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          tickLine={false}
+          axisLine={false}
+          width={52}
+          tickFormatter={(v: number) => fmtRight(v)}
+        />
+      )}
+      <ChartTooltip
+        content={
+          <ChartTooltipContent
+            formatter={(value, name, item) => (
+              <TooltipRow
+                label={labels.get(String(item.dataKey)) ?? name}
+                color={`var(--color-${String(item.dataKey)})`}
+                value={
+                  rightKeys.has(String(item.dataKey)) ? fmtRight(Number(value)) : fmt(Number(value))
+                }
+              />
+            )}
+          />
+        }
+      />
+      {shown.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
     </>
   )
+  const marks = shown.map((s) => {
+    const color = `var(--color-${s.key})`
+    const axis = s.axis === 'right' ? 'right' : 'left'
+    // Only marks on the left axis stack: a series on its own axis is a different unit.
+    const stackId = stacked && axis === 'left' ? 'stack' : undefined
+    const mark = s.type ?? type
+    if (mark === 'bar')
+      return (
+        <Bar
+          key={s.key}
+          yAxisId={axis}
+          dataKey={s.key}
+          fill={color}
+          stackId={stackId}
+          radius={stackId ? 0 : 4}
+        />
+      )
+    if (mark === 'line')
+      return (
+        <Line
+          key={s.key}
+          yAxisId={axis}
+          dataKey={s.key}
+          type="monotone"
+          stroke={color}
+          strokeWidth={2}
+          dot={false}
+        />
+      )
+    return (
+      <Area
+        key={s.key}
+        yAxisId={axis}
+        dataKey={s.key}
+        type="monotone"
+        fill={color}
+        fillOpacity={stackId ? 0.4 : 0.18}
+        stroke={color}
+        strokeWidth={2}
+        stackId={stackId}
+      />
+    )
+  })
+  const Chart =
+    kind === 'bar'
+      ? BarChart
+      : kind === 'line'
+        ? LineChart
+        : kind === 'area'
+          ? AreaChart
+          : ComposedChart
   return (
     <ChartContainer
       config={config}
@@ -142,44 +250,30 @@ function TrendChart<T extends object>({
       role="img"
       aria-label={ariaLabel}
     >
-      {type === 'bar' ? (
-        <BarChart {...common}>
-          {axes}
-          {series.map((s) => (
-            <Bar key={s.key} dataKey={s.key} fill={`var(--color-${s.key})`} radius={4} />
-          ))}
-        </BarChart>
-      ) : type === 'line' ? (
-        <LineChart {...common}>
-          {axes}
-          {series.map((s) => (
-            <Line
-              key={s.key}
-              dataKey={s.key}
-              type="monotone"
-              stroke={`var(--color-${s.key})`}
-              strokeWidth={2}
-              dot={false}
-            />
-          ))}
-        </LineChart>
-      ) : (
-        <AreaChart {...common}>
-          {axes}
-          {series.map((s) => (
-            <Area
-              key={s.key}
-              dataKey={s.key}
-              type="monotone"
-              fill={`var(--color-${s.key})`}
-              fillOpacity={0.18}
-              stroke={`var(--color-${s.key})`}
-              strokeWidth={2}
-            />
-          ))}
-        </AreaChart>
-      )}
+      <Chart {...common}>
+        {axes}
+        {marks}
+      </Chart>
     </ChartContainer>
+  )
+}
+
+/** One series in the tooltip: swatch, name, value in the chart's format. */
+function TooltipRow({
+  label,
+  color,
+  value,
+}: {
+  label: React.ReactNode
+  color: string
+  value: string
+}) {
+  return (
+    <div className="flex w-full items-center gap-2">
+      <span aria-hidden className="size-2.5 shrink-0 rounded-[2px]" style={{ background: color }} />
+      <span className="flex-1 text-muted-foreground">{label}</span>
+      <span className="font-mono font-medium text-foreground tabular-nums">{value}</span>
+    </div>
   )
 }
 

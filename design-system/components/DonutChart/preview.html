@@ -1,0 +1,30 @@
+<!-- @dsCard group="Data display" height=300 subtitle="Ring · total in the middle · legend with shares · Other" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DonutChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DonutChart, Card, CardHeader, CardTitle, CardDescription, CardContent } = UI;
+      const data = [['sonnet', 'Claude Sonnet', 41200], ['haiku', 'Claude Haiku', 23800], ['gpt', 'GPT mini', 12600], ['gemini', 'Gemini Flash', 5400], ['llama', 'Llama 4', 2100]]
+        .map(([key, label, value]) => ({ key, label, value }));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Card, { style: { maxWidth: 520 } },
+          h(CardHeader, null, h(CardTitle, null, 'Requests by model'), h(CardDescription, null, 'October 2026')),
+          h(CardContent, null, h(DonutChart, { data, centerLabel: 'Requests', 'aria-label': 'Requests by model' }))));
+    }
+    render();
+  </script>
+</body>
+</html>
