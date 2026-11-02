@@ -2425,7 +2425,7 @@
       "name": "ai-agent-builder",
       "type": "registry:block",
       "title": "AI agent builder",
-      "description": "Design an agent graph the LangGraph way: shared state with replace/append reducers, agent, tools, function, router (one output per route), human review and subgraph nodes between START and END; LangGraph JSON export and import (the shape of get_graph().to_json()).",
+      "description": "Design an agent graph the LangGraph way: shared state with replace/append reducers, agent, tools, function, router (one output per route), human review and subgraph nodes between START and END; per-node state reads and writes, structured output (JSON Schema), tool parameters, step limits, pauses before or after a node and a review dialog to approve, edit or reject paused tool calls; LangGraph JSON export and import (the shape of get_graph().to_json()) and the compile() / invoke() config.",
       "categories": ["ai"],
       "dependencies": ["lucide-react"],
       "registryDependencies": [
@@ -2442,6 +2442,7 @@
         "@coreloom/input",
         "@coreloom/model-picker",
         "@coreloom/multi-select",
+        "@coreloom/radio-group",
         "@coreloom/select",
         "@coreloom/textarea"
       ],
