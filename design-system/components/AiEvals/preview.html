@@ -1,0 +1,40 @@
+<!-- @dsCard group="AI" height=1180 subtitle="EvalRunReport · two runs compared · EvalSuiteList" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+  .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg-muted);margin:0 0 10px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.EvalRunReport || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const judge = 'claude-haiku · rubric v3';
+      const base = [
+        { id: 'refund', name: 'Refund after 30 days', input: 'I bought the annual plan 45 days ago and never used it. Can I get my money back?', expected: 'Refunds are possible within 30 days only; offer monthly at renewal.', output: 'Refunds are available within 30 days of purchase, so I can’t refund this one. I can switch you to monthly from your next renewal.', score: 0.94, passed: true, scores: { faithfulness: 1, relevance: 0.95, tone: 0.88 }, judge: { verdict: 'pass', judge, reasoning: 'States the policy and offers the documented alternative.' } },
+        { id: 'student', name: 'Student discount', input: 'Do you have a discount for students?', output: 'We don’t offer student discounts.', score: 0.1, passed: false, scores: { faithfulness: 0, relevance: 0.6, tone: 0.8 }, judge: { verdict: 'fail', judge, reasoning: 'Contradicts the help center.' } },
+        { id: 'vat', name: 'VAT number on invoices', input: 'How do I add my VAT number?', output: 'Settings → Billing → Tax ID.', score: 0.97, passed: true },
+        { id: 'chargeback', name: 'Threatens a chargeback', input: 'Refund me now or I file a chargeback.', output: 'I can pass this to our billing team right now.', score: 0.83, passed: true },
+      ];
+      const cand = base.map((c) => c.id === 'refund' ? { ...c, output: 'Good news: I can refund your annual plan in full. You’ll see the money back within 5–10 business days.', score: 0.12, passed: false, scores: { faithfulness: 0, relevance: 0.7, tone: 0.95 }, judge: { verdict: 'fail', judge, reasoning: 'Promises a refund outside the 30-day window.' } } : c.id === 'student' ? { ...c, output: 'Yes! Students get 50% off with a school email.', score: 0.95, passed: true, judge: { verdict: 'pass', judge, reasoning: 'Matches the help center.' } } : c);
+      const suites = [
+        { id: 'billing', name: 'Refunds and billing', description: 'LLM judge', caseCount: 8, threshold: 0.8, lastRun: { passRate: 0.75, at: new Date(Date.now() - 3600e3) }, history: [0.62, 0.7, 0.75, 0.88, 0.75] },
+        { id: 'safety', name: 'Refusals and safety', caseCount: 64, threshold: 0.98, lastRun: { passRate: 1, at: new Date(Date.now() - 86400e3) }, history: [0.97, 0.98, 1, 1] },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null,
+        h('div', null, h('p', { className: 'cap' }, 'EvalRunReport · prompt v12 vs v11'),
+          h(UI.EvalRunReport, { run: { id: 'b', label: 'prompt v12', cases: cand }, baseline: { id: 'a', label: 'prompt v11', cases: base } })),
+        h('div', null, h('p', { className: 'cap' }, 'EvalSuiteList'), h(UI.EvalSuiteList, { suites, onRun: () => {} }))));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!-- @dsCard group="Blocks" width=1280 height=700 subtitle="inbox block · conversations · filters · thread with internal notes · reply or note" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Inbox || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const me = { id: 'u1', name: 'Matthieu C.' };
+      const team = [{ id: 'u2', name: 'Ada Lovelace' }];
+      const ago = (m) => new Date(Date.now() - m * 60000);
+      const conversations0 = [
+        { id: 'c1', subject: 'Charged twice for October', contact: { id: 'k1', name: 'Lena Fischer', email: 'lena@northwind.de' }, status: 'open', unread: true, channel: 'Email', labels: ['billing'], updatedAt: ago(18), messages: [
+          { id: 'm1', author: { id: 'k1', name: 'Lena Fischer' }, kind: 'incoming', body: 'My card was charged twice for the October invoice. Can you refund one of them?', sentAt: ago(18), attachments: [{ name: 'bank-statement.pdf', size: 184000 }] } ] },
+        { id: 'c2', subject: 'SSO with Okta', contact: { id: 'k2', name: 'Diego Ramírez', email: 'diego@acme.io' }, status: 'open', assignee: me, channel: 'Chat', updatedAt: ago(105), messages: [
+          { id: 'm2', author: { id: 'k2', name: 'Diego Ramírez' }, kind: 'incoming', body: 'Do you support SAML SSO with Okta on the Team plan?', sentAt: ago(122) },
+          { id: 'm3', author: me, kind: 'note', body: 'SSO is Enterprise only. Can we offer a trial?', sentAt: ago(115) },
+          { id: 'm4', author: me, kind: 'outgoing', body: 'Hi Diego, SAML SSO is part of Enterprise. I can turn on a 14-day trial so you can set up Okta.', sentAt: ago(105) } ] },
+        { id: 'c3', subject: 'Export all projects as CSV', contact: { id: 'k3', name: 'Aiko Tanaka' }, status: 'pending', assignee: team[0], updatedAt: ago(1000), messages: [
+          { id: 'm5', author: { id: 'k3', name: 'Aiko Tanaka' }, kind: 'incoming', body: 'Is there a way to export every project at once?', sentAt: ago(1000) } ] },
+      ];
+      function Demo() {
+        const [items, setItems] = React.useState(conversations0);
+        const update = (id, patch) => setItems((all) => all.map((c) => c.id === id ? { ...c, ...patch } : c));
+        return h(UI.Inbox, { conversations: items, currentUser: me, teammates: team, defaultSelectedId: 'c2', defaultStatus: 'all',
+          onReadChange: (id, unread) => update(id, { unread }), onStatusChange: (id, status) => update(id, { status }),
+          onAssign: (id, pid) => update(id, { assignee: [me, ...team].find((p) => p.id === pid) }),
+          onSend: (id, d) => setItems((all) => all.map((c) => c.id === id ? { ...c, messages: [...c.messages, { id: 'n' + Date.now(), author: me, kind: d.kind === 'note' ? 'note' : 'outgoing', body: d.body, sentAt: new Date() }] } : c)) });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
