@@ -151,6 +151,24 @@
       ]
     },
     {
+      "name": "vscode",
+      "type": "registry:item",
+      "title": "VS Code webviews",
+      "description": "Coreloom UI inside a VS Code extension's webview: vscode.css maps the tokens onto the editor's --vscode-* variables (light, dark, high contrast, its fonts) and cancels VS Code's default webview styles; syncVsCodeTheme(), useVsCodeState, postToExtension and useExtensionMessages follow the theme, keep state while the tab is hidden and exchange typed messages. Import vscode.css after theme.css.",
+      "registryDependencies": ["@coreloom/theme"],
+      "files": [
+        {
+          "path": "src/lib/vscode.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/styles/vscode.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/vscode.css"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
@@ -1940,6 +1958,35 @@
       ]
     },
     {
+      "name": "code-editor",
+      "type": "registry:ui",
+      "title": "CodeEditor",
+      "description": "Code to write, on CodeMirror 6 in Coreloom's colours: JS/TS (JSX), JSON, CSS, HTML, Markdown and Python, folding, autocompletion, search, diagnostics by line, Mod-S, one undo history per file path.",
+      "dependencies": [
+        "@codemirror/autocomplete@^6",
+        "@codemirror/commands@^6",
+        "@codemirror/lang-css@^6",
+        "@codemirror/lang-html@^6",
+        "@codemirror/lang-javascript@^6",
+        "@codemirror/lang-json@^6",
+        "@codemirror/lang-markdown@^6",
+        "@codemirror/lang-python@^6",
+        "@codemirror/language@^6",
+        "@codemirror/lint@^6",
+        "@codemirror/search@^6",
+        "@codemirror/state@^6",
+        "@codemirror/view@^6",
+        "@lezer/highlight@^1"
+      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/code-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "code-viewer",
       "type": "registry:ui",
       "title": "CodeViewer",
@@ -1977,6 +2024,133 @@
       "files": [
         {
           "path": "src/components/ui/json-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "description-list",
+      "type": "registry:ui",
+      "title": "DescriptionList",
+      "description": "Labels and their values, stacked, inline or in a grid; empty values say \"Not set\", Copy for IDs.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/description-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-indicator",
+      "type": "registry:ui",
+      "title": "StatusIndicator",
+      "description": "A coloured dot and the word for it, plain or in a pill, with an optional pulse; StatusDot alone.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/status-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "banner",
+      "type": "registry:ui",
+      "title": "Banner",
+      "description": "A message across the top of a page or app, by tone, with an action and an optional close button.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/banner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "truncated-text",
+      "type": "registry:ui",
+      "title": "TruncatedText",
+      "description": "A long text cut after a few lines, with Show more when it is actually cut.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/truncated-text.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "highlight",
+      "type": "registry:ui",
+      "title": "Highlight",
+      "description": "Marks searched terms in a text, ignoring case and accents; findMatches is exported.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/highlight.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tour",
+      "type": "registry:ui",
+      "title": "Tour",
+      "description": "A guided tour: steps that light up a target and explain it, with Back, Next, Skip and a step count.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tour.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "image-gallery",
+      "type": "registry:ui",
+      "title": "ImageGallery",
+      "description": "A grid of thumbnails opening a full-screen viewer with arrows, zoom and captions; ImageLightbox alone.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/image-gallery.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "comment-thread",
+      "type": "registry:ui",
+      "title": "CommentThread",
+      "description": "Comments with one level of replies, emoji reactions, @ mentions and a box to write; front-end only.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/button",
+        "@coreloom/emoji-picker",
+        "@coreloom/mention-textarea",
+        "@coreloom/relative-time",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/comment-thread.tsx",
           "type": "registry:ui"
         }
       ]
@@ -2443,8 +2617,17 @@
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
+        "@coreloom/code-editor",
         "@coreloom/code-viewer",
-        "@coreloom/json-viewer"
+        "@coreloom/json-viewer",
+        "@coreloom/description-list",
+        "@coreloom/status-indicator",
+        "@coreloom/banner",
+        "@coreloom/truncated-text",
+        "@coreloom/highlight",
+        "@coreloom/tour",
+        "@coreloom/image-gallery",
+        "@coreloom/comment-thread"
       ],
       "dependencies": []
     },
@@ -3022,6 +3205,39 @@
       "files": [
         {
           "path": "src/components/form-builder.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ide",
+      "type": "registry:block",
+      "title": "IDE",
+      "description": "A code workspace laid out like VS Code, in the browser: file explorer, tabs, CodeMirror editor, Problems and your own bottom panels, status bar, Mod-P file search and a command palette; saving, running and diagnostics are your app's callbacks.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react", "@codemirror/view@^6", "react-resizable-panels@^4"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/code-editor",
+        "@coreloom/tree-view",
+        "@coreloom/alert-dialog",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/dialog",
+        "@coreloom/empty",
+        "@coreloom/input",
+        "@coreloom/kbd",
+        "@coreloom/label",
+        "@coreloom/resizable",
+        "@coreloom/sheet",
+        "@coreloom/tabs",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ide.tsx",
           "type": "registry:component"
         }
       ]

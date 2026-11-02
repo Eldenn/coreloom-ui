@@ -35,6 +35,7 @@ import {
   AI_CONTENT,
   AiSelectionHighlight,
   AiSlashCommand,
+  parseAnswer,
   RichTextAi,
   type RichTextAiAction,
   type RichTextAiCommand,
@@ -43,8 +44,15 @@ import {
   type RichTextAiSlashAction,
   RichTextAiSlashMenu,
   type SlashHandlers,
+  toNodes,
 } from '@/components/ui/rich-text-ai'
-import { AiReview, REVIEW_CONTENT, RichTextReview } from '@/components/ui/rich-text-review'
+import {
+  AiReview,
+  REVIEW_CONTENT,
+  RichTextReview,
+  type RichTextReviewResult,
+  startReview,
+} from '@/components/ui/rich-text-review'
 import { Separator } from '@/components/ui/separator'
 import { Toggle } from '@/components/ui/toggle'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -202,6 +210,8 @@ function RichTextEditor({
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
   ai,
+  suggestion,
+  onReviewEnd,
 }: {
   /** HTML. Controlled: the editor follows it when it changes from outside. */
   value?: string
@@ -221,6 +231,11 @@ function RichTextEditor({
   'aria-describedby'?: string
   /** Turns on the AI panel: `onRequest` sends each request to your model and returns its text (streamed or whole). */
   ai?: RichTextAiOptions
+  /** A proposed version of the whole document, as light Markdown (what `onRequest` answers), shown as
+   *  changes to accept or reject. A review starts each time the string changes; clear it in `onReviewEnd`. */
+  suggestion?: string | null
+  /** Called when a review (from `suggestion` or the AI panel) has nothing left: what was accepted and rejected. */
+  onReviewEnd?: (result: RichTextReviewResult) => void
 }) {
   const t = useCoreloomI18n().messages.editor
   placeholder ??= t.placeholder
@@ -289,6 +304,19 @@ function RichTextEditor({
     const current = editor.isEmpty ? '' : editor.getHTML()
     if (value !== current) editor.commands.setContent(value || '', { emitUpdate: false })
   }, [editor, value])
+
+  // A version the app proposes (a review agent, a server-side pass): compared with the document as
+  // it is now. Nothing is selected or scrolled, so it can arrive while the person reads or types.
+  const reviewEnd = React.useEffectEvent((result: RichTextReviewResult) => onReviewEnd?.(result))
+  React.useEffect(() => {
+    if (!editor || editor.isDestroyed || !suggestion) return
+    const content = toNodes(parseAnswer(suggestion))
+    const after = editor.schema.nodeFromJSON({
+      type: 'doc',
+      content: content.length ? content : [{ type: 'paragraph' }],
+    })
+    if (!startReview(editor, after, { select: false })) reviewEnd({ accepted: 0, rejected: 0 })
+  }, [editor, suggestion])
 
   const state = useEditorState({
     editor,
@@ -494,7 +522,7 @@ function RichTextEditor({
           REVIEW_CONTENT,
         )}
       />
-      {editor && <RichTextReview editor={editor} disabled={disabled} />}
+      {editor && <RichTextReview editor={editor} disabled={disabled} onEnd={onReviewEnd} />}
       {ai && editor && ai.slashCommand !== false && !disabled && (
         <RichTextAiSlashMenu
           editor={editor}
@@ -517,4 +545,5 @@ export {
   type RichTextAiRequest,
   type RichTextAiSlashAction,
   RichTextEditor,
+  type RichTextReviewResult,
 }

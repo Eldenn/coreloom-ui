@@ -1,0 +1,36 @@
+<!-- @dsCard group="Blocks" height=560 subtitle="Ide · explorer, tabs, editor, problems, status bar" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Ide || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const files = [
+        { path: 'package.json', content: '{\n  "name": "orbit",\n  "private": true\n}\n' },
+        { path: 'README.md', content: '# Orbit\n\nA **small** dashboard.\n' },
+        { path: 'src/app.tsx', content: "import { formatCompact } from './lib/format'\n\nexport function App() {\n  const visitors = 12840\n  console.log('render')\n  return <main className=\"dashboard\">{formatCompact(visitors)}</main>\n}\n" },
+        { path: 'src/lib/format.ts', content: "const compact = new Intl.NumberFormat('en', { notation: 'compact' })\n\nexport function formatCompact(n: number) {\n  return compact.format(n)\n}\n" },
+        { path: 'src/styles.css', content: '.dashboard {\n  display: grid;\n  gap: 16px;\n}\n' },
+      ];
+      const diagnostics = { 'src/app.tsx': [{ line: 5, column: 3, endColumn: 14, severity: 'warning', message: 'Unexpected console statement.', source: 'no-console' }] };
+      function Demo() {
+        const [state, setState] = React.useState(files);
+        return h(UI.Ide, { files: state, onFilesChange: setState, diagnostics, title: 'orbit', defaultOpen: ['src/app.tsx', 'src/lib/format.ts'], defaultPanelOpen: true, onSave: () => Promise.resolve(), className: 'h-[500px]' });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

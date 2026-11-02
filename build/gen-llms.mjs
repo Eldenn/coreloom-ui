@@ -22,8 +22,10 @@ const GUIDE_FOR = {
   'model-field': ['ModelPicker'],
   'theme-toggle': ['Accents'],
   'command-menu': ['Command'],
+  highlight: ['TruncatedText'],
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
+  vscode: ['VsCode'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */
