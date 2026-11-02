@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/keyboard-shortcuts.stories'
+import guide from './KeyboardShortcuts.md?raw'
+
+<Meta title="Guidelines/Actions/Keyboard shortcuts" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Keys} />

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/ui/spinner'
@@ -45,6 +46,7 @@ function AgentPlan({
   active = true,
   announce = false,
   defaultOpen = true,
+  avatar,
   className,
 }: {
   /** The plan: `{ title?, steps: [{ id, title, status, detail? }] }` — read untrusted data with `readPlan`. */
@@ -56,6 +58,11 @@ function AgentPlan({
   /** Announce the step in progress through its own live region. Leave off inside a live region (Chat's log). */
   announce?: boolean
   defaultOpen?: boolean
+  /**
+   * The agent working the plan, as an animated AgentAvatar in place of the list icon: it thinks on
+   * a step, smiles when every step is done and frowns on a failure. `{ seed: agent.id }`.
+   */
+  avatar?: Pick<React.ComponentProps<typeof AgentAvatar>, 'variant' | 'seed' | 'tone' | 'eyes'>
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.plan
@@ -84,7 +91,16 @@ function AgentPlan({
         </p>
       )}
       <CollapsibleTrigger className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left outline-none hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring">
-        <ListChecksIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        {avatar ? (
+          <AgentAvatar
+            {...avatar}
+            state={failed ? 'error' : complete ? 'done' : current && active ? 'thinking' : 'idle'}
+            size="xs"
+            decorative
+          />
+        ) : (
+          <ListChecksIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        )}
         <span id={labelId} className="min-w-0 flex-1 font-medium break-words text-foreground">
           {name}
         </span>
