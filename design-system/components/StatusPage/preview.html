@@ -1,0 +1,42 @@
+<!-- @dsCard group="Blocks" width=1280 height=1100 subtitle="status block · uptime 90 days · incidents" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.StatusPage || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { StatusPage, TooltipProvider } = UI;
+      const at = (m, d, hh, mm) => new Date(2026, m - 1, d, hh || 0, mm || 0);
+      const days = (bad) => Array.from({ length: 90 }, (_, i) => ({ date: at(10, 14 - (89 - i)), uptime: (bad || {})[89 - i] ?? 100 }));
+      const components = [
+        { id: 'web', name: 'Dashboard', status: 'operational', days: days({ 41: 99.8 }) },
+        { id: 'api', name: 'API', status: 'degraded', days: days({ 0: 99.4, 12: 97.8 }) },
+        { id: 'builds', name: 'Builds', status: 'operational', days: days({ 12: 98.6 }) }];
+      const incidents = [
+        { id: 'i1', title: 'Slow API responses in Europe', impact: 'minor', components: ['API'], updates: [
+          { stage: 'investigating', at: at(10, 14, 8, 12), message: 'Requests from Europe take up to 4 seconds.' },
+          { stage: 'monitoring', at: at(10, 14, 9, 30), message: 'Response times are back to normal.' }] },
+        { id: 'i0', title: 'Errors on deploy webhooks', impact: 'major', components: ['API', 'Builds'], updates: [
+          { stage: 'investigating', at: at(10, 2, 14, 5), message: 'Deploys fail with a 502.' },
+          { stage: 'resolved', at: at(10, 2, 15, 22), message: 'We rolled the change back.' }] }];
+      function Demo() {
+        return h('div', { style: { maxWidth: 860, margin: '0 auto' } }, h(StatusPage, { components, incidents, title: 'Coreloom status', updatedAt: at(10, 14, 9, 58), onSubscribe: () => {} }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

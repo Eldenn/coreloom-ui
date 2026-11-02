@@ -25,9 +25,10 @@
   (prompt, Markdown output with citations, reasoning, tool calls, tool forms, agent plans, model picker,
   context meter).
 - **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
-  pages, notifications, team, billing, kanban, calendar, marketing and docs.
+  pages, notifications, team, billing, API keys, webhooks, security, audit log, integrations, kanban,
+  calendar, Gantt roadmap, status page, marketing and docs.
 - **AI blocks**: chat with conversation history, edits and branches, a floating chat widget, agent
-  management, runs and traces, a model playground and a knowledge base. They read the AI SDK's
+  management, runs and traces, a prompt manager, a model playground and a knowledge base. They read the AI SDK's
   `UIMessage` as is, without depending on it or on any API.
 - **Dark and light** themes, four accent presets, every pairing WCAG AA. Axe runs on every story in CI.
 - **English, French, Spanish and German** for every built-in string.
