@@ -25,6 +25,7 @@ const GUIDE_FOR = {
   highlight: ['TruncatedText'],
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
+  vscode: ['VsCode'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */

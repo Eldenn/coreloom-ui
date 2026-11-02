@@ -151,6 +151,24 @@
       ]
     },
     {
+      "name": "vscode",
+      "type": "registry:item",
+      "title": "VS Code webviews",
+      "description": "Coreloom UI inside a VS Code extension's webview: vscode.css maps the tokens onto the editor's --vscode-* variables (light, dark, high contrast, its fonts) and cancels VS Code's default webview styles; syncVsCodeTheme(), useVsCodeState, postToExtension and useExtensionMessages follow the theme, keep state while the tab is hidden and exchange typed messages. Import vscode.css after theme.css.",
+      "registryDependencies": ["@coreloom/theme"],
+      "files": [
+        {
+          "path": "src/lib/vscode.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/styles/vscode.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/vscode.css"
+        }
+      ]
+    },
+    {
       "name": "alert",
       "type": "registry:ui",
       "title": "Alert",
