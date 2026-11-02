@@ -13,8 +13,242 @@ registry attached, so a project can pin one by pointing the namespace there in
 `components.json` (dependencies between items resolve through the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.9.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.10.0/{name}.json" }
 ```
+
+## [0.10.0] - 2026-11-02
+
+### Added
+
+- `AgentBuilder` (`@coreloom/ai-agent-builder`): the agent side of the node editor.
+  - **Reads / Writes**: each node names the state fields it uses and updates.
+  - **Structured output**: an Agent can answer in a JSON Schema (checked as JSON).
+  - **Tool parameters**: `AgentBuilderTool` takes `parameters` (a JSON Schema object) and
+    `sensitive`; each parameter can be fixed per node (a value, an `{{ }}` expression, an `enum`
+    value) or left to the model (`toolArgs`).
+  - **Ask before running** (`askFirst`): tool calls a person approves first; sensitive tools are
+    added when picked.
+  - **Limits**: an Agent's max steps, max tokens per answer and timeout; the graph's recursion limit
+    under State (`config` / `defaultConfig` / `onConfigChange`).
+  - **Pauses**: any Agent, Tools, Function or Subgraph node can pause the run before or after it.
+    `toLangGraphConfig(workflow, config)` gives `interrupt_before`, `interrupt_after` and
+    `recursion_limit`; `onSave` and `onRun` now also get it as `config`.
+  - **Review**: pass `interrupt` when your run pauses and a dialog lets a person approve, edit or
+    reject each tool call, or answer a question; `onResume({ nodeId, decisions })` gets the
+    decisions in LangChain's human-in-the-loop shape. A Human review node picks which decisions it
+    offers.
+- `toLangGraphJSON(workflow, state, config)` keeps the config in START's metadata;
+  `fromLangGraphJSON` returns it as `config`.
+- `AgentGraph` (`@coreloom/agent-graph`): a multi-agent system as a graph. Agents are cards, teams
+  are frames, and links show who delegates to whom (solid), who hands off to whom (dashed) and which
+  tools and knowledge each agent uses (dotted). Laid out in layers without a graph library. One tab
+  stop with arrow-key navigation, a List view that says the same in sentences, zoom and pan, and a
+  run shown live with `activity` and `activePath`.
+- `AgentTeams` (`@coreloom/ai-agent-teams`): the agent graph with a team filter and a panel on the
+  selected agent (role, model, who it reports to, delegates and hands off to, what it uses) and
+  links to its page and runs. `agentActivityFromSpans(spans, agents)` derives the live state from a
+  run's trace spans.
+- `TraceSpan` (ai-runs): optional `agentId` on agent spans, so a multi-agent run's trace can drive
+  `AgentTeams`.
+- `AgentPlan` (`@coreloom/agent-plan`): the steps an agent works through, ticked off live (to do,
+  in progress, done, failed, skipped) with "2 of 5 done" and a bar. It reads the `data-plan` part
+  your stream writes and rewrites with the same `id`. `active` stops the spinner when the agent
+  stops; `announce` reads the step in progress out on its own.
+- `ToolForm` and `formTool()` (`@coreloom/tool-form`): a tool that asks the person with a form
+  (text, email, web address, number, date, choice, checkbox) before it goes on. The answer becomes
+  the tool's output; Cancel answers with an error the model reads. The fields can be the app's, or
+  written by the model as the tool's input (read defensively with `readToolFormFields`).
+- `Chat`, `ChatWidget`, `ChatMessages`, `ChatMessage`: `data-plan` parts show as an `AgentPlan`;
+  `renderData(part)` draws your own `data-*` parts; `onToolOutput` takes `addToolOutput` as it is.
+- `ToolCall`: `onOutput`, and `awaitsInput` on a `tool` entry. While such a call waits, `render`
+  gets `submit(output)` and `cancel(reason?)`, the card says "Waiting for you" and the call isn't
+  marked busy.
+- `@coreloom/ai`: `AiDataPart`, `AiPlan`, `AiPlanStep`, `isDataPart`, `readPlan` (maps other
+  agents' statuses such as `in_progress` and `completed`) and `planProgress`.
+- `agentTeamToWorkflow(team)` and `workflowToAgentTeam(workflow, { tools })` (ai-agent-builder):
+  convert between the agent teams block and the agent builder's graph, in LangGraph's multi-agent
+  patterns. A delegation is a supervisor (a Router to each worker, who comes back when done); a
+  handoff is a swarm move (a route to the next agent, named by the link's label). Teams, roles,
+  descriptions, tools and knowledge survive the trip, including through LangGraph JSON.
+- `AgentTeams`: `onEdit(selectedId)` adds an **Edit graph** button to open your agent builder.
+- `AgentTeams`: the panel shows each link's label next to the agent's name ("Tech support · Bugs").
+- `ai-artifact`: a document or a piece of code a model wrote, opened in a panel beside the chat.
+  `ArtifactPanel` shows its versions (‹ v2 ›, labels and times), Preview and Source for Markdown,
+  **Changes** against the previous version (a line diff with both line numbers and folded unchanged
+  lines), Copy, Download (a file built in the browser) and **Restore this version**.
+  `ArtifactCard` is the chip a message shows to open it, drawn with the Chat's `tools`;
+  `ArtifactLayout` puts the chat and the panel side by side, resizable, and lays the panel over the
+  chat when the space is narrow, keeping the chat mounted. `diffLines` and `artifactFilename` are
+  exported for apps that need the same diff or file names.
+- `@coreloom/rules`: installs `AGENTS.md` at the app's root with the Coreloom design,
+  accessibility and text rules, so coding agents follow them on every change.
+- Usage examples for assistants: every Storybook story file is published as a `registry:example`
+  item (`button-demo`, `overlays-demo`, `ai-chat-demo`…, 42 in all, covering every component). shadcn's
+  MCP server returns their code when an assistant asks for an example.
+- README: reading Coreloom from a remote MCP server (GitMCP, GitHub's MCP server) when there is no
+  local project, for example in claude.ai.
+- `Heatmap` and `CalendarHeatmap` (`@coreloom/heatmap`): values on a grid of squares in five steps
+  of one chart color, with a Less → More legend. `Heatmap` takes `{ row, column, value }` cells
+  (weekday × hour, service × day); `CalendarHeatmap` lays `{ date, value }` days out in Monday-first
+  weeks. One tab stop with arrow keys; every cell is named with its row, column or full date, and
+  value.
+- `FunnelChart` (`@coreloom/funnel-chart`): the steps of a flow as an ordered list, each with a
+  bar against the first step, its count and share of the start, and between steps the share that
+  continued.
+- `TrendChart` (dashboard): `stacked` (`true`, or `'percent'` for 100 %), a per-series `type` to mix
+  bars, lines and areas (combo charts), and `axis: 'right'` with `formatSecondaryValue` for a
+  second axis. The tooltip now shows each series' name next to its formatted value.
+- `RadarChart` (`@coreloom/radar-chart`): up to three series compared on the same measures, one
+  axis each around a circle.
+- `ScatterChart` (`@coreloom/scatter-chart`): two measures across many items, up to three groups,
+  with an optional `size` measure for a bubble chart and named points in the tooltip.
+- `TreemapChart` (`@coreloom/treemap-chart`): many parts of a whole as tiles sized by value,
+  colored by up to five groups, with names and values in tiles that have room for them.
+- `SankeyChart` (`@coreloom/sankey-chart`): flows between nodes in columns, as wide as the flow,
+  colored by the column they leave. Unknown ids, loops and non-positive values are left out.
+- All four sit on Recharts through `ChartContainer`, and give screen readers their data as text:
+  a table (radar, scatter) or a list with values and shares (treemap, sankey).
+- `Sparkline` (`@coreloom/sparkline`): a word-sized trend (line, area or bars) in plain SVG for stat
+  cards, table cells and list rows. Screen readers hear your label plus the first and last value,
+  the low and the high.
+- `DonutChart` (`@coreloom/donut-chart`): parts of a whole as a ring with the total in the middle
+  and a legend that states each value and share. Parts past `maxSlices` (3 by default, 5 at most)
+  fold into a grey "Other".
+- `BarList` (`@coreloom/bar-list`): a ranking as an HTML list, with a proportional bar per row,
+  optional links through the app's router and a "Show all" button past `limit`.
+- `Gauge` (`@coreloom/gauge`): one value against its range as an open ring, exposed as a `meter`,
+  with optional `warning` / `critical` zones (stated in words) and `higherIsBetter` for uptime or
+  scores.
+- `StatCard` (app-shell, dashboard): `sparkline` prop, recent values drawn as a small area chart
+  under the value.
+- `RichTextEditor`: **Review changes** in the AI panel. A rewrite of existing text (improve, fix,
+  shorten, lengthen, or an instruction) shows as changes in the text itself, removed words struck
+  through and new ones underlined, compared word by word. A bar under the text steps through them
+  (Previous / Next) and accepts or rejects each one, or all at once. Nothing changes in the document
+  or in `value` until a change is accepted; each Accept is one undo step. New file
+  `rich-text-review.tsx`, installed with the editor; new `ai.review` option (`false` removes it).
+- `NodeEditor`: the node panel has Settings, Input and Output tabs. `runs` takes each node's
+  `input` and `output`; Input falls back to the output of the node before it.
+- `NodeEditor`: text fields take `{{ path }}` expressions. Typing `{{` (or the braces button)
+  suggests the input's fields, the app's `variables` and earlier nodes' outputs
+  (`$node.<id>.<path>`) with a sample each; a preview under the field fills them from the sample.
+  `expression: false` turns it off for a field.
+- `NodeEditor`: `onRunNode({ node, input, workflow })` adds "Test node". The app runs that one node
+  and resolves with `{ status?, output?, message? }`, shown on the card and under Output and offered
+  to the nodes after it.
+- `NodeEditor`: new field types — `conditions` (rules matched all or any, with the result for the
+  sample), `keyValue` (rows of key and value), `code` (monospace; JSON is checked and an invalid one
+  is an issue with the code `invalid`) and `credential` (one of the app's `credentials`, ids and
+  names only; `onCreateCredential` adds "New credential").
+- `node-editor-fields`: `resolveExpression`, `evaluateConditions`, `keyValuesToObject`, `dataPaths`,
+  `readPath`, `jsonError` — path lookup only, nothing is evaluated.
+- `WorkflowBuilder` passes the new props through `editorProps`; `AgentBuilder` takes `onRunNode` and
+  offers its state fields in expressions.
+- `NodeEditor` (`@coreloom/node-editor`): an n8n-style canvas on React Flow (`@xyflow/react`).
+  The app declares its node kinds (ports, settings as data, icon, a summary line); people add nodes
+  from a searchable list, drag them, draw connections from an output to an input, and configure the
+  selected node in a side panel that also lists and makes connections, so everything works from the
+  keyboard. Undo/redo, tidy up, zoom; missing settings and loose ends are flagged; `runs` shows what
+  the app's run reports for each node. Nothing runs inside. Pure helpers for app code: `addNode`,
+  `connectNodes`, `canConnect`, `removeNodes`, `updateNode`, `duplicateNode`, `layoutWorkflow`,
+  `validateWorkflow`, `nodePorts`.
+- `WorkflowBuilder` (`@coreloom/workflow-builder`): an automation's page — name, Save, Run (which
+  waits until no node needs attention) — above the node editor.
+- `AgentBuilder` (`@coreloom/ai-agent-builder`): design an agent graph the LangGraph way — shared
+  state with replace/append reducers, Agent, Tools, Function, Router (conditional edges, one output
+  per route), Human review and Subgraph nodes between START and END. `toLangGraphJSON` /
+  `fromLangGraphJSON` read and write the shape of LangGraph's `get_graph().to_json()`; `onSave` and
+  `onRun` get the graph and that JSON. No dependency on LangGraph.
+- `NodeEditor`: notes and groups on the canvas. `Workflow.notes` (`{ id, position, width, height,
+text, color? }`) and `Workflow.groups` (`{ id, position, width, height, label, color? }`) sit behind
+  the cards and are never run nor checked. Add them from the toolbar or the canvas menu; Ctrl/⌘+G
+  groups the selection. Text and names are edited in place, both resize from handles and take a
+  colour from their right-click menu; moving a group moves what's inside, and Tidy up refits groups.
+- `NodeEditor`: "Find on the canvas" (Ctrl/⌘+F) lists nodes, notes and groups; picking one selects
+  it, brings it into view and focuses it.
+- `NodeEditor`: a minimap (React Flow's `MiniMap`, pannable and zoomable) with a toolbar toggle; the
+  `minimap` prop (default true) removes both when false.
+- Helpers in `node-editor-canvas`: `addNote`, `addGroup`, `updateNote`, `updateGroup`, `moveGroup`,
+  `groupMembers`, `removeCanvasItems`, `refitGroups`.
+- `NodeEditor`: pinned sample data. `WorkflowNode.pinned` holds a sample output, set from Output
+  ("Pin this output", or "Add sample data" as JSON). It stands in while no run reports an output, and
+  a node without output passes its input on, so a sample pinned to the trigger feeds every node after
+  it.
+- `NodeEditor`: drag a field from the Input tab onto a setting; it lands as `{{ path }}`.
+- `NodeEditor`: "+" after unconnected outputs and on connections adds a node there, connected;
+  right-click menus for nodes, connections and the canvas; Ctrl/⌘+C / X / V copy, cut and paste
+  nodes with their connections (also through the system clipboard); D or `WorkflowNode.disabled`
+  disables a node (dimmed, not checked).
+- Helpers: `insertNodeOnEdge`, `copyNodes`, `pasteNodes` (untrusted input is filtered).
+
+### Changed
+
+- `AgentGraph`: an agent selected out of sight (from the panel's links, say) scrolls into view.
+- `AgentGraph`: without `defaultView`, a box too narrow to read the graph (a phone) starts on the
+  list view.
+- `RichTextEditor`: for a rewrite, **Review changes** is now the main (focused) button in the AI
+  panel, and Replace is next to it. Translations, summaries, continuations and answers at the `/`
+  spot keep their main action.
+- `NodeEditor`: key/value rows put the key above the value, so both stay readable in the panel.
+- `updateNode` takes `disabled` and `pinned`; `undefined` (or `disabled: false`) removes the key.
+- Every registry item that has a guide now links it: the published `r/<name>.json` and
+  `r/registry.json` end the item's description with `Guide: <url>` and carry the same links in
+  `docs`. Assistants that browse `@coreloom` through shadcn's MCP server (which only shows
+  descriptions) can now open the guide: when to use the item, its props and accessibility rules.
+- README: setting up shadcn's MCP server for Codex and OpenCode, and for any other MCP client.
+
+### Fixed
+
+Gauge: the number, label and status now sit on the ring's center and stay inside the threshold ticks. The number shrinks to fit when it's long ("99.32 %", "7.4M"), and the text scales with `size`.
+
+- `removeNodes` kept only `nodes` and `edges`; it now keeps the rest of the workflow.
+
+### Upgrading
+
+- New strings in `ai.agentBuilder`: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first. The block now also needs
+  `@coreloom/radio-group`.
+- Both items read new strings (`ai.agentGraph`, `ai.agentTeams`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- These read new strings (`ai.plan`, `ai.toolForm`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) and `@coreloom/ai` with `--overwrite`
+  first, then `@coreloom/tool-call` and `@coreloom/ai-chat`.
+- `AgentTeams` reads a new string (`ai.agentTeams.edit`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- `ai-agent-builder` now depends on `@coreloom/agent-graph` (types only).
+- The panel reads new strings (`ai.artifact`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` before adding
+  `@coreloom/ai-artifact`.
+- The new items read new strings in the `charts` group: re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- The new items read new strings in the `charts` group: re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- The new items read new strings (`charts`): re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first. Re-installing the app-shell or
+  dashboard block pulls in `@coreloom/sparkline` for `StatCard`.
+- The editor reads new strings: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first, then
+  `@coreloom/rich-text-editor` with `--overwrite`.
+- To keep Replace as the main action, pass `ai={{ onRequest, review: false }}`. Tests that press
+  Enter on the panel's focused button after a rewrite now start a review instead of replacing.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite`, then `@coreloom/node-editor`:
+  it now has a second file, `node-editor-fields.tsx`, and needs `@coreloom/tabs`.
+- `text` and `textarea` fields now take expressions and show the braces button; add
+  `expression: false` where that isn't wanted.
+- `WorkflowIssue` has a new code, `invalid`: handle it if you switch over the codes.
+- The new items read new strings (`nodeEditor`, `workflow`, `ai.agentBuilder`): re-install
+  `@coreloom/i18n` (and `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with
+  `--overwrite` first.
+- `@coreloom/node-editor` adds the `@xyflow/react` dependency and imports its base stylesheet
+  (`@xyflow/react/dist/base.css`) from the component.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite` (new `nodeCanvas` group), then
+  `@coreloom/node-editor`, which adds `node-editor-canvas.tsx`.
+- If your app stores or executes workflows, keep `notes` and `groups` when you save, and ignore them
+  when you run.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite`, then `@coreloom/node-editor`
+  (it now uses `@coreloom/context-menu`).
+- If your run executes the graph, skip nodes with `disabled: true` (pass their input on), and decide
+  whether a `pinned` output replaces running the node.
 
 ## [0.9.0] - 2026-11-01
 
@@ -298,6 +532,7 @@ registry attached, so a project can pin one by pointing the namespace there in
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
 [0.8.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.8.0
 [0.7.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.7.0
