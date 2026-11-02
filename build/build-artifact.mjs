@@ -137,6 +137,7 @@ const COMPONENTS = [
   'PromptInput',
   'Reasoning',
   'ToolCall',
+  'AgentAvatar',
   'AgentPlan',
   'ToolForm',
   'FormRenderer',

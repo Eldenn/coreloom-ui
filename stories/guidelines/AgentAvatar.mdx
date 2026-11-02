@@ -1,0 +1,20 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as GraphStories from '../components/agent-graph.stories'
+import * as Stories from '../components/agent-avatar.stories'
+import guide from './AgentAvatar.md?raw'
+
+<Meta title="Guidelines/AI/Agent Avatar" />
+
+<Markdown>{guide}</Markdown>
+
+## States
+
+<Canvas of={Stories.States} />
+
+## A team
+
+<Canvas of={Stories.Team} />
+
+## In the agent graph
+
+<Canvas of={GraphStories.WithAvatars} />

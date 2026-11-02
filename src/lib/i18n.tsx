@@ -871,6 +871,18 @@ const en = {
       comparedWith: (n: number) => `Compared with v${n}`,
       noChanges: 'No changes from the previous version.',
     },
+    agentAvatar: {
+      agent: 'AI agent',
+      state: {
+        idle: 'idle',
+        thinking: 'thinking',
+        speaking: 'answering',
+        done: 'done',
+        error: 'error',
+        offline: 'offline',
+      },
+      label: (name: string, state: string) => `${name}, ${state}`,
+    },
     agentGraph: {
       label: 'Agents and how they work together',
       view: 'View',
@@ -2576,6 +2588,18 @@ const fr: Messages = {
       firstVersion: 'C’est la première version : il n’y a rien à comparer pour l’instant.',
       comparedWith: (n) => `Comparée à la v${n}`,
       noChanges: 'Aucune modification depuis la version précédente.',
+    },
+    agentAvatar: {
+      agent: 'Agent IA',
+      state: {
+        idle: 'au repos',
+        thinking: 'réfléchit',
+        speaking: 'répond',
+        done: 'terminé',
+        error: 'en erreur',
+        offline: 'hors ligne',
+      },
+      label: (name, state) => `${name}, ${state}`,
     },
     agentGraph: {
       label: 'Les agents et leur façon de travailler ensemble',

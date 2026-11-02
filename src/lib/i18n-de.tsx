@@ -856,6 +856,18 @@ export const de: Messages = {
       comparedWith: (n) => `Verglichen mit v${n}`,
       noChanges: 'Keine Änderungen gegenüber der vorherigen Version.',
     },
+    agentAvatar: {
+      agent: 'KI-Agent',
+      state: {
+        idle: 'bereit',
+        thinking: 'denkt nach',
+        speaking: 'antwortet',
+        done: 'fertig',
+        error: 'Fehler',
+        offline: 'offline',
+      },
+      label: (name, state) => `${name}, ${state}`,
+    },
     agentGraph: {
       label: 'Die Agenten und wie sie zusammenarbeiten',
       view: 'Ansicht',

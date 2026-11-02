@@ -150,3 +150,96 @@
     }
   }
 }
+
+/* AgentAvatar — the faces' small motions. Every loop starts and ends on the resting pose, so a
+   paused or reduced-motion avatar (the rule above stops after one 1 ms cycle) looks at rest. */
+@theme {
+  --animate-agent-blink: agent-blink 4.8s ease-in-out infinite;
+  --animate-agent-scan: agent-scan 2s ease-in-out infinite;
+  --animate-agent-hop: agent-hop 0.9s ease-in-out infinite;
+  --animate-agent-talk: agent-talk 0.45s ease-in-out infinite;
+  --animate-agent-wave: agent-wave 1.2s ease-in-out infinite;
+  --animate-agent-eq: agent-eq 0.8s ease-in-out infinite;
+  --animate-agent-shake: agent-shake 0.4s ease-in-out 2;
+  --animate-agent-pop: agent-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1;
+
+  @keyframes agent-blink {
+    0%,
+    90%,
+    100% {
+      transform: scaleY(1);
+    }
+    94% {
+      transform: scaleY(0.1);
+    }
+  }
+  @keyframes agent-scan {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2.5px);
+    }
+    75% {
+      transform: translateX(2.5px);
+    }
+  }
+  @keyframes agent-hop {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-1px);
+    }
+  }
+  @keyframes agent-talk {
+    0%,
+    100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(2.2);
+    }
+  }
+  @keyframes agent-wave {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-3px);
+    }
+  }
+  @keyframes agent-eq {
+    0%,
+    100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(2.3);
+    }
+  }
+  @keyframes agent-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-1.5px);
+    }
+    75% {
+      transform: translateX(1.5px);
+    }
+  }
+  @keyframes agent-pop {
+    0% {
+      transform: scale(0.82);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}

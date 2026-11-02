@@ -8,8 +8,10 @@
 import { ActivityIcon, BookOpenIcon, BotIcon, PencilIcon, UserIcon, WrenchIcon } from 'lucide-react'
 import * as React from 'react'
 
+import { AgentAvatar, type AgentAvatarVariant } from '@/components/ui/agent-avatar'
 import {
   type AgentActivity,
+  agentAvatarState,
   AgentGraph,
   type AgentGraphEdge,
   type AgentGraphNode,
@@ -118,6 +120,7 @@ function AgentDetails({
   href,
   runsHref,
   onSelect,
+  avatar,
 }: {
   agent: AgentTeamMember
   agents: AgentTeamMember[]
@@ -127,6 +130,8 @@ function AgentDetails({
   href?: (id: string) => string
   runsHref?: (id: string) => string
   onSelect: (id: string) => void
+  /** Show an agent as an animated AgentAvatar (`face` or `dots`) instead of the robot icon. */
+  avatar?: AgentAvatarVariant
 }) {
   const { messages } = useCoreloomI18n()
   const t = messages.ai.agentTeams
@@ -159,12 +164,22 @@ function AgentDetails({
   return (
     <div data-slot="agent-details" className="flex flex-col gap-4">
       <div className="flex items-start gap-3">
-        <span
-          aria-hidden
-          className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-fg-secondary"
-        >
-          <Icon className="size-5" />
-        </span>
+        {avatar && kind === 'agent' ? (
+          <AgentAvatar
+            variant={avatar}
+            seed={agent.id}
+            state={agentAvatarState(agent, activity)}
+            size="lg"
+            decorative
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-fg-secondary"
+          >
+            <Icon className="size-5" />
+          </span>
+        )}
         <div className="flex min-w-0 flex-col gap-1">
           <h3 className="m-0 text-[15px] leading-6 font-semibold break-words text-foreground">
             {agent.name}
@@ -264,6 +279,7 @@ function AgentTeams({
   href,
   runsHref,
   onEdit,
+  avatars,
   className,
 }: {
   agents: AgentTeamMember[]
@@ -286,6 +302,8 @@ function AgentTeams({
    * `agentTeamToWorkflow` (ai-agent-builder) turns the team into the builder's graph.
    */
   onEdit?: (selectedId: string | null) => void
+  /** Animated AgentAvatars for the agents (`face` or `dots`), in the graph and the details. */
+  avatars?: AgentAvatarVariant
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.agentTeams
@@ -378,6 +396,7 @@ function AgentTeams({
           activity={activity}
           activePath={activePath}
           defaultView={defaultView}
+          avatars={avatars}
         />
         <aside
           aria-label={t.details}
@@ -393,6 +412,7 @@ function AgentTeams({
               href={href}
               runsHref={runsHref}
               onSelect={selectAgent}
+              avatar={avatars}
             />
           ) : (
             <p className="m-0 text-[13px] text-muted-foreground">{t.selectAgent}</p>
