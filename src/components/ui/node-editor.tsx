@@ -19,6 +19,7 @@ import {
   getBezierPath,
   Handle,
   MarkerType,
+  MiniMap,
   type Node,
   type NodeChange,
   type NodeProps,
@@ -36,7 +37,9 @@ import {
   ClipboardPasteIcon,
   ClockIcon,
   CopyIcon,
+  GroupIcon,
   Loader2Icon,
+  MapIcon,
   MaximizeIcon,
   MinusIcon,
   NetworkIcon,
@@ -47,8 +50,11 @@ import {
   PowerIcon,
   PowerOffIcon,
   Redo2Icon,
+  SearchIcon,
+  StickyNoteIcon,
   Trash2Icon,
   Undo2Icon,
+  UngroupIcon,
   WorkflowIcon,
   XIcon,
   ZoomInIcon,
@@ -69,11 +75,37 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
   ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  addGroup,
+  addNote,
+  CANVAS_COLORS,
+  CANVAS_NODE_TYPES,
+  type CanvasColor,
+  canvasColorFill,
+  CanvasFinder,
+  type CanvasFinderItem,
+  type FrameNode,
+  groupMembers,
+  moveGroup,
+  type NoteNode,
+  refitGroups,
+  removeCanvasItems,
+  updateGroup,
+  updateNote,
+  type WorkflowGroup,
+  type WorkflowNote,
+} from '@/components/ui/node-editor-canvas'
 import {
   CodeControl,
   ConditionsControl,
@@ -218,6 +250,10 @@ interface WorkflowEdge {
 interface Workflow {
   nodes: WorkflowNode[]
   edges: WorkflowEdge[]
+  /** Notes on the canvas, for people: never run nor checked. */
+  notes?: WorkflowNote[]
+  /** Frames around related nodes; moving one moves what's inside. */
+  groups?: WorkflowGroup[]
 }
 
 type NodeRunStatus = 'running' | 'waiting' | 'success' | 'error' | 'skipped'
@@ -399,6 +435,7 @@ function removeNodes(wf: Workflow, ids: readonly string[], kinds: readonly NodeK
   )
   if (!gone.size) return wf
   return {
+    ...wf,
     nodes: wf.nodes.filter((n) => !gone.has(n.id)),
     edges: wf.edges.filter((e) => !gone.has(e.source) && !gone.has(e.target)),
   }
@@ -939,7 +976,10 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
   )
 }
 
-const NODE_TYPES = { card: NodeCard }
+const NODE_TYPES = { card: NodeCard, ...CANVAS_NODE_TYPES }
+
+/** Everything on the canvas: the nodes' cards, and the notes and groups around them. */
+type CanvasNode = CardNode | NoteNode | FrameNode
 
 /** A rounded orthogonal path through the given points. */
 function roundedPath(points: { x: number; y: number }[], r = 10) {
@@ -1934,6 +1974,11 @@ interface NodeEditorProps {
   showIssues?: boolean
   /** Buttons for the toolbar's end: Run, Save… */
   actions?: React.ReactNode
+  /**
+   * The minimap in the canvas's corner, with a toolbar button to show or hide it (default: true;
+   * hidden at first below 720 px of width). False removes both.
+   */
+  minimap?: boolean
   /** The canvas's height in px (default: 560). Below 720 px of width the panel goes underneath and the canvas is at most 420 px tall. */
   height?: number
   /** Names the canvas for screen readers (default: "Workflow"). */
@@ -2008,7 +2053,12 @@ type InsertTarget =
   | { position: { x: number; y: number } }
 
 /** What was right-clicked. */
-type MenuTarget = { node: string } | { edge: string } | { pane: { x: number; y: number } }
+type MenuTarget =
+  | { node: string }
+  | { edge: string }
+  | { pane: { x: number; y: number } }
+  /** A note or a group. */
+  | { item: string }
 
 function NodeEditorInner({
   kinds,
@@ -2023,6 +2073,7 @@ function NodeEditorInner({
   inspector = true,
   showIssues = true,
   actions,
+  minimap = true,
   height = 560,
   label,
   onRunNode,
@@ -2032,7 +2083,8 @@ function NodeEditorInner({
   className,
 }: NodeEditorProps) {
   const t = useCoreloomI18n().messages.nodeEditor
-  const flow = useReactFlow<CardNode>()
+  const tc = useCoreloomI18n().messages.nodeCanvas
+  const flow = useReactFlow<CanvasNode>()
   const map = React.useMemo(() => kindMap(kinds), [kinds])
 
   const [state, setState] = React.useState<Workflow>(defaultValue ?? { nodes: [], edges: [] })
@@ -2059,6 +2111,13 @@ function NodeEditorInner({
   // Extra nodes picked with Shift (React Flow's multi-selection), on top of `selected`.
   const [multi, setMulti] = React.useState<ReadonlySet<string>>(() => new Set())
   const [selectedEdges, setSelectedEdges] = React.useState<ReadonlySet<string>>(() => new Set())
+  // Notes and groups picked on the canvas. They aren't nodes: `selected` stays a node's id.
+  const [itemSel, setItemSel] = React.useState<ReadonlySet<string>>(() => new Set())
+  const [finderOpen, setFinderOpen] = React.useState(false)
+  // What "Find" jumped to, for focus once its list closes.
+  const revealed = React.useRef<string | null>(null)
+  // The minimap's toolbar toggle; until it's used, the minimap shows unless the editor is narrow.
+  const [mapPref, setMapPref] = React.useState<boolean | null>(null)
   const [measured, setMeasured] = React.useState<
     ReadonlyMap<string, { width: number; height: number }>
   >(() => new Map())
@@ -2117,6 +2176,7 @@ function NodeEditorInner({
     }
   }, [])
   const stacked = width > 0 && width < 720
+  const mapOn = minimap && (mapPref ?? !stacked)
   // The canvas mounts once its width is known (so the first fit sees the right layout); when the
   // panel later moves under it or back, fit again.
   const lastStacked = React.useRef<boolean | null>(null)
@@ -2280,13 +2340,48 @@ function NodeEditorInner({
   )
 
   const dragStart = React.useRef<Workflow | null>(null)
-  const onNodesChange = (changes: NodeChange<CardNode>[]) => {
+  // Who moves along with a group being dragged: what was inside it when the drag began.
+  const groupDrag = React.useRef(new Map<string, string[]>())
+  const noteIds = new Set((workflow.notes ?? []).map((n) => n.id))
+  const groupIds = new Set((workflow.groups ?? []).map((g) => g.id))
+  const isItem = (id: string) => noteIds.has(id) || groupIds.has(id)
+
+  const onNodesChange = (changes: NodeChange<CanvasNode>[]) => {
     let next = workflow
     let sel = selected
     const multiNext = new Set(multi)
+    const itemsNext = new Set(itemSel)
     let dims: Map<string, { width: number; height: number }> | null = null
     const removed: string[] = []
+    const removedItems: string[] = []
+    // Dragged together with their group: they already move on their own.
+    const moving = new Set(changes.flatMap((c) => (c.type === 'position' ? [c.id] : [])))
     for (const c of changes) {
+      if ('id' in c && isItem(c.id)) {
+        if (c.type === 'position' && c.position) {
+          const g = next.groups?.find((x) => x.id === c.id)
+          if (g) {
+            const members = groupDrag.current.get(c.id)
+            next = moveGroup(
+              next,
+              c.id,
+              { x: c.position.x - g.position.x, y: c.position.y - g.position.y },
+              { sizes: measured, skip: moving, ...(members ? { members } : {}) },
+            )
+          } else next = updateNote(next, c.id, { position: c.position })
+        } else if (c.type === 'dimensions' && c.dimensions && c.resizing !== undefined) {
+          // Only the resize handles set a size; React Flow's own measuring is ignored.
+          const size = {
+            width: Math.round(c.dimensions.width),
+            height: Math.round(c.dimensions.height),
+          }
+          next = noteIds.has(c.id) ? updateNote(next, c.id, size) : updateGroup(next, c.id, size)
+        } else if (c.type === 'select') {
+          if (c.selected) itemsNext.add(c.id)
+          else itemsNext.delete(c.id)
+        } else if (c.type === 'remove') removedItems.push(c.id)
+        continue
+      }
       if (c.type === 'dimensions' && c.dimensions) {
         dims ??= new Map(measured)
         dims.set(c.id, c.dimensions)
@@ -2304,15 +2399,32 @@ function NodeEditorInner({
       } else if (c.type === 'remove') removed.push(c.id)
     }
     if (dims) setMeasured(dims)
-    if (removed.length) {
-      const after = removeNodes(next, removed, kinds)
-      commit(after, t.announce.removed(workflow.nodes.length - after.nodes.length))
+    if (removed.length || removedItems.length) {
+      const after = removeCanvasItems(
+        removed.length ? removeNodes(next, removed, kinds) : next,
+        removedItems,
+      )
+      const nodesGone = workflow.nodes.length - after.nodes.length
+      commit(
+        after,
+        nodesGone
+          ? t.announce.removed(nodesGone)
+          : tc.announce.removed(
+              (workflow.notes?.length ?? 0) +
+                (workflow.groups?.length ?? 0) -
+                (after.notes?.length ?? 0) -
+                (after.groups?.length ?? 0),
+            ),
+      )
       keepFocus()
       if (sel !== null && removed.includes(sel)) sel = null
+      for (const id of removedItems) itemsNext.delete(id)
     } else if (next !== workflow) emit(next)
     if (sel !== selected) select(sel)
     if (multiNext.size !== multi.size || [...multiNext].some((id) => !multi.has(id)))
       setMulti(multiNext)
+    if (itemsNext.size !== itemSel.size || [...itemsNext].some((id) => !itemSel.has(id)))
+      setItemSel(itemsNext)
   }
 
   const onEdgesChange = (changes: EdgeChange[]) => {
@@ -2387,7 +2499,8 @@ function NodeEditorInner({
 
   const tidy = () => {
     const heights = new Map([...measured].map(([id, d]) => [id, d.height]))
-    commit(layoutWorkflow(workflow, heights), t.announce.arranged)
+    // Groups follow their nodes to where Tidy up put them.
+    commit(refitGroups(workflow, layoutWorkflow(workflow, heights), measured), t.announce.arranged)
     requestAnimationFrame(() => {
       void flow.fitView({ padding: 0.2, duration: 200 })
     })
@@ -2467,8 +2580,163 @@ function NodeEditorInner({
     keepFocus()
   }
 
+  /** The middle of what's on screen, in canvas coordinates. */
+  const viewCenter = () => {
+    const box = root.current?.querySelector('.react-flow')?.getBoundingClientRect()
+    return box
+      ? flow.screenToFlowPosition({ x: box.left + box.width / 2, y: box.top + box.height / 2 })
+      : { x: 0, y: 0 }
+  }
+  /** Focuses a card, note or group (or a control inside it) once it's on the canvas. */
+  const focusOnCanvas = (id: string, inside?: string) => {
+    requestAnimationFrame(() => {
+      const el = root.current?.querySelector<HTMLElement>(
+        `.react-flow__node[data-id="${CSS.escape(id)}"]`,
+      )
+      ;((inside ? el?.querySelector<HTMLElement>(inside) : null) ?? el)?.focus()
+    })
+  }
+  const pickItem = (id: string) => {
+    select(null)
+    setMulti(new Set())
+    setItemSel(new Set([id]))
+  }
+
+  const addNoteAt = (at?: { x: number; y: number }) => {
+    const c = viewCenter()
+    const { workflow: next, id } = addNote(workflow, {
+      position: at ?? { x: c.x - 120, y: c.y - 70 },
+    })
+    commit(next, tc.announce.noteAdded)
+    pickItem(id)
+    focusOnCanvas(id, 'textarea')
+  }
+
+  /** Frames the selected nodes and notes in a new group; with nothing selected, an empty one. */
+  const groupSelection = (
+    ids = [...selection(), ...[...itemSel].filter((id) => noteIds.has(id))],
+  ) => {
+    const labels = new Set((workflow.groups ?? []).map((g) => g.label))
+    let name = tc.groupDefault
+    for (let i = 2; labels.has(name); i++) name = `${tc.groupDefault} ${String(i)}`
+    const c = viewCenter()
+    const { workflow: next, id } = ids.length
+      ? addGroup(workflow, { label: name, nodeIds: ids, sizes: measured })
+      : addGroup(workflow, { label: name, position: { x: c.x - 210, y: c.y - 130 } })
+    commit(next, tc.announce.groupAdded(name))
+    pickItem(id)
+    // Straight into the name, so it can be typed.
+    focusOnCanvas(id, 'input')
+  }
+
+  const removeItem = (id: string) => {
+    const g = workflow.groups?.find((x) => x.id === id)
+    commit(
+      removeCanvasItems(workflow, [id]),
+      g ? tc.announce.ungrouped(g.label || tc.groupDefault) : tc.announce.removed(1),
+    )
+    setItemSel((prev) => new Set([...prev].filter((x) => x !== id)))
+    keepFocus()
+  }
+
+  const recolor = (id: string, color: CanvasColor) => {
+    commit(
+      noteIds.has(id) ? updateNote(workflow, id, { color }) : updateGroup(workflow, id, { color }),
+    )
+  }
+
+  /** Selects what "Find" picked and brings it into view. */
+  const reveal = (id: string, name: string) => {
+    if (isItem(id)) pickItem(id)
+    else {
+      select(id)
+      setMulti(new Set())
+      setItemSel(new Set())
+    }
+    revealed.current = id
+    setFinderOpen(false)
+    setMessage(tc.announce.found(name))
+    void flow.fitView({ nodes: [{ id }], padding: 0.4, maxZoom: 1, duration: 200 })
+  }
+
+  const renameItem = (id: string, text: string) => {
+    commit(
+      noteIds.has(id)
+        ? updateNote(workflow, id, { text })
+        : updateGroup(workflow, id, { label: text }),
+    )
+  }
+  const endGesture = () => {
+    const before = dragStart.current
+    dragStart.current = null
+    if (before && before !== workflow) {
+      setPast((p) => [...p.slice(-99), before])
+      setFuture([])
+    }
+  }
+
+  // Notes and groups, behind the cards (groups lowest). Their handlers go through `items`.
+  // Notes and groups, behind the cards.
+  const itemNodes: CanvasNode[] = (() => {
+    const shared = {
+      readOnly,
+      onResizeStart: () => {
+        dragStart.current = workflow
+      },
+      onResizeEnd: () => {
+        endGesture()
+      },
+    }
+    const frames = (workflow.groups ?? []).map((g): FrameNode => ({
+      id: g.id,
+      type: 'frame',
+      position: g.position,
+      width: g.width,
+      height: g.height,
+      zIndex: -2,
+      dragHandle: '.cl-canvas-drag',
+      selected: itemSel.has(g.id),
+      deletable: !readOnly,
+      // The frame lets clicks through to the canvas; only its header takes the pointer.
+      className: 'group/frame outline-none !pointer-events-none',
+      ariaLabel: tc.groupLabel(
+        g.label || tc.groupDefault,
+        groupMembers(workflow, g.id, measured).length,
+      ),
+      data: {
+        ...shared,
+        group: g,
+        onText: (text: string) => {
+          renameItem(g.id, text)
+        },
+      },
+    }))
+    const notes = (workflow.notes ?? []).map((n): NoteNode => ({
+      id: n.id,
+      type: 'note',
+      position: n.position,
+      width: n.width,
+      height: n.height,
+      zIndex: -1,
+      dragHandle: '.cl-canvas-drag',
+      selected: itemSel.has(n.id),
+      deletable: !readOnly,
+      className: 'group/note outline-none',
+      ariaLabel: tc.noteLabel(n.text.trim().split('\n')[0]?.slice(0, 80) ?? ''),
+      data: {
+        ...shared,
+        note: n,
+        onText: (text: string) => {
+          renameItem(n.id, text)
+        },
+      },
+    }))
+    return [...frames, ...notes]
+  })()
+  const canvasNodes = [...itemNodes, ...rfNodes]
+
   // Undo and redo anywhere in the editor except while typing in a field (which has its own undo);
-  // copy, cut, paste and D (disable) on the canvas.
+  // Ctrl/⌘+F finds; copy, cut, paste, Ctrl/⌘+G (group) and D (disable) on the canvas.
   const history = React.useRef({
     undo,
     redo,
@@ -2478,6 +2746,10 @@ function NodeEditorInner({
     pasteFrom,
     toggleDisabled,
     clipboard,
+    groupSelection,
+    openFinder: () => {
+      setFinderOpen(true)
+    },
   })
   React.useEffect(() => {
     history.current = {
@@ -2489,15 +2761,26 @@ function NodeEditorInner({
       pasteFrom,
       toggleDisabled,
       clipboard,
+      groupSelection,
+      openFinder: () => {
+        setFinderOpen(true)
+      },
     }
   })
   React.useEffect(() => {
     const el = root.current
     if (!el) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (history.current.readOnly || isTyping(e.target)) return
+      if (isTyping(e.target)) return
       const mod = e.metaKey || e.ctrlKey
       const key = e.key.toLowerCase()
+      if (mod && !e.shiftKey && !e.altKey && key === 'f') {
+        // Read-only too: finding changes nothing.
+        e.preventDefault()
+        history.current.openFinder()
+        return
+      }
+      if (history.current.readOnly) return
       if (mod && key === 'z') {
         e.preventDefault()
         if (e.shiftKey) history.current.redo()
@@ -2514,6 +2797,9 @@ function NodeEditorInner({
           e.preventDefault()
           if (key === 'x') h.deleteSelection()
         }
+      } else if (mod && !e.shiftKey && key === 'g') {
+        e.preventDefault()
+        h.groupSelection()
       } else if (mod && key === 'v' && h.clipboard) {
         // What we copied ourselves; otherwise the paste event below reads the system clipboard.
         if (h.pasteFrom(h.clipboard)) e.preventDefault()
@@ -2608,6 +2894,38 @@ function NodeEditorInner({
   }
   const issueTotal = new Set(issues.map((i) => i.nodeId)).size
 
+  const finderItems: CanvasFinderItem[] = [
+    ...workflow.nodes.map((n): CanvasFinderItem => {
+      const kind = map.get(n.type)
+      const name = displayName(n, kind)
+      const kindLabel = kind?.label ?? n.type
+      return {
+        id: n.id,
+        label: name,
+        section: 'nodes',
+        icon: kind?.icon ?? WorkflowIcon,
+        ...(kindLabel !== name ? { hint: kindLabel } : {}),
+      }
+    }),
+    ...(workflow.notes ?? []).map((n): CanvasFinderItem => {
+      const [first = '', ...rest] = n.text.trim().split('\n')
+      const more = rest.join(' ').trim()
+      return {
+        id: n.id,
+        label: first || tc.emptyNote,
+        section: 'notes',
+        icon: StickyNoteIcon,
+        ...(more ? { hint: more } : {}),
+      }
+    }),
+    ...(workflow.groups ?? []).map((g): CanvasFinderItem => ({
+      id: g.id,
+      label: g.label || tc.groupDefault,
+      section: 'groups',
+      icon: GroupIcon,
+    })),
+  ]
+
   const ariaLabelConfig = React.useMemo(
     () => ({
       'node.a11yDescription.default': t.a11y.node,
@@ -2681,6 +2999,27 @@ function NodeEditorInner({
               >
                 <NetworkIcon aria-hidden />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={tc.addNote}
+                onClick={() => {
+                  addNoteAt()
+                }}
+              >
+                <StickyNoteIcon aria-hidden />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={tc.addGroup}
+                aria-keyshortcuts="Control+G Meta+G"
+                onClick={() => {
+                  groupSelection()
+                }}
+              >
+                <GroupIcon aria-hidden />
+              </Button>
             </>
           )}
           <Button
@@ -2713,6 +3052,57 @@ function NodeEditorInner({
           >
             <MaximizeIcon aria-hidden />
           </Button>
+          <Popover
+            open={finderOpen}
+            onOpenChange={(open) => {
+              setFinderOpen(open)
+              if (open) revealed.current = null
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={tc.find}
+                aria-keyshortcuts="Control+F Meta+F"
+                disabled={!finderItems.length}
+              >
+                <SearchIcon aria-hidden />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              className="w-80 p-0"
+              onCloseAutoFocus={(e) => {
+                // On what was found; otherwise back on the button.
+                const id = revealed.current
+                if (!id) return
+                e.preventDefault()
+                focusOnCanvas(id)
+              }}
+            >
+              <CanvasFinder
+                items={finderItems}
+                onPick={(id) => {
+                  reveal(id, finderItems.find((i) => i.id === id)?.label ?? id)
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          {minimap && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={tc.minimap}
+              aria-pressed={mapOn}
+              className="aria-pressed:bg-accent aria-pressed:text-foreground"
+              onClick={() => {
+                setMapPref(!mapOn)
+              }}
+            >
+              <MapIcon aria-hidden />
+            </Button>
+          )}
           {showIssues && issueTotal > 0 && (
             <span className="ml-1 flex items-center gap-1 text-[12px] text-fg-secondary">
               <CircleAlertIcon aria-hidden className="size-3.5 text-warning" />
@@ -2778,8 +3168,8 @@ function NodeEditorInner({
               style={{ height: stacked ? Math.min(height, 420) : height }}
             >
               {width > 0 && (
-                <ReactFlow<CardNode>
-                  nodes={rfNodes}
+                <ReactFlow<CanvasNode>
+                  nodes={canvasNodes}
                   edges={rfEdges}
                   nodeTypes={NODE_TYPES}
                   edgeTypes={EDGE_TYPES}
@@ -2798,12 +3188,18 @@ function NodeEditorInner({
                       kinds,
                     )
                   }
-                  onNodeDragStart={() => {
+                  onNodeDragStart={(_, _node, dragged) => {
                     dragStart.current = workflow
+                    groupDrag.current = new Map(
+                      dragged
+                        .filter((n) => groupIds.has(n.id))
+                        .map((n) => [n.id, groupMembers(workflow, n.id, measured)]),
+                    )
                   }}
                   onNodeDragStop={() => {
                     const before = dragStart.current
                     dragStart.current = null
+                    groupDrag.current = new Map()
                     if (before && before !== workflow) {
                       setPast((p) => [...p.slice(-99), before])
                       setFuture([])
@@ -2812,8 +3208,14 @@ function NodeEditorInner({
                   onPaneClick={() => {
                     select(null)
                     setMulti(new Set())
+                    setItemSel(new Set())
                   }}
                   onNodeContextMenu={(_, n) => {
+                    if (isItem(n.id)) {
+                      setMenu({ item: n.id })
+                      if (!itemSel.has(n.id)) pickItem(n.id)
+                      return
+                    }
                     setMenu({ node: n.id })
                     if (n.id !== selected && !multi.has(n.id)) {
                       select(n.id)
@@ -2837,6 +3239,8 @@ function NodeEditorInner({
                   elementsSelectable
                   deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
                   multiSelectionKeyCode="Shift"
+                  // A selected group must stay behind the cards it frames.
+                  elevateNodesOnSelect={false}
                   fitView
                   fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
                   minZoom={0.15}
@@ -2862,6 +3266,32 @@ function NodeEditorInner({
                     size={1.2}
                     color="var(--color-border-strong)"
                   />
+                  {mapOn && (
+                    <MiniMap<CanvasNode>
+                      pannable
+                      zoomable
+                      position="bottom-right"
+                      ariaLabel={tc.minimap}
+                      nodeBorderRadius={4}
+                      nodeStrokeWidth={2}
+                      nodeColor={(n) =>
+                        n.type === 'note'
+                          ? canvasColorFill(n.data.note.color ?? 'yellow')
+                          : n.type === 'frame'
+                            ? canvasColorFill(n.data.group.color ?? 'neutral')
+                            : n.selected
+                              ? 'var(--color-primary)'
+                              : 'var(--color-border-strong)'
+                      }
+                      nodeStrokeColor={(n) =>
+                        n.type === 'frame' ? 'var(--color-border-strong)' : 'transparent'
+                      }
+                      bgColor="var(--color-card)"
+                      maskColor="color-mix(in oklab, var(--color-inset) 70%, transparent)"
+                      className="!m-2 overflow-hidden rounded-md border border-border shadow-xs"
+                      style={{ width: 168, height: 112 }}
+                    />
+                  )}
                 </ReactFlow>
               )}
               {!workflow.nodes.length && (
@@ -2893,6 +3323,76 @@ function NodeEditorInner({
                 onToggleDisabled={toggleDisabled}
                 onDelete={deleteSelection}
               />
+            ) : null}
+            {menu && 'node' in menu && (
+              <>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  onSelect={() => {
+                    groupSelection(
+                      selection().includes(menu.node)
+                        ? [...selection(), ...[...itemSel].filter((id) => noteIds.has(id))]
+                        : [menu.node],
+                    )
+                  }}
+                >
+                  <GroupIcon aria-hidden />
+                  {tc.group(selection().includes(menu.node) ? selection().length : 1)}
+                  <ContextMenuShortcut>⌘G</ContextMenuShortcut>
+                </ContextMenuItem>
+              </>
+            )}
+            {menu && 'node' in menu ? null : menu && 'item' in menu ? (
+              <>
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>{tc.color}</ContextMenuSubTrigger>
+                  <ContextMenuSubContent className="w-40">
+                    <ContextMenuRadioGroup
+                      value={
+                        workflow.notes?.find((n) => n.id === menu.item)?.color ??
+                        workflow.groups?.find((g) => g.id === menu.item)?.color ??
+                        (noteIds.has(menu.item) ? 'yellow' : 'neutral')
+                      }
+                      onValueChange={(v) => {
+                        const color = CANVAS_COLORS.find((c) => c === v)
+                        if (color) recolor(menu.item, color)
+                      }}
+                    >
+                      {CANVAS_COLORS.map((c) => (
+                        <ContextMenuRadioItem key={c} value={c}>
+                          <span
+                            aria-hidden
+                            className="size-3 shrink-0 rounded-full border border-border-strong"
+                            style={{ background: canvasColorFill(c) }}
+                          />
+                          {tc.colors[c]}
+                        </ContextMenuRadioItem>
+                      ))}
+                    </ContextMenuRadioGroup>
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+                <ContextMenuSeparator />
+                {groupIds.has(menu.item) ? (
+                  <ContextMenuItem
+                    onSelect={() => {
+                      removeItem(menu.item)
+                    }}
+                  >
+                    <UngroupIcon aria-hidden />
+                    {tc.ungroup}
+                  </ContextMenuItem>
+                ) : (
+                  <ContextMenuItem
+                    variant="destructive"
+                    onSelect={() => {
+                      removeItem(menu.item)
+                    }}
+                  >
+                    <Trash2Icon aria-hidden />
+                    {tc.deleteNote}
+                  </ContextMenuItem>
+                )}
+              </>
             ) : menu && 'edge' in menu ? (
               <>
                 <ContextMenuItem
@@ -2937,6 +3437,14 @@ function NodeEditorInner({
                 >
                   <PlusIcon aria-hidden />
                   {t.menu.addHere}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onSelect={() => {
+                    addNoteAt(flow.screenToFlowPosition(menu.pane))
+                  }}
+                >
+                  <StickyNoteIcon aria-hidden />
+                  {tc.addNoteHere}
                 </ContextMenuItem>
                 <ContextMenuItem
                   disabled={!clipboard}

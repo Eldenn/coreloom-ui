@@ -263,6 +263,30 @@ export const signupWorkflow: Workflow = {
   ],
 }
 
+/** The signup flow with a note for the team and the sales steps framed in a group. */
+export const annotatedWorkflow: Workflow = {
+  ...signupWorkflow,
+  groups: [
+    {
+      id: 'group-1',
+      label: 'Sales',
+      color: 'blue',
+      position: { x: 668, y: -68 },
+      width: 664,
+      height: 184,
+    },
+  ],
+  notes: [
+    {
+      id: 'note-1',
+      text: 'Signups come from the website form.\nBusiness emails are enriched, then sales hear about them; everyone gets a welcome email.',
+      position: { x: 0, y: 220 },
+      width: 300,
+      height: 128,
+    },
+  ],
+}
+
 /** The same flow with a step left half set up: the editor flags what's missing. */
 export const unfinishedWorkflow: Workflow = {
   nodes: [
