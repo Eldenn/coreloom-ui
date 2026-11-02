@@ -1,0 +1,45 @@
+<!-- @dsCard group="Blocks" width=1280 height=420 subtitle="spreadsheet block · editable cells · range selection · copy / paste TSV · undo · sum" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Spreadsheet || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const eur = (v, locale) => typeof v === 'number' ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(v) : String(v ?? '');
+      const columns = [
+        { id: 'sku', title: 'SKU', width: 96, readOnly: true },
+        { id: 'product', title: 'Product', width: 200 },
+        { id: 'region', title: 'Region', width: 110 },
+        { id: 'units', title: 'Units', type: 'number', width: 90 },
+        { id: 'price', title: 'Unit price', type: 'number', width: 110, format: eur },
+        { id: 'notes', title: 'Notes', width: 220 },
+      ];
+      const rows0 = [
+        { id: 'r1', sku: 'CL-001', product: 'Starter plan', region: 'EU', units: 128, price: 19 },
+        { id: 'r2', sku: 'CL-002', product: 'Team plan', region: 'EU', units: 64, price: 49, notes: 'Annual' },
+        { id: 'r3', sku: 'CL-003', product: 'Enterprise', region: 'US', units: 6, price: 1200, notes: 'Custom SLA' },
+        { id: 'r4', sku: 'CL-004', product: 'Extra seats', region: 'US', units: 310, price: 9 },
+        { id: 'r5', sku: 'CL-005', product: 'Storage 1 TB', region: 'APAC', units: 42, price: 15 },
+        { id: 'r6', sku: 'CL-006', product: 'Priority support', region: 'EU', units: 18, price: 99, notes: 'Renews in Nov' },
+      ];
+      function Demo() {
+        const [rows, setRows] = React.useState(rows0);
+        return h(UI.Spreadsheet, { columns, rows, onRowsChange: setRows, 'aria-label': 'Q4 sales' });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
