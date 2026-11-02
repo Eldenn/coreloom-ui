@@ -1550,7 +1550,7 @@
       "name": "node-editor",
       "type": "registry:ui",
       "title": "NodeEditor",
-      "description": "An n8n-style canvas on React Flow: the app's node kinds (ports, settings, icon), add from a searchable list, drag, connect output to input, configure and connect from a side panel (the keyboard path), undo/redo, tidy up, zoom, issues flagged, a run's state shown per node. Nothing runs inside.",
+      "description": "An n8n-style canvas on React Flow: the app's node kinds (ports, settings, icon), add from a searchable list, drag, connect output to input, configure and connect from a side panel (the keyboard path), undo/redo, tidy up, zoom, issues flagged, a run's state shown per node; each node's input and output, `{{ }}` expressions with suggestions and a preview, \"Test node\" through a callback, conditions, key/value, JSON and credential fields; pinned sample data, \"+\" on outputs and connections, copy/paste, right-click menus and disabled nodes. Nothing runs inside.",
       "dependencies": ["@xyflow/react@^12", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1564,11 +1564,17 @@
         "@coreloom/select",
         "@coreloom/switch",
         "@coreloom/tags-input",
-        "@coreloom/textarea"
+        "@coreloom/textarea",
+        "@coreloom/tabs",
+        "@coreloom/context-menu"
       ],
       "files": [
         {
           "path": "src/components/ui/node-editor.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/node-editor-fields.tsx",
           "type": "registry:ui"
         }
       ]

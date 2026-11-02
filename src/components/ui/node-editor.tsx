@@ -14,6 +14,7 @@ import {
   type Connection,
   type Edge,
   type EdgeChange,
+  EdgeLabelRenderer,
   type EdgeProps,
   getBezierPath,
   Handle,
@@ -31,13 +32,20 @@ import {
   CheckIcon,
   CircleAlertIcon,
   CircleDotIcon,
+  ClipboardCopyIcon,
+  ClipboardPasteIcon,
   ClockIcon,
   CopyIcon,
   Loader2Icon,
   MaximizeIcon,
   MinusIcon,
   NetworkIcon,
+  PinIcon,
+  PinOffIcon,
+  PlayIcon,
   PlusIcon,
+  PowerIcon,
+  PowerOffIcon,
   Redo2Icon,
   Trash2Icon,
   Undo2Icon,
@@ -57,9 +65,31 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  CodeControl,
+  ConditionsControl,
+  CredentialControl,
+  dataPaths,
+  DataView,
+  ExpressionInput,
+  type ExpressionScope,
+  type ExpressionVariable,
+  jsonError,
+  KeyValueControl,
+  type NodeCredential,
+  NodeFieldsContext,
+  type NodeFieldsEnv,
+} from '@/components/ui/node-editor-fields'
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -68,6 +98,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -104,15 +135,31 @@ interface NodeFieldBase {
   required?: boolean
 }
 
-/** One setting of a node, drawn in the panel. Values live in the node's `data` under `name`. */
+/**
+ * One setting of a node, drawn in the panel. Values live in the node's `data` under `name`. Text
+ * fields take `{{ path }}` expressions unless `expression: false`.
+ */
 type NodeField =
-  | (NodeFieldBase & { type: 'text'; placeholder?: string })
-  | (NodeFieldBase & { type: 'textarea'; placeholder?: string; rows?: number })
+  | (NodeFieldBase & { type: 'text'; placeholder?: string; expression?: boolean })
+  | (NodeFieldBase & {
+      type: 'textarea'
+      placeholder?: string
+      rows?: number
+      expression?: boolean
+    })
   | (NodeFieldBase & { type: 'number'; min?: number; max?: number; step?: number })
   | (NodeFieldBase & { type: 'select'; options: NodeFieldOption[]; placeholder?: string })
   | (NodeFieldBase & { type: 'switch' })
   /** A list of short strings (`string[]`), typed as tags. */
   | (NodeFieldBase & { type: 'list'; placeholder?: string })
+  /** Rules matched all or any: `{ combinator: 'and' | 'or', rules: [{ left, operator, right }] }`. */
+  | (NodeFieldBase & { type: 'conditions' })
+  /** Rows of `{ key, value }` (headers, parameters); values take expressions. */
+  | (NodeFieldBase & { type: 'keyValue'; keyPlaceholder?: string; valuePlaceholder?: string })
+  /** JSON or code as text, monospace. `language: 'json'` (the default) checks it parses. */
+  | (NodeFieldBase & { type: 'code'; language?: string; rows?: number; placeholder?: string })
+  /** The id of one of the app's `credentials` of `credentialType`. */
+  | (NodeFieldBase & { type: 'credential'; credentialType: string })
   | (NodeFieldBase & { type: 'custom'; render: (props: NodeFieldRenderProps) => React.ReactNode })
 
 /** A kind of node the app offers: how it looks, its ports and its settings. */
@@ -148,6 +195,13 @@ interface WorkflowNode {
   /** Shown on the card; defaults to the kind's label. */
   name?: string
   data?: Record<string, unknown>
+  /** Skipped by your run (n8n passes its input straight through); not checked for issues. */
+  disabled?: boolean
+  /**
+   * Sample output pinned to the node: shown under Output and used for the expressions of the nodes
+   * after it while no run reports one. Your app may also use it instead of running the node.
+   */
+  pinned?: unknown
 }
 
 interface WorkflowEdge {
@@ -173,11 +227,31 @@ interface NodeRun {
   status: NodeRunStatus
   /** A short result or error ("3 items", "Timed out"). */
   message?: string
+  /** What the node received: a list of items or one value. Shown under Input. */
+  input?: unknown
+  /** What it gave. Shown under Output; its fields are offered in the `{{ }}` of the nodes after it. */
+  output?: unknown
+}
+
+/** What `onRunNode` gets: the node, and the input it would receive (from the last run or test). */
+interface NodeTestRequest {
+  node: WorkflowNode
+  input: unknown
+  workflow: Workflow
+}
+
+/** What a test of one node gives back. */
+interface NodeTestResult {
+  /** Default: success. */
+  status?: 'success' | 'error'
+  output?: unknown
+  message?: string
 }
 
 /** Something to fix before the workflow can run. `validateWorkflow` returns these. */
 type WorkflowIssue =
   | { nodeId: string; code: 'required'; field: string }
+  | { nodeId: string; code: 'invalid'; field: string }
   | { nodeId: string; code: 'unconnectedInput' }
   | { nodeId: string; code: 'unconnectedOutput'; port: string }
   | { nodeId: string; code: 'tooMany'; max: number }
@@ -217,6 +291,8 @@ const targetPortOf = (e: WorkflowEdge, kinds: Map<string, NodeKind>, wf: Workflo
 /** An id not used yet: "agent", then "agent-2", "agent-3"… Deterministic, so tests can name it. */
 function freeId(base: string, taken: ReadonlySet<string>) {
   const clean = base.replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '') || 'node'
+  // Ids end up as object keys (runs by id): never one an object already has.
+  if (clean in Object.prototype) return freeId(`node-${clean}`, taken)
   if (!taken.has(clean)) return clean
   for (let i = 2; ; i++) if (!taken.has(`${clean}-${String(i)}`)) return `${clean}-${String(i)}`
 }
@@ -340,10 +416,26 @@ function removeEdges(wf: Workflow, ids: readonly string[]): Workflow {
 function updateNode(
   wf: Workflow,
   id: string,
-  patch: { name?: string; data?: Record<string, unknown>; position?: { x: number; y: number } },
+  patch: {
+    name?: string | undefined
+    data?: Record<string, unknown>
+    position?: { x: number; y: number }
+    disabled?: boolean | undefined
+    /** `undefined` unpins. */
+    pinned?: unknown
+  },
   kinds: readonly NodeKind[] = [],
 ): Workflow {
-  const nodes = wf.nodes.map((n) => (n.id === id ? { ...n, ...patch } : n))
+  const nodes = wf.nodes.map((n) => {
+    if (n.id !== id) return n
+    // A patch of `undefined` (or `disabled: false`) removes the key, so the graph stays plain JSON.
+    const { name, disabled, pinned, ...rest } = { ...n, ...patch }
+    const next: WorkflowNode = rest
+    if (name !== undefined) next.name = name
+    if (disabled) next.disabled = true
+    if (pinned !== undefined) next.pinned = pinned
+    return next
+  })
   const node = nodes.find((n) => n.id === id)
   if (!node || !patch.data || !kinds.length) return { ...wf, nodes }
   const map = kindMap(kinds)
@@ -384,6 +476,143 @@ function duplicateNode(wf: Workflow, id: string, kinds: readonly NodeKind[] = []
     data: structuredClone(n.data ?? {}),
   }
   return { workflow: { ...wf, nodes: [...wf.nodes, copy] }, id: copyId }
+}
+
+/**
+ * Puts a new node of `kind` on a connection: the connection's source now leads to the new node,
+ * and the new node to the connection's target. The node lands halfway between the two.
+ */
+function insertNodeOnEdge(
+  wf: Workflow,
+  kind: NodeKind,
+  edgeId: string,
+  kinds: readonly NodeKind[] = [kind],
+): { workflow: Workflow; id: string } {
+  const edge = wf.edges.find((e) => e.id === edgeId)
+  const map = kindMap(kinds)
+  const a = edge ? wf.nodes.find((n) => n.id === edge.source) : undefined
+  const b = edge ? wf.nodes.find((n) => n.id === edge.target) : undefined
+  if (!edge || !a || !b) return addNode(wf, kind, { kinds })
+  const position = {
+    x: Math.round((a.position.x + b.position.x) / 2),
+    y: Math.round((a.position.y + b.position.y) / 2) + 24,
+  }
+  const sourcePort = sourcePortOf(edge, map, wf)
+  const targetPort = targetPortOf(edge, map, wf)
+  const added = addNode(removeEdges(wf, [edgeId]), kind, { position, kinds })
+  const ports = nodePorts(kind, kind.defaults)
+  let next = added.workflow
+  if (ports.inputs.length)
+    next = connectNodes(
+      next,
+      {
+        source: a.id,
+        ...(sourcePort !== undefined ? { sourcePort } : {}),
+        target: added.id,
+      },
+      kinds,
+    )
+  if (ports.outputs.length)
+    next = connectNodes(
+      next,
+      { source: added.id, target: b.id, ...(targetPort !== undefined ? { targetPort } : {}) },
+      kinds,
+    )
+  return { workflow: next, id: added.id }
+}
+
+/** What Copy puts on the clipboard: the nodes and the connections between them. */
+interface WorkflowClipboard {
+  coreloom: 'workflow'
+  nodes: WorkflowNode[]
+  edges: WorkflowEdge[]
+}
+
+function copyNodes(wf: Workflow, ids: readonly string[]): WorkflowClipboard {
+  const keep = new Set(ids)
+  return {
+    coreloom: 'workflow',
+    nodes: structuredClone(wf.nodes.filter((n) => keep.has(n.id))),
+    edges: structuredClone(wf.edges.filter((e) => keep.has(e.source) && keep.has(e.target))),
+  }
+}
+
+const isRecordValue = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/**
+ * Pastes what `copyNodes` gave (or its JSON, from another tab): new ids, names that don't clash,
+ * shifted by `offset`. Untrusted input: nodes of unknown kinds, past a kind's `max`, or not shaped
+ * like a node are left out. Returns the new ids, empty when nothing could be pasted.
+ */
+function pasteNodes(
+  wf: Workflow,
+  clip: unknown,
+  kinds: readonly NodeKind[],
+  offset = { x: 40, y: 40 },
+): { workflow: Workflow; ids: string[] } {
+  let parsed = clip
+  if (typeof clip === 'string') {
+    try {
+      parsed = JSON.parse(clip)
+    } catch {
+      return { workflow: wf, ids: [] }
+    }
+  }
+  if (!isRecordValue(parsed) || parsed.coreloom !== 'workflow' || !Array.isArray(parsed.nodes))
+    return { workflow: wf, ids: [] }
+  const map = kindMap(kinds)
+  const ids = new Set(wf.nodes.map((n) => n.id))
+  const names = new Set(wf.nodes.map((n) => displayName(n, map.get(n.type))))
+  const counts = new Map<string, number>()
+  for (const n of wf.nodes) counts.set(n.type, (counts.get(n.type) ?? 0) + 1)
+  const renamed = new Map<string, string>()
+  const nodes: WorkflowNode[] = []
+  for (const raw of parsed.nodes as unknown[]) {
+    if (!isRecordValue(raw) || typeof raw.id !== 'string' || typeof raw.type !== 'string') continue
+    const kind = map.get(raw.type)
+    const pos = raw.position
+    if (!kind || !isRecordValue(pos) || typeof pos.x !== 'number' || typeof pos.y !== 'number')
+      continue
+    const count = counts.get(kind.type) ?? 0
+    if (kind.max !== undefined && count >= kind.max) continue
+    counts.set(kind.type, count + 1)
+    const id = freeId(raw.id, ids)
+    ids.add(id)
+    renamed.set(raw.id, id)
+    const base = typeof raw.name === 'string' ? raw.name : kind.label
+    const name = freeName(base, names)
+    names.add(name)
+    const node: WorkflowNode = {
+      id,
+      type: kind.type,
+      position: { x: pos.x + offset.x, y: pos.y + offset.y },
+      data: isRecordValue(raw.data) ? structuredClone(raw.data) : { ...kind.defaults },
+    }
+    if (name !== kind.label) node.name = name
+    if (raw.disabled === true) node.disabled = true
+    if (raw.pinned !== undefined) node.pinned = structuredClone(raw.pinned)
+    nodes.push(node)
+  }
+  let next: Workflow = { ...wf, nodes: [...wf.nodes, ...nodes] }
+  for (const raw of Array.isArray(parsed.edges) ? (parsed.edges as unknown[]) : []) {
+    if (!isRecordValue(raw) || typeof raw.source !== 'string' || typeof raw.target !== 'string')
+      continue
+    const source = renamed.get(raw.source)
+    const target = renamed.get(raw.target)
+    if (source === undefined || target === undefined) continue
+    next = connectNodes(
+      next,
+      {
+        source,
+        target,
+        ...(typeof raw.sourcePort === 'string' ? { sourcePort: raw.sourcePort } : {}),
+        ...(typeof raw.targetPort === 'string' ? { targetPort: raw.targetPort } : {}),
+      },
+      kinds,
+    )
+  }
+  return { workflow: next, ids: nodes.map((n) => n.id) }
 }
 
 /**
@@ -467,6 +696,29 @@ const isEmptyValue = (v: unknown) =>
   (typeof v === 'string' && !v.trim()) ||
   (Array.isArray(v) && v.length === 0)
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** Empty for a field: a conditions field without a rule, key/value rows without a key… */
+function isFieldEmpty(field: NodeField, v: unknown) {
+  if (field.type === 'conditions')
+    return !(
+      isRecord(v) &&
+      Array.isArray(v.rules) &&
+      (v.rules as unknown[]).some((r) => isRecord(r) && typeof r.left === 'string' && r.left.trim())
+    )
+  if (field.type === 'keyValue')
+    return !(
+      Array.isArray(v) &&
+      (v as unknown[]).some((r) => isRecord(r) && typeof r.key === 'string' && r.key.trim())
+    )
+  return isEmptyValue(v)
+}
+
+/** A setting that is there but wrong: JSON that doesn't parse. */
+const isFieldInvalid = (field: NodeField, v: unknown) =>
+  field.type === 'code' && (field.language ?? 'json') === 'json' && jsonError(v) !== null
+
 /**
  * What to fix before running: required settings left empty, nodes nothing leads to, named outputs
  * (routes) left unconnected, more nodes of a kind than its `max`.
@@ -478,9 +730,16 @@ function validateWorkflow(wf: Workflow, kinds: readonly NodeKind[]): WorkflowIss
   for (const n of wf.nodes) {
     const kind = map.get(n.type)
     const data = n.data ?? EMPTY
+    counts.set(n.type, (counts.get(n.type) ?? 0) + 1)
+    const max = kind?.max
+    if (max !== undefined && (counts.get(n.type) ?? 0) > max)
+      issues.push({ nodeId: n.id, code: 'tooMany', max })
+    if (n.disabled) continue
     for (const f of kind?.fields ?? [])
-      if (f.required && isEmptyValue(data[f.name]))
+      if (f.required && isFieldEmpty(f, data[f.name]))
         issues.push({ nodeId: n.id, code: 'required', field: f.name })
+      else if (isFieldInvalid(f, data[f.name]))
+        issues.push({ nodeId: n.id, code: 'invalid', field: f.name })
     const { inputs, outputs } = nodePorts(kind, data)
     if (inputs.length && !wf.edges.some((e) => e.target === n.id))
       issues.push({ nodeId: n.id, code: 'unconnectedInput' })
@@ -488,10 +747,6 @@ function validateWorkflow(wf: Workflow, kinds: readonly NodeKind[]): WorkflowIss
       for (const p of outputs)
         if (!wf.edges.some((e) => e.source === n.id && sourcePortOf(e, map, wf) === p.id))
           issues.push({ nodeId: n.id, code: 'unconnectedOutput', port: p.id })
-    counts.set(n.type, (counts.get(n.type) ?? 0) + 1)
-    const max = kind?.max
-    if (max !== undefined && (counts.get(n.type) ?? 0) > max)
-      issues.push({ nodeId: n.id, code: 'tooMany', max })
   }
   return issues
 }
@@ -513,6 +768,9 @@ interface CardData extends Record<string, unknown> {
   run: NodeRun | undefined
   issues: string[]
   readOnly: boolean
+  /** Outputs nothing leaves from: they get a "+" that adds a node after them. */
+  openOutputs: string[]
+  onAddAfter?: ((port: string, from: HTMLElement) => void) | undefined
 }
 
 type CardNode = Node<CardData, 'card'>
@@ -522,7 +780,21 @@ const handleClass =
 
 function NodeCard({ data, selected }: NodeProps<CardNode>) {
   const t = useCoreloomI18n().messages.nodeEditor
-  const { node, kind, name, inputs, outputs, run, issues, readOnly } = data
+  const { node, kind, name, inputs, outputs, run, issues, readOnly, openOutputs, onAddAfter } = data
+  const plus = (p: NodePort, many: boolean) =>
+    onAddAfter && openOutputs.includes(p.id) ? (
+      <button
+        type="button"
+        aria-label={many ? t.addAfterPort(name, p.label ?? p.id) : t.addAfter(name)}
+        onClick={(e) => {
+          e.stopPropagation()
+          onAddAfter(p.id, e.currentTarget)
+        }}
+        className="nodrag nopan absolute top-1/2 -right-9 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground outline-none hover:border-primary hover:text-primary-text focus-visible:ring-[3px] focus-visible:ring-ring"
+      >
+        <PlusIcon aria-hidden className="size-3" />
+      </button>
+    ) : null
   const Icon = kind?.icon ?? WorkflowIcon
   const summary = kind?.summary?.(node.data ?? EMPTY)
   const trigger = inputs.length === 0
@@ -532,6 +804,7 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
     <div
       className={cn(
         'relative rounded-lg border bg-card text-left shadow-xs transition-[border-color,box-shadow] duration-150 group-focus-visible/node:ring-[3px] group-focus-visible/node:ring-ring',
+        node.disabled && 'opacity-60',
         selected
           ? 'border-primary ring-2 ring-primary/40'
           : run?.status === 'error'
@@ -562,10 +835,19 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
             </span>
           )}
         </span>
+        {node.pinned !== undefined && (
+          <PinIcon aria-hidden className="size-3.5 shrink-0 text-primary-text" />
+        )}
         {issues.length > 0 && (
           <CircleAlertIcon aria-hidden className="size-4 shrink-0 text-warning" />
         )}
       </div>
+      {node.disabled && (
+        <p className="m-0 flex items-center gap-1.5 border-t border-border-subtle px-3 py-1.5 text-[12px] text-muted-foreground">
+          <PowerOffIcon aria-hidden className="size-3.5 shrink-0" />
+          {t.disabled}
+        </p>
+      )}
       {summary && (
         <p className="m-0 truncate border-t border-border-subtle px-3 py-1.5 text-[12px] text-fg-secondary">
           {summary}
@@ -625,6 +907,7 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
                   isConnectable={!readOnly}
                   className={handleClass}
                 />
+                {plus(p, true)}
               </li>
             ))}
           </ul>
@@ -649,6 +932,7 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
               className={handleClass}
             />
           )}
+          {outputs[0] && plus(outputs[0], false)}
         </>
       )}
     </div>
@@ -691,7 +975,15 @@ function roundedPath(points: { x: number; y: number }[], r = 10) {
  * A connection. Forward it's a curve; when it goes back to an earlier node (a loop: tools back to
  * the agent) it runs below both cards instead of across them.
  */
+interface FlowEdgeData extends Record<string, unknown> {
+  /** Shows the "+" (the connection is hovered or selected). */
+  show: boolean
+  label: string
+  onInsert?: ((from: HTMLElement) => void) | undefined
+}
+
 function FlowEdge({
+  data,
   source,
   target,
   sourceX,
@@ -707,12 +999,23 @@ function FlowEdge({
   const a = useInternalNode(source)
   const b = useInternalNode(target)
   let path: string
+  let mid: { x: number; y: number }
   if (targetX >= sourceX + 24 || !a || !b) {
-    ;[path] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition })
+    const [p, lx, ly] = getBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    })
+    path = p
+    mid = { x: lx, y: ly }
   } else {
     const bottom = (n: NonNullable<typeof a>) =>
       n.internals.positionAbsolute.y + (n.measured.height ?? 0)
     const below = Math.max(bottom(a), bottom(b)) + 28
+    mid = { x: (sourceX + targetX) / 2, y: below }
     path = roundedPath([
       { x: sourceX, y: sourceY },
       { x: sourceX + 24, y: sourceY },
@@ -722,13 +1025,37 @@ function FlowEdge({
       { x: targetX, y: targetY },
     ])
   }
+  const edgeData = data as FlowEdgeData | undefined
+  const onInsert = edgeData?.onInsert
   return (
-    <BaseEdge
-      path={path}
-      {...(markerEnd ? { markerEnd } : {})}
-      {...(style ? { style } : {})}
-      {...(interactionWidth !== undefined ? { interactionWidth } : {})}
-    />
+    <>
+      <BaseEdge
+        path={path}
+        {...(markerEnd ? { markerEnd } : {})}
+        {...(style ? { style } : {})}
+        {...(interactionWidth !== undefined ? { interactionWidth } : {})}
+      />
+      {onInsert && (
+        <EdgeLabelRenderer>
+          <button
+            type="button"
+            aria-label={edgeData.label}
+            onClick={(e) => {
+              onInsert(e.currentTarget)
+            }}
+            style={{
+              transform: `translate(-50%, -50%) translate(${String(mid.x)}px, ${String(mid.y)}px)`,
+            }}
+            className={cn(
+              'nodrag nopan pointer-events-auto absolute top-0 left-0 flex size-5 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground transition-opacity duration-100 outline-none hover:border-primary hover:text-primary-text hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring motion-reduce:transition-none',
+              edgeData.show ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            <PlusIcon aria-hidden className="size-3" />
+          </button>
+        </EdgeLabelRenderer>
+      )}
+    </>
   )
 }
 
@@ -811,6 +1138,18 @@ function FieldControl({
   }
   switch (field.type) {
     case 'text':
+      if (field.expression !== false)
+        return (
+          <ExpressionInput
+            id={id}
+            value={typeof value === 'string' ? value : ''}
+            placeholder={field.placeholder}
+            readOnly={readOnly}
+            onValueChange={onChange}
+            aria-invalid={aria['aria-invalid']}
+            aria-describedby={describedBy}
+          />
+        )
       return (
         <Input
           id={id}
@@ -825,6 +1164,20 @@ function FieldControl({
         />
       )
     case 'textarea':
+      if (field.expression !== false)
+        return (
+          <ExpressionInput
+            id={id}
+            multiline
+            rows={field.rows}
+            value={typeof value === 'string' ? value : ''}
+            placeholder={field.placeholder}
+            readOnly={readOnly}
+            onValueChange={onChange}
+            aria-invalid={aria['aria-invalid']}
+            aria-describedby={describedBy}
+          />
+        )
       return (
         <Textarea
           id={id}
@@ -904,6 +1257,57 @@ function FieldControl({
           {...aria}
         />
       )
+    case 'conditions':
+      return (
+        <ConditionsControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          describedBy={describedBy}
+        />
+      )
+    case 'keyValue':
+      return (
+        <KeyValueControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          describedBy={describedBy}
+          keyPlaceholder={field.keyPlaceholder}
+          valuePlaceholder={field.valuePlaceholder}
+        />
+      )
+    case 'code':
+      return (
+        <CodeControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          invalid={invalid}
+          describedBy={describedBy}
+          rows={field.rows}
+          placeholder={field.placeholder}
+        />
+      )
+    case 'credential':
+      return (
+        <CredentialControl
+          id={id}
+          labelId={labelId}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          invalid={invalid}
+          describedBy={describedBy}
+          credentialType={field.credentialType}
+        />
+      )
     case 'custom':
       return field.render({ id, labelId, value, onChange, invalid, describedBy, data })
   }
@@ -920,17 +1324,23 @@ function NodeInspector({
   onChange,
   onDelete,
   onDuplicate,
+  input,
+  onTest,
   className,
 }: {
   workflow: Workflow
   node: WorkflowNode
   kinds: readonly NodeKind[]
-  run?: NodeRun
+  run?: NodeRun | undefined
   issues: WorkflowIssue[]
   readOnly: boolean
   onChange: (next: Workflow, announce?: string) => void
   onDelete: () => void
   onDuplicate?: () => void
+  /** What the node receives (its last run's input, or the output of the node before it). */
+  input?: unknown
+  /** Runs this node alone; shown as "Test node". */
+  onTest?: (() => Promise<unknown>) | undefined
   className?: string
 }) {
   const t = useCoreloomI18n().messages.nodeEditor
@@ -947,7 +1357,9 @@ function NodeInspector({
   const Icon = kind?.icon ?? WorkflowIcon
   const Run = run ? RUN[run.status] : null
   const issueText = useIssueText(kinds)
-  const nodeIssues = issues.filter((i) => i.nodeId === node.id && i.code !== 'required')
+  const nodeIssues = issues.filter(
+    (i) => i.nodeId === node.id && i.code !== 'required' && i.code !== 'invalid',
+  )
   const outgoing = (port: string) =>
     workflow.edges.filter((e) => e.source === node.id && sourcePortOf(e, map, workflow) === port)
   const incoming = workflow.edges.filter((e) => e.target === node.id)
@@ -958,9 +1370,31 @@ function NodeInspector({
   const atMax =
     kind?.max !== undefined && workflow.nodes.filter((n) => n.type === node.type).length >= kind.max
   const removable = kind?.removable !== false
+  const [tab, setTab] = React.useState('settings')
+  const testing = run?.status === 'running'
+  const runOutput = run?.output
+  const output = runOutput ?? node.pinned
+  const showingPinned = runOutput === undefined && node.pinned !== undefined
+  const [sample, setSample] = React.useState<string | null>(null)
+  const sampleError = sample?.trim() ? jsonError(sample) : null
+  const sampleId = `${baseId}-sample`
+  const editSample = () => {
+    setSample(output === undefined ? '' : JSON.stringify(output, null, 2))
+    requestAnimationFrame(() => document.getElementById(sampleId)?.focus())
+  }
+  const pin = (value: unknown) => {
+    onChange(
+      updateNode(workflow, node.id, { pinned: value }, kinds),
+      value === undefined ? t.announce.unpinned(name) : t.announce.pinned(name),
+    )
+  }
+  // Dragging a field from Input over the Settings tab opens it, so the field can be dropped in a setting.
+  const openSettingsOnDrag = (e: React.DragEvent) => {
+    if (tab !== 'settings' && e.dataTransfer.types.includes('text/plain')) setTab('settings')
+  }
 
   return (
-    <div data-slot="node-inspector" className={cn('flex min-w-0 flex-col gap-5 p-4', className)}>
+    <div data-slot="node-inspector" className={cn('flex min-w-0 flex-col gap-4 p-4', className)}>
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden
@@ -976,203 +1410,444 @@ function NodeInspector({
         </div>
       </div>
 
-      {Run && run && (
-        <p className={cn('m-0 flex items-center gap-1.5 text-[12.5px]', Run.className)}>
-          <Run.icon aria-hidden className={cn('size-3.5', Run.spin && 'animate-spin')} />
-          {t.run[run.status]}
-          {run.message ? ` · ${run.message}` : ''}
-        </p>
-      )}
-
-      {nodeIssues.length > 0 && (
-        <ul className="m-0 flex list-none flex-col gap-1 rounded-md bg-warning-subtle p-2.5 text-[12.5px] text-foreground">
-          {nodeIssues.map((i) => (
-            <li key={`${i.code}-${'port' in i ? i.port : ''}`} className="flex items-start gap-1.5">
-              <CircleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-warning" />
-              {issueText(i, workflow)}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <FieldGroup className="gap-4">
-        <Field>
-          <FieldLabel htmlFor={`${baseId}-name`}>{t.name}</FieldLabel>
-          <Input
-            id={`${baseId}-name`}
-            value={node.name ?? ''}
-            placeholder={kind?.label}
-            readOnly={readOnly}
-            autoComplete="off"
-            onChange={(e) => {
-              onChange(updateNode(workflow, node.id, { name: e.target.value || undefined }, kinds))
-            }}
-          />
-        </Field>
-        {(kind?.fields ?? []).map((f) => {
-          const id = `${baseId}-f-${f.name}`
-          const missing = f.required === true && isEmptyValue(data[f.name])
-          const described =
-            [f.description ? `${id}-desc` : '', missing ? `${id}-err` : '']
-              .filter(Boolean)
-              .join(' ') || undefined
-          const control = (
-            <FieldControl
-              field={f}
-              id={id}
-              labelId={`${id}-label`}
-              describedBy={described}
-              invalid={missing}
-              data={data}
-              readOnly={readOnly}
-              onChange={(v) => {
-                onChange(updateNode(workflow, node.id, { data: { ...data, [f.name]: v } }, kinds))
-              }}
-            />
-          )
-          return f.type === 'switch' ? (
-            <Field key={f.name} orientation="horizontal">
-              {control}
-              <div className="flex flex-col gap-0.5">
-                <FieldLabel id={`${id}-label`} htmlFor={id}>
-                  {f.label}
-                </FieldLabel>
-                {f.description && (
-                  <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
-                )}
-              </div>
-            </Field>
+      {(Run && run) || onTest ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {Run && run ? (
+            <p className={cn('m-0 flex items-center gap-1.5 text-[12.5px]', Run.className)}>
+              <Run.icon aria-hidden className={cn('size-3.5', Run.spin && 'animate-spin')} />
+              {t.run[run.status]}
+              {run.message ? ` · ${run.message}` : ''}
+            </p>
           ) : (
-            <Field key={f.name}>
-              <FieldLabel id={`${id}-label`} htmlFor={id}>
-                {f.label}
-                {f.required && <span className="sr-only"> ({t.requiredMark})</span>}
-              </FieldLabel>
-              {control}
-              {f.description && (
-                <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
-              )}
-              {missing && (
-                <p id={`${id}-err`} className="m-0 text-[11px] text-destructive">
-                  {t.required}
-                </p>
-              )}
-            </Field>
-          )
-        })}
-      </FieldGroup>
-
-      <div className="flex flex-col gap-3">
-        <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-          {t.connections}
-        </p>
-        {inputs.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <p className="m-0 text-[12.5px] font-medium text-fg-secondary">{t.comesFrom}</p>
-            {incoming.length ? (
-              <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-                {incoming.map((e) => (
-                  <ConnectionChip
-                    key={e.id}
-                    label={nameOf(e.source)}
-                    removeLabel={t.removeConnection(nameOf(e.source), name)}
-                    readOnly={readOnly}
-                    onRemove={() => {
-                      onChange(
-                        removeEdges(workflow, [e.id]),
-                        t.announce.disconnected(nameOf(e.source), name),
-                      )
-                    }}
-                  />
-                ))}
-              </ul>
-            ) : (
-              <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
-            )}
-          </div>
-        )}
-        {outputs.map((p) => {
-          const out = outgoing(p.id)
-          const options = targets.filter((n) => !out.some((e) => e.target === n.id))
-          const selectId = `${baseId}-to-${p.id}`
-          return (
-            <div key={p.id} className="flex flex-col gap-1.5">
-              <p
-                id={`${selectId}-label`}
-                className="m-0 text-[12.5px] font-medium text-fg-secondary"
-              >
-                {outputs.length > 1 ? t.outputTo(p.label ?? p.id) : t.goesTo}
-              </p>
-              {out.length > 0 && (
-                <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-                  {out.map((e) => (
-                    <ConnectionChip
-                      key={e.id}
-                      label={nameOf(e.target)}
-                      removeLabel={t.removeConnection(name, nameOf(e.target))}
-                      readOnly={readOnly}
-                      onRemove={() => {
-                        onChange(
-                          removeEdges(workflow, [e.id]),
-                          t.announce.disconnected(name, nameOf(e.target)),
-                        )
-                      }}
-                    />
-                  ))}
-                </ul>
-              )}
-              {!readOnly && options.length > 0 && (
-                <Select
-                  value=""
-                  onValueChange={(target) => {
-                    onChange(
-                      connectNodes(workflow, { source: node.id, sourcePort: p.id, target }, kinds),
-                      t.announce.connected(name, nameOf(target)),
-                    )
-                  }}
-                >
-                  <SelectTrigger
-                    size="sm"
-                    className="w-full"
-                    aria-labelledby={`${selectId}-label ${selectId}`}
-                    id={selectId}
-                  >
-                    <SelectValue placeholder={t.connectTo} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((n) => (
-                      <SelectItem key={n.id} value={n.id}>
-                        {displayName(n, map.get(n.type))}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {readOnly && out.length === 0 && (
-                <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {!readOnly && (
-        <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
-          {onDuplicate && (
-            <Button variant="outline" size="sm" disabled={atMax} onClick={onDuplicate}>
-              <CopyIcon aria-hidden />
-              {t.duplicate}
-            </Button>
+            <span />
           )}
-          {removable && (
-            <Button variant="destructive" size="sm" onClick={onDelete}>
-              <Trash2Icon aria-hidden />
-              {t.remove}
+          {onTest && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={testing}
+              aria-busy={testing || undefined}
+              onClick={() => {
+                void onTest().then(() => {
+                  setTab('output')
+                })
+              }}
+            >
+              {testing ? (
+                <Loader2Icon aria-hidden className="animate-spin" />
+              ) : (
+                <PlayIcon aria-hidden />
+              )}
+              {testing ? t.testing : t.test}
             </Button>
           )}
         </div>
-      )}
+      ) : null}
+
+      <Tabs value={tab} onValueChange={setTab} className="gap-4">
+        <TabsList
+          variant="line"
+          className="w-full justify-start gap-4 border-b border-border-subtle"
+        >
+          <TabsTrigger value="settings" onDragEnter={openSettingsOnDrag}>
+            {t.settingsTab}
+          </TabsTrigger>
+          <TabsTrigger value="input">{t.inputTab}</TabsTrigger>
+          <TabsTrigger value="output">{t.outputTab}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="input" className="outline-none">
+          {input === undefined ? (
+            <p className="m-0 text-[12.5px] text-muted-foreground">
+              {inputs.length ? t.noInput : t.noInputTrigger}
+            </p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {!readOnly && <p className="m-0 text-[12px] text-muted-foreground">{t.dragHint}</p>}
+              <DataView value={input} draggable={!readOnly} />
+            </div>
+          )}
+        </TabsContent>
+        <TabsContent value="output" className="flex flex-col gap-3 outline-none">
+          {sample !== null ? (
+            <Field>
+              <FieldLabel htmlFor={sampleId}>{t.sample.label}</FieldLabel>
+              <Textarea
+                id={sampleId}
+                value={sample}
+                rows={8}
+                spellCheck={false}
+                className="font-mono text-[12.5px] leading-5"
+                aria-invalid={sampleError ? true : undefined}
+                aria-describedby={`${sampleId}-hint`}
+                onChange={(e) => {
+                  setSample(e.target.value)
+                }}
+              />
+              <FieldDescription id={`${sampleId}-hint`}>
+                {sampleError ? t.invalidJson : t.sample.hint}
+              </FieldDescription>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={sampleError !== null}
+                  onClick={() => {
+                    const text = sample.trim()
+                    pin(text ? (JSON.parse(text) as unknown) : undefined)
+                    setSample(null)
+                  }}
+                >
+                  {t.sample.save}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setSample(null)
+                  }}
+                >
+                  {t.sample.cancel}
+                </Button>
+              </div>
+            </Field>
+          ) : (
+            <>
+              {showingPinned && (
+                <p className="m-0 flex items-center gap-1.5 text-[12.5px] text-primary-text">
+                  <PinIcon aria-hidden className="size-3.5 shrink-0" />
+                  {t.sample.showing}
+                </p>
+              )}
+              {output === undefined ? (
+                <p className="m-0 text-[12.5px] text-muted-foreground">
+                  {onTest ? t.noOutputTest : t.noOutput}
+                </p>
+              ) : (
+                <DataView value={output} />
+              )}
+              {!readOnly && (
+                <div className="flex flex-wrap gap-2">
+                  {runOutput !== undefined && node.pinned === undefined && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        pin(structuredClone(runOutput))
+                      }}
+                    >
+                      <PinIcon aria-hidden />
+                      {t.sample.pin}
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={editSample}>
+                    {node.pinned !== undefined ? t.sample.edit : t.sample.add}
+                  </Button>
+                  {node.pinned !== undefined && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        pin(undefined)
+                      }}
+                    >
+                      <PinOffIcon aria-hidden />
+                      {t.sample.unpin}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="settings" className="flex flex-col gap-5 outline-none">
+          {nodeIssues.length > 0 && (
+            <ul className="m-0 flex list-none flex-col gap-1 rounded-md bg-warning-subtle p-2.5 text-[12.5px] text-foreground">
+              {nodeIssues.map((i) => (
+                <li
+                  key={`${i.code}-${'port' in i ? i.port : ''}`}
+                  className="flex items-start gap-1.5"
+                >
+                  <CircleAlertIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-warning" />
+                  {issueText(i, workflow)}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <FieldGroup className="gap-4">
+            <Field>
+              <FieldLabel htmlFor={`${baseId}-name`}>{t.name}</FieldLabel>
+              <Input
+                id={`${baseId}-name`}
+                value={node.name ?? ''}
+                placeholder={kind?.label}
+                readOnly={readOnly}
+                autoComplete="off"
+                onChange={(e) => {
+                  onChange(
+                    updateNode(workflow, node.id, { name: e.target.value || undefined }, kinds),
+                  )
+                }}
+              />
+            </Field>
+            {(kind?.fields ?? []).map((f) => {
+              const id = `${baseId}-f-${f.name}`
+              const missing = f.required === true && isFieldEmpty(f, data[f.name])
+              const wrong = !missing && isFieldInvalid(f, data[f.name])
+              const grouped = f.type === 'conditions' || f.type === 'keyValue'
+              const described =
+                [f.description ? `${id}-desc` : '', missing || wrong ? `${id}-err` : '']
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              const control = (
+                <FieldControl
+                  field={f}
+                  id={id}
+                  labelId={`${id}-label`}
+                  describedBy={described}
+                  invalid={missing || wrong}
+                  data={data}
+                  readOnly={readOnly}
+                  onChange={(v) => {
+                    onChange(
+                      updateNode(workflow, node.id, { data: { ...data, [f.name]: v } }, kinds),
+                    )
+                  }}
+                />
+              )
+              return f.type === 'switch' ? (
+                <Field key={f.name} orientation="horizontal">
+                  {control}
+                  <div className="flex flex-col gap-0.5">
+                    <FieldLabel id={`${id}-label`} htmlFor={id}>
+                      {f.label}
+                    </FieldLabel>
+                    {f.description && (
+                      <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
+                    )}
+                  </div>
+                </Field>
+              ) : (
+                <Field key={f.name}>
+                  <FieldLabel id={`${id}-label`} htmlFor={grouped ? undefined : id}>
+                    {f.label}
+                    {f.required && <span className="sr-only"> ({t.requiredMark})</span>}
+                  </FieldLabel>
+                  {control}
+                  {f.description && (
+                    <FieldDescription id={`${id}-desc`}>{f.description}</FieldDescription>
+                  )}
+                  {missing || wrong ? (
+                    <p id={`${id}-err`} className="m-0 text-[11px] text-destructive">
+                      {missing ? t.required : t.invalidJson}
+                    </p>
+                  ) : null}
+                </Field>
+              )
+            })}
+          </FieldGroup>
+
+          <div className="flex flex-col gap-3">
+            <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+              {t.connections}
+            </p>
+            {inputs.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <p className="m-0 text-[12.5px] font-medium text-fg-secondary">{t.comesFrom}</p>
+                {incoming.length ? (
+                  <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                    {incoming.map((e) => (
+                      <ConnectionChip
+                        key={e.id}
+                        label={nameOf(e.source)}
+                        removeLabel={t.removeConnection(nameOf(e.source), name)}
+                        readOnly={readOnly}
+                        onRemove={() => {
+                          onChange(
+                            removeEdges(workflow, [e.id]),
+                            t.announce.disconnected(nameOf(e.source), name),
+                          )
+                        }}
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
+                )}
+              </div>
+            )}
+            {outputs.map((p) => {
+              const out = outgoing(p.id)
+              const options = targets.filter((n) => !out.some((e) => e.target === n.id))
+              const selectId = `${baseId}-to-${p.id}`
+              return (
+                <div key={p.id} className="flex flex-col gap-1.5">
+                  <p
+                    id={`${selectId}-label`}
+                    className="m-0 text-[12.5px] font-medium text-fg-secondary"
+                  >
+                    {outputs.length > 1 ? t.outputTo(p.label ?? p.id) : t.goesTo}
+                  </p>
+                  {out.length > 0 && (
+                    <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                      {out.map((e) => (
+                        <ConnectionChip
+                          key={e.id}
+                          label={nameOf(e.target)}
+                          removeLabel={t.removeConnection(name, nameOf(e.target))}
+                          readOnly={readOnly}
+                          onRemove={() => {
+                            onChange(
+                              removeEdges(workflow, [e.id]),
+                              t.announce.disconnected(name, nameOf(e.target)),
+                            )
+                          }}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                  {!readOnly && options.length > 0 && (
+                    <Select
+                      value=""
+                      onValueChange={(target) => {
+                        onChange(
+                          connectNodes(
+                            workflow,
+                            { source: node.id, sourcePort: p.id, target },
+                            kinds,
+                          ),
+                          t.announce.connected(name, nameOf(target)),
+                        )
+                      }}
+                    >
+                      <SelectTrigger
+                        size="sm"
+                        className="w-full"
+                        aria-labelledby={`${selectId}-label ${selectId}`}
+                        id={selectId}
+                      >
+                        <SelectValue placeholder={t.connectTo} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {options.map((n) => (
+                          <SelectItem key={n.id} value={n.id}>
+                            {displayName(n, map.get(n.type))}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {readOnly && out.length === 0 && (
+                    <p className="m-0 text-[12.5px] text-muted-foreground">{t.noConnection}</p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {!readOnly && (
+            <div className="flex flex-wrap gap-2 border-t border-border-subtle pt-4">
+              {onDuplicate && (
+                <Button variant="outline" size="sm" disabled={atMax} onClick={onDuplicate}>
+                  <CopyIcon aria-hidden />
+                  {t.duplicate}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                aria-keyshortcuts="D"
+                aria-pressed={node.disabled === true}
+                onClick={() => {
+                  onChange(
+                    updateNode(workflow, node.id, { disabled: !node.disabled }, kinds),
+                    node.disabled ? t.announce.enabled(name) : t.announce.disabled(name),
+                  )
+                }}
+              >
+                <PowerOffIcon aria-hidden />
+                {t.disable}
+              </Button>
+              {removable && (
+                <Button variant="destructive" size="sm" onClick={onDelete}>
+                  <Trash2Icon aria-hidden />
+                  {t.remove}
+                </Button>
+              )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+/** The right-click menu of one node, or of the selection it belongs to. */
+function NodeMenuItems({
+  ids,
+  workflow,
+  kinds,
+  onDuplicate,
+  onCopy,
+  onToggleDisabled,
+  onDelete,
+}: {
+  ids: string[]
+  workflow: Workflow
+  kinds: readonly NodeKind[]
+  onDuplicate: (id: string) => void
+  onCopy: (ids: string[]) => void
+  onToggleDisabled: (ids: string[]) => void
+  onDelete: (ids: string[]) => void
+}) {
+  const t = useCoreloomI18n().messages.nodeEditor
+  const map = kindMap(kinds)
+  const nodes = ids.flatMap((id) => workflow.nodes.find((n) => n.id === id) ?? [])
+  const first = nodes.at(0)
+  const off = nodes.some((n) => !n.disabled)
+  const removable = nodes.some((n) => map.get(n.type)?.removable !== false)
+  return (
+    <>
+      {nodes.length === 1 && first && (
+        <ContextMenuItem
+          onSelect={() => {
+            onDuplicate(first.id)
+          }}
+        >
+          <CopyIcon aria-hidden />
+          {t.duplicate}
+        </ContextMenuItem>
+      )}
+      <ContextMenuItem
+        onSelect={() => {
+          onCopy(ids)
+        }}
+      >
+        <ClipboardCopyIcon aria-hidden />
+        {t.menu.copy(nodes.length)}
+        <ContextMenuShortcut>⌘C</ContextMenuShortcut>
+      </ContextMenuItem>
+      <ContextMenuItem
+        onSelect={() => {
+          onToggleDisabled(ids)
+        }}
+      >
+        {off ? <PowerOffIcon aria-hidden /> : <PowerIcon aria-hidden />}
+        {off ? t.menu.disable(nodes.length) : t.menu.enable(nodes.length)}
+        <ContextMenuShortcut>D</ContextMenuShortcut>
+      </ContextMenuItem>
+      {removable && (
+        <ContextMenuItem
+          variant="destructive"
+          onSelect={() => {
+            onDelete(ids)
+          }}
+        >
+          <Trash2Icon aria-hidden />
+          {t.menu.remove(nodes.length)}
+          <ContextMenuShortcut>Del</ContextMenuShortcut>
+        </ContextMenuItem>
+      )}
+    </>
   )
 }
 
@@ -1216,6 +1891,8 @@ function useIssueText(kinds: readonly NodeKind[]) {
       switch (issue.code) {
         case 'required':
           return t.required(kind?.fields?.find((f) => f.name === issue.field)?.label ?? issue.field)
+        case 'invalid':
+          return t.invalid(kind?.fields?.find((f) => f.name === issue.field)?.label ?? issue.field)
         case 'unconnectedInput':
           return t.unconnectedInput
         case 'unconnectedOutput': {
@@ -1261,8 +1938,77 @@ interface NodeEditorProps {
   height?: number
   /** Names the canvas for screen readers (default: "Workflow"). */
   label?: string
+  /**
+   * Runs one node in your app with the input it would get, for "Test node". Its result shows under
+   * Output and feeds the `{{ }}` suggestions of the nodes after it. Without it, no "Test node".
+   */
+  onRunNode?: (request: NodeTestRequest) => Promise<NodeTestResult>
+  /** Values every node's expressions can use (`{{ topic }}`), with a sample for the preview. */
+  variables?: ExpressionVariable[]
+  /** The saved credentials `credential` fields offer (id and name only — never secrets). */
+  credentials?: NodeCredential[]
+  /** "New credential": your app asks for it (a dialog of its own) and resolves with what it saved. */
+  onCreateCredential?: (type: string) => Promise<NodeCredential | undefined>
   className?: string
 }
+
+const NO_VARIABLES: ExpressionVariable[] = []
+const NO_CREDENTIALS: NodeCredential[] = []
+
+/** The nodes that lead to `id`, nearest first. */
+function ancestors(wf: Workflow, id: string) {
+  const seen = new Set<string>([id])
+  const out: string[] = []
+  let frontier = [id]
+  while (frontier.length) {
+    const next: string[] = []
+    for (const f of frontier)
+      for (const e of wf.edges)
+        if (e.target === f && !seen.has(e.source)) {
+          seen.add(e.source)
+          out.push(e.source)
+          next.push(e.source)
+        }
+    frontier = next
+  }
+  return out
+}
+
+/** A node's output: what its run reports, or else the sample pinned to it. */
+function nodeOutput(wf: Workflow, runs: Partial<Record<string, NodeRun>>, id: string): unknown {
+  return runs[id]?.output ?? wf.nodes.find((n) => n.id === id)?.pinned
+}
+
+/**
+ * What a node receives: its run's input, or else the output of the node before it. When that node has
+ * no output yet, its own input stands in (most steps pass their items on), so a sample pinned to the
+ * trigger reaches every node after it.
+ */
+function nodeInput(
+  wf: Workflow,
+  runs: Partial<Record<string, NodeRun>>,
+  id: string,
+  seen = new Set<string>(),
+): unknown {
+  const own = runs[id]?.input
+  if (own !== undefined) return own
+  seen.add(id)
+  for (const e of wf.edges) {
+    if (e.target !== id || seen.has(e.source)) continue
+    const out = nodeOutput(wf, runs, e.source) ?? nodeInput(wf, runs, e.source, seen)
+    if (out !== undefined) return out
+  }
+  return undefined
+}
+
+/** Where a node picked from the "+" list goes. */
+type InsertTarget =
+  | { after: { nodeId: string; port: string } }
+  | { edgeId: string }
+  | { position: { x: number; y: number } }
+
+/** What was right-clicked. */
+type MenuTarget = { node: string } | { edge: string } | { pane: { x: number; y: number } }
 
 function NodeEditorInner({
   kinds,
@@ -1279,6 +2025,10 @@ function NodeEditorInner({
   actions,
   height = 560,
   label,
+  onRunNode,
+  variables = NO_VARIABLES,
+  credentials = NO_CREDENTIALS,
+  onCreateCredential,
   className,
 }: NodeEditorProps) {
   const t = useCoreloomI18n().messages.nodeEditor
@@ -1291,6 +2041,14 @@ function NodeEditorInner({
   const [past, setPast] = React.useState<Workflow[]>([])
   const [future, setFuture] = React.useState<Workflow[]>([])
   const [message, setMessage] = React.useState('')
+  // Results of "Test node", over the app's `runs` until the app reports a new run.
+  const [tests, setTests] = React.useState<Partial<Record<string, NodeRun>>>({})
+  const [testsFor, setTestsFor] = React.useState(runs)
+  if (testsFor !== runs) {
+    setTestsFor(runs)
+    setTests({})
+  }
+  const allRuns = React.useMemo(() => ({ ...runs, ...tests }), [runs, tests])
 
   const [selState, setSelState] = React.useState<string | null>(defaultSelectedId)
   const selected = selectedProp !== undefined ? selectedProp : selState
@@ -1305,8 +2063,37 @@ function NodeEditorInner({
     ReadonlyMap<string, { width: number; height: number }>
   >(() => new Map())
   const [paletteOpen, setPaletteOpen] = React.useState(false)
-  const [width, setWidth] = React.useState(0)
   const root = React.useRef<HTMLDivElement>(null)
+  const [hoveredEdge, setHoveredEdge] = React.useState<string | null>(null)
+  // The "+" list: where the picked node goes, and where the list opens (relative to the editor).
+  const [insert, setInsert] = React.useState<{
+    target: InsertTarget
+    anchor: { x: number; y: number }
+  } | null>(null)
+  const insertReturn = React.useRef<HTMLElement | null>(null)
+  const insertedId = React.useRef<string | null>(null)
+  const requestInsert = React.useCallback(
+    (target: InsertTarget, from: HTMLElement | { x: number; y: number }) => {
+      const box = root.current?.getBoundingClientRect()
+      if (!box) return
+      let anchor: { x: number; y: number }
+      if (from instanceof HTMLElement) {
+        const r = from.getBoundingClientRect()
+        anchor = { x: r.left - box.left + r.width / 2, y: r.bottom - box.top }
+        insertReturn.current = from
+      } else {
+        anchor = { x: from.x - box.left, y: from.y - box.top }
+        insertReturn.current = null
+      }
+      insertedId.current = null
+      setInsert({ target, anchor })
+    },
+    [],
+  )
+  const [menu, setMenu] = React.useState<MenuTarget | null>(null)
+  // Copied nodes, kept here too: the system clipboard can't always be read back.
+  const [clipboard, setClipboard] = React.useState<WorkflowClipboard | null>(null)
+  const [width, setWidth] = React.useState(0)
   const addButton = React.useRef<HTMLButtonElement>(null)
   // A deleted node (or the panel that went with it) may have held focus: land on "Add node", or
   // the first card, never on <body>.
@@ -1392,13 +2179,35 @@ function NodeEditorInner({
         const nodeIssues = issues
           .filter((i) => i.nodeId === n.id)
           .map((i) => issueText(i, workflow))
-        const run = runs[n.id]
+        const run = allRuns[n.id]
         const name = displayName(n, kind)
         return {
           id: n.id,
           type: 'card',
           position: n.position,
-          data: { node: n, kind, name, inputs, outputs, run, issues: nodeIssues, readOnly },
+          data: {
+            node: n,
+            kind,
+            name,
+            inputs,
+            outputs,
+            run,
+            issues: nodeIssues,
+            readOnly,
+            openOutputs: outputs
+              .filter(
+                (p) =>
+                  !workflow.edges.some(
+                    (e) => e.source === n.id && sourcePortOf(e, map, workflow) === p.id,
+                  ),
+              )
+              .map((p) => p.id),
+            onAddAfter: readOnly
+              ? undefined
+              : (port: string, from: HTMLElement) => {
+                  requestInsert({ after: { nodeId: n.id, port } }, from)
+                },
+          },
           selected: n.id === selected || multi.has(n.id),
           deletable: !readOnly && kind?.removable !== false,
           measured: measured.get(n.id),
@@ -1406,22 +2215,36 @@ function NodeEditorInner({
           ariaLabel: [
             name,
             kind?.label,
+            n.disabled ? t.disabled : null,
             run ? t.run[run.status] : null,
+            n.pinned !== undefined ? t.pinnedLabel : null,
             nodeIssues.length ? t.issueCount(nodeIssues.length) : null,
           ]
             .filter(Boolean)
             .join(', '),
         }
       }),
-    [workflow, map, issues, issueText, runs, readOnly, selected, multi, measured, t],
+    [
+      workflow,
+      map,
+      issues,
+      issueText,
+      allRuns,
+      readOnly,
+      selected,
+      multi,
+      measured,
+      t,
+      requestInsert,
+    ],
   )
 
   const rfEdges = React.useMemo<Edge[]>(
     () =>
       workflow.edges.map((e) => {
         const active =
-          runs[e.source]?.status === 'success' &&
-          (runs[e.target]?.status === 'running' || runs[e.target]?.status === 'success')
+          allRuns[e.source]?.status === 'success' &&
+          (allRuns[e.target]?.status === 'running' || allRuns[e.target]?.status === 'success')
         return {
           id: e.id,
           type: 'flow',
@@ -1431,7 +2254,8 @@ function NodeEditorInner({
           targetHandle: targetPortOf(e, map, workflow) ?? null,
           selected: selectedEdges.has(e.id),
           deletable: !readOnly,
-          animated: runs[e.target]?.status === 'running' && runs[e.source]?.status === 'success',
+          animated:
+            allRuns[e.target]?.status === 'running' && allRuns[e.source]?.status === 'success',
           className: active ? 'is-active' : undefined,
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -1440,10 +2264,19 @@ function NodeEditorInner({
             color: 'var(--edge-color)',
           },
           ariaLabel: t.edgeLabel(nameOf(e.source), nameOf(e.target)),
+          data: {
+            show: hoveredEdge === e.id || selectedEdges.has(e.id),
+            label: t.insertBetween(nameOf(e.source), nameOf(e.target)),
+            onInsert: readOnly
+              ? undefined
+              : (from: HTMLElement) => {
+                  requestInsert({ edgeId: e.id }, from)
+                },
+          } satisfies FlowEdgeData,
         }
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nameOf reads workflow, listed
-    [workflow, map, runs, selectedEdges, readOnly, t],
+    [workflow, map, allRuns, selectedEdges, hoveredEdge, readOnly, t, requestInsert],
   )
 
   const dragStart = React.useRef<Workflow | null>(null)
@@ -1560,10 +2393,103 @@ function NodeEditorInner({
     })
   }
 
-  // Undo and redo anywhere in the editor except while typing in a field (which has its own undo).
-  const history = React.useRef({ undo, redo, readOnly })
+  /** Adds the node picked in the "+" list where it was asked for. */
+  const pickInsert = (kind: NodeKind) => {
+    if (!insert) return
+    const target = insert.target
+    let result: { workflow: Workflow; id: string }
+    if ('edgeId' in target) result = insertNodeOnEdge(workflow, kind, target.edgeId, kinds)
+    else if ('after' in target) result = addNode(workflow, kind, { after: target.after, kinds })
+    else result = addNode(workflow, kind, { position: target.position, kinds })
+    const added = result.workflow.nodes.find((n) => n.id === result.id)
+    commit(result.workflow, t.announce.added(added ? displayName(added, kind) : kind.label))
+    setMulti(new Set())
+    select(result.id)
+    insertedId.current = result.id
+    setInsert(null)
+  }
+
+  const selection = () => [...new Set([...(selected !== null ? [selected] : []), ...multi])]
+
+  const copySelection = (ids = selection()) => {
+    if (!ids.length) return false
+    const data = copyNodes(workflow, ids)
+    setClipboard(data)
+    // Best effort: lets people paste into another tab. Copy inside the editor works without it.
+    void navigator.clipboard.writeText(JSON.stringify(data)).catch(() => undefined)
+    setMessage(t.announce.copied(ids.length))
+    return true
+  }
+
+  const pasteFrom = (data: unknown, at?: { x: number; y: number }) => {
+    let offset = { x: 40, y: 40 }
+    if (at && isRecordValue(data) && Array.isArray(data.nodes)) {
+      // Paste at the pointer: the copied group's top-left lands there.
+      const xs = (data.nodes as WorkflowNode[]).map((n) => n.position.x)
+      const ys = (data.nodes as WorkflowNode[]).map((n) => n.position.y)
+      if (xs.length) offset = { x: at.x - Math.min(...xs), y: at.y - Math.min(...ys) }
+    }
+    const { workflow: next, ids } = pasteNodes(workflow, data, kinds, offset)
+    if (!ids.length) return false
+    commit(next, t.announce.pasted(ids.length))
+    select(ids[0] ?? null)
+    setMulti(new Set(ids.slice(1)))
+    return true
+  }
+
+  const toggleDisabled = (ids = selection()) => {
+    const nodes = ids.flatMap((id) => workflow.nodes.find((n) => n.id === id) ?? [])
+    if (!nodes.length) return
+    // Mixed selection: disable them all, as n8n does.
+    const off = nodes.some((n) => !n.disabled)
+    let next = workflow
+    for (const n of nodes) next = updateNode(next, n.id, { disabled: off })
+    const first = nodes.at(0)
+    if (!first) return
+    commit(
+      next,
+      nodes.length === 1
+        ? off
+          ? t.announce.disabled(nameOf(first.id))
+          : t.announce.enabled(nameOf(first.id))
+        : off
+          ? t.announce.disabledMany(nodes.length)
+          : t.announce.enabledMany(nodes.length),
+    )
+  }
+
+  const deleteSelection = (ids = selection()) => {
+    const after = removeNodes(workflow, ids, kinds)
+    if (after === workflow) return
+    commit(after, t.announce.removed(workflow.nodes.length - after.nodes.length))
+    select(null)
+    setMulti(new Set())
+    keepFocus()
+  }
+
+  // Undo and redo anywhere in the editor except while typing in a field (which has its own undo);
+  // copy, cut, paste and D (disable) on the canvas.
+  const history = React.useRef({
+    undo,
+    redo,
+    readOnly,
+    copySelection,
+    deleteSelection,
+    pasteFrom,
+    toggleDisabled,
+    clipboard,
+  })
   React.useEffect(() => {
-    history.current = { undo, redo, readOnly }
+    history.current = {
+      undo,
+      redo,
+      readOnly,
+      copySelection,
+      deleteSelection,
+      pasteFrom,
+      toggleDisabled,
+      clipboard,
+    }
   })
   React.useEffect(() => {
     const el = root.current
@@ -1580,14 +2506,106 @@ function NodeEditorInner({
         e.preventDefault()
         history.current.redo()
       }
+      const onCanvas = e.target instanceof Element && e.target.closest('.react-flow') !== null
+      if (!onCanvas || e.altKey) return
+      const h = history.current
+      if (mod && (key === 'c' || key === 'x')) {
+        if (h.copySelection()) {
+          e.preventDefault()
+          if (key === 'x') h.deleteSelection()
+        }
+      } else if (mod && key === 'v' && h.clipboard) {
+        // What we copied ourselves; otherwise the paste event below reads the system clipboard.
+        if (h.pasteFrom(h.clipboard)) e.preventDefault()
+      } else if (!mod && !e.shiftKey && key === 'd') {
+        e.preventDefault()
+        h.toggleDisabled()
+      }
+    }
+    const onPaste = (e: ClipboardEvent) => {
+      if (history.current.readOnly || isTyping(e.target)) return
+      const text = e.clipboardData?.getData('text/plain')
+      if (text && history.current.pasteFrom(text)) e.preventDefault()
     }
     el.addEventListener('keydown', onKeyDown)
+    el.addEventListener('paste', onPaste)
     return () => {
       el.removeEventListener('keydown', onKeyDown)
+      el.removeEventListener('paste', onPaste)
     }
   }, [])
 
   const selectedNode = selected !== null ? workflow.nodes.find((n) => n.id === selected) : undefined
+  const selectedInput = selectedNode ? nodeInput(workflow, allRuns, selectedNode.id) : undefined
+
+  // What the open node's fields can reach: its input's fields, the app's variables, and the output
+  // of every node that leads to it.
+  const fieldsEnv = React.useMemo<NodeFieldsEnv>(() => {
+    const suggestions: ExpressionVariable[] = []
+    const seen = new Set<string>()
+    const push = (v: ExpressionVariable) => {
+      if (seen.has(v.path)) return
+      seen.add(v.path)
+      suggestions.push(v)
+    }
+    const nodes: Record<string, unknown> = {}
+    for (const n of workflow.nodes) {
+      const out = nodeOutput(workflow, allRuns, n.id)
+      if (out !== undefined) nodes[n.id] = out
+    }
+    if (selectedNode) {
+      for (const p of dataPaths(selectedInput)) push({ ...p, group: t.inputGroup })
+      for (const v of variables) push({ group: t.variablesGroup, ...v })
+      for (const id of ancestors(workflow, selectedNode.id)) {
+        const n = workflow.nodes.find((x) => x.id === id)
+        if (!n || nodes[id] === undefined) continue
+        const group = displayName(n, map.get(n.type))
+        for (const p of dataPaths(nodes[id], 40))
+          push({ ...p, path: `$node.${id}.${p.path}`, group })
+      }
+    }
+    const vars: Record<string, unknown> = {}
+    for (const v of variables) if (v.sample !== undefined) vars[v.path] = v.sample
+    const scope: ExpressionScope | null =
+      selectedInput !== undefined || Object.keys(vars).length || Object.keys(nodes).length
+        ? { input: selectedInput, nodes, variables: vars }
+        : null
+    return {
+      suggestions,
+      scope,
+      credentials,
+      onCreateCredential,
+      announce: setMessage,
+    }
+  }, [
+    allRuns,
+    selectedNode,
+    selectedInput,
+    variables,
+    workflow,
+    map,
+    credentials,
+    onCreateCredential,
+    t,
+  ])
+
+  const testNode = async (node: WorkflowNode) => {
+    if (!onRunNode) return
+    const input = nodeInput(workflow, allRuns, node.id)
+    const name = nameOf(node.id)
+    setTests((prev) => ({ ...prev, [node.id]: { status: 'running', input } }))
+    let run: NodeRun
+    try {
+      const r = await onRunNode({ node, input, workflow })
+      run = { status: r.status ?? 'success', input }
+      if (r.output !== undefined) run.output = r.output
+      if (r.message !== undefined) run.message = r.message
+    } catch (e) {
+      run = { status: 'error', input, message: e instanceof Error ? e.message : t.testFailed }
+    }
+    setTests((prev) => ({ ...prev, [node.id]: run }))
+    setMessage(t.announce.tested(name, t.run[run.status]))
+  }
   const issueTotal = new Set(issues.map((i) => i.nodeId)).size
 
   const ariaLabelConfig = React.useMemo(
@@ -1613,7 +2631,7 @@ function NodeEditorInner({
       ref={root}
       data-slot="node-editor"
       className={cn(
-        'flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card',
+        'relative flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card',
         className,
       )}
     >
@@ -1707,90 +2725,237 @@ function NodeEditorInner({
       <p aria-live="polite" className="sr-only">
         {message}
       </p>
-      <div className={cn('flex min-h-0', stacked ? 'flex-col' : 'flex-row')}>
-        <div
-          className={cn(
-            'relative min-w-0 bg-inset/40 [--edge-color:var(--color-border-strong)] [&_.is-active]:[--edge-color:var(--color-primary)] [&_.react-flow__edge.selected]:[--edge-color:var(--color-primary)]',
-            // Stacked, the canvas keeps its height; side by side it takes the room the panel leaves.
-            stacked ? 'w-full flex-none' : 'flex-1',
-          )}
-          // Stacked on a phone, a shorter canvas leaves room for the panel below.
-          style={{ height: stacked ? Math.min(height, 420) : height }}
+      <Popover
+        open={insert !== null}
+        onOpenChange={(open) => {
+          if (!open) setInsert(null)
+        }}
+      >
+        <PopoverAnchor asChild>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute size-0"
+            style={{ left: insert?.anchor.x ?? 0, top: insert?.anchor.y ?? 0 }}
+          />
+        </PopoverAnchor>
+        <PopoverContent
+          align="center"
+          className="w-80 p-0"
+          onCloseAutoFocus={(e) => {
+            // Land on the new card, or back on the "+" that opened the list.
+            e.preventDefault()
+            const id = insertedId.current
+            const back = insertReturn.current
+            requestAnimationFrame(() => {
+              const card = id
+                ? root.current?.querySelector<HTMLElement>(
+                    `.react-flow__node[data-id="${CSS.escape(id)}"]`,
+                  )
+                : null
+              if (card) card.focus()
+              else if (back?.isConnected) back.focus()
+              else keepFocus()
+            })
+          }}
         >
-          {width > 0 && (
-            <ReactFlow<CardNode>
-              nodes={rfNodes}
-              edges={rfEdges}
-              nodeTypes={NODE_TYPES}
-              edgeTypes={EDGE_TYPES}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              isValidConnection={(c) =>
-                canConnect(
-                  workflow,
-                  {
-                    source: c.source,
-                    target: c.target,
-                    ...(c.sourceHandle ? { sourcePort: c.sourceHandle } : {}),
-                    ...(c.targetHandle ? { targetPort: c.targetHandle } : {}),
-                  },
-                  kinds,
-                )
-              }
-              onNodeDragStart={() => {
-                dragStart.current = workflow
-              }}
-              onNodeDragStop={() => {
-                const before = dragStart.current
-                dragStart.current = null
-                if (before && before !== workflow) {
-                  setPast((p) => [...p.slice(-99), before])
-                  setFuture([])
-                }
-              }}
-              onPaneClick={() => {
-                select(null)
-                setMulti(new Set())
-              }}
-              nodesDraggable={!readOnly}
-              nodesConnectable={!readOnly}
-              elementsSelectable
-              deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
-              multiSelectionKeyCode="Shift"
-              fitView
-              fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
-              minZoom={0.15}
-              maxZoom={1.75}
-              proOptions={{ hideAttribution: true }}
-              ariaLabelConfig={ariaLabelConfig}
-              aria-label={label ?? t.label}
-              style={
-                {
-                  '--xy-edge-stroke-default': 'var(--edge-color)',
-                  '--xy-edge-stroke-selected-default': 'var(--color-primary)',
-                  '--xy-edge-stroke-width-default': '1.75',
-                  '--xy-connectionline-stroke-default': 'var(--color-primary)',
-                  '--xy-selection-background-color-default':
-                    'color-mix(in oklab, var(--color-primary) 8%, transparent)',
-                  '--xy-selection-border-default': '1px dashed var(--color-primary)',
-                } as React.CSSProperties
-              }
+          <NodePalette kinds={kinds} disabledTypes={full} onPick={pickInsert} />
+        </PopoverContent>
+      </Popover>
+      <div className={cn('flex min-h-0', stacked ? 'flex-col' : 'flex-row')}>
+        <ContextMenu
+          onOpenChange={(open) => {
+            if (!open) setMenu(null)
+          }}
+        >
+          <ContextMenuTrigger asChild disabled={readOnly}>
+            <div
+              className={cn(
+                'relative min-w-0 bg-inset/40 [--edge-color:var(--color-border-strong)] [&_.is-active]:[--edge-color:var(--color-primary)] [&_.react-flow__edge.selected]:[--edge-color:var(--color-primary)]',
+                // Stacked, the canvas keeps its height; side by side it takes the room the panel leaves.
+                stacked ? 'w-full flex-none' : 'flex-1',
+              )}
+              // Stacked on a phone, a shorter canvas leaves room for the panel below.
+              style={{ height: stacked ? Math.min(height, 420) : height }}
             >
-              <Background
-                variant={BackgroundVariant.Dots}
-                gap={20}
-                size={1.2}
-                color="var(--color-border-strong)"
+              {width > 0 && (
+                <ReactFlow<CardNode>
+                  nodes={rfNodes}
+                  edges={rfEdges}
+                  nodeTypes={NODE_TYPES}
+                  edgeTypes={EDGE_TYPES}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  isValidConnection={(c) =>
+                    canConnect(
+                      workflow,
+                      {
+                        source: c.source,
+                        target: c.target,
+                        ...(c.sourceHandle ? { sourcePort: c.sourceHandle } : {}),
+                        ...(c.targetHandle ? { targetPort: c.targetHandle } : {}),
+                      },
+                      kinds,
+                    )
+                  }
+                  onNodeDragStart={() => {
+                    dragStart.current = workflow
+                  }}
+                  onNodeDragStop={() => {
+                    const before = dragStart.current
+                    dragStart.current = null
+                    if (before && before !== workflow) {
+                      setPast((p) => [...p.slice(-99), before])
+                      setFuture([])
+                    }
+                  }}
+                  onPaneClick={() => {
+                    select(null)
+                    setMulti(new Set())
+                  }}
+                  onNodeContextMenu={(_, n) => {
+                    setMenu({ node: n.id })
+                    if (n.id !== selected && !multi.has(n.id)) {
+                      select(n.id)
+                      setMulti(new Set())
+                    }
+                  }}
+                  onEdgeContextMenu={(_, e) => {
+                    setMenu({ edge: e.id })
+                  }}
+                  onPaneContextMenu={(e) => {
+                    setMenu({ pane: { x: e.clientX, y: e.clientY } })
+                  }}
+                  onEdgeMouseEnter={(_, e) => {
+                    setHoveredEdge(e.id)
+                  }}
+                  onEdgeMouseLeave={() => {
+                    setHoveredEdge(null)
+                  }}
+                  nodesDraggable={!readOnly}
+                  nodesConnectable={!readOnly}
+                  elementsSelectable
+                  deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
+                  multiSelectionKeyCode="Shift"
+                  fitView
+                  fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+                  minZoom={0.15}
+                  maxZoom={1.75}
+                  proOptions={{ hideAttribution: true }}
+                  ariaLabelConfig={ariaLabelConfig}
+                  aria-label={label ?? t.label}
+                  style={
+                    {
+                      '--xy-edge-stroke-default': 'var(--edge-color)',
+                      '--xy-edge-stroke-selected-default': 'var(--color-primary)',
+                      '--xy-edge-stroke-width-default': '1.75',
+                      '--xy-connectionline-stroke-default': 'var(--color-primary)',
+                      '--xy-selection-background-color-default':
+                        'color-mix(in oklab, var(--color-primary) 8%, transparent)',
+                      '--xy-selection-border-default': '1px dashed var(--color-primary)',
+                    } as React.CSSProperties
+                  }
+                >
+                  <Background
+                    variant={BackgroundVariant.Dots}
+                    gap={20}
+                    size={1.2}
+                    color="var(--color-border-strong)"
+                  />
+                </ReactFlow>
+              )}
+              {!workflow.nodes.length && (
+                <p className="pointer-events-none absolute inset-x-6 top-1/2 m-0 -translate-y-1/2 text-center text-[13px] text-muted-foreground">
+                  {t.empty}
+                </p>
+              )}
+            </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent
+            className="w-56"
+            onCloseAutoFocus={(e) => {
+              // An item that opens the "+" list hands focus to it; the others leave it where it was.
+              e.preventDefault()
+            }}
+          >
+            {menu && 'node' in menu ? (
+              <NodeMenuItems
+                ids={selection().includes(menu.node) ? selection() : [menu.node]}
+                workflow={workflow}
+                kinds={kinds}
+                onDuplicate={(id) => {
+                  const { workflow: next, id: copy } = duplicateNode(workflow, id, kinds)
+                  if (next === workflow) return
+                  commit(next, t.announce.added(nameOf(id)))
+                  select(copy)
+                }}
+                onCopy={(ids) => copySelection(ids)}
+                onToggleDisabled={toggleDisabled}
+                onDelete={deleteSelection}
               />
-            </ReactFlow>
-          )}
-          {!workflow.nodes.length && (
-            <p className="pointer-events-none absolute inset-x-6 top-1/2 m-0 -translate-y-1/2 text-center text-[13px] text-muted-foreground">
-              {t.empty}
-            </p>
-          )}
-        </div>
+            ) : menu && 'edge' in menu ? (
+              <>
+                <ContextMenuItem
+                  onSelect={() => {
+                    const el = root.current?.querySelector<HTMLElement>(
+                      `[data-testid="rf__edge-${CSS.escape(menu.edge)}"]`,
+                    )
+                    const box = el?.getBoundingClientRect()
+                    requestAnimationFrame(() => {
+                      requestInsert(
+                        { edgeId: menu.edge },
+                        box
+                          ? { x: box.left + box.width / 2, y: box.top + box.height / 2 }
+                          : { x: 0, y: 0 },
+                      )
+                    })
+                  }}
+                >
+                  <PlusIcon aria-hidden />
+                  {t.menu.insertHere}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  variant="destructive"
+                  onSelect={() => {
+                    commit(removeEdges(workflow, [menu.edge]), t.announce.edgesRemoved(1))
+                  }}
+                >
+                  <Trash2Icon aria-hidden />
+                  {t.menu.deleteConnection}
+                </ContextMenuItem>
+              </>
+            ) : menu && 'pane' in menu ? (
+              <>
+                <ContextMenuItem
+                  onSelect={() => {
+                    const at = menu.pane
+                    const p = flow.screenToFlowPosition(at)
+                    requestAnimationFrame(() => {
+                      requestInsert({ position: { x: Math.round(p.x), y: Math.round(p.y) } }, at)
+                    })
+                  }}
+                >
+                  <PlusIcon aria-hidden />
+                  {t.menu.addHere}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  disabled={!clipboard}
+                  onSelect={() => {
+                    if (clipboard) pasteFrom(clipboard, flow.screenToFlowPosition(menu.pane))
+                  }}
+                >
+                  <ClipboardPasteIcon aria-hidden />
+                  {t.menu.paste}
+                  <ContextMenuShortcut>⌘V</ContextMenuShortcut>
+                </ContextMenuItem>
+                <ContextMenuItem disabled={!workflow.nodes.length} onSelect={tidy}>
+                  <NetworkIcon aria-hidden />
+                  {t.arrange}
+                </ContextMenuItem>
+              </>
+            ) : null}
+          </ContextMenuContent>
+        </ContextMenu>
         {inspector && (selectedNode !== undefined || !stacked) && (
           <aside
             aria-label={t.inspector}
@@ -1801,31 +2966,35 @@ function NodeEditorInner({
             style={stacked ? undefined : { height }}
           >
             {selectedNode ? (
-              <NodeInspector
-                key={selectedNode.id}
-                workflow={workflow}
-                node={selectedNode}
-                kinds={kinds}
-                run={runs[selectedNode.id]}
-                issues={issues}
-                readOnly={readOnly}
-                onChange={commit}
-                onDuplicate={() => {
-                  const { workflow: next, id } = duplicateNode(workflow, selectedNode.id, kinds)
-                  if (next === workflow) return
-                  commit(next, t.announce.added(nameOf(selectedNode.id)))
-                  select(id)
-                }}
-                onDelete={() => {
-                  const name = nameOf(selectedNode.id)
-                  commit(
-                    removeNodes(workflow, [selectedNode.id], kinds),
-                    t.announce.removedNamed(name),
-                  )
-                  select(null)
-                  keepFocus()
-                }}
-              />
+              <NodeFieldsContext value={fieldsEnv}>
+                <NodeInspector
+                  key={selectedNode.id}
+                  workflow={workflow}
+                  node={selectedNode}
+                  kinds={kinds}
+                  run={allRuns[selectedNode.id]}
+                  input={selectedInput}
+                  onTest={onRunNode ? () => testNode(selectedNode) : undefined}
+                  issues={issues}
+                  readOnly={readOnly}
+                  onChange={commit}
+                  onDuplicate={() => {
+                    const { workflow: next, id } = duplicateNode(workflow, selectedNode.id, kinds)
+                    if (next === workflow) return
+                    commit(next, t.announce.added(nameOf(selectedNode.id)))
+                    select(id)
+                  }}
+                  onDelete={() => {
+                    const name = nameOf(selectedNode.id)
+                    commit(
+                      removeNodes(workflow, [selectedNode.id], kinds),
+                      t.announce.removedNamed(name),
+                    )
+                    select(null)
+                    keepFocus()
+                  }}
+                />
+              </NodeFieldsContext>
             ) : (
               <p className="m-0 px-4 py-10 text-center text-[13px] text-muted-foreground">
                 {t.selectNode}
@@ -1847,11 +3016,14 @@ function NodeEditor(props: NodeEditorProps) {
   )
 }
 
+export { type ExpressionVariable, type NodeCredential } from '@/components/ui/node-editor-fields'
 export {
   addNode,
   canConnect,
   connectNodes,
+  copyNodes,
   duplicateNode,
+  insertNodeOnEdge,
   layoutWorkflow,
   NodeEditor,
   type NodeEditorProps,
@@ -1865,11 +3037,15 @@ export {
   nodePorts,
   type NodeRun,
   type NodeRunStatus,
+  type NodeTestRequest,
+  type NodeTestResult,
+  pasteNodes,
   removeEdges,
   removeNodes,
   updateNode,
   validateWorkflow,
   type Workflow,
+  type WorkflowClipboard,
   type WorkflowEdge,
   type WorkflowIssue,
   type WorkflowNode,
