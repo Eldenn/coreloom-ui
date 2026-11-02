@@ -2,9 +2,10 @@
 
 // Coreloom UI — AI agent teams (block). A multi-agent system at a glance: AgentGraph (agents, teams,
 // who delegates and hands off to whom, the tools and knowledge they share) with a team filter and a
-// panel on the selected agent — its role, model, links and where to go next. Pass `activity` and
+// panel on the selected agent — its role, model, links (with their labels) and where to go next.
+// `onEdit` adds an "Edit graph" button for your agent builder (see `agentTeamToWorkflow`). Pass `activity` and
 // `activePath` (or derive them from a run's spans with `agentActivityFromSpans`) to show a run live.
-import { ActivityIcon, BookOpenIcon, BotIcon, UserIcon, WrenchIcon } from 'lucide-react'
+import { ActivityIcon, BookOpenIcon, BotIcon, PencilIcon, UserIcon, WrenchIcon } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -136,13 +137,18 @@ function AgentDetails({
   const rel = agentRelations(agent.id, edges)
   const team = teams.find((tm) => tm.id === agent.team)
   const nameOf = (id: string) => agents.find((a) => a.id === id)?.name ?? id
+  // The word on the link ("Bugs"), read in the direction the section names.
+  const linkLabel = (from: string, to: string, kind: AgentGraphEdge['kind']) =>
+    edges.find((e) => e.from === from && e.to === to && e.kind === kind)?.label?.trim()
+  const out = (kind: AgentGraphEdge['kind']) => (id: string) => linkLabel(agent.id, id, kind)
+  const into = (kind: AgentGraphEdge['kind']) => (id: string) => linkLabel(id, agent.id, kind)
   const sections = [
-    { key: 'reportsTo', label: t.reportsTo, ids: rel.reportsTo },
-    { key: 'delegatesTo', label: t.delegatesTo, ids: rel.delegatesTo },
-    { key: 'takesOverFrom', label: t.takesOverFrom, ids: rel.takesOverFrom },
-    { key: 'handsOffTo', label: t.handsOffTo, ids: rel.handsOffTo },
-    { key: 'uses', label: t.uses, ids: rel.uses },
-    { key: 'usedBy', label: t.usedBy, ids: rel.usedBy },
+    { key: 'reportsTo', label: t.reportsTo, ids: rel.reportsTo, word: into('delegates') },
+    { key: 'delegatesTo', label: t.delegatesTo, ids: rel.delegatesTo, word: out('delegates') },
+    { key: 'takesOverFrom', label: t.takesOverFrom, ids: rel.takesOverFrom, word: into('handoff') },
+    { key: 'handsOffTo', label: t.handsOffTo, ids: rel.handsOffTo, word: out('handoff') },
+    { key: 'uses', label: t.uses, ids: rel.uses, word: out('uses') },
+    { key: 'usedBy', label: t.usedBy, ids: rel.usedBy, word: into('uses') },
   ].filter((s) => s.ids.length)
   const facts = [
     { label: t.role, value: agent.role },
@@ -206,19 +212,24 @@ function AgentDetails({
             aria-labelledby={`${baseId}-${s.key}`}
             className="m-0 flex list-none flex-wrap gap-1.5 p-0"
           >
-            {s.ids.map((id) => (
-              <li key={id}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onSelect(id)
-                  }}
-                >
-                  {nameOf(id)}
-                </Button>
-              </li>
-            ))}
+            {s.ids.map((id) => {
+              const word = s.word(id)
+              return (
+                <li key={id}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={word ? `${nameOf(id)}, ${word}` : undefined}
+                    onClick={() => {
+                      onSelect(id)
+                    }}
+                  >
+                    {nameOf(id)}
+                    {word && <span className="font-normal text-muted-foreground">{word}</span>}
+                  </Button>
+                </li>
+              )
+            })}
           </ul>
         </div>
       ))}
@@ -252,6 +263,7 @@ function AgentTeams({
   defaultView,
   href,
   runsHref,
+  onEdit,
   className,
 }: {
   agents: AgentTeamMember[]
@@ -269,6 +281,11 @@ function AgentTeams({
   href?: (id: string) => string
   /** An agent's runs: (id) => `/agents/${id}/runs`. */
   runsHref?: (id: string) => string
+  /**
+   * Shows "Edit graph": open your agent builder on these agents, with the selected one (if any).
+   * `agentTeamToWorkflow` (ai-agent-builder) turns the team into the builder's graph.
+   */
+  onEdit?: (selectedId: string | null) => void
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.agentTeams
@@ -313,24 +330,42 @@ function AgentTeams({
 
   return (
     <div data-slot="agent-teams" className={cn('flex flex-col gap-3', className)}>
-      {teams.length > 1 && (
-        <div className="flex items-center gap-2">
-          <label htmlFor={`${baseId}-team`} className="text-[13px] font-medium text-foreground">
-            {t.team}
-          </label>
-          <Select value={team} onValueChange={setTeam}>
-            <SelectTrigger id={`${baseId}-team`} size="sm" className="w-52">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t.allTeams}</SelectItem>
-              {teams.map((tm) => (
-                <SelectItem key={tm.id} value={tm.id}>
-                  {tm.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {(teams.length > 1 || onEdit) && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {teams.length > 1 ? (
+            <div className="flex items-center gap-2">
+              <label htmlFor={`${baseId}-team`} className="text-[13px] font-medium text-foreground">
+                {t.team}
+              </label>
+              <Select value={team} onValueChange={setTeam}>
+                <SelectTrigger id={`${baseId}-team`} size="sm" className="w-52">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.allTeams}</SelectItem>
+                  {teams.map((tm) => (
+                    <SelectItem key={tm.id} value={tm.id}>
+                      {tm.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <span />
+          )}
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onEdit(shown ? shown.id : null)
+              }}
+            >
+              <PencilIcon aria-hidden />
+              {t.edit}
+            </Button>
+          )}
         </div>
       )}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">

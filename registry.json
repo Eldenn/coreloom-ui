@@ -2432,6 +2432,7 @@
         "@coreloom/node-editor",
         "@coreloom/workflow-builder",
         "@coreloom/ai-agents",
+        "@coreloom/agent-graph",
         "@coreloom/copy-button",
         "@coreloom/button",
         "@coreloom/dialog",

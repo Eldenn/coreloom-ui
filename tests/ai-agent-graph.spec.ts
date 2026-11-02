@@ -144,6 +144,61 @@ test.describe('Agent teams (Blocks/AI/Agent teams)', () => {
     ).toBeVisible()
   })
 
+  test('the panel gives the word on each link', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-teams--default')
+    await agent(page, 'Billing').click()
+    const panel = page.getByRole('complementary', { name: 'Agent details' })
+    await expect(
+      panel.getByRole('list', { name: 'Hands off to' }).getByRole('button'),
+    ).toHaveAccessibleName('Tech support, Bugs')
+  })
+
+  test('on a narrow screen the agents start as a list; a selected agent scrolls into view', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await open(page, 'blocks-ai-agent-teams--default')
+    await expect(page.getByRole('radio', { name: 'List' })).toBeChecked()
+    await page.getByRole('radio', { name: 'Graph' }).click()
+    const panel = page.getByRole('complementary', { name: 'Agent details' })
+    await panel
+      .getByRole('list', { name: 'Reports to' })
+      .getByRole('button', { name: 'Concierge' })
+      .click()
+    await expect(agent(page, 'Concierge')).toBeInViewport()
+    await panel
+      .getByRole('list', { name: 'Delegates to' })
+      .getByRole('button', { name: 'Researcher' })
+      .click()
+    // It scrolls smoothly: wait for the card to sit inside the box.
+    await expect
+      .poll(async () => {
+        const box = await graph(page).boundingBox()
+        const card = await agent(page, 'Researcher').boundingBox()
+        return !!box && !!card && card.x >= box.x && card.x + card.width <= box.x + box.width
+      })
+      .toBe(true)
+  })
+
+  test('Edit graph opens the builder on the team, and back shows it again', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-teams--edit-in-builder')
+    await page.getByRole('button', { name: 'Edit graph' }).click()
+    await expect(page.getByRole('button', { name: 'Back to the teams' })).toBeVisible()
+    await expect(page.locator('[data-id="concierge-route"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Back to the teams' }).click()
+    // Billing is still selected.
+    const panel = page.getByRole('complementary', { name: 'Agent details' })
+    await expect(panel.getByRole('list', { name: 'Reports to' })).toContainText('Triage')
+    await expect(panel.getByRole('list', { name: 'Hands off to' })).toContainText('Bugs')
+  })
+
+  test('a graph from the agent builder, shown as a team', async ({ page }) => {
+    await open(page, 'blocks-ai-agent-teams--from-agent-builder')
+    const panel = page.getByRole('complementary', { name: 'Agent details' })
+    await expect(panel.getByRole('list', { name: 'Delegates to' })).toContainText('Researcher')
+    await expect(panel.getByRole('list', { name: 'Hands off to' })).toContainText('finish')
+  })
+
   test('without agents, an empty state says what to do', async ({ page }) => {
     await open(page, 'blocks-ai-agent-teams--empty')
     await expect(page.locator('#storybook-root')).toContainText('No agents yet.')
