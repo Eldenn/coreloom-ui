@@ -12,7 +12,7 @@ import {
   WebhookIcon,
 } from 'lucide-react'
 
-import type { LangGraphJSON } from '@/components/ai-agent-builder'
+import type { AgentBuilderTool, LangGraphJSON } from '@/components/ai-agent-builder'
 import type {
   NodeCredential,
   NodeKind,
@@ -325,11 +325,36 @@ export function fakeRunNode({ node, input }: NodeTestRequest): Promise<NodeTestR
   })
 }
 
-export const demoTools = [
-  { id: 'web_search', name: 'Web search' },
-  { id: 'fetch_page', name: 'Fetch page' },
+export const demoTools: AgentBuilderTool[] = [
+  {
+    id: 'web_search',
+    name: 'Web search',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'What to search for' },
+        max_results: { type: 'integer', description: 'How many results' },
+        recency: { type: 'string', enum: ['day', 'week', 'month', 'any'] },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    id: 'fetch_page',
+    name: 'Fetch page',
+    parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
+  },
   { id: 'crm_lookup', name: 'CRM lookup' },
-  { id: 'send_email', name: 'Send email' },
+  {
+    id: 'send_email',
+    name: 'Send email',
+    sensitive: true,
+    parameters: {
+      type: 'object',
+      properties: { to: { type: 'string' }, subject: { type: 'string' }, body: { type: 'string' } },
+      required: ['to', 'subject', 'body'],
+    },
+  },
 ]
 
 /** A supervisor that routes to a researcher (with tools) or a writer, then a human approves. */
@@ -363,6 +388,10 @@ export const researchGraph: Workflow = {
         model: 'claude-haiku',
         instructions: 'Find sources on {{topic}}.',
         tools: ['web_search', 'fetch_page'],
+        toolArgs: { web_search: { max_results: '5', recency: 'month' } },
+        reads: ['topic'],
+        writes: ['sources'],
+        maxSteps: 6,
       },
     },
     {
@@ -376,14 +405,20 @@ export const researchGraph: Workflow = {
       type: 'agent',
       name: 'Writer',
       position: { x: 960, y: 170 },
-      data: { model: 'claude-sonnet', instructions: 'Write the brief.', tools: [] },
+      data: {
+        model: 'claude-sonnet',
+        instructions: 'Write the brief.',
+        tools: [],
+        outputSchema:
+          '{\n  "type": "object",\n  "properties": {\n    "title": { "type": "string" },\n    "summary": { "type": "string" }\n  },\n  "required": ["title", "summary"]\n}',
+      },
     },
     {
       id: 'review',
       type: 'human',
       name: 'Editor review',
       position: { x: 960, y: 330 },
-      data: { question: 'Publish this brief?' },
+      data: { question: 'Publish this brief?', decisions: ['approve', 'reject', 'respond'] },
     },
     { id: '__end__', type: 'end', position: { x: 1300, y: 340 } },
   ],
