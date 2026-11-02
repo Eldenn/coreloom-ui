@@ -1,0 +1,27 @@
+<!-- @dsCard group="Data display" height=400 subtitle="Source → page → plan · bands colored by source column" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.SankeyChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { SankeyChart } = UI;
+      const nodes = [['search', 'Search'], ['social', 'Social'], ['direct', 'Direct'], ['pricing', 'Pricing page'], ['docs', 'Docs'], ['free', 'Free plan'], ['pro', 'Pro plan'], ['left', 'Left']].map(([id, label]) => ({ id, label }));
+      const links = [['search', 'pricing', 4200], ['search', 'docs', 2600], ['social', 'pricing', 1800], ['social', 'docs', 500], ['direct', 'pricing', 2100], ['direct', 'docs', 1400], ['pricing', 'free', 3100], ['pricing', 'pro', 900], ['pricing', 'left', 4100], ['docs', 'free', 2200], ['docs', 'pro', 300], ['docs', 'left', 2000]].map(([source, target, value]) => ({ source, target, value }));
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { style: { maxWidth: 720 } }, h(SankeyChart, { nodes, links, height: 340, 'aria-label': 'Visitors from source to plan' })));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -89,6 +89,19 @@
       ]
     },
     {
+      "name": "rules",
+      "type": "registry:file",
+      "title": "Rules for AI assistants",
+      "description": "AGENTS.md at the app's root: the Coreloom design, accessibility and text rules, so coding agents (Codex, Cursor, Claude Code, Copilot…) follow them on every change.",
+      "files": [
+        {
+          "path": "src/rules/AGENTS.md",
+          "type": "registry:file",
+          "target": "~/AGENTS.md"
+        }
+      ]
+    },
+    {
       "name": "link",
       "type": "registry:lib",
       "title": "Link",
@@ -964,6 +977,166 @@
       ]
     },
     {
+      "name": "sparkline",
+      "type": "registry:ui",
+      "title": "Sparkline",
+      "description": "Word-sized trend (line, area or bars) in plain SVG, with a screen-reader summary: for stat cards, table cells and list rows.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/sparkline.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "donut-chart",
+      "type": "registry:ui",
+      "title": "Donut chart",
+      "description": "A whole split into a few parts: SVG ring with the total in the middle and a legend with each value and share; small parts fold into Other.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/donut-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "bar-list",
+      "type": "registry:ui",
+      "title": "Bar list",
+      "description": "Ranking as an HTML list: label over a proportional bar, value at the right, optional links and a Show all button past a limit.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/bar-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "gauge",
+      "type": "registry:ui",
+      "title": "Gauge",
+      "description": "One value against its range as an open ring (a meter), with optional warning and critical thresholds stated in words.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/gauge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "heatmap",
+      "type": "registry:ui",
+      "title": "Heatmap",
+      "description": "Values on a grid of squares in five steps of one chart color: a row × column matrix (weekday × hour) and CalendarHeatmap for a year of days. One tab stop with arrow keys, every cell named.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/heatmap.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "funnel-chart",
+      "type": "registry:ui",
+      "title": "Funnel chart",
+      "description": "Steps of a flow as an ordered list: a bar per step against the first, the count, the share of the start and the share that went on to the next step.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/funnel-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radar-chart",
+      "type": "registry:ui",
+      "title": "Radar chart",
+      "description": "Two or three series compared on the same measures, one axis each around a circle; values also in a hidden table.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/radar-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scatter-chart",
+      "type": "registry:ui",
+      "title": "Scatter chart",
+      "description": "Two measures across many items, up to three groups and an optional size measure (bubbles); every point in a hidden table.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/scatter-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "treemap-chart",
+      "type": "registry:ui",
+      "title": "Treemap chart",
+      "description": "Many parts of a whole as tiles sized by value, colored by up to five groups, labels in roomy tiles; every item with its share in a hidden list.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/treemap-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sankey-chart",
+      "type": "registry:ui",
+      "title": "Sankey chart",
+      "description": "Flows between nodes in columns, bands as wide as the flow, colored by source column; every flow in a hidden list.",
+      "dependencies": ["recharts@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chart"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sankey-chart.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
@@ -1487,6 +1660,16 @@
         "@coreloom/carousel",
         "@coreloom/drawer",
         "@coreloom/chart",
+        "@coreloom/sparkline",
+        "@coreloom/donut-chart",
+        "@coreloom/bar-list",
+        "@coreloom/gauge",
+        "@coreloom/heatmap",
+        "@coreloom/funnel-chart",
+        "@coreloom/radar-chart",
+        "@coreloom/scatter-chart",
+        "@coreloom/treemap-chart",
+        "@coreloom/sankey-chart",
         "@coreloom/form",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",
@@ -1630,7 +1813,8 @@
         "@coreloom/badge",
         "@coreloom/card",
         "@coreloom/theme-toggle",
-        "@coreloom/command-menu"
+        "@coreloom/command-menu",
+        "@coreloom/sparkline"
       ],
       "files": [
         {
@@ -1808,7 +1992,7 @@
       "name": "dashboard",
       "type": "registry:block",
       "title": "Dashboard",
-      "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines) and an activity feed.",
+      "description": "Stat grid, chart card with a ready-made trend chart (area, bars, lines; stacked, 100 % or combo with a second axis) and an activity feed.",
       "categories": ["dashboard", "application"],
       "dependencies": ["lucide-react", "recharts@^3"],
       "registryDependencies": [
@@ -1817,7 +2001,8 @@
         "@coreloom/i18n",
         "@coreloom/badge",
         "@coreloom/card",
-        "@coreloom/chart"
+        "@coreloom/chart",
+        "@coreloom/sparkline"
       ],
       "files": [
         {

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Data display" height=380 subtitle="Bubbles · three groups · named points" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ScatterChart || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ScatterChart } = UI;
+      const groups = [
+        { key: 'a', label: 'Anthropic', points: [{ name: 'Claude Opus', x: 2400, y: 15, size: 92 }, { name: 'Claude Sonnet', x: 1300, y: 3, size: 88 }, { name: 'Claude Haiku', x: 480, y: 0.8, size: 79 }] },
+        { key: 'o', label: 'OpenAI', points: [{ name: 'GPT large', x: 1900, y: 10, size: 86 }, { name: 'GPT mini', x: 520, y: 0.15, size: 70 }] },
+        { key: 'g', label: 'Google', points: [{ name: 'Gemini Pro', x: 1700, y: 3.5, size: 84 }, { name: 'Gemini Flash', x: 390, y: 0.3, size: 74 }] }];
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { style: { maxWidth: 640 } }, h(ScatterChart, { groups, xLabel: 'Latency (ms)', yLabel: 'Price ($ / 1M tokens)', sizeLabel: 'Eval score', height: 320, 'aria-label': 'Models: price against latency' })));
+    }
+    render();
+  </script>
+</body>
+</html>

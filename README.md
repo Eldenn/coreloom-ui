@@ -94,15 +94,45 @@ a link to its guide (when to use it, props, accessibility rules);
 [`llms-full.txt`](https://eldenn.github.io/coreloom-ui/llms-full.txt) has all the guides in one file.
 Give either to your assistant as context.
 
-To let Claude Code, Cursor or VS Code browse and install `@coreloom/*` items themselves, add the
-namespace to `components.json` (as above) and turn on shadcn's MCP server in the app:
+To let an assistant browse, search and install `@coreloom/*` items itself, add the namespace to
+`components.json` (as above) and turn on shadcn's MCP server in the app:
 
 ```bash
-pnpm dlx shadcn@latest mcp init --client claude   # or cursor, vscode
+pnpm dlx shadcn@latest mcp init --client claude   # or cursor, vscode, codex, opencode
+```
+
+Any other MCP client: add a stdio server that runs `npx shadcn@latest mcp` from the app's root (the
+folder with `components.json`, which is where the server finds the `@coreloom` namespace):
+
+```json
+{ "mcpServers": { "shadcn": { "command": "npx", "args": ["shadcn@latest", "mcp"] } } }
 ```
 
 Then ask in plain words: "add the Coreloom chat block and wire it to useChat", "which Coreloom
-component is a date range picker?". The starter ships with the server configured (`.mcp.json`).
+component is a date range picker?". Each item's description ends with a link to its guide, and every
+Storybook story file is published as a `*-demo` example item (`button-demo`, `overlays-demo`,
+`ai-chat-demo`…), so the assistant can read the rules and real usage code before writing any. The
+starter ships with the server configured (`.mcp.json`).
+
+To make coding agents follow the design system on every change, not only when they use the MCP
+server, install the rules at the app's root:
+
+```bash
+pnpm dlx shadcn@latest add @coreloom/rules   # writes AGENTS.md (asks before replacing yours)
+```
+
+`AGENTS.md` is read by Codex, Cursor, Copilot and most agents; for Claude Code, add `@AGENTS.md` to the
+app's `CLAUDE.md`. Edit it to fit the app.
+
+Without a local project (claude.ai in the browser, or just to read the docs), two remote options need
+no setup on our side; they read the docs and code but can't install items:
+
+- [GitMCP](https://gitmcp.io), a free third-party service that serves a public repository as a remote
+  MCP server and reads `llms.txt` first: add `https://gitmcp.io/Eldenn/coreloom-ui` as a custom
+  connector (claude.ai: Settings → Connectors), or
+  `claude mcp add --transport http coreloom https://gitmcp.io/Eldenn/coreloom-ui` in Claude Code.
+- GitHub's own MCP server, if your assistant already has it: point it at `Eldenn/coreloom-ui`
+  (guides in `stories/guidelines/`, usage in `stories/`, items in `registry.json`).
 
 ## What's in the repo
 

@@ -4,6 +4,7 @@ import * as React from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Sparkline } from '@/components/ui/sparkline'
 import { cn } from '@/lib/utils'
 
 function StatCard({
@@ -13,6 +14,7 @@ function StatCard({
   trend = 'up',
   good = trend === 'up',
   note,
+  sparkline,
   className,
 }: {
   label: string
@@ -24,6 +26,8 @@ function StatCard({
   good?: boolean
   /** Context for the change: "last 30 days". */
   note?: string
+  /** Recent values, oldest first: drawn as a small area chart under the value. */
+  sparkline?: readonly number[]
   className?: string
 }) {
   const Icon = trend === 'up' ? TrendingUpIcon : TrendingDownIcon
@@ -43,6 +47,9 @@ function StatCard({
           </CardAction>
         )}
       </CardHeader>
+      {sparkline && sparkline.length > 0 && (
+        <Sparkline data={sparkline} type="area" height={36} aria-label={label} className="my-1" />
+      )}
       {note && <div className="text-[12px] text-muted-foreground">{note}</div>}
     </Card>
   )
