@@ -1667,6 +1667,28 @@
       ]
     },
     {
+      "name": "form-renderer",
+      "type": "registry:ui",
+      "title": "FormRenderer",
+      "description": "Builds a form at runtime from a FormSpec (JSON sections, fields, checks and conditions) with the Form fields; readFormSpec reads untrusted specs, fromJSONSchema / toJSONSchema convert from and to JSON Schema, and formFieldTypes is the registry of field types you extend.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/form",
+        "@coreloom/field",
+        "@coreloom/phone-input",
+        "@coreloom/date-range-picker"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/form-renderer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "inline-citation",
       "type": "registry:ui",
       "title": "InlineCitation",
@@ -1897,6 +1919,7 @@
         "@coreloom/tool-call",
         "@coreloom/agent-plan",
         "@coreloom/tool-form",
+        "@coreloom/form-renderer",
         "@coreloom/inline-citation",
         "@coreloom/model-picker",
         "@coreloom/model-field",
@@ -2443,6 +2466,43 @@
       "files": [
         {
           "path": "src/components/workflow-builder.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "form-builder",
+      "type": "registry:block",
+      "title": "Form builder",
+      "description": "Makes a form without code: a palette of field types, a live canvas to arrange them (drag and drop, sections in columns), an inspector for each field's label, checks, options and conditions, a Preview and the form's JSON (FormSpec or JSON Schema), plus import from a FormSpec or a JSON Schema.",
+      "categories": ["application"],
+      "dependencies": [
+        "lucide-react",
+        "@dnd-kit/core@^6",
+        "@dnd-kit/sortable@^10",
+        "@dnd-kit/utilities@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/form-renderer",
+        "@coreloom/alert",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dialog",
+        "@coreloom/field",
+        "@coreloom/input",
+        "@coreloom/number-input",
+        "@coreloom/select",
+        "@coreloom/switch",
+        "@coreloom/tabs",
+        "@coreloom/textarea",
+        "@coreloom/toggle-group"
+      ],
+      "files": [
+        {
+          "path": "src/components/form-builder.tsx",
           "type": "registry:component"
         }
       ]
