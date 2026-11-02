@@ -1,0 +1,30 @@
+<!-- @dsCard group="Overlays" height=200 subtitle="Anchored confirm · Cancel first · async" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Popconfirm || !UI.Button || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Popconfirm, Button } = UI;
+      function Demo() {
+        return h('div', { style: { paddingTop: 110 } },
+          h(Popconfirm, { defaultOpen: true, destructive: true, title: 'Delete this comment?', description: 'Replies are deleted too.', confirmLabel: 'Delete', onConfirm: () => new Promise((r) => setTimeout(r, 900)) },
+            h(Button, { size: 'sm', variant: 'outline' }, 'Delete')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

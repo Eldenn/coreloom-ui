@@ -569,6 +569,66 @@ export const de: Messages = {
       hideReplies: 'Antworten ausblenden',
     },
   },
+  utility: {
+    toolbar: { more: 'Mehr' },
+    actionBar: {
+      label: 'Sammelaktionen',
+      selected: (count, _n) => `${count} ausgewählt`,
+      clear: 'Auswahl aufheben',
+    },
+    popconfirm: { confirm: 'Bestätigen', cancel: 'Abbrechen' },
+    secret: {
+      secret: 'Geheimnis',
+      hidden: 'verborgen',
+      show: (name) => `${name} anzeigen`,
+      hide: (name) => `${name} verbergen`,
+      copy: (name) => `${name} kopieren`,
+    },
+    notificationBadge: {
+      new: 'Neu',
+      unread: (count, _n) => `${count} ungelesen`,
+    },
+    overflow: {
+      more: (count, _n) => `${count} weitere anzeigen`,
+    },
+    file: {
+      label: 'Dateien',
+      uploading: (name) => `${name} wird hochgeladen`,
+      retry: (name) => `${name} erneut versuchen`,
+      remove: (name) => `${name} entfernen`,
+      cancel: (name) => `Hochladen von ${name} abbrechen`,
+    },
+    shortcuts: {
+      title: 'Tastenkürzel',
+      description: 'Die in dieser App verfügbaren Tastenkürzel.',
+      filter: 'Tastenkürzel suchen',
+      empty: 'Kein Tastenkürzel gefunden.',
+      then: 'dann',
+    },
+    countdown: {
+      units: { days: 'Tage', hours: 'Std', minutes: 'Min', seconds: 'Sek' },
+      short: {
+        days: (n) => `${n} T`,
+        hours: (n) => `${n} h`,
+        minutes: (n) => `${n} min`,
+        seconds: (n) => `${n} s`,
+      },
+      spoken: (p) =>
+        [
+          p.days ? `${p.days} ${p.days === 1 ? 'Tag' : 'Tage'}` : '',
+          p.hours ? `${p.hours} ${p.hours === 1 ? 'Stunde' : 'Stunden'}` : '',
+          p.minutes ? `${p.minutes} ${p.minutes === 1 ? 'Minute' : 'Minuten'}` : '',
+          p.seconds ? `${p.seconds} ${p.seconds === 1 ? 'Sekunde' : 'Sekunden'}` : '',
+        ]
+          .filter(Boolean)
+          .join(', ') || '0 Sekunden',
+    },
+    quota: {
+      of: (used, max) => `${used} von ${max}`,
+      spoken: (used, percent) => `${used}, ${percent} %`,
+      free: 'Frei',
+    },
+  },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {
     filter: 'Filtern…',
