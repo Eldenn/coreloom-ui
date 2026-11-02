@@ -1,0 +1,32 @@
+<!-- @dsCard group="Forms" height=150 subtitle="Number range · time range" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NumberRangeInput || !UI.TimeRangePicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { NumberRangeInput, TimeRangePicker } = UI;
+      function Demo() {
+        const [n, setN] = React.useState({ min: 20, max: 80 });
+        const [t, setT] = React.useState({ start: '09:00', end: '18:00' });
+        return h('div', { style: { display: 'grid', gap: 12, maxWidth: 360 } },
+          h(NumberRangeInput, { value: n, onValueChange: setN }),
+          h(TimeRangePicker, { value: t, onValueChange: setT }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

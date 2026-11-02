@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/segmented-control.stories'
+import guide from './SegmentedControl.md?raw'
+
+<Meta title="Guidelines/Forms/Segmented control" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Variants} />

@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/month-week-picker.stories'
+import guide from './MonthPicker.md?raw'
+
+<Meta title="Guidelines/Forms/Month picker" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.MonthOpen} />
