@@ -95,6 +95,20 @@ const en = {
     searchCountry: 'Search a country…',
     number: 'Phone number',
   },
+  inputs: {
+    showPassword: 'Show password',
+    clearSearch: 'Clear search',
+    increase: 'Increase',
+    decrease: 'Decrease',
+    time: {
+      openList: 'Choose from a list',
+      times: 'Times',
+      /** Shown under a typed time that can't be read; `format` is the expected shape ("hh:mm"). */
+      invalid: (format: string) => `Enter a time as ${format}.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Date', time: 'Time' },
+  },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -1158,6 +1172,19 @@ const fr: Messages = {
     country: 'Pays',
     searchCountry: 'Rechercher un pays…',
     number: 'Numéro de téléphone',
+  },
+  inputs: {
+    showPassword: 'Afficher le mot de passe',
+    clearSearch: 'Effacer la recherche',
+    increase: 'Augmenter',
+    decrease: 'Diminuer',
+    time: {
+      openList: 'Choisir dans une liste',
+      times: 'Heures',
+      invalid: (format: string) => `Saisissez une heure au format ${format}.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Date', time: 'Heure' },
   },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
   dataTable: {
