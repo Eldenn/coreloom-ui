@@ -4,7 +4,14 @@ import * as React from 'react'
 import type { NodeRun } from '@/components/ui/node-editor'
 import { WorkflowBuilder } from '@/components/workflow-builder'
 
-import { automationKinds, signupWorkflow, unfinishedWorkflow } from './workflow-data'
+import {
+  automationKinds,
+  demoCredentials,
+  fakeRunNode,
+  signupRuns,
+  signupWorkflow,
+  unfinishedWorkflow,
+} from './workflow-data'
 
 const meta = {
   title: 'Blocks/Workflow/Workflow builder',
@@ -23,6 +30,7 @@ const meta = {
     kinds: automationKinds,
     defaultValue: signupWorkflow,
     defaultName: 'Route new signups',
+    editorProps: { credentials: demoCredentials },
   },
 } satisfies Meta<typeof WorkflowBuilder>
 export default meta
@@ -30,8 +38,12 @@ type Story = StoryObj<typeof meta>
 
 const ORDER = ['webhook', 'if', 'http', 'chat'] as const
 
-/** Save and Run work: the run is simulated one node at a time. */
+/**
+ * Save and Run work: the run is simulated one node at a time, and leaves each node's input and
+ * output. "Test node" runs one node alone.
+ */
 export const Default: Story = {
+  args: { editorProps: { credentials: demoCredentials, onRunNode: fakeRunNode } },
   render: function Render(args) {
     const [runs, setRuns] = React.useState<Partial<Record<string, NodeRun>>>({})
     const [running, setRunning] = React.useState(false)
@@ -53,12 +65,16 @@ export const Default: Story = {
               setRuns((r) => ({
                 ...r,
                 [id]: { status: 'running' },
-                ...(i > 0 ? { [ORDER[i - 1] ?? '']: { status: 'success' } } : {}),
+                ...(i > 0
+                  ? {
+                      [ORDER[i - 1] ?? '']: signupRuns[ORDER[i - 1] ?? ''] ?? { status: 'success' },
+                    }
+                  : {}),
               }))
             }, i * 700)
           })
           setTimeout(() => {
-            setRuns((r) => ({ ...r, chat: { status: 'success', message: 'Posted' } }))
+            setRuns(signupRuns)
             setRunning(false)
           }, ORDER.length * 700)
         }}

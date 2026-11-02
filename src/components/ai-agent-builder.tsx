@@ -37,6 +37,7 @@ import { MultiSelect } from '@/components/ui/multi-select'
 import {
   connectNodes,
   layoutWorkflow,
+  type NodeEditorProps,
   type NodeKind,
   type NodeRun,
   type Workflow,
@@ -676,6 +677,7 @@ function AgentBuilder({
   onRun,
   running,
   runs,
+  onRunNode,
   readOnly = false,
   defaultSelectedId,
   height,
@@ -704,6 +706,8 @@ function AgentBuilder({
   onRun?: (graph: { workflow: Workflow; json: LangGraphJSON }) => void
   running?: boolean
   runs?: Partial<Record<string, NodeRun>>
+  /** Runs one node in your app, for "Test node" (see NodeEditor). */
+  onRunNode?: NodeEditorProps['onRunNode']
   readOnly?: boolean
   /** The node whose settings show first. */
   defaultSelectedId?: string
@@ -780,7 +784,13 @@ function AgentBuilder({
         {...(runs ? { runs } : {})}
         readOnly={readOnly}
         {...(height !== undefined ? { height } : {})}
-        editorProps={{ label: t.label, defaultSelectedId: defaultSelectedId ?? null }}
+        editorProps={{
+          label: t.label,
+          defaultSelectedId: defaultSelectedId ?? null,
+          // State fields are what `{{ }}` in any node can read.
+          variables: fields.map((f) => ({ path: f.name })),
+          ...(onRunNode ? { onRunNode } : {}),
+        }}
         actions={
           <>
             <Button

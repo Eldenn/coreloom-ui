@@ -22,7 +22,7 @@
           fields: [{ name: 'path', label: 'Path', type: 'text', required: true }], summary: (d) => d.path ? 'POST /' + d.path : undefined },
         { type: 'if', label: 'If', description: 'Sends items one way or the other.', category: 'Logic', icon: I('M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9'),
           outputs: [{ id: 'true', label: 'true' }, { id: 'false', label: 'false' }],
-          fields: [{ name: 'condition', label: 'Condition', type: 'text', required: true }], summary: (d) => d.condition },
+          fields: [{ name: 'conditions', label: 'Conditions', type: 'conditions', required: true }], summary: () => 'email doesn’t contain @gmail.com' },
         { type: 'http', label: 'HTTP request', description: 'Calls an API.', category: 'Actions', icon: I('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20'),
           fields: [{ name: 'url', label: 'URL', type: 'text', required: true }], summary: (d) => d.url },
         { type: 'email', label: 'Send email', description: 'Sends an email.', category: 'Actions', icon: I('M4 4h16v16H4zM22 6l-10 7L2 6'),
@@ -31,9 +31,9 @@
       const workflow = {
         nodes: [
           { id: 'webhook', type: 'webhook', name: 'New signup', position: { x: 0, y: 90 }, data: { path: 'signup' } },
-          { id: 'if', type: 'if', name: 'Business email?', position: { x: 340, y: 90 }, data: { condition: 'domain is not a free provider' } },
+          { id: 'if', type: 'if', name: 'Business email?', position: { x: 340, y: 90 }, data: { conditions: { combinator: 'and', rules: [{ left: '{{ email }}', operator: 'notContains', right: '@gmail.com' }] } } },
           { id: 'http', type: 'http', name: 'Enrich company', position: { x: 700, y: 0 }, data: { url: 'https://api.example.com/companies' } },
-          { id: 'email', type: 'email', name: 'Welcome email', position: { x: 700, y: 200 }, data: { to: '{{email}}', subject: 'Welcome aboard' } },
+          { id: 'email', type: 'email', name: 'Welcome email', position: { x: 700, y: 200 }, data: { to: '{{ email }}', subject: 'Welcome aboard, {{ name }}' } },
         ],
         edges: [
           { id: 'e1', source: 'webhook', target: 'if' },
@@ -41,7 +41,9 @@
           { id: 'e3', source: 'if', sourcePort: 'false', target: 'email' },
         ],
       };
-      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.NodeEditor, { kinds, defaultValue: workflow, defaultSelectedId: 'if' }));
+      const lead = { name: 'Ada', email: 'ada@analytical.io' };
+      const runs = { webhook: { status: 'success', output: [lead] }, if: { status: 'success', input: [lead], output: [lead] } };
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.NodeEditor, { kinds, defaultValue: workflow, defaultSelectedId: 'email', runs }));
     }
     render();
   </script>
