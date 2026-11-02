@@ -76,7 +76,9 @@ jobs:
 
   build:
     needs: [checks, test]
-    if: github.event_name != 'pull_request'
+    # Pages only accepts main: a run started on another branch (the visual baselines workflow
+    # starts one on its branch) tests, but doesn't build or deploy.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
