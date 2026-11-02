@@ -517,6 +517,34 @@ const en = {
     newSection: 'New section',
     newOption: (n: number) => `Option ${n}`,
   },
+  display: {
+    timeline: { label: 'Activity' },
+    tree: { label: 'Tree' },
+    diff: {
+      noChanges: 'No differences.',
+      linesAdded: (n: number): string => (n === 1 ? '1 line added' : `${n} lines added`),
+      linesRemoved: (n: number): string => (n === 1 ? '1 line removed' : `${n} lines removed`),
+      showUnchanged: (n: number): string =>
+        n === 1 ? 'Show 1 unchanged line' : `Show ${n} unchanged lines`,
+      added: 'Added',
+      removed: 'Removed',
+      before: 'Before',
+      after: 'After',
+    },
+    code: {
+      label: 'Code',
+      highlighted: 'Highlighted',
+      wrap: 'Wrap lines',
+    },
+    json: {
+      label: 'JSON',
+      expandAll: 'Expand all',
+      collapseAll: 'Collapse all',
+      copy: 'Copy JSON',
+      items: (n: number): string => (n === 1 ? '1 item' : `${n} items`),
+      keys: (n: number): string => (n === 1 ? '1 key' : `${n} keys`),
+    },
+  },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -804,12 +832,6 @@ const en = {
       firstVersion: 'This is the first version, so there’s nothing to compare yet.',
       comparedWith: (n: number) => `Compared with v${n}`,
       noChanges: 'No changes from the previous version.',
-      linesAdded: (n: number) => (n === 1 ? '1 line added' : `${n} lines added`),
-      linesRemoved: (n: number) => (n === 1 ? '1 line removed' : `${n} lines removed`),
-      showUnchanged: (n: number) =>
-        n === 1 ? 'Show 1 unchanged line' : `Show ${n} unchanged lines`,
-      added: 'Added',
-      removed: 'Removed',
     },
     agentGraph: {
       label: 'Agents and how they work together',
@@ -2091,6 +2113,34 @@ const fr: Messages = {
     newSection: 'Nouvelle section',
     newOption: (n: number) => `Option ${n}`,
   },
+  display: {
+    timeline: { label: 'Activité' },
+    tree: { label: 'Arborescence' },
+    diff: {
+      noChanges: 'Aucune différence.',
+      linesAdded: (n) => (n === 1 ? '1 ligne ajoutée' : `${n} lignes ajoutées`),
+      linesRemoved: (n) => (n === 1 ? '1 ligne supprimée' : `${n} lignes supprimées`),
+      showUnchanged: (n) =>
+        n === 1 ? 'Afficher 1 ligne inchangée' : `Afficher ${n} lignes inchangées`,
+      added: 'Ajoutée',
+      removed: 'Supprimée',
+      before: 'Avant',
+      after: 'Après',
+    },
+    code: {
+      label: 'Code',
+      highlighted: 'Mise en évidence',
+      wrap: 'Retour à la ligne',
+    },
+    json: {
+      label: 'JSON',
+      expandAll: 'Tout déplier',
+      collapseAll: 'Tout replier',
+      copy: 'Copier le JSON',
+      items: (n) => (n === 1 ? '1 élément' : `${n} éléments`),
+      keys: (n) => (n === 1 ? '1 clé' : `${n} clés`),
+    },
+  },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
   dataTable: {
     filter: 'Filtrer…',
@@ -2378,12 +2428,6 @@ const fr: Messages = {
       firstVersion: 'C’est la première version : il n’y a rien à comparer pour l’instant.',
       comparedWith: (n) => `Comparée à la v${n}`,
       noChanges: 'Aucune modification depuis la version précédente.',
-      linesAdded: (n) => (n === 1 ? '1 ligne ajoutée' : `${n} lignes ajoutées`),
-      linesRemoved: (n) => (n === 1 ? '1 ligne supprimée' : `${n} lignes supprimées`),
-      showUnchanged: (n) =>
-        n === 1 ? 'Afficher 1 ligne inchangée' : `Afficher ${n} lignes inchangées`,
-      added: 'Ajoutée',
-      removed: 'Supprimée',
     },
     agentGraph: {
       label: 'Les agents et leur façon de travailler ensemble',

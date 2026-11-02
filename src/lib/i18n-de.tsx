@@ -503,6 +503,34 @@ export const de: Messages = {
     newSection: 'Neuer Abschnitt',
     newOption: (n: number) => `Option ${n}`,
   },
+  display: {
+    timeline: { label: 'Aktivität' },
+    tree: { label: 'Baum' },
+    diff: {
+      noChanges: 'Keine Unterschiede.',
+      linesAdded: (n) => (n === 1 ? '1 Zeile hinzugefügt' : `${n} Zeilen hinzugefügt`),
+      linesRemoved: (n) => (n === 1 ? '1 Zeile entfernt' : `${n} Zeilen entfernt`),
+      showUnchanged: (n) =>
+        n === 1 ? '1 unveränderte Zeile anzeigen' : `${n} unveränderte Zeilen anzeigen`,
+      added: 'Hinzugefügt',
+      removed: 'Entfernt',
+      before: 'Vorher',
+      after: 'Nachher',
+    },
+    code: {
+      label: 'Code',
+      highlighted: 'Hervorgehoben',
+      wrap: 'Zeilen umbrechen',
+    },
+    json: {
+      label: 'JSON',
+      expandAll: 'Alle aufklappen',
+      collapseAll: 'Alle zuklappen',
+      copy: 'JSON kopieren',
+      items: (n) => (n === 1 ? '1 Element' : `${n} Elemente`),
+      keys: (n) => (n === 1 ? '1 Schlüssel' : `${n} Schlüssel`),
+    },
+  },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {
     filter: 'Filtern…',
@@ -789,12 +817,6 @@ export const de: Messages = {
       firstVersion: 'Das ist die erste Version, es gibt noch nichts zu vergleichen.',
       comparedWith: (n) => `Verglichen mit v${n}`,
       noChanges: 'Keine Änderungen gegenüber der vorherigen Version.',
-      linesAdded: (n) => (n === 1 ? '1 Zeile hinzugefügt' : `${n} Zeilen hinzugefügt`),
-      linesRemoved: (n) => (n === 1 ? '1 Zeile entfernt' : `${n} Zeilen entfernt`),
-      showUnchanged: (n) =>
-        n === 1 ? '1 unveränderte Zeile anzeigen' : `${n} unveränderte Zeilen anzeigen`,
-      added: 'Hinzugefügt',
-      removed: 'Entfernt',
     },
     agentGraph: {
       label: 'Die Agenten und wie sie zusammenarbeiten',
