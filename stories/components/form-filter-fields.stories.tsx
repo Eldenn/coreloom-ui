@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { FieldGroup } from '@/components/ui/field'
 import { useAppForm } from '@/components/ui/form'
 import { parseJson } from '@/components/ui/json-input'
+import type { NumberRange, TimeRange } from '@/components/ui/range-inputs'
 import { toast } from '@/components/ui/sonner'
 
 const schema = z.object({
@@ -26,6 +27,9 @@ const schema = z.object({
   zone: z.string().min(1, 'Pick a time zone.'),
 })
 
+const emptyBudget: NumberRange = { min: null, max: null }
+const noHours: TimeRange = {}
+
 const people = [
   { value: 'ada', label: 'Ada Lovelace' },
   { value: 'alan', label: 'Alan Turing' },
@@ -37,8 +41,8 @@ function FilterFieldsForm({ submitOnMount = false }: { submitOnMount?: boolean }
     defaultValues: {
       topics: [] as string[],
       nps: null as number | null,
-      budget: { min: null, max: null },
-      hours: {},
+      budget: emptyBudget,
+      hours: noHours,
       config: '{\n  "retries": 3\n}',
       note: '',
       team: '',
@@ -96,12 +100,7 @@ function FilterFieldsForm({ submitOnMount = false }: { submitOnMount?: boolean }
           )}
         </form.AppField>
         <form.AppField name="budget">
-          {(field) => (
-            <field.NumberRangeField
-              label="Budget"
-              formatOptions={{ style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }}
-            />
-          )}
+          {(field) => <field.NumberRangeField label="Budget" />}
         </form.AppField>
         <form.AppField name="hours">
           {(field) => <field.TimeRangeField label="Opening hours" />}

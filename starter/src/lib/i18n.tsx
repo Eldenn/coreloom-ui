@@ -260,7 +260,7 @@ const en = {
       never: 'Never',
       onDate: 'On',
       after: 'After',
-      occurrences: (n: number) => (n === 1 ? 'occurrence' : 'occurrences'),
+      occurrences: (n: number): string => (n === 1 ? 'occurrence' : 'occurrences'),
       endDate: 'End date',
       count: 'Number of occurrences',
       every: (n: number, unit: string) => (n === 1 ? `Every ${unit}` : `Every ${n} ${unit}`),

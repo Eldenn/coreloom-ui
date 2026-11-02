@@ -21,7 +21,7 @@
         const [n, setN] = React.useState({ min: 20, max: 80 });
         const [t, setT] = React.useState({ start: '09:00', end: '18:00' });
         return h('div', { style: { display: 'grid', gap: 12, maxWidth: 360 } },
-          h(NumberRangeInput, { value: n, onValueChange: setN, formatOptions: { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 } }),
+          h(NumberRangeInput, { value: n, onValueChange: setN }),
           h(TimeRangePicker, { value: t, onValueChange: setT }));
       }
       ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
