@@ -1,0 +1,31 @@
+{
+  "name": "coreloom-vscode-webview-example",
+  "displayName": "Coreloom UI webview example",
+  "description": "A VS Code webview built with Coreloom UI components, themed by the editor.",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "coreloom",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "coreloomExample.open",
+        "title": "Open the Coreloom UI example",
+        "category": "Coreloom"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "preview": "node build.mjs --preview && node dist/preview-server.js"
+  }
+}
