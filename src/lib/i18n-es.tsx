@@ -1206,6 +1206,32 @@ export const es: Messages = {
     code: 'Código',
   },
   marketing: { faq: 'Preguntas frecuentes' },
+  showcase: {
+    footer: 'Pie de página',
+    social: 'Redes sociales',
+    newTab: '(se abre en una pestaña nueva)',
+    specialties: 'Especialidades',
+    contact: 'Datos de contacto',
+    address: 'Dirección',
+    phone: 'Teléfono',
+    email: 'Correo electrónico',
+    directions: 'Cómo llegar',
+    hours: 'Horario',
+    closed: 'Cerrado',
+    today: 'Hoy',
+    openNow: 'Abierto ahora',
+    closedNow: 'Cerrado',
+    closesAt: (time) => `Cierra a las ${time}`,
+    opensAt: (when, day, time) =>
+      when === 'today'
+        ? `Abre hoy a las ${time}`
+        : when === 'tomorrow'
+          ? `Abre mañana a las ${time}`
+          : `Abre el ${day} a las ${time}`,
+    exceptions: 'Horarios especiales',
+    contents: 'En esta página',
+    updated: (date) => `Última actualización: ${date}`,
+  },
   auth: {
     or: 'o',
     emailPlaceholder: 'tu@empresa.dev',

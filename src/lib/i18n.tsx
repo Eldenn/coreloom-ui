@@ -1206,6 +1206,33 @@ const en = {
     code: 'Code',
   },
   marketing: { faq: 'Questions' },
+  showcase: {
+    footer: 'Footer',
+    social: 'Social media',
+    newTab: '(opens in a new tab)',
+    specialties: 'Specialties',
+    contact: 'Contact details',
+    address: 'Address',
+    phone: 'Phone',
+    email: 'Email',
+    directions: 'Get directions',
+    hours: 'Opening hours',
+    closed: 'Closed',
+    today: 'Today',
+    openNow: 'Open now',
+    closedNow: 'Closed',
+    closesAt: (time: string) => `Closes at ${time}`,
+    /** `when` picks the wording: today, tomorrow, or a later `day` ("Monday"). */
+    opensAt: (when: 'today' | 'tomorrow' | 'later', day: string, time: string) =>
+      when === 'today'
+        ? `Opens today at ${time}`
+        : when === 'tomorrow'
+          ? `Opens tomorrow at ${time}`
+          : `Opens ${day} at ${time}`,
+    exceptions: 'Exceptional hours',
+    contents: 'On this page',
+    updated: (date: string) => `Last updated ${date}`,
+  },
   auth: {
     or: 'or',
     emailPlaceholder: 'you@company.dev',
@@ -3010,6 +3037,32 @@ const fr: Messages = {
     code: 'Code',
   },
   marketing: { faq: 'Questions fréquentes' },
+  showcase: {
+    footer: 'Pied de page',
+    social: 'Réseaux sociaux',
+    newTab: '(nouvel onglet)',
+    specialties: 'Spécialités',
+    contact: 'Coordonnées',
+    address: 'Adresse',
+    phone: 'Téléphone',
+    email: 'E-mail',
+    directions: 'Itinéraire',
+    hours: 'Horaires d’ouverture',
+    closed: 'Fermé',
+    today: 'Aujourd’hui',
+    openNow: 'Ouvert',
+    closedNow: 'Fermé',
+    closesAt: (time) => `Ferme à ${time}`,
+    opensAt: (when, day, time) =>
+      when === 'today'
+        ? `Ouvre aujourd’hui à ${time}`
+        : when === 'tomorrow'
+          ? `Ouvre demain à ${time}`
+          : `Ouvre ${day} à ${time}`,
+    exceptions: 'Horaires exceptionnels',
+    contents: 'Sur cette page',
+    updated: (date) => `Dernière mise à jour : ${date}`,
+  },
   auth: {
     or: 'ou',
     emailPlaceholder: 'vous@entreprise.fr',

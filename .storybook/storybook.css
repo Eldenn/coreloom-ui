@@ -1,6 +1,7 @@
 /* Storybook styles: the app stylesheet, plus the stories folder as a Tailwind source. */
 @import '../src/styles/globals.css';
 @import '../src/styles/accents.css';
+@import '../src/styles/surfaces.css';
 @import '../src/styles/vscode.css';
 @source '../stories';
 

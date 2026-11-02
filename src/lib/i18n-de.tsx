@@ -1216,6 +1216,32 @@ export const de: Messages = {
     code: 'Code',
   },
   marketing: { faq: 'Häufige Fragen' },
+  showcase: {
+    footer: 'Fußzeile',
+    social: 'Soziale Medien',
+    newTab: '(öffnet in einem neuen Tab)',
+    specialties: 'Schwerpunkte',
+    contact: 'Kontakt',
+    address: 'Adresse',
+    phone: 'Telefon',
+    email: 'E-Mail',
+    directions: 'Route planen',
+    hours: 'Öffnungszeiten',
+    closed: 'Geschlossen',
+    today: 'Heute',
+    openNow: 'Jetzt geöffnet',
+    closedNow: 'Geschlossen',
+    closesAt: (time) => `Schließt um ${time}`,
+    opensAt: (when, day, time) =>
+      when === 'today'
+        ? `Öffnet heute um ${time}`
+        : when === 'tomorrow'
+          ? `Öffnet morgen um ${time}`
+          : `Öffnet ${day} um ${time}`,
+    exceptions: 'Abweichende Öffnungszeiten',
+    contents: 'Auf dieser Seite',
+    updated: (date) => `Zuletzt aktualisiert am ${date}`,
+  },
   auth: {
     or: 'oder',
     emailPlaceholder: 'du@firma.dev',
