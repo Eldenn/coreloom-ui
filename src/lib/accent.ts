@@ -511,11 +511,15 @@ function accentCss(name: string, input: string, dark: AccentFamily, light: Accen
     `/* Coreloom UI — "${name}" accent, generated from ${input} by the theme generator (lib/accent.ts).`,
     ' * Import after accents.css, then set it on <html> or on any element (a section of its own):',
     ` *   <html data-accent="${name}">   or   <html data-accent="${name}" data-theme="light">`,
+    ' * A section that changes theme takes it on the same element: data-theme="dark" data-accent.',
     ' * Every pairing is checked: text 4.5:1, fills and focus rings 3:1 on all surfaces. */',
     '',
-    block(`[data-accent='${name}']`, accentVariables('dark', dark)),
     block(
-      `[data-theme='light'][data-accent='${name}'],\n[data-theme='light'] [data-accent='${name}']`,
+      `[data-accent='${name}'],\n[data-theme='dark'][data-accent='${name}']`,
+      accentVariables('dark', dark),
+    ),
+    block(
+      `[data-theme='light'][data-accent='${name}'],\n:where([data-theme='light']) [data-accent='${name}']`,
       accentVariables('light', light),
     ),
   ].join('\n')

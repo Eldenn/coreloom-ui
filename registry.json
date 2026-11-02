@@ -7,7 +7,7 @@
       "name": "theme",
       "type": "registry:item",
       "title": "Coreloom theme",
-      "description": "Coreloom UI tokens (dark-first, light via data-theme), the brand fonts (Fontsource) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto the tokens. Import fonts.css, tokens.css and theme.css in your globals.css after tailwindcss. accents.css adds blue, violet, amber and rose presets (data-accent on <html>).",
+      "description": "Coreloom UI tokens (dark-first, light via data-theme), the brand fonts (Fontsource) and the Tailwind/shadcn theme layer that maps shadcn color utilities onto the tokens. Import fonts.css, tokens.css and theme.css in your globals.css after tailwindcss. accents.css adds blue, violet, amber and rose presets (data-accent on <html>); surfaces.css adds the mineral and bone surface presets (data-surface).",
       "dependencies": [
         "tw-animate-css",
         "@fontsource-variable/geist",
@@ -34,6 +34,11 @@
           "path": "src/styles/accents.css",
           "type": "registry:file",
           "target": "src/styles/coreloom/accents.css"
+        },
+        {
+          "path": "src/styles/surfaces.css",
+          "type": "registry:file",
+          "target": "src/styles/coreloom/surfaces.css"
         }
       ]
     },
@@ -2931,8 +2936,13 @@
       "name": "site-footer",
       "type": "registry:component",
       "title": "SiteFooter",
-      "description": "Footer with a note and links.",
-      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/link"],
+      "description": "Footer with a note and links; with brand and columns, a multi-column site footer (link columns, address, social links).",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link"
+      ],
       "files": [
         {
           "path": "src/components/site-footer.tsx",
@@ -3094,6 +3104,50 @@
         },
         {
           "path": "src/components/cta-section.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "showcase",
+      "type": "registry:block",
+      "title": "Showcase site",
+      "description": "Sections for a business's public site (a practice, a studio, a firm): hero with an image, practitioner cards, contact details with opening hours and a map, image + text sections, quotes and a legal page layout. Pair with surfaces.css for the page's backgrounds.",
+      "categories": ["marketing", "showcase"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/status-indicator",
+        "@coreloom/copy-button",
+        "@coreloom/site-header",
+        "@coreloom/site-footer"
+      ],
+      "files": [
+        {
+          "path": "src/components/hero.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/practitioner-card.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/contact-section.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/media-section.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/quote.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/legal-layout.tsx",
           "type": "registry:component"
         }
       ]

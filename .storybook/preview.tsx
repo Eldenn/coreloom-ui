@@ -18,8 +18,9 @@ const LOCALES = {
   de: { messages: de, dateLocale: deDates },
 } as const
 const ACCENTS = ['cyan', 'blue', 'violet', 'amber', 'rose'] as const
+const SURFACES = ['mineral', 'bone'] as const
 
-/** Applies the toolbar's theme and accent to <html data-theme data-accent> and its language to the i18n
+/** Applies the toolbar's theme, accent and surface to <html data-theme data-accent data-surface> and its language to the i18n
  *  provider, like an app does. */
 const WithTheme: Decorator = (Story, context) => {
   const theme = context.globals.theme === 'light' ? 'light' : 'dark'
@@ -35,6 +36,11 @@ const WithTheme: Decorator = (Story, context) => {
     if (accent === 'cyan') delete document.documentElement.dataset.accent
     else document.documentElement.dataset.accent = accent
   }, [accent])
+  const surface = SURFACES.find((s) => s === context.globals.surface)
+  React.useEffect(() => {
+    if (surface) document.documentElement.dataset.surface = surface
+    else delete document.documentElement.dataset.surface
+  }, [surface])
   React.useEffect(() => {
     document.documentElement.lang = locale
   }, [locale])
@@ -96,8 +102,21 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
+    surface: {
+      description: 'Surface preset (surfaces.css, data-surface on <html>)',
+      toolbar: {
+        title: 'Surface',
+        icon: 'contrast',
+        items: [
+          { value: 'default', title: 'Graphite (default)' },
+          { value: 'mineral', title: 'Mineral blue' },
+          { value: 'bone', title: 'Bone' },
+        ],
+        dynamicTitle: true,
+      },
+    },
   },
-  initialGlobals: { theme: 'dark', locale: 'en', accent: 'cyan' },
+  initialGlobals: { theme: 'dark', locale: 'en', accent: 'cyan', surface: 'default' },
   parameters: {
     layout: 'padded',
     backgrounds: { disable: true },
