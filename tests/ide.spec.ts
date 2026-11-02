@@ -138,3 +138,26 @@ test('ide: at phone width the explorer is a sheet', async ({ page }) => {
   await expect(sheet).toBeHidden()
   await expect(tab(page, 'README.md')).toHaveAttribute('aria-selected', 'true')
 })
+
+test('code editor: the language picker changes the language', async ({ page }) => {
+  await open(page, 'components-forms-code-editor--with-language-select')
+  const picker = page.getByRole('combobox', { name: 'Language' })
+  await expect(picker).toHaveText('Python')
+  await picker.click()
+  await page.getByRole('option', { name: 'Plain text' }).click()
+  await expect(picker).toHaveText('Plain text')
+})
+
+test('ide: the status bar changes the file’s language', async ({ page }) => {
+  await open(page, 'blocks-developer-ide--default')
+  await tab(page, 'format.ts').click()
+  await ide(page).getByRole('button', { name: 'Change the file’s language: TypeScript' }).click()
+  const palette = page.getByRole('dialog', { name: 'Change the file’s language' })
+  await palette.getByRole('combobox').fill('javascript')
+  await page.keyboard.press('Enter')
+  await expect(palette).toBeHidden()
+  await expect(
+    ide(page).getByRole('button', { name: 'Change the file’s language: JavaScript' }),
+  ).toBeVisible()
+  await expect(ide(page).getByRole('textbox', { name: 'Edit src/lib/format.ts' })).toBeFocused()
+})

@@ -60,6 +60,13 @@ import {
 import { tags } from '@lezer/highlight'
 import * as React from 'react'
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -74,6 +81,20 @@ type CodeEditorLanguage =
   | 'markdown'
   | 'python'
   | 'text'
+
+/** Every built-in language, in menu order, with its name ("text" is named by the locale). */
+const CODE_EDITOR_LANGUAGES: readonly { value: CodeEditorLanguage; label: string | null }[] = [
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'tsx', label: 'TypeScript JSX' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'jsx', label: 'JavaScript JSX' },
+  { value: 'json', label: 'JSON' },
+  { value: 'html', label: 'HTML' },
+  { value: 'css', label: 'CSS' },
+  { value: 'markdown', label: 'Markdown' },
+  { value: 'python', label: 'Python' },
+  { value: 'text', label: null },
+]
 
 /** A problem to show in the code: a red or amber underline, a gutter mark, a tooltip. */
 interface CodeEditorDiagnostic {
@@ -675,12 +696,72 @@ function CodeEditor({
   )
 }
 
+/** The name of a language as people read it: "TypeScript JSX", "Plain text". */
+function useLanguageName() {
+  const t = useCoreloomI18n().messages.codeEditor
+  return (language: CodeEditorLanguage) =>
+    CODE_EDITOR_LANGUAGES.find((l) => l.value === language)?.label ?? t.plainText
+}
+
+/**
+ * Lets people pick the language of a CodeEditor: put it in the editor's header or toolbar and pass
+ * the same value to the editor's `language`.
+ */
+function CodeEditorLanguageSelect({
+  value,
+  onValueChange,
+  languages = CODE_EDITOR_LANGUAGES.map((l) => l.value),
+  size = 'sm',
+  disabled,
+  className,
+  'aria-label': ariaLabel,
+}: {
+  value: CodeEditorLanguage
+  onValueChange: (language: CodeEditorLanguage) => void
+  /** The languages to offer, in order (all built-in ones by default). */
+  languages?: readonly CodeEditorLanguage[]
+  size?: 'sm' | 'default'
+  disabled?: boolean
+  className?: string
+  'aria-label'?: string
+}) {
+  const t = useCoreloomI18n().messages.codeEditor
+  const name = useLanguageName()
+  return (
+    <Select
+      value={value}
+      onValueChange={(next) => {
+        onValueChange(next as CodeEditorLanguage)
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger
+        size={size}
+        aria-label={ariaLabel ?? t.language}
+        className={cn('w-auto', className)}
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {languages.map((language) => (
+          <SelectItem key={language} value={language}>
+            {name(language)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 export {
+  CODE_EDITOR_LANGUAGES,
   CodeEditor,
   type CodeEditorCursor,
   type CodeEditorDiagnostic,
   type CodeEditorLanguage,
+  CodeEditorLanguageSelect,
   type CodeEditorProps,
   toOffsets as diagnosticsToOffsets,
   languageFromPath,
+  useLanguageName,
 }

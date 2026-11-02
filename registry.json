@@ -1960,7 +1960,12 @@
         "@codemirror/view@^6",
         "@lezer/highlight@^1"
       ],
-      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/select"
+      ],
       "files": [
         {
           "path": "src/components/ui/code-editor.tsx",

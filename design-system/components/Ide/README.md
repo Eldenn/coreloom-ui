@@ -6,6 +6,7 @@ A code workspace in the page, laid out like VS Code: a file explorer, tabs of op
 
 - Shortcuts act only while focus is inside the IDE, so they don't clash with the page (or VS Code around a webview): Mod-S saves (Mod-Shift-S saves all), Mod-P finds a file, Mod-Shift-P opens the commands, Mod-B shows or hides the explorer, Mod-J the panel.
 - Tabs: arrows move between them, Delete closes one, Enter goes to the editor; the middle button closes too. A modified file shows a dot and is announced as "modified".
+- The language in the status bar (or the command Change the file’s language) opens a list of languages: the choice sets the file’s `language` through `onFilesChange`.
 - The explorer is a TreeView (APG keyboard, type-ahead). Problems lists every diagnostic; choosing one opens its file at its line.
 - Saves, creations, renames and deletions are announced in one polite live region. The status bar shows problems, save state, line and column, indentation and language.
 - Below 640 px of width (the IDE's own, not the window's), the explorer moves into a sheet and the panel stacks under the editor.
