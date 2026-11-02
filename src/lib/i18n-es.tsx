@@ -564,6 +564,66 @@ export const es: Messages = {
       hideReplies: 'Ocultar respuestas',
     },
   },
+  utility: {
+    toolbar: { more: 'Más' },
+    actionBar: {
+      label: 'Acciones en bloque',
+      selected: (count, n) => (n === 1 ? `${count} seleccionado` : `${count} seleccionados`),
+      clear: 'Borrar selección',
+    },
+    popconfirm: { confirm: 'Confirmar', cancel: 'Cancelar' },
+    secret: {
+      secret: 'el secreto',
+      hidden: 'oculto',
+      show: (name) => `Mostrar ${name}`,
+      hide: (name) => `Ocultar ${name}`,
+      copy: (name) => `Copiar ${name}`,
+    },
+    notificationBadge: {
+      new: 'Nuevo',
+      unread: (count, _n) => `${count} sin leer`,
+    },
+    overflow: {
+      more: (count, _n) => `Mostrar ${count} más`,
+    },
+    file: {
+      label: 'Archivos',
+      uploading: (name) => `Subiendo ${name}`,
+      retry: (name) => `Reintentar ${name}`,
+      remove: (name) => `Quitar ${name}`,
+      cancel: (name) => `Cancelar la subida de ${name}`,
+    },
+    shortcuts: {
+      title: 'Atajos de teclado',
+      description: 'Los atajos disponibles en esta aplicación.',
+      filter: 'Buscar atajos',
+      empty: 'Ningún atajo coincide.',
+      then: 'luego',
+    },
+    countdown: {
+      units: { days: 'Días', hours: 'Horas', minutes: 'Min', seconds: 'Seg' },
+      short: {
+        days: (n) => `${n} d`,
+        hours: (n) => `${n} h`,
+        minutes: (n) => `${n} min`,
+        seconds: (n) => `${n} s`,
+      },
+      spoken: (p) =>
+        [
+          p.days ? `${p.days} ${p.days === 1 ? 'día' : 'días'}` : '',
+          p.hours ? `${p.hours} ${p.hours === 1 ? 'hora' : 'horas'}` : '',
+          p.minutes ? `${p.minutes} ${p.minutes === 1 ? 'minuto' : 'minutos'}` : '',
+          p.seconds ? `${p.seconds} ${p.seconds === 1 ? 'segundo' : 'segundos'}` : '',
+        ]
+          .filter(Boolean)
+          .join(', ') || '0 segundos',
+    },
+    quota: {
+      of: (used, max) => `${used} de ${max}`,
+      spoken: (used, percent) => `${used}, ${percent} %`,
+      free: 'Libre',
+    },
+  },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {
     filter: 'Filtrar…',

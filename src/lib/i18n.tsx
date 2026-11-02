@@ -583,6 +583,66 @@ const en = {
       hideReplies: 'Hide replies',
     },
   },
+  utility: {
+    toolbar: { more: 'More' },
+    actionBar: {
+      label: 'Bulk actions',
+      selected: (count: string, _n: number): string => `${count} selected`,
+      clear: 'Clear selection',
+    },
+    popconfirm: { confirm: 'Confirm', cancel: 'Cancel' },
+    secret: {
+      secret: 'secret',
+      hidden: 'hidden',
+      show: (name: string): string => `Show ${name}`,
+      hide: (name: string): string => `Hide ${name}`,
+      copy: (name: string): string => `Copy ${name}`,
+    },
+    notificationBadge: {
+      new: 'New',
+      unread: (count: string, _n: number): string => `${count} unread`,
+    },
+    overflow: {
+      more: (count: string, _n: number): string => `Show ${count} more`,
+    },
+    file: {
+      label: 'Files',
+      uploading: (name: string): string => `Uploading ${name}`,
+      retry: (name: string): string => `Retry ${name}`,
+      remove: (name: string): string => `Remove ${name}`,
+      cancel: (name: string): string => `Cancel the upload of ${name}`,
+    },
+    shortcuts: {
+      title: 'Keyboard shortcuts',
+      description: 'The shortcuts available in this app.',
+      filter: 'Search shortcuts',
+      empty: 'No shortcut matches.',
+      then: 'then',
+    },
+    countdown: {
+      units: { days: 'Days', hours: 'Hours', minutes: 'Min', seconds: 'Sec' },
+      short: {
+        days: (n: number): string => `${n} d`,
+        hours: (n: number): string => `${n} h`,
+        minutes: (n: number): string => `${n} min`,
+        seconds: (n: number): string => `${n} s`,
+      },
+      spoken: (p: { days: number; hours: number; minutes: number; seconds: number }): string =>
+        [
+          p.days ? `${p.days} ${p.days === 1 ? 'day' : 'days'}` : '',
+          p.hours ? `${p.hours} ${p.hours === 1 ? 'hour' : 'hours'}` : '',
+          p.minutes ? `${p.minutes} ${p.minutes === 1 ? 'minute' : 'minutes'}` : '',
+          p.seconds ? `${p.seconds} ${p.seconds === 1 ? 'second' : 'seconds'}` : '',
+        ]
+          .filter(Boolean)
+          .join(', ') || '0 seconds',
+    },
+    quota: {
+      of: (used: string, max: string): string => `${used} of ${max}`,
+      spoken: (used: string, percent: number): string => `${used}, ${percent}%`,
+      free: 'Free',
+    },
+  },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -2287,6 +2347,66 @@ const fr: Messages = {
         `${emoji} ${n === 1 ? '1 réaction' : `${n} réactions`}${mine ? ', dont la vôtre' : ''}`,
       showReplies: (n) => (n === 1 ? 'Afficher 1 réponse' : `Afficher ${n} réponses`),
       hideReplies: 'Masquer les réponses',
+    },
+  },
+  utility: {
+    toolbar: { more: 'Plus' },
+    actionBar: {
+      label: 'Actions groupées',
+      selected: (count, n) => (n === 1 ? `${count} sélectionné` : `${count} sélectionnés`),
+      clear: 'Effacer la sélection',
+    },
+    popconfirm: { confirm: 'Confirmer', cancel: 'Annuler' },
+    secret: {
+      secret: 'le secret',
+      hidden: 'masqué',
+      show: (name) => `Afficher ${name}`,
+      hide: (name) => `Masquer ${name}`,
+      copy: (name) => `Copier ${name}`,
+    },
+    notificationBadge: {
+      new: 'Nouveau',
+      unread: (count, n) => (n === 1 ? `${count} non lu` : `${count} non lus`),
+    },
+    overflow: {
+      more: (count, _n) => `Afficher ${count} de plus`,
+    },
+    file: {
+      label: 'Fichiers',
+      uploading: (name) => `Envoi de ${name}`,
+      retry: (name) => `Réessayer ${name}`,
+      remove: (name) => `Retirer ${name}`,
+      cancel: (name) => `Annuler l’envoi de ${name}`,
+    },
+    shortcuts: {
+      title: 'Raccourcis clavier',
+      description: 'Les raccourcis disponibles dans cette application.',
+      filter: 'Rechercher un raccourci',
+      empty: 'Aucun raccourci ne correspond.',
+      then: 'puis',
+    },
+    countdown: {
+      units: { days: 'Jours', hours: 'Heures', minutes: 'Min', seconds: 'Sec' },
+      short: {
+        days: (n) => `${n} j`,
+        hours: (n) => `${n} h`,
+        minutes: (n) => `${n} min`,
+        seconds: (n) => `${n} s`,
+      },
+      spoken: (p) =>
+        [
+          p.days ? `${p.days} ${p.days === 1 ? 'jour' : 'jours'}` : '',
+          p.hours ? `${p.hours} ${p.hours === 1 ? 'heure' : 'heures'}` : '',
+          p.minutes ? `${p.minutes} ${p.minutes === 1 ? 'minute' : 'minutes'}` : '',
+          p.seconds ? `${p.seconds} ${p.seconds === 1 ? 'seconde' : 'secondes'}` : '',
+        ]
+          .filter(Boolean)
+          .join(', ') || '0 secondes',
+    },
+    quota: {
+      of: (used, max) => `${used} sur ${max}`,
+      spoken: (used, percent) => `${used}, ${percent} %`,
+      free: 'Libre',
     },
   },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },

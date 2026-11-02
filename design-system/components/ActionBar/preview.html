@@ -1,0 +1,33 @@
+<!-- @dsCard group="Actions" height=110 subtitle="Selection count · bulk actions · clear" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ActionBar || !UI.Button || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ActionBar, Button } = UI;
+      function Demo() {
+        const [count, setCount] = React.useState(3);
+        return h('div', null,
+          count ? null : h('button', { onClick: () => setCount(3), style: { font: 'inherit' } }, 'Select 3 again'),
+          h(ActionBar, { count, position: 'static', onClear: () => setCount(0) },
+            h(Button, { size: 'sm', variant: 'ghost' }, 'Archive'),
+            h(Button, { size: 'sm', variant: 'destructive' }, 'Delete')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
