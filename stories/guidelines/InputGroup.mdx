@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/input-group.stories'
+import guide from './InputGroup.md?raw'
+
+<Meta title="Guidelines/Forms/Input Group" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Addons} />
+
+<Canvas of={Stories.Password} />
+
+<Canvas of={Stories.TextareaToolbar} />

@@ -1,0 +1,33 @@
+<!-- @dsCard group="Forms" height=300 subtitle="Locale-aware number · − / + · units and percents" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NumberInput || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { NumberInput, Field, FieldLabel, FieldDescription, FieldGroup } = UI;
+      function Demo() {
+        const [seats, setSeats] = React.useState(12);
+        const [discount, setDiscount] = React.useState(0.15);
+        return h(FieldGroup, { style: { maxWidth: 260 }, className: 'gap-4' },
+          h(Field, null, h(FieldLabel, { htmlFor: 'seats' }, 'Seats'), h(NumberInput, { id: 'seats', value: seats, onValueChange: setSeats, min: 1, max: 500 }), h(FieldDescription, null, 'Value: ' + seats)),
+          h(Field, null, h(FieldLabel, { htmlFor: 'disc' }, 'Discount'), h(NumberInput, { id: 'disc', value: discount, onValueChange: setDiscount, min: 0, max: 1, step: 0.05, formatOptions: { style: 'percent' } })),
+          h(Field, null, h(FieldLabel, { htmlFor: 'guests' }, 'Guests'), h(NumberInput, { id: 'guests', defaultValue: 2, min: 1, max: 8, stepper: 'sides' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

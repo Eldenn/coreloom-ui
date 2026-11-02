@@ -76,6 +76,19 @@ export const es: Messages = {
   },
   money: { amount: 'Importe' },
   phone: { country: 'País', searchCountry: 'Buscar un país…', number: 'Número de teléfono' },
+  inputs: {
+    showPassword: 'Mostrar contraseña',
+    clearSearch: 'Borrar búsqueda',
+    increase: 'Aumentar',
+    decrease: 'Disminuir',
+    time: {
+      openList: 'Elegir en una lista',
+      times: 'Horas',
+      invalid: (format) => `Escribe la hora como ${format}.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Fecha', time: 'Hora' },
+  },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {
     filter: 'Filtrar…',
