@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/scatter-chart.stories'
+import guide from './ScatterChart.md?raw'
+
+<Meta title="Guidelines/Data display/Scatter Chart" />
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Default} />
+
+## Bubbles
+
+<Canvas of={Stories.Bubbles} />

@@ -110,6 +110,38 @@ const en = {
     scrollable: 'Table, scrollable',
   },
   virtualList: { loadingMore: 'Loading more…', end: 'End of the list' },
+  charts: {
+    empty: 'No data',
+    sparkline: (first: string, last: string, low: string, high: string) =>
+      `Trend from ${first} to ${last}. Low ${low}, high ${high}.`,
+    total: 'Total',
+    other: 'Other',
+    legend: 'Legend',
+    donutSummary: (total: string) => `Total ${total}. Values by part in the legend.`,
+    showAll: (n: number) => `Show all ${n}`,
+    showLess: 'Show less',
+    less: 'Less',
+    more: 'More',
+    noData: 'No data',
+    item: 'Item',
+    share: (name: string, value: string, share: string) => `${name}: ${value} (${share})`,
+    flow: (from: string, to: string, value: string) => `${from} to ${to}: ${value}`,
+    weekOf: (date: string) => `Week of ${date}`,
+    cell: (name: string, value: string) => `${name}: ${value}`,
+    funnel: {
+      conversion: (rate: string) => `${rate} continue`,
+      dropped: (count: string) => `(${count} dropped)`,
+      ofStartLabel: 'of the first step:',
+    },
+    gauge: {
+      ok: 'Normal',
+      warning: 'Warning',
+      critical: 'Critical',
+      valueText: (value: string, max: string) => `${value} of ${max}`,
+      valueTextStatus: (value: string, max: string, status: string) =>
+        `${value} of ${max}, ${status}`,
+    },
+  },
   ai: {
     code: {
       copy: 'Copy code',
@@ -1106,6 +1138,37 @@ const fr: Messages = {
     scrollable: 'Tableau, défilant',
   },
   virtualList: { loadingMore: 'Chargement de la suite…', end: 'Fin de la liste' },
+  charts: {
+    empty: 'Aucune donnée',
+    sparkline: (first, last, low, high) =>
+      `Évolution de ${first} à ${last}. Minimum ${low}, maximum ${high}.`,
+    total: 'Total',
+    other: 'Autres',
+    legend: 'Légende',
+    donutSummary: (total) => `Total ${total}. Valeurs par part dans la légende.`,
+    showAll: (n) => `Tout afficher (${n})`,
+    showLess: 'Afficher moins',
+    less: 'Moins',
+    more: 'Plus',
+    noData: 'Aucune donnée',
+    item: 'Élément',
+    share: (name, value, share) => `${name} : ${value} (${share})`,
+    flow: (from, to, value) => `De ${from} vers ${to} : ${value}`,
+    weekOf: (date) => `Semaine du ${date}`,
+    cell: (name, value) => `${name} : ${value}`,
+    funnel: {
+      conversion: (rate) => `${rate} continuent`,
+      dropped: (count) => `(${count} abandons)`,
+      ofStartLabel: 'de la première étape :',
+    },
+    gauge: {
+      ok: 'Normal',
+      warning: 'Attention',
+      critical: 'Critique',
+      valueText: (value, max) => `${value} sur ${max}`,
+      valueTextStatus: (value, max, status) => `${value} sur ${max}, ${status.toLowerCase()}`,
+    },
+  },
   ai: {
     code: {
       copy: 'Copier le code',

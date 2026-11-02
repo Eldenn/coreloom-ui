@@ -1,0 +1,33 @@
+<!-- @dsCard group="Data display" height=260 subtitle="Line · area · bars · in a stat card" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Sparkline || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Sparkline, Card, CardHeader, CardDescription, CardTitle } = UI;
+      const signups = [42, 48, 45, 61, 58, 72, 69, 84, 80, 95, 91, 108];
+      const stat = (label, value, data, type, color) => h(Card, { style: { flex: 1, minWidth: 200 } },
+        h(CardHeader, null, h(CardDescription, null, label), h(CardTitle, { className: 'font-display text-[28px] tracking-[-0.02em] tabular-nums' }, value)),
+        h(Sparkline, { data, type, color, height: 40, 'aria-label': label }));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap' } },
+          stat('Sign-ups', '1,084', signups, 'area', 'var(--chart-1)'),
+          stat('p95 latency', '182 ms', [240, 232, 228, 236, 214, 205, 210, 198, 190, 194, 186, 182], 'line', 'var(--chart-2)'),
+          stat('Net seats / week', '+24', [12, 18, -4, 9, 22, 15, -8, 6, 19, 24], 'bar', 'var(--chart-4)')));
+    }
+    render();
+  </script>
+</body>
+</html>
