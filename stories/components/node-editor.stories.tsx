@@ -100,6 +100,26 @@ export const Fields: Story = {
   },
 }
 
+/**
+ * Sample data pinned to the trigger: the nodes after it can be set up — Input, `{{ }}` suggestions,
+ * previews — without running anything. One step is disabled: it's dimmed and not checked.
+ */
+export const PinnedAndDisabled: Story = {
+  args: {
+    defaultSelectedId: 'email',
+    defaultValue: {
+      ...signupWorkflow,
+      nodes: signupWorkflow.nodes.map((n) =>
+        n.id === 'webhook'
+          ? { ...n, pinned: signupRuns.webhook?.output }
+          : n.id === 'chat'
+            ? { ...n, disabled: true }
+            : n,
+      ),
+    },
+  },
+}
+
 /** Missing settings and loose ends are flagged on the cards and in the panel. */
 export const NeedsAttention: Story = {
   args: { defaultValue: unfinishedWorkflow, defaultSelectedId: 'email' },

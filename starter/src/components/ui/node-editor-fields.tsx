@@ -754,23 +754,40 @@ function KeyValueControl({
             key={i}
             role="group"
             aria-label={t.row(n)}
-            className="flex items-start gap-1.5"
+            // Key above value: a narrow panel leaves no room for both on one line.
+            className="flex flex-col gap-1.5 rounded-md border border-border-subtle bg-inset/40 p-2"
           >
-            <Input
-              id={`${id}-k${String(i)}`}
-              value={r.key}
-              placeholder={keyPlaceholder ?? t.key}
-              readOnly={readOnly}
-              autoComplete="off"
-              aria-label={t.key}
-              className="w-[38%] shrink-0 font-mono text-[12.5px]"
-              onChange={(e) => {
-                setRow(i, { key: e.target.value })
-              }}
-            />
+            <div className="flex items-start gap-1.5">
+              <Input
+                id={`${id}-k${String(i)}`}
+                value={r.key}
+                placeholder={keyPlaceholder ?? t.key}
+                readOnly={readOnly}
+                autoComplete="off"
+                aria-label={t.key}
+                className="flex-1 font-mono text-[12.5px]"
+                onChange={(e) => {
+                  setRow(i, { key: e.target.value })
+                }}
+              />
+              {!readOnly && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t.remove(n)}
+                  className="mt-0.5"
+                  onClick={() => {
+                    onChange(rows.filter((_, j) => j !== i))
+                    requestAnimationFrame(() => addRef.current?.focus())
+                  }}
+                >
+                  <XIcon aria-hidden />
+                </Button>
+              )}
+            </div>
             <ExpressionInput
               id={`${id}-v${String(i)}`}
-              className="flex-1"
               value={r.value}
               placeholder={valuePlaceholder ?? t.value}
               readOnly={readOnly}
@@ -779,21 +796,6 @@ function KeyValueControl({
                 setRow(i, { value: v })
               }}
             />
-            {!readOnly && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t.remove(n)}
-                className="mt-0.5"
-                onClick={() => {
-                  onChange(rows.filter((_, j) => j !== i))
-                  requestAnimationFrame(() => addRef.current?.focus())
-                }}
-              >
-                <XIcon aria-hidden />
-              </Button>
-            )}
           </div>
         )
       })}
@@ -929,7 +931,31 @@ function CredentialControl({
 const MAX_ROWS = 60
 
 /** A node's data, as a tree: items, then each field. Nested objects fold. */
-function DataView({ value, className }: { value: unknown; className?: string }) {
+/** The path of `key` under `prefix`, written as an expression would: `a.b`, `a['c d']`, `a[0]`. */
+function childPath(prefix: string, key: string, index: boolean) {
+  const part = index
+    ? `[${key}]`
+    : /^[A-Za-z_$][\w$]*$/.test(key)
+      ? key
+      : `['${key.replace(/'/g, '')}']`
+  if (!prefix) return index ? key : part
+  return part.startsWith('[') ? prefix + part : `${prefix}.${part}`
+}
+
+/**
+ * A node's data, as a tree: items, then each field. Nested objects fold. With `draggable`, each field
+ * can be dragged into a setting, where it lands as `{{ path }}` (typing `{{` does the same from the
+ * keyboard).
+ */
+function DataView({
+  value,
+  draggable = false,
+  className,
+}: {
+  value: unknown
+  draggable?: boolean
+  className?: string
+}) {
   const t = useCoreloomI18n().messages.nodeEditor
   if (Array.isArray(value)) {
     const items = value as unknown[]
@@ -947,7 +973,7 @@ function DataView({ value, className }: { value: unknown; className?: string }) 
               {t.item(i + 1)}
             </summary>
             <div className="border-t border-border-subtle px-2 py-1.5">
-              <DataTree value={item} />
+              <DataTree value={item} path="" draggable={draggable} />
             </div>
           </details>
         ))}
@@ -962,7 +988,7 @@ function DataView({ value, className }: { value: unknown; className?: string }) 
       data-slot="node-data"
       className={cn('rounded-md border border-border-subtle px-2 py-1.5', className)}
     >
-      <DataTree value={value} />
+      <DataTree value={value} path="" draggable={draggable} />
     </div>
   )
 }
@@ -978,7 +1004,15 @@ function Leaf({ value }: { value: unknown }) {
   return <span className="font-mono text-primary-text">{asText(value)}</span>
 }
 
-function DataTree({ value }: { value: unknown }) {
+function DataTree({
+  value,
+  path,
+  draggable,
+}: {
+  value: unknown
+  path: string
+  draggable: boolean
+}) {
   const t = useCoreloomI18n().messages.nodeEditor
   const entries: [string, unknown][] = isRecord(value)
     ? Object.entries(value)
@@ -989,25 +1023,46 @@ function DataTree({ value }: { value: unknown }) {
   return (
     <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-[12.5px]">
       {entries.slice(0, MAX_ROWS).map(([k, v]) => {
+        const p = childPath(path, k, Array.isArray(value))
+        const key = (
+          <span
+            draggable={draggable || undefined}
+            onDragStart={
+              draggable
+                ? (e) => {
+                    e.dataTransfer.setData('text/plain', `{{ ${p} }}`)
+                    e.dataTransfer.effectAllowed = 'copy'
+                  }
+                : undefined
+            }
+            title={draggable ? `{{ ${p} }}` : undefined}
+            className={cn(
+              'shrink-0 font-mono text-fg-secondary',
+              draggable && 'cursor-grab rounded-sm hover:bg-accent active:cursor-grabbing',
+            )}
+          >
+            {k}
+          </span>
+        )
         const nested =
           (isRecord(v) && Object.keys(v).length > 0) || (Array.isArray(v) && v.length > 0)
         return (
           <li key={k} className="min-w-0">
             {nested ? (
               <details>
-                <summary className="cursor-pointer rounded-sm font-mono text-fg-secondary outline-none focus-visible:ring-[3px] focus-visible:ring-ring">
-                  {k}
+                <summary className="cursor-pointer rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring">
+                  {key}
                   <span className="ml-1.5 font-sans text-muted-foreground">
                     {Array.isArray(v) ? t.items(v.length) : t.fields(Object.keys(v).length)}
                   </span>
                 </summary>
                 <div className="ml-1.5 border-l border-border-subtle pl-2.5">
-                  <DataTree value={v} />
+                  <DataTree value={v} path={p} draggable={draggable} />
                 </div>
               </details>
             ) : (
               <span className="flex min-w-0 gap-2">
-                <span className="shrink-0 font-mono text-fg-secondary">{k}</span>
+                {key}
                 <Leaf value={v} />
               </span>
             )}
