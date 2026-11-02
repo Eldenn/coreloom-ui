@@ -68,6 +68,7 @@ function CommandMenu({
   triggerLabel,
   emptyText,
   onAskAi,
+  shortcut = true,
   className,
 }: {
   groups: CommandMenuGroup[]
@@ -76,6 +77,9 @@ function CommandMenu({
   emptyText?: string
   /** Offers the typed text to an assistant ("Ask AI: “…”", first in the list). Gets the trimmed query; the palette closes. */
   onAskAi?: (query: string) => void
+  /** ⌘K / Ctrl+K opens the palette (and the button shows it). Turn it off where the host already
+   *  uses it (a VS Code webview, where Ctrl+K starts VS Code's own shortcuts). */
+  shortcut?: boolean
   className?: string
 }) {
   const t = useCoreloomI18n().messages
@@ -87,6 +91,7 @@ function CommandMenu({
   const query = search.trim()
 
   React.useEffect(() => {
+    if (!shortcut) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
@@ -97,7 +102,7 @@ function CommandMenu({
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [])
+  }, [shortcut])
 
   // Each opening starts from an empty search, as the uncontrolled input did.
   React.useEffect(() => {
@@ -121,7 +126,7 @@ function CommandMenu({
           <SearchIcon className="size-[15px]" />
           {triggerLabel}
         </span>
-        <Kbd>⌘K</Kbd>
+        {shortcut && <Kbd>⌘K</Kbd>}
       </Button>
       <Button
         variant="ghost"
