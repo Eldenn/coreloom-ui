@@ -164,6 +164,47 @@ export const de: Messages = {
       met: 'erfüllt',
       notMet: 'noch nicht',
     },
+    create: (label) => `„${label}“ erstellen`,
+    range: {
+      min: 'Minimum',
+      max: 'Maximum',
+      reversed: 'Das Minimum ist größer als das Maximum.',
+      start: 'Beginn',
+      end: 'Ende',
+      endBeforeStart: 'Das Ende liegt vor dem Beginn.',
+      nextDay: 'Endet am nächsten Tag.',
+    },
+    json: {
+      format: 'Formatieren',
+      invalidAt: (line, column) =>
+        `Das ist kein gültiges JSON: Zeile ${line}, Spalte ${column} prüfen.`,
+      tabHint: 'Tab rückt ein. Escape und dann Tab verlässt das Feld.',
+    },
+    mention: {
+      suggestions: 'Vorschläge',
+      hint: (trigger) => `Tippe ${trigger}, um jemanden zu erwähnen.`,
+      count: (n) =>
+        n === 1
+          ? '1 Vorschlag. Pfeiltasten, dann Enter.'
+          : `${n} Vorschläge. Pfeiltasten, dann Enter.`,
+    },
+    tree: {
+      placeholder: 'Auswählen…',
+      label: 'Optionen',
+      selected: (n) => `${n} ausgewählt`,
+    },
+    transfer: {
+      available: 'Verfügbar',
+      selected: 'Ausgewählt',
+      filter: 'Filtern',
+      empty: 'Nichts hier.',
+      count: (marked, total) => (marked ? `${marked}/${total}` : String(total)),
+      add: (n) => (n ? `${n} markierte hinzufügen` : 'Markierte hinzufügen'),
+      remove: (n) => (n ? `${n} markierte entfernen` : 'Markierte entfernen'),
+      addAll: 'Alle hinzufügen',
+      removeAll: 'Alle entfernen',
+      moved: (n, to) => `${n} nach „${to}“ verschoben.`,
+    },
   },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {

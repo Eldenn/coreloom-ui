@@ -160,6 +160,47 @@ export const es: Messages = {
       met: 'cumplido',
       notMet: 'pendiente',
     },
+    create: (label) => `Crear «${label}»`,
+    range: {
+      min: 'Mínimo',
+      max: 'Máximo',
+      reversed: 'El mínimo es mayor que el máximo.',
+      start: 'Inicio',
+      end: 'Fin',
+      endBeforeStart: 'El fin es anterior al inicio.',
+      nextDay: 'Termina al día siguiente.',
+    },
+    json: {
+      format: 'Formatear',
+      invalidAt: (line, column) =>
+        `Este JSON no es válido: revisa la línea ${line}, columna ${column}.`,
+      tabHint: 'Tab sangra. Pulsa Escape y luego Tab para salir del campo.',
+    },
+    mention: {
+      suggestions: 'Sugerencias',
+      hint: (trigger) => `Escribe ${trigger} para mencionar a alguien.`,
+      count: (n) =>
+        n === 1
+          ? '1 sugerencia. Flechas y luego Intro.'
+          : `${n} sugerencias. Flechas y luego Intro.`,
+    },
+    tree: {
+      placeholder: 'Seleccionar…',
+      label: 'Opciones',
+      selected: (n) => (n === 1 ? '1 seleccionado' : `${n} seleccionados`),
+    },
+    transfer: {
+      available: 'Disponibles',
+      selected: 'Seleccionados',
+      filter: 'Filtrar',
+      empty: 'Nada aquí.',
+      count: (marked, total) => (marked ? `${marked}/${total}` : String(total)),
+      add: (n) => (n ? `Añadir los ${n} marcados` : 'Añadir los marcados'),
+      remove: (n) => (n ? `Quitar los ${n} marcados` : 'Quitar los marcados'),
+      addAll: 'Añadir todos',
+      removeAll: 'Quitar todos',
+      moved: (n, to) => `${n} movido${n === 1 ? '' : 's'} a ${to}.`,
+    },
   },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {

@@ -2,8 +2,9 @@
 
 // Coreloom UI — Combobox. A searchable Select, composed from Popover + Command (Radix + cmdk),
 // following shadcn's combobox pattern. Single value; for several, compose the same parts.
-// With `clearable`, a × button next to the chevron empties it (to "").
-import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react'
+// With `clearable`, a × button next to the chevron empties it (to ""). With `onCreate`, a search
+// that matches no option offers "Create “…”" (tags, categories, a new contact).
+import { CheckIcon, ChevronsUpDownIcon, PlusIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -41,6 +42,7 @@ function Combobox({
   contentClassName,
   id,
   clearable = false,
+  onCreate,
   'aria-invalid': ariaInvalid,
   'aria-label': ariaLabel,
 }: {
@@ -58,6 +60,9 @@ function Combobox({
   /** Shows a clear button once something is picked; clearing sends "". With it, `className`
    *  goes on a wrapper around the trigger and the button. */
   clearable?: boolean
+  /** Offers to create the searched text when no option matches it. Add the option to `options`
+   *  and return its value (or nothing: the text itself becomes the value). */
+  onCreate?: (label: string) => string | undefined
   'aria-invalid'?: boolean | 'true' | 'false'
   'aria-label'?: string
 }) {
@@ -69,6 +74,12 @@ function Combobox({
   const [inner, setInner] = React.useState(defaultValue ?? '')
   const current = value ?? inner
   const selected = options.find((o) => o.value === current)
+  const [search, setSearch] = React.useState('')
+  const query = search.trim()
+  const canCreate =
+    onCreate !== undefined &&
+    query !== '' &&
+    !options.some((o) => o.label.toLowerCase() === query.toLowerCase())
 
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const pick = (next: string) => {
@@ -78,7 +89,13 @@ function Combobox({
   }
 
   const popover = (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (!next) setSearch('')
+      }}
+    >
       <PopoverTrigger asChild>
         <button
           ref={triggerRef}
@@ -91,7 +108,7 @@ function Combobox({
           aria-label={ariaLabel}
           disabled={disabled}
           data-slot="combobox-trigger"
-          data-placeholder={selected ? undefined : ''}
+          data-placeholder={current ? undefined : ''}
           className={cn(
             "flex h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset px-[13px] font-sans text-[14px] whitespace-nowrap text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
             !clearable && className,
@@ -104,7 +121,7 @@ function Combobox({
             )}
           >
             {selected?.icon}
-            {selected ? selected.label : placeholder}
+            {selected ? selected.label : current || placeholder}
           </span>
           <ChevronsUpDownIcon className="text-muted-foreground" />
         </button>
@@ -114,9 +131,9 @@ function Combobox({
         className={cn('w-(--radix-popover-trigger-width) min-w-56 p-0', contentClassName)}
       >
         <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+          <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            {!canCreate && <CommandEmpty>{emptyText}</CommandEmpty>}
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
@@ -139,6 +156,21 @@ function Combobox({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {/* Outside the group: cmdk hides a group whose items all filter out. */}
+            {canCreate && (
+              <CommandItem
+                forceMount
+                value={`create:${query}`}
+                onSelect={() => {
+                  const created = onCreate(query)
+                  pick(typeof created === 'string' ? created : query)
+                  setSearch('')
+                }}
+              >
+                <PlusIcon className="text-muted-foreground" />
+                <span className="truncate">{t.inputs.create(query)}</span>
+              </CommandItem>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

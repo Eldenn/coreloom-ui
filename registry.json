@@ -796,7 +796,7 @@
       "name": "combobox",
       "type": "registry:ui",
       "title": "Combobox",
-      "description": "Searchable select built from Popover and Command. `clearable` adds a clear button.",
+      "description": "Searchable select built from Popover and Command. `clearable` adds a clear button; `onCreate` offers to create what was searched.",
       "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1140,7 +1140,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, masked (IBAN, card, SIRET), unit, duration, slider, select, segmented, combobox, multi-select, date (picked or typed), time, date and time, month, week, date range, tags, file, money, phone, colour, rating, radio, radio cards, checkbox, checkbox group, switch, key-value and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, masked (IBAN, card, SIRET), unit, duration, slider, select, segmented, combobox, multi-select, date (picked or typed), time, date and time, month, week, date range, tags, file, money, phone, colour, rating, radio, radio cards, checkbox, checkbox group, switch, key-value, chips, survey scale, number range, time range, JSON, mentions, tree select, transfer list and one-time-code fields, a submit button and form-level errors.",
       "dependencies": ["@tanstack/react-form@^1", "input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1179,7 +1179,14 @@
         "@coreloom/segmented-control",
         "@coreloom/slider-input",
         "@coreloom/unit-input",
-        "@coreloom/week-picker"
+        "@coreloom/week-picker",
+        "@coreloom/chip-group",
+        "@coreloom/scale-input",
+        "@coreloom/range-inputs",
+        "@coreloom/json-input",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-select",
+        "@coreloom/transfer-list"
       ],
       "files": [
         {
@@ -1674,6 +1681,125 @@
       ]
     },
     {
+      "name": "chip-group",
+      "type": "registry:ui",
+      "title": "ChipGroup",
+      "description": "Pills that toggle on and off (filters, interests): checkboxes with type=\"multiple\", radios with type=\"single\".",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/chip-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scale-input",
+      "type": "registry:ui",
+      "title": "ScaleInput",
+      "description": "A survey scale, NPS 0–10 or a worded Likert scale: a radio group with end labels.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/scale-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "range-inputs",
+      "type": "registry:ui",
+      "title": "NumberRangeInput / TimeRangePicker",
+      "description": "Two fields for the two ends of a range (a price filter, opening hours); an upside-down range is flagged, overnight allowed.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/number-input",
+        "@coreloom/time-picker"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/range-inputs.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "json-input",
+      "type": "registry:ui",
+      "title": "JsonInput",
+      "description": "A code field for JSON: says where it breaks (line, column), Format re-indents, Tab indents.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/json-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "mention-textarea",
+      "type": "registry:ui",
+      "title": "MentionTextarea",
+      "description": "A textarea where \"@\" suggests people (or \"#\" channels); arrows and Enter insert the handle. mentionsIn lists them.",
+      "dependencies": [],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/mention-textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tree-select",
+      "type": "registry:ui",
+      "title": "TreeSelect",
+      "description": "A select whose options nest, with an APG tree in the popover; one value or several.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/popover"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tree-select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "transfer-list",
+      "type": "registry:ui",
+      "title": "TransferList",
+      "description": "Two filterable lists, Available and Selected, with buttons to move ticked items between them.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/transfer-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2095,7 +2221,14 @@
         "@coreloom/key-value-editor",
         "@coreloom/emoji-picker",
         "@coreloom/signature-pad",
-        "@coreloom/password-strength"
+        "@coreloom/password-strength",
+        "@coreloom/chip-group",
+        "@coreloom/scale-input",
+        "@coreloom/range-inputs",
+        "@coreloom/json-input",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-select",
+        "@coreloom/transfer-list"
       ],
       "dependencies": []
     },

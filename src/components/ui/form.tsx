@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { CharacterCount } from '@/components/ui/character-count'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ChipGroup, type ChipOption } from '@/components/ui/chip-group'
 import { RadioCard, RadioCardGroup } from '@/components/ui/choice-card'
 import { ColorPicker } from '@/components/ui/color-picker'
 import { Combobox } from '@/components/ui/combobox'
@@ -34,15 +35,24 @@ import { FileUpload } from '@/components/ui/file-upload'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/input-group'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
+import { JsonInput } from '@/components/ui/json-input'
 import { KeyValueEditor, type KeyValuePair } from '@/components/ui/key-value-editor'
 import { MaskedInput } from '@/components/ui/masked-input'
+import { MentionTextarea } from '@/components/ui/mention-textarea'
 import { MoneyInput } from '@/components/ui/money-input'
 import { MonthPicker } from '@/components/ui/month-picker'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { NumberInput } from '@/components/ui/number-input'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  type NumberRange,
+  NumberRangeInput,
+  type TimeRange,
+  TimeRangePicker,
+} from '@/components/ui/range-inputs'
 import { Rating } from '@/components/ui/rating'
+import { ScaleInput } from '@/components/ui/scale-input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import {
   Select,
@@ -57,6 +67,8 @@ import { Switch } from '@/components/ui/switch'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker, TimePicker } from '@/components/ui/time-picker'
+import { TransferList } from '@/components/ui/transfer-list'
+import { type TreeNode, TreeSelect } from '@/components/ui/tree-select'
 import { UnitInput, type UnitValue } from '@/components/ui/unit-input'
 import { WeekPicker } from '@/components/ui/week-picker'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -1509,6 +1521,349 @@ function KeyValueField({
   )
 }
 
+/** Toggleable pills: `type="multiple"` (a string[], default) or `type="single"` (a string). */
+function ChipField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  options,
+  type = 'multiple',
+  size,
+  disabled,
+}: VerticalShellProps & {
+  options: ChipOption[]
+  type?: 'single' | 'multiple'
+  size?: 'sm' | 'default'
+  disabled?: boolean
+}) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | string[] | undefined
+  const common = {
+    options,
+    name: field.name,
+    size,
+    disabled,
+    'aria-labelledby': meta.labelId,
+    'aria-describedby': describedBy(meta, description),
+  }
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      {type === 'single' ? (
+        <ChipGroup
+          {...common}
+          type="single"
+          value={typeof value === 'string' ? value : ''}
+          onValueChange={(next) => {
+            field.handleChange(next)
+            field.handleBlur()
+          }}
+        />
+      ) : (
+        <ChipGroup
+          {...common}
+          type="multiple"
+          value={Array.isArray(value) ? value : []}
+          onValueChange={(next) => {
+            field.handleChange(next)
+            field.handleBlur()
+          }}
+        />
+      )}
+    </VerticalShell>
+  )
+}
+
+/** A survey scale (NPS 0–10, Likert); the value is a number, or null before an answer. */
+function ScaleField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof ScaleInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as number | null | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <ScaleInput
+        name={field.name}
+        value={value ?? null}
+        onValueChange={(n) => {
+          field.handleChange(n)
+          field.handleBlur()
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        aria-invalid={meta.invalid || undefined}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A minimum and a maximum; the value is `{ min, max }`, each a number or null. */
+function NumberRangeField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof NumberRangeInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as NumberRange | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <NumberRangeInput
+        id={meta.id}
+        value={value ?? { min: null, max: null }}
+        onValueChange={(next) => {
+          field.handleChange(next)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A start and an end time; the value is `{ start, end }` as "HH:mm". */
+function TimeRangeField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof TimeRangePicker>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as TimeRange | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <TimeRangePicker
+        id={meta.id}
+        value={value ?? {}}
+        onValueChange={(next) => {
+          field.handleChange(next)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** JSON as text; validate it with `parseJson` or a schema on the parsed value. */
+function JsonField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof JsonInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <JsonInput
+        id={meta.id}
+        name={field.name}
+        value={value ?? ''}
+        onValueChange={(text) => {
+          field.handleChange(text)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A textarea with @mentions; the value is the plain text. */
+function MentionField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof MentionTextarea>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <MentionTextarea
+        id={meta.id}
+        name={field.name}
+        value={value ?? ''}
+        onValueChange={(text) => {
+          field.handleChange(text)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A pick in a tree of options: a string, or a string[] with `multiple`. */
+function TreeSelectField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  nodes,
+  multiple = false,
+  placeholder,
+  disabled,
+}: VerticalShellProps & {
+  nodes: TreeNode[]
+  multiple?: boolean
+  placeholder?: string
+  disabled?: boolean
+}) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | string[] | undefined
+  const common = {
+    id: meta.id,
+    nodes,
+    placeholder,
+    disabled,
+    onBlur: field.handleBlur,
+    'aria-invalid': meta.invalid || undefined,
+    'aria-describedby': describedBy(meta, description),
+  }
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      {multiple ? (
+        <TreeSelect
+          {...common}
+          multiple
+          value={Array.isArray(value) ? value : []}
+          onValueChange={(next) => {
+            field.handleChange(next)
+          }}
+        />
+      ) : (
+        <TreeSelect
+          {...common}
+          value={typeof value === 'string' ? value : ''}
+          onValueChange={(next) => {
+            field.handleChange(next)
+          }}
+        />
+      )}
+    </VerticalShell>
+  )
+}
+
+/** Two lists to move items between; the value is the selected values. */
+function TransferField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof TransferList>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string[] | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <TransferList
+        value={value ?? []}
+        onValueChange={(next) => {
+          field.handleChange(next)
+          field.handleBlur()
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
 /** Checkbox or switch on the left, label (and description) beside it. */
 function ToggleField({
   label,
@@ -1640,6 +1995,14 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     RadioCardField,
     CheckboxGroupField,
     KeyValueField,
+    ChipField,
+    ScaleField,
+    NumberRangeField,
+    TimeRangeField,
+    JsonField,
+    MentionField,
+    TreeSelectField,
+    TransferField,
     CheckboxField,
     SwitchField,
     OTPField,
@@ -1653,6 +2016,7 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
 export {
   CheckboxField,
   CheckboxGroupField,
+  ChipField,
   ColorField,
   ComboboxField,
   DateField,
@@ -1662,18 +2026,22 @@ export {
   DurationField,
   FileField,
   FormErrors,
+  JsonField,
   KeyValueField,
   MaskedField,
+  MentionField,
   MoneyField,
   MonthField,
   MultiSelectField,
   NumberField,
+  NumberRangeField,
   OTPField,
   PasswordField,
   PhoneField,
   RadioCardField,
   RadioGroupField,
   RatingField,
+  ScaleField,
   SegmentedField,
   SelectField,
   SliderField,
@@ -1683,6 +2051,9 @@ export {
   TextareaField,
   TextField,
   TimeField,
+  TimeRangeField,
+  TransferField,
+  TreeSelectField,
   UnitField,
   useAppForm,
   useFieldContext,

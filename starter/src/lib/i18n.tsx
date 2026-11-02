@@ -180,6 +180,47 @@ const en = {
       met: 'done',
       notMet: 'not yet',
     },
+    create: (label: string) => `Create “${label}”`,
+    range: {
+      min: 'Minimum',
+      max: 'Maximum',
+      reversed: 'The minimum is higher than the maximum.',
+      start: 'Start',
+      end: 'End',
+      endBeforeStart: 'The end is before the start.',
+      nextDay: 'Ends the next day.',
+    },
+    json: {
+      format: 'Format',
+      invalidAt: (line: number, column: number) =>
+        `This isn’t valid JSON: check line ${line}, column ${column}.`,
+      tabHint: 'Tab indents. Press Escape, then Tab, to leave the field.',
+    },
+    mention: {
+      suggestions: 'Suggestions',
+      hint: (trigger: string) => `Type ${trigger} to mention someone.`,
+      count: (n: number) =>
+        n === 1
+          ? '1 suggestion. Use arrows, then Enter.'
+          : `${n} suggestions. Use arrows, then Enter.`,
+    },
+    tree: {
+      placeholder: 'Select…',
+      label: 'Options',
+      selected: (n: number) => `${n} selected`,
+    },
+    transfer: {
+      available: 'Available',
+      selected: 'Selected',
+      filter: 'Filter',
+      empty: 'Nothing here.',
+      count: (marked: number, total: number) => (marked ? `${marked}/${total}` : String(total)),
+      add: (n: number) => (n ? `Add ${n} ticked` : 'Add ticked'),
+      remove: (n: number) => (n ? `Remove ${n} ticked` : 'Remove ticked'),
+      addAll: 'Add all',
+      removeAll: 'Remove all',
+      moved: (n: number, to: string) => `${n} moved to ${to}.`,
+    },
   },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
@@ -1414,6 +1455,45 @@ const fr: Messages = {
       minLength: (n) => `Au moins ${n} caractères`,
       met: 'fait',
       notMet: 'pas encore',
+    },
+    create: (label) => `Créer « ${label} »`,
+    range: {
+      min: 'Minimum',
+      max: 'Maximum',
+      reversed: 'Le minimum est supérieur au maximum.',
+      start: 'Début',
+      end: 'Fin',
+      endBeforeStart: 'La fin est avant le début.',
+      nextDay: 'Se termine le lendemain.',
+    },
+    json: {
+      format: 'Formater',
+      invalidAt: (line, column) =>
+        `Ce JSON n’est pas valide : vérifiez la ligne ${line}, colonne ${column}.`,
+      tabHint: 'Tab indente. Appuyez sur Échap puis Tab pour quitter le champ.',
+    },
+    mention: {
+      suggestions: 'Suggestions',
+      hint: (trigger) => `Tapez ${trigger} pour mentionner quelqu’un.`,
+      count: (n) =>
+        n === 1 ? '1 suggestion. Flèches, puis Entrée.' : `${n} suggestions. Flèches, puis Entrée.`,
+    },
+    tree: {
+      placeholder: 'Sélectionner…',
+      label: 'Options',
+      selected: (n) => (n <= 1 ? `${n} sélectionné` : `${n} sélectionnés`),
+    },
+    transfer: {
+      available: 'Disponibles',
+      selected: 'Sélectionnés',
+      filter: 'Filtrer',
+      empty: 'Rien ici.',
+      count: (marked, total) => (marked ? `${marked}/${total}` : String(total)),
+      add: (n) => (n ? `Ajouter les ${n} cochés` : 'Ajouter les éléments cochés'),
+      remove: (n) => (n ? `Retirer les ${n} cochés` : 'Retirer les éléments cochés'),
+      addAll: 'Tout ajouter',
+      removeAll: 'Tout retirer',
+      moved: (n, to) => `${n} déplacé${n > 1 ? 's' : ''} vers ${to}.`,
     },
   },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
