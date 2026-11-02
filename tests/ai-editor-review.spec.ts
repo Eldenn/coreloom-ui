@@ -175,3 +175,31 @@ test.describe('editor review', () => {
     await expect(bar.getByRole('button', { name: 'Tout accepter' })).toBeVisible()
   })
 })
+
+test.describe('editor review from the app', () => {
+  test('`suggestion` starts a review without moving the caret; onReviewEnd reports what was kept', async ({
+    page,
+  }) => {
+    await openStory(page, `${EDITOR}suggestion-from-app`, 'dark')
+    const editor = page.getByRole('textbox', { name: 'Announcement' })
+    const bar = page.getByRole('group', { name: 'Suggested changes' })
+    await expect(bar).toContainText('Change 1 of 4')
+    // Nothing was focused or selected: the page doesn't jump to the editor on load.
+    await expect(editor).not.toBeFocused()
+    await expect(editor.locator('del')).toHaveText(['make', 'fix', 'was', 'Thanks'])
+
+    await bar.getByRole('button', { name: 'Reject', exact: true }).click()
+    await bar.getByRole('button', { name: 'Accept all' }).click()
+    await expect(bar).toBeHidden()
+    await expect(page.getByTestId('review-result')).toHaveText(
+      'Review ended: 3 accepted, 1 rejected.',
+    )
+    await expect(editor.locator('p').first()).toContainText('our new release make the build')
+    await expect(editor.locator('p').first()).toContainText('fixes a lot')
+
+    // The same version again, after the app cleared it: only what was rejected is left to review.
+    await page.getByRole('button', { name: 'Check the draft again' }).click()
+    await expect(bar).toContainText('Change 1 of 1')
+    await expect(bar).toContainText('Replace “make” with “makes”')
+  })
+})

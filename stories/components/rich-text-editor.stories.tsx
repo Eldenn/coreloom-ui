@@ -505,3 +505,51 @@ export const ReviewChangesFrench: Story = {
   render: () => <ReviewEditor label="Annonce" />,
   play: startReviewPlay,
 }
+
+// What a review agent (or a server-side pass) might send back: the whole draft, corrected, as Markdown.
+const proposed = `our new release makes the build faster and it also fixes a lot of small bugs that people were reporting since last month.
+
+Thank you to everyone who tested [the beta](https://eldenn.github.io/coreloom-ui/) — ~~three~~ four weeks of it.`
+
+/** `suggestion`: the app proposes a version of the document without the panel, and the same review starts. `onReviewEnd` says what the person kept; clear `suggestion` there, so the next one starts a new review. */
+export const SuggestionFromApp: Story = {
+  name: 'Suggestion from the app',
+  render: () => {
+    const [html, setHtml] = React.useState(reviewDraft)
+    const [suggestion, setSuggestion] = React.useState<string | null>(proposed)
+    const [result, setResult] = React.useState<string | null>(null)
+    return (
+      <Field className="max-w-2xl">
+        <FieldLabel id="suggestion-label">Announcement</FieldLabel>
+        <RichTextEditor
+          value={html}
+          onValueChange={setHtml}
+          aria-labelledby="suggestion-label"
+          minHeight={100}
+          suggestion={suggestion}
+          onReviewEnd={({ accepted, rejected }) => {
+            setSuggestion(null)
+            setResult(`Review ended: ${accepted} accepted, ${rejected} rejected.`)
+          }}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={suggestion !== null}
+            onClick={() => {
+              setResult(null)
+              setSuggestion(proposed)
+            }}
+          >
+            Check the draft again
+          </Button>
+          <FieldDescription data-testid="review-result">
+            {result ?? 'The app proposed a corrected draft.'}
+          </FieldDescription>
+        </div>
+      </Field>
+    )
+  },
+}
