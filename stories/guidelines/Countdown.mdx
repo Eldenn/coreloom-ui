@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/countdown.stories'
+import guide from './Countdown.md?raw'
+
+<Meta title="Guidelines/Data display/Countdown" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
