@@ -1,0 +1,30 @@
+<!-- @dsCard group="Data display" height=120 subtitle="Masked key · show · copy" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.SecretValue || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { SecretValue } = UI;
+      function Demo() {
+        return h('div', { style: { display: 'grid', gap: 10, maxWidth: 380 } },
+          h(SecretValue, { value: 'cl_live_demo0000example0000c9f2', visibleStart: 8, label: 'API key' }),
+          h(SecretValue, { value: 'hook_demo0000example0000a1b2', label: 'signing secret' }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

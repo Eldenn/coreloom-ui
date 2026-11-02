@@ -2161,6 +2161,186 @@
       ]
     },
     {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "title": "Toolbar",
+      "description": "A row of tools that is one Tab stop with arrow-key navigation: buttons, toggles, links, separators and a More menu.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/dropdown-menu",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/toolbar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "action-bar",
+      "type": "registry:ui",
+      "title": "ActionBar",
+      "description": "A bar for the selected items with their count, bulk actions and a way to clear the selection.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/action-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popconfirm",
+      "type": "registry:ui",
+      "title": "Popconfirm",
+      "description": "A small confirmation anchored to the button that asked for it, with Cancel first and an async confirm.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/popconfirm.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "secret-value",
+      "type": "registry:ui",
+      "title": "SecretValue",
+      "description": "An API key or token shown as dots, with Show and Copy.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/secret-value.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "format",
+      "type": "registry:ui",
+      "title": "FormatNumber",
+      "description": "Numbers, percentages, currencies, compact numbers and bytes written for the locale; AnimatedNumber counts up to a value.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/format.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "notification-badge",
+      "type": "registry:ui",
+      "title": "NotificationBadge",
+      "description": "A count or a dot on the corner of an icon or avatar, capped at 99+, with the count in words for screen readers.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/notification-badge.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "overflow-list",
+      "type": "registry:ui",
+      "title": "OverflowList",
+      "description": "A one-line row of chips or avatars that shows what fits and ends with +N opening the rest.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/overflow-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "file-card",
+      "type": "registry:ui",
+      "title": "FileCard",
+      "description": "An attached file with its type icon or thumbnail, size, upload progress, error and Retry, Remove; FileCardList.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/format"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/file-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "keyboard-shortcuts",
+      "type": "registry:ui",
+      "title": "KeyboardShortcuts",
+      "description": "useHotkeys for combinations and sequences, Hotkey to draw them, and ShortcutsDialog listing an app’s shortcuts.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/dialog",
+        "@coreloom/kbd"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/keyboard-shortcuts.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "countdown",
+      "type": "registry:ui",
+      "title": "Countdown",
+      "description": "The time left until a moment, as a clock, boxes or a short phrase, with onComplete.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/countdown.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "quota-bar",
+      "type": "registry:ui",
+      "title": "QuotaBar",
+      "description": "How much of a limit is used, split by segment, with the total, a legend and amber or red near the limit.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/format"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/quota-bar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2632,7 +2812,18 @@
         "@coreloom/highlight",
         "@coreloom/tour",
         "@coreloom/image-gallery",
-        "@coreloom/comment-thread"
+        "@coreloom/comment-thread",
+        "@coreloom/toolbar",
+        "@coreloom/action-bar",
+        "@coreloom/popconfirm",
+        "@coreloom/secret-value",
+        "@coreloom/format",
+        "@coreloom/notification-badge",
+        "@coreloom/overflow-list",
+        "@coreloom/file-card",
+        "@coreloom/keyboard-shortcuts",
+        "@coreloom/countdown",
+        "@coreloom/quota-bar"
       ],
       "dependencies": []
     },
