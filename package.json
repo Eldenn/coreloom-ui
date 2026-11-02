@@ -8,7 +8,7 @@
     "typecheck": "tsc -b",
     "tokens:sync": "node build/sync-tokens.mjs",
     "tokens:dtcg": "node build/gen-dtcg.mjs",
-    "registry:build": "shadcn build -o public/r",
+    "registry:build": "shadcn build -o public/r && node build/registry-guides.mjs && node build/registry-examples.mjs",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o public/storybook --quiet",
     "test": "playwright test",
