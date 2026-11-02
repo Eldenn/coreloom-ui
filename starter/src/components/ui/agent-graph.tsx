@@ -421,6 +421,8 @@ const EDGE_STROKE = {
 } as const
 
 const ZOOMS = [0.5, 0.67, 0.8, 1, 1.25, 1.5]
+/** Below this fit-to-width scale the cards' text is too small to read. */
+const MIN_READABLE = 0.6
 // Stable defaults, so the memoised layout isn't recomputed on every render.
 const NO_TEAMS: AgentGraphTeam[] = []
 const NO_ACTIVITY: Partial<Record<string, AgentActivity>> = {}
@@ -493,7 +495,7 @@ function AgentGraph({
   activity = NO_ACTIVITY,
   activePath = NO_PATH,
   view: viewProp,
-  defaultView = 'graph',
+  defaultView,
   onViewChange,
   maxHeight = 560,
   legend = true,
@@ -512,6 +514,9 @@ function AgentGraph({
   /** The agents a run went through, in order; the links between them are highlighted. */
   activePath?: string[]
   view?: 'graph' | 'list'
+  /**
+   * Left out, the list view when the box is too narrow to read the graph (a phone), else the graph.
+   */
   defaultView?: 'graph' | 'list'
   onViewChange?: (view: 'graph' | 'list') => void
   /** The graph scrolls beyond this height (px). */
@@ -534,7 +539,8 @@ function AgentGraph({
     onSelectedChange?.(id)
   }
   const [viewState, setViewState] = React.useState(defaultView)
-  const view = viewProp ?? viewState
+  const [boxWidth, setBoxWidth] = React.useState(0)
+  const root = React.useRef<HTMLDivElement>(null)
   const [zoom, setZoom] = React.useState<number | null>(null)
   const [containerWidth, setContainerWidth] = React.useState(0)
   const [focusId, setFocusId] = React.useState<string | null>(null)
@@ -542,6 +548,11 @@ function AgentGraph({
   const buttons = React.useRef(new Map<string, HTMLButtonElement>())
 
   const layout = React.useMemo(() => layoutAgentGraph(agents, edges, teams), [agents, edges, teams])
+  // Until a view is picked, a graph that would have to shrink below MIN_READABLE starts as a list.
+  const view =
+    viewProp ??
+    viewState ??
+    (boxWidth > 0 && layout.width * MIN_READABLE > boxWidth ? 'list' : 'graph')
   const clean = React.useMemo(() => layout.edges.map((e) => e.edge), [layout])
   const byId = React.useMemo(() => new Map(layout.nodes.map((p) => [p.node.id, p])), [layout])
   const nameOf = (id: string) => byId.get(id)?.node.name ?? id
@@ -578,6 +589,20 @@ function AgentGraph({
     }
   }, [view])
 
+  // The box's width, to pick the first view (the box shows once there are agents).
+  const hasNodes = layout.nodes.length > 0
+  React.useEffect(() => {
+    const el = root.current
+    if (!el) return
+    const ro = new ResizeObserver(() => {
+      setBoxWidth(el.clientWidth)
+    })
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+    }
+  }, [hasNodes])
+
   // Once the width is known, bring the selected agent (else the top row) into view when the graph
   // is wider than its box — on a phone. Only the box scrolls, never the page.
   const measured = containerWidth > 0
@@ -592,6 +617,23 @@ function AgentGraph({
     // Only on first measure: later selections come from the user, who is already looking there.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once the width is known
   }, [measured, view])
+
+  // An agent selected out of sight (from a link in a side panel, say) scrolls into the box.
+  React.useEffect(() => {
+    const el = scroller.current
+    const button = selected ? buttons.current.get(selected) : undefined
+    if (!measured || !el || !button) return
+    const box = el.getBoundingClientRect()
+    const r = button.getBoundingClientRect()
+    if (r.left >= box.left && r.right <= box.right && r.top >= box.top && r.bottom <= box.bottom)
+      return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el.scrollTo({
+      left: el.scrollLeft + (r.left + r.width / 2) - (box.left + box.width / 2),
+      top: el.scrollTop + (r.top + r.height / 2) - (box.top + box.height / 2),
+      behavior: reduce ? 'auto' : 'smooth',
+    })
+  }, [selected, measured, view])
 
   // Drag the background to pan.
   const drag = React.useRef<{ x: number; y: number; left: number; top: number } | null>(null)
@@ -811,6 +853,7 @@ function AgentGraph({
 
   return (
     <div
+      ref={root}
       data-slot="agent-graph"
       className={cn('flex min-w-0 flex-col rounded-lg border border-border bg-card', className)}
     >
