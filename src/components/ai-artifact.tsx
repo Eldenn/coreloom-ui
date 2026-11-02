@@ -30,6 +30,7 @@ import * as React from 'react'
 import { CopyButton } from '@/components/copy-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { type DiffLine, diffLines, DiffViewer } from '@/components/ui/diff-viewer'
 import { Markdown } from '@/components/ui/markdown'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { Spinner } from '@/components/ui/spinner'
@@ -63,87 +64,6 @@ interface Artifact {
 }
 
 type ArtifactView = 'preview' | 'source' | 'changes'
-
-// ——— Line diff ———
-
-interface DiffLine {
-  type: 'equal' | 'add' | 'remove'
-  text: string
-  /** Line number in the older text (equal and removed lines), from 1. */
-  oldLine?: number
-  /** Line number in the newer text (equal and added lines), from 1. */
-  newLine?: number
-}
-
-/** Beyond this many line pairs, the diff stops looking for common lines and shows a full rewrite. */
-const MAX_CELLS = 4_000_000
-
-const splitLines = (text: string) => (text === '' ? [] : text.replace(/\r\n?/g, '\n').split('\n'))
-
-/**
- * The lines that stayed, went and came between two texts (longest common subsequence, after the
- * common start and end are set aside). Removed lines come before the added lines that replace them.
- */
-function diffLines(before: string, after: string): DiffLine[] {
-  const a = splitLines(before)
-  const b = splitLines(after)
-  let start = 0
-  while (start < a.length && start < b.length && a[start] === b[start]) start++
-  let endA = a.length
-  let endB = b.length
-  while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
-    endA--
-    endB--
-  }
-  const out: DiffLine[] = []
-  for (let i = 0; i < start; i++)
-    out.push({ type: 'equal', text: a[i] ?? '', oldLine: i + 1, newLine: i + 1 })
-
-  const midA = a.slice(start, endA)
-  const midB = b.slice(start, endB)
-  const n = midA.length
-  const m = midB.length
-  const push = (type: DiffLine['type'], i: number, j: number) => {
-    if (type === 'equal')
-      out.push({ type, text: midA[i] ?? '', oldLine: start + i + 1, newLine: start + j + 1 })
-    else if (type === 'remove') out.push({ type, text: midA[i] ?? '', oldLine: start + i + 1 })
-    else out.push({ type, text: midB[j] ?? '', newLine: start + j + 1 })
-  }
-  if (n * m > MAX_CELLS) {
-    for (let i = 0; i < n; i++) push('remove', i, 0)
-    for (let j = 0; j < m; j++) push('add', 0, j)
-  } else if (n || m) {
-    // lcs[i][j]: common lines between midA[i…] and midB[j…], in one flat array.
-    const w = m + 1
-    const lcs = new Uint32Array((n + 1) * w)
-    for (let i = n - 1; i >= 0; i--)
-      for (let j = m - 1; j >= 0; j--)
-        lcs[i * w + j] =
-          midA[i] === midB[j]
-            ? (lcs[(i + 1) * w + j + 1] ?? 0) + 1
-            : Math.max(lcs[(i + 1) * w + j] ?? 0, lcs[i * w + j + 1] ?? 0)
-    let i = 0
-    let j = 0
-    while (i < n || j < m) {
-      if (i < n && j < m && midA[i] === midB[j]) {
-        push('equal', i++, j++)
-      } else if (j >= m || (i < n && (lcs[(i + 1) * w + j] ?? 0) >= (lcs[i * w + j + 1] ?? 0))) {
-        push('remove', i++, j)
-      } else {
-        push('add', i, j++)
-      }
-    }
-  }
-
-  for (let k = 0; k < a.length - endA; k++)
-    out.push({
-      type: 'equal',
-      text: a[endA + k] ?? '',
-      oldLine: endA + k + 1,
-      newLine: endB + k + 1,
-    })
-  return out
-}
 
 // ——— Download ———
 
@@ -246,111 +166,6 @@ function IconButton({
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
-  )
-}
-
-/** Unchanged lines shown around each change; longer unchanged runs fold into a button. */
-const CONTEXT = 3
-
-/** Line numbers: muted on unchanged lines, stronger on the tinted ones so they keep their contrast. */
-const gutter = (type: DiffLine['type']) =>
-  cn(
-    'w-[1%] px-2 text-right whitespace-nowrap tabular-nums select-none',
-    type === 'equal' ? 'text-muted-foreground' : 'text-fg-secondary',
-  )
-
-function DiffView({ before, after }: { before: string; after: string }) {
-  const t = useCoreloomI18n().messages.ai.artifact
-  const lines = React.useMemo(() => diffLines(before, after), [before, after])
-  const [expanded, setExpanded] = React.useState<ReadonlySet<number>>(() => new Set())
-  const added = lines.filter((l) => l.type === 'add').length
-  const removed = lines.filter((l) => l.type === 'remove').length
-
-  // Rows: lines, and folds standing for a run of unchanged lines (keyed by the run's first index).
-  const rows: ({ line: DiffLine; key: number } | { fold: number; count: number })[] = []
-  for (let i = 0; i < lines.length;) {
-    const line = lines[i]
-    if (line.type !== 'equal') {
-      rows.push({ line, key: i++ })
-      continue
-    }
-    let end = i
-    while (lines[end]?.type === 'equal') end++
-    const head = i === 0 ? 0 : CONTEXT
-    const tail = end === lines.length ? 0 : CONTEXT
-    if (end - i > head + tail + 1 && !expanded.has(i)) {
-      for (let k = i; k < i + head; k++) rows.push({ line: lines[k], key: k })
-      rows.push({ fold: i, count: end - i - head - tail })
-      for (let k = end - tail; k < end; k++) rows.push({ line: lines[k], key: k })
-    } else {
-      for (let k = i; k < end; k++) rows.push({ line: lines[k], key: k })
-    }
-    i = end
-  }
-
-  if (!added && !removed)
-    return <p className="m-0 p-5 text-[13.5px] text-muted-foreground">{t.noChanges}</p>
-
-  return (
-    <div data-slot="artifact-diff" className="min-w-0">
-      <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-2 font-mono text-[12px]">
-        <span className="text-success">{t.linesAdded(added)}</span>
-        <span className="text-destructive">{t.linesRemoved(removed)}</span>
-      </p>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse font-mono text-[12.5px] leading-[1.7]">
-          <tbody>
-            {rows.map((row) =>
-              'fold' in row ? (
-                <tr key={`fold-${row.fold}`}>
-                  <td colSpan={4} className="border-y border-border-subtle bg-inset p-0">
-                    <button
-                      type="button"
-                      className="w-full cursor-pointer px-4 py-1 text-left font-sans text-[12.5px] text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
-                      onClick={() => {
-                        setExpanded((prev) => new Set(prev).add(row.fold))
-                      }}
-                    >
-                      {t.showUnchanged(row.count)}
-                    </button>
-                  </td>
-                </tr>
-              ) : (
-                <tr
-                  key={row.key}
-                  data-change={row.line.type === 'equal' ? undefined : row.line.type}
-                  className={cn(
-                    row.line.type === 'add' && 'bg-success-subtle',
-                    row.line.type === 'remove' && 'bg-destructive-subtle',
-                  )}
-                >
-                  <td className={gutter(row.line.type)}>{row.line.oldLine}</td>
-                  <td className={gutter(row.line.type)}>{row.line.newLine}</td>
-                  <td
-                    className={cn(
-                      'w-4 text-center select-none',
-                      row.line.type === 'add' && 'text-success',
-                      row.line.type === 'remove' && 'text-destructive',
-                    )}
-                  >
-                    {/* The sign is drawn for the eye; the words are read out. */}
-                    <span aria-hidden>
-                      {row.line.type === 'add' ? '+' : row.line.type === 'remove' ? '−' : ''}
-                    </span>
-                    {row.line.type !== 'equal' && (
-                      <span className="sr-only">
-                        {row.line.type === 'add' ? t.added : t.removed}
-                      </span>
-                    )}
-                  </td>
-                  <td className="pr-4 whitespace-pre text-foreground">{row.line.text || ' '}</td>
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
   )
 }
 
@@ -588,7 +403,12 @@ function ArtifactPanel({
                     <p className="m-0 px-4 pt-3 text-[12.5px] text-muted-foreground">
                       {t.comparedWith(index)}
                     </p>
-                    <DiffView before={previous.content} after={content} />
+                    <DiffViewer
+                      data-slot="artifact-diff"
+                      before={previous.content}
+                      after={content}
+                      emptyText={t.noChanges}
+                    />
                   </>
                 ) : (
                   <p className="m-0 p-5 text-[13.5px] text-muted-foreground">{t.firstVersion}</p>
