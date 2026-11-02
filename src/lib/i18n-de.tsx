@@ -535,6 +535,7 @@ export const de: Messages = {
       handsOffTo: 'Übergibt an',
       uses: 'Nutzt',
       usedBy: 'Genutzt von',
+      edit: 'Graph bearbeiten',
       openAgent: 'Agent öffnen',
       runs: 'Ausführungen ansehen',
       empty: 'Noch keine Agenten.',

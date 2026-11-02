@@ -24,6 +24,7 @@ import * as React from 'react'
 
 import { promptVariables } from '@/components/ai-agents'
 import { CopyButton } from '@/components/copy-button'
+import type { AgentGraphEdge, AgentGraphNode, AgentGraphTeam } from '@/components/ui/agent-graph'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -1589,6 +1590,283 @@ function AgentBuilder({
   )
 }
 
+/** A multi-agent system as AgentTeams and AgentGraph draw it. `AgentTeamMember` fits `agents`. */
+interface AgentTeamGraph {
+  agents: (AgentGraphNode & { description?: string })[]
+  edges: AgentGraphEdge[]
+  teams?: AgentGraphTeam[]
+}
+
+/** The route a router takes when an agent is done: back to its supervisor, or to END. */
+const DONE_ROUTE = 'done'
+
+const isMember = (n: WorkflowNode) =>
+  n.type === 'agent' || n.type === 'human' || n.type === 'subgraph'
+
+/**
+ * A team graph as an agent graph the builder can edit, in LangGraph's two multi-agent patterns. A
+ * delegation is a supervisor: it routes to each of its workers, and a worker goes back to it when
+ * done. A handoff is a swarm move: the agent routes to the next one, and ends the run when done.
+ * Tools and knowledge an agent uses go in its `tools`. Teams, roles and descriptions travel in the
+ * nodes' `data` (and the teams and resources in START's), so `workflowToAgentTeam` gives them back.
+ */
+function agentTeamToWorkflow({ agents, edges, teams = [] }: AgentTeamGraph): Workflow {
+  const unique = agents.filter((a, i) => agents.findIndex((b) => b.id === a.id) === i)
+  const ids = new Set(unique.map((a) => a.id))
+  const valid = edges.filter((e) => ids.has(e.from) && ids.has(e.to) && e.from !== e.to)
+  const resources = unique.filter((a) => a.kind === 'tool' || a.kind === 'knowledge')
+  const resourceIds = new Set(resources.map((r) => r.id))
+  const members = unique.filter((a) => !resourceIds.has(a.id))
+  const memberIds = new Set(members.map((a) => a.id))
+  const links = valid.filter(
+    (e) => e.kind !== 'uses' && memberIds.has(e.from) && memberIds.has(e.to),
+  )
+
+  const start = emptyAgentGraph()
+  const startNode = start.nodes.find((n) => n.type === 'start')
+  if (startNode && (teams.length || resources.length))
+    startNode.data = {
+      ...(teams.length ? { teams: teams.map((tm) => ({ id: tm.id, name: tm.name })) } : {}),
+      ...(resources.length
+        ? { resources: resources.map((r) => ({ id: r.id, name: r.name, kind: r.kind })) }
+        : {}),
+    }
+  const nodes: WorkflowNode[] = [...start.nodes]
+  const taken = new Set(nodes.map((n) => n.id))
+  for (const a of members) {
+    taken.add(a.id)
+    const uses = valid.filter((e) => e.kind === 'uses' && e.from === a.id && resourceIds.has(e.to))
+    const data: Record<string, unknown> = {
+      ...(a.kind === 'human'
+        ? { question: a.description ?? '' }
+        : { instructions: '', tools: uses.map((e) => e.to) }),
+      ...(a.description ? { description: a.description } : {}),
+      ...(a.role ? { role: a.role } : {}),
+      ...(a.team ? { team: a.team } : {}),
+      ...(a.model ? { model: a.model } : {}),
+      ...(a.status ? { status: a.status } : {}),
+    }
+    nodes.push({
+      id: a.id,
+      type: a.kind === 'human' ? 'human' : 'agent',
+      name: a.name,
+      position: { x: 0, y: 0 },
+      data,
+    })
+  }
+  const freeId = (base: string) => {
+    let id = base
+    for (let i = 2; taken.has(id); i++) id = `${base}-${String(i)}`
+    taken.add(id)
+    return id
+  }
+
+  let wf: Workflow = { nodes, edges: [] }
+  const connect = (source: string, target: string, sourcePort?: string) => {
+    wf = connectNodes(wf, { source, target, ...(sourcePort !== undefined ? { sourcePort } : {}) })
+  }
+  const addRouter = (from: string, routes: { route: string; to: string }[]) => {
+    const id = freeId(`${from}-route`)
+    const names: string[] = []
+    for (const r of routes) {
+      let name = r.route
+      for (let i = 2; names.includes(name); i++) name = `${r.route} ${String(i)}`
+      names.push(name)
+    }
+    wf = {
+      nodes: [
+        ...wf.nodes,
+        { id, type: 'router', position: { x: 0, y: 0 }, data: { routes: names } },
+      ],
+      edges: wf.edges,
+    }
+    connect(from, id)
+    routes.forEach((r, i) => {
+      connect(id, r.to, names[i])
+    })
+  }
+
+  // START leads to the agents nobody delegates or hands off to (the first agent when every one is).
+  const led = new Set(links.map((e) => e.to))
+  const roots = members.filter((a) => !led.has(a.id))
+  const entry = roots.length ? roots : members.slice(0, 1)
+  if (entry.length === 1 && entry[0]) connect(START, entry[0].id)
+  else if (entry.length > 1)
+    addRouter(
+      START,
+      entry.map((a) => ({ route: a.id, to: a.id })),
+    )
+
+  for (const a of members) {
+    const out = links.filter((e) => e.from === a.id)
+    const supervisor = links.find((e) => e.kind === 'delegates' && e.to === a.id)?.from
+    const done = supervisor ?? END
+    if (!out.length) {
+      connect(a.id, done)
+      continue
+    }
+    addRouter(a.id, [
+      ...out.map((e) => ({ route: e.label?.trim() ? e.label.trim() : e.to, to: e.to })),
+      { route: DONE_ROUTE, to: done },
+    ])
+  }
+  return layoutWorkflow(wf)
+}
+
+/**
+ * An agent graph as a team graph, to show what the builder (or LangGraph's `to_json()`, read with
+ * `fromLangGraphJSON`) designed in AgentTeams. Agents, human steps and subgraphs become members;
+ * the other nodes are walked through. When two agents lead to each other and only one of them can
+ * end the run (else the one nearer START), it delegates to the other: LangGraph's supervisor. Any
+ * other move from one agent to another is a handoff, labelled with its route when that isn't the
+ * target's id. An agent's `tools`, and those of the Tools nodes it leads to, are what it uses.
+ */
+function workflowToAgentTeam(
+  wf: Workflow,
+  { tools = [] }: { tools?: readonly AgentBuilderTool[] } = {},
+): Required<AgentTeamGraph> {
+  const byId = new Map(wf.nodes.map((n) => [n.id, n]))
+  const start = wf.nodes.find((n) => n.type === 'start')
+  const isEnd = (id: string) => byId.get(id)?.type === 'end'
+  const text = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
+
+  const teams = (Array.isArray(start?.data?.teams) ? start.data.teams : []).flatMap(
+    (tm): AgentGraphTeam[] =>
+      isRecord(tm) && text(tm.id) && text(tm.name)
+        ? [{ id: tm.id as string, name: tm.name as string }]
+        : [],
+  )
+  const known = new Map<string, AgentGraphNode>()
+  for (const r of Array.isArray(start?.data?.resources) ? start.data.resources : [])
+    if (isRecord(r) && text(r.id))
+      known.set(r.id as string, {
+        id: r.id as string,
+        name: text(r.name) ?? (r.id as string),
+        kind: r.kind === 'knowledge' ? 'knowledge' : 'tool',
+      })
+  const resource = (id: string): AgentGraphNode =>
+    known.get(id) ?? { id, name: tools.find((x) => x.id === id)?.name ?? id, kind: 'tool' }
+
+  const members = wf.nodes.filter(isMember)
+  const memberIds = new Set(members.map((n) => n.id))
+
+  // From each member: the members and END it can reach without passing another member, the tools
+  // on the way, and the route that led straight to a member.
+  const reach = new Map<string, { next: Set<string>; ends: boolean; tools: Set<string> }>()
+  const routeTo = new Map<string, string>()
+  for (const m of members) {
+    const next = new Set<string>()
+    const found = new Set(strings(m.data?.tools))
+    let ends = false
+    const seen = new Set([m.id])
+    const queue = [m.id]
+    while (queue.length) {
+      const id = queue.shift() ?? ''
+      for (const e of wf.edges.filter((x) => x.source === id)) {
+        if (memberIds.has(e.target)) {
+          if (e.target === m.id) continue
+          next.add(e.target)
+          const via = byId.get(id)
+          if (
+            via?.type === 'router' &&
+            e.sourcePort &&
+            wf.edges.some((x) => x.source === m.id && x.target === id)
+          )
+            routeTo.set(`${m.id}\u0000${e.target}`, e.sourcePort)
+          continue
+        }
+        if (isEnd(e.target)) ends = true
+        if (seen.has(e.target)) continue
+        seen.add(e.target)
+        const n = byId.get(e.target)
+        if (n?.type === 'tool') for (const x of strings(n.data?.tools)) found.add(x)
+        queue.push(e.target)
+      }
+    }
+    reach.set(m.id, { next, ends, tools: found })
+  }
+
+  // Distance from START over member moves, to tell a supervisor from its worker.
+  const depth = new Map<string, number>()
+  const firsts = members.filter((m) => {
+    const seen = new Set<string>()
+    const queue = start ? [start.id] : []
+    while (queue.length) {
+      const id = queue.shift() ?? ''
+      for (const e of wf.edges.filter((x) => x.source === id)) {
+        if (e.target === m.id) return true
+        if (memberIds.has(e.target) || seen.has(e.target)) continue
+        seen.add(e.target)
+        queue.push(e.target)
+      }
+    }
+    return false
+  })
+  const queue = firsts.map((m) => m.id)
+  for (const id of queue) depth.set(id, 0)
+  while (queue.length) {
+    const id = queue.shift() ?? ''
+    for (const n of reach.get(id)?.next ?? [])
+      if (!depth.has(n)) {
+        depth.set(n, (depth.get(id) ?? 0) + 1)
+        queue.push(n)
+      }
+  }
+
+  const edges: AgentGraphEdge[] = []
+  const supervises = (a: string, b: string) => {
+    const ra = reach.get(a)
+    const rb = reach.get(b)
+    if (!ra || !rb || !ra.next.has(b) || !rb.next.has(a)) return false
+    if (ra.ends !== rb.ends) return ra.ends
+    if (ra.ends) return false
+    const da = depth.get(a) ?? Infinity
+    const db = depth.get(b) ?? Infinity
+    return da < db
+  }
+  for (const m of members) {
+    for (const to of reach.get(m.id)?.next ?? []) {
+      if (supervises(m.id, to)) edges.push({ from: m.id, to, kind: 'delegates' })
+      else if (!supervises(to, m.id)) {
+        const route = routeTo.get(`${m.id}\u0000${to}`)
+        edges.push({
+          from: m.id,
+          to,
+          kind: 'handoff',
+          ...(route && route !== to && route !== DONE_ROUTE ? { label: route } : {}),
+        })
+      }
+    }
+  }
+  const used: AgentGraphNode[] = []
+  for (const m of members)
+    for (const id of reach.get(m.id)?.tools ?? []) {
+      if (!used.some((r) => r.id === id) && !memberIds.has(id)) used.push(resource(id))
+      edges.push({ from: m.id, to: id, kind: 'uses' })
+    }
+
+  const agents = members.map((n): AgentTeamGraph['agents'][number] => {
+    const d = n.data ?? {}
+    const status =
+      d.status === 'active' || d.status === 'paused' || d.status === 'draft' ? d.status : undefined
+    const role = text(d.role)
+    const team = text(d.team)
+    const model = text(d.model)
+    const description = text(d.description) ?? (n.type === 'human' ? text(d.question) : undefined)
+    return {
+      id: n.id,
+      name: n.name ?? n.id,
+      kind: n.type === 'human' ? 'human' : 'agent',
+      ...(role ? { role } : {}),
+      ...(team ? { team } : {}),
+      ...(model ? { model } : {}),
+      ...(status ? { status } : {}),
+      ...(description ? { description } : {}),
+    }
+  })
+  return { agents: [...agents, ...used], edges, teams }
+}
+
 export {
   AgentBuilder,
   type AgentBuilderTool,
@@ -1600,6 +1878,8 @@ export {
   type AgentNodeType,
   type AgentPause,
   type AgentResume,
+  type AgentTeamGraph,
+  agentTeamToWorkflow,
   emptyAgentGraph,
   fromLangGraphJSON,
   type LangGraphConfig,
@@ -1614,4 +1894,5 @@ export {
   type ToolParameter,
   type ToolParameters,
   useAgentBuilderKinds,
+  workflowToAgentTeam,
 }
