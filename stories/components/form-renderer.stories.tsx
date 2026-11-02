@@ -3,7 +3,7 @@ import * as React from 'react'
 
 import { FormRenderer, type FormValues, fromJSONSchema } from '@/components/ui/form-renderer'
 
-import { demoSchema, demoSpec, demoUiSchema } from '../blocks/form-data'
+import { demoSchema, demoSpec, demoUiSchema, moreFieldsSpec } from '../blocks/form-data'
 
 const meta = {
   title: 'Components/Forms/Form renderer',
@@ -62,5 +62,11 @@ export const Prefilled: Story = {
       topics: ['forms', 'ai'],
     },
   },
+  render: (args) => <WithValues {...args} />,
+}
+
+/** One field of each newer type: masked, color, unit, duration, month, week, time range, time zone, number range, slider, segmented, checkboxes, choice cards, chips, tree select, ranking, transfer, rating, scale, recurrence, image, key-value, mentions and JSON. */
+export const MoreFields: Story = {
+  args: { spec: moreFieldsSpec },
   render: (args) => <WithValues {...args} />,
 }

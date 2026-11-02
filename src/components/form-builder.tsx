@@ -1056,6 +1056,17 @@ function FieldInspector({
               }}
             />
           )
+        if (setting.kind === 'list')
+          return (
+            <ListSetting
+              key={setting.key}
+              label={label}
+              value={Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []}
+              onChange={(list) => {
+                set({ [setting.key]: list.length ? list : undefined })
+              }}
+            />
+          )
         if (setting.kind === 'select')
           return (
             <ChoiceSetting
@@ -1152,7 +1163,7 @@ function FieldInspector({
                 <TextSetting
                   key={key}
                   label={ti[key]}
-                  inputType={checks.includes('dateRange') ? 'date' : 'time'}
+                  inputType={checks.includes('dateRange') ? (type?.rangeInput ?? 'date') : 'time'}
                   value={typeof field[key] === 'string' ? field[key] : undefined}
                   onChange={(s) => {
                     set({ [key]: s })
@@ -1214,7 +1225,7 @@ function TextSetting({
   onChange: (value: string | undefined) => void
   multiline?: boolean
   mono?: boolean
-  inputType?: 'text' | 'date' | 'time'
+  inputType?: 'text' | 'date' | 'time' | 'month' | 'week'
 }) {
   const id = React.useId()
   const common = {
@@ -1229,6 +1240,38 @@ function TextSetting({
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       {multiline ? <Textarea rows={2} {...common} /> : <Input type={inputType} {...common} />}
+    </Field>
+  )
+}
+
+/** A list typed comma-separated; the text is kept as typed so a trailing comma survives. */
+function ListSetting({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string[]
+  onChange: (value: string[]) => void
+}) {
+  const id = React.useId()
+  const [draft, setDraft] = React.useState(value.join(', '))
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        value={draft}
+        onChange={(e) => {
+          setDraft(e.target.value)
+          onChange(
+            e.target.value
+              .split(',')
+              .map((x) => x.trim())
+              .filter(Boolean),
+          )
+        }}
+      />
     </Field>
   )
 }

@@ -2066,7 +2066,7 @@
       "name": "form-renderer",
       "type": "registry:ui",
       "title": "FormRenderer",
-      "description": "Builds a form at runtime from a FormSpec (JSON sections, fields, checks and conditions) with the Form fields; readFormSpec reads untrusted specs, fromJSONSchema / toJSONSchema convert from and to JSON Schema, and formFieldTypes is the registry of field types you extend.",
+      "description": "Builds a form at runtime from a FormSpec (JSON sections, fields, checks and conditions) with the Form fields (45 types, from text to recurrence); readFormSpec reads untrusted specs, fromJSONSchema / toJSONSchema convert from and to JSON Schema, and formFieldTypes is the registry of field types you extend.",
       "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -2075,7 +2075,8 @@
         "@coreloom/form",
         "@coreloom/field",
         "@coreloom/phone-input",
-        "@coreloom/date-range-picker"
+        "@coreloom/date-range-picker",
+        "@coreloom/json-input"
       ],
       "files": [
         {

@@ -131,3 +131,146 @@ export const demoUiSchema = {
   severity: { 'ui:widget': 'radio' },
   notify: { 'ui:widget': 'switch' },
 }
+
+/** One field of each type added with the input primitives (lot 3 to 5). */
+export const moreFieldsSpec: FormSpec = {
+  version: 1,
+  title: 'Event settings',
+  sections: [
+    {
+      id: 'basics',
+      title: 'Basics',
+      columns: 2,
+      fields: [
+        { name: 'iban', type: 'masked', label: 'IBAN', preset: 'iban' },
+        { name: 'color', type: 'color', label: 'Brand color', defaultValue: '#0ea5e9' },
+        { name: 'size', type: 'unit', label: 'Weight', units: ['kg', 'g'] },
+        { name: 'length', type: 'duration', label: 'Length' },
+        { name: 'month', type: 'month', label: 'Billing month' },
+        { name: 'week', type: 'week', label: 'Sprint week' },
+        { name: 'hours', type: 'timerange', label: 'Opening hours' },
+        { name: 'tz', type: 'timezone', label: 'Time zone', defaultValue: 'Europe/Paris' },
+        { name: 'budget', type: 'numberrange', label: 'Budget', min: 0 },
+        { name: 'volume', type: 'slider', label: 'Volume', min: 0, max: 100, defaultValue: 40 },
+      ],
+    },
+    {
+      id: 'choices',
+      title: 'Choices',
+      columns: 2,
+      fields: [
+        {
+          name: 'billing',
+          type: 'segmented',
+          label: 'Billing',
+          defaultValue: 'monthly',
+          options: [
+            { value: 'monthly', label: 'Monthly' },
+            { value: 'yearly', label: 'Yearly' },
+          ],
+        },
+        {
+          name: 'days',
+          type: 'checkboxes',
+          label: 'Days',
+          options: [
+            { value: 'mon', label: 'Monday' },
+            { value: 'tue', label: 'Tuesday' },
+            { value: 'wed', label: 'Wednesday' },
+          ],
+        },
+        {
+          name: 'plan',
+          type: 'radiocards',
+          label: 'Plan',
+          span: 2,
+          orientation: 'horizontal',
+          options: [
+            { value: 'free', label: 'Free', description: 'Up to 3 people' },
+            { value: 'team', label: 'Team', description: 'Unlimited people' },
+          ],
+        },
+        {
+          name: 'tags',
+          type: 'chips',
+          label: 'Topics',
+          options: [
+            { value: 'design', label: 'Design' },
+            { value: 'code', label: 'Code' },
+            { value: 'ops', label: 'Ops' },
+          ],
+        },
+        {
+          name: 'team',
+          type: 'treeselect',
+          label: 'Team',
+          placeholder: 'Choose a team',
+          options: [
+            {
+              value: 'eng',
+              label: 'Engineering',
+              children: [
+                { value: 'web', label: 'Web' },
+                { value: 'mobile', label: 'Mobile' },
+              ],
+            },
+            { value: 'sales', label: 'Sales' },
+          ],
+        },
+        {
+          name: 'rank',
+          type: 'sortable',
+          label: 'What matters most?',
+          numbered: true,
+          options: [
+            { value: 'speed', label: 'Speed' },
+            { value: 'price', label: 'Price' },
+            { value: 'support', label: 'Support' },
+          ],
+        },
+        {
+          name: 'members',
+          type: 'transfer',
+          label: 'Members',
+          options: [
+            { value: 'ada', label: 'Ada' },
+            { value: 'alan', label: 'Alan' },
+            { value: 'grace', label: 'Grace' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'feedback',
+      title: 'Feedback',
+      columns: 2,
+      fields: [
+        { name: 'stars', type: 'rating', label: 'Your rating' },
+        {
+          name: 'nps',
+          type: 'scale',
+          label: 'How likely are you to recommend us?',
+          min: 0,
+          max: 10,
+          minLabel: 'Not likely',
+          maxLabel: 'Very likely',
+          span: 2,
+        },
+        { name: 'repeat', type: 'recurrence', label: 'Repeats', span: 2 },
+        { name: 'logo', type: 'image', label: 'Logo', shape: 'square' },
+        { name: 'headers', type: 'keyvalue', label: 'Headers' },
+        {
+          name: 'note',
+          type: 'mention',
+          label: 'Note',
+          span: 2,
+          options: [
+            { value: 'ada', label: 'Ada Lovelace' },
+            { value: 'alan', label: 'Alan Turing' },
+          ],
+        },
+        { name: 'config', type: 'json', label: 'Config', span: 2, rows: 4 },
+      ],
+    },
+  ],
+}
