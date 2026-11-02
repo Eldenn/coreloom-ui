@@ -1,0 +1,42 @@
+<!-- @dsCard group="Blocks" width=1280 height=520 subtitle="file-manager block · grid / list · breadcrumb · multi-select · drag to move · preview" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.FileManager || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const pic = (sky, hill, sun) => 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 800 600"><rect width="800" height="600" fill="' + sky + '"/><circle cx="600" cy="170" r="70" fill="' + sun + '"/><path d="M0 420 Q200 300 400 400 T800 380 V600 H0Z" fill="' + hill + '"/></svg>');
+      const items0 = [
+        { id: 'design', name: 'Design', kind: 'folder', parentId: null },
+        { id: 'contracts', name: 'Contracts', kind: 'folder', parentId: null },
+        { id: 'reports', name: 'Reports', kind: 'folder', parentId: null },
+        { id: 'hero', name: 'Homepage hero.png', kind: 'file', parentId: null, mimeType: 'image/png', size: 1284000, modifiedAt: new Date(), thumbnailUrl: pic('#1d3b53', '#0fa89f', '#f5c451'), owner: 'Ada Lovelace' },
+        { id: 'roadmap', name: 'Roadmap 2027.md', kind: 'file', parentId: null, size: 12800, modifiedAt: new Date() },
+        { id: 'demo', name: 'Product demo.mp4', kind: 'file', parentId: null, mimeType: 'video/mp4', size: 248000000, modifiedAt: new Date() },
+        { id: 'export', name: 'customers-export.csv', kind: 'file', parentId: null, size: 2300000, modifiedAt: new Date() },
+        { id: 'msa', name: 'Master services agreement.pdf', kind: 'file', parentId: 'contracts', mimeType: 'application/pdf', size: 412000 },
+      ];
+      function Demo() {
+        const [items, setItems] = React.useState(items0);
+        return h(UI.FileManager, { items, defaultSelectedIds: ['hero'],
+          onMove: (ids, folderId) => setItems((all) => all.map((i) => ids.includes(i.id) ? { ...i, parentId: folderId } : i)),
+          onDelete: (ids) => setItems((all) => all.filter((i) => !ids.includes(i.id))),
+          onUpload: () => {} });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
