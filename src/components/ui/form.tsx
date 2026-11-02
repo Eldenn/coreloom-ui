@@ -17,9 +17,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { CharacterCount } from '@/components/ui/character-count'
 import { Checkbox } from '@/components/ui/checkbox'
+import { RadioCard, RadioCardGroup } from '@/components/ui/choice-card'
+import { ColorPicker } from '@/components/ui/color-picker'
 import { Combobox } from '@/components/ui/combobox'
 import { DatePicker } from '@/components/ui/date-picker'
 import { type DateRange, DateRangePicker } from '@/components/ui/date-range-picker'
+import { DurationInput } from '@/components/ui/duration-input'
 import {
   Field,
   FieldContent,
@@ -31,11 +34,16 @@ import { FileUpload } from '@/components/ui/file-upload'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/input-group'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
+import { KeyValueEditor, type KeyValuePair } from '@/components/ui/key-value-editor'
+import { MaskedInput } from '@/components/ui/masked-input'
 import { MoneyInput } from '@/components/ui/money-input'
+import { MonthPicker } from '@/components/ui/month-picker'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { NumberInput } from '@/components/ui/number-input'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Rating } from '@/components/ui/rating'
+import { SegmentedControl } from '@/components/ui/segmented-control'
 import {
   Select,
   SelectContent,
@@ -43,11 +51,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SliderInput } from '@/components/ui/slider-input'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker, TimePicker } from '@/components/ui/time-picker'
+import { UnitInput, type UnitValue } from '@/components/ui/unit-input'
+import { WeekPicker } from '@/components/ui/week-picker'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -117,10 +128,20 @@ function VerticalShell({
   className,
   labelAction,
   hideLabel,
+  group = false,
   children,
-}: VerticalShellProps & { meta: Meta; children: React.ReactNode }) {
+}: VerticalShellProps & {
+  meta: Meta
+  /** The control is a group (radios, stars, rows) named by the label's id, not a single input. */
+  group?: boolean
+  children: React.ReactNode
+}) {
   const labelEl = (
-    <FieldLabel id={meta.labelId} htmlFor={meta.id} className={cn(hideLabel && 'sr-only')}>
+    <FieldLabel
+      id={meta.labelId}
+      htmlFor={group ? undefined : meta.id}
+      className={cn(hideLabel && 'sr-only')}
+    >
       {label}
     </FieldLabel>
   )
@@ -986,6 +1007,508 @@ function RadioGroupField({
   )
 }
 
+/** Props a field takes from its control, minus what the field wires itself. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- any component's props
+type ControlProps<C extends React.JSXElementConstructor<any>, Extra extends string = never> = Omit<
+  React.ComponentProps<C>,
+  | 'value'
+  | 'defaultValue'
+  | 'onValueChange'
+  | 'onBlur'
+  | 'id'
+  | 'name'
+  | 'className'
+  | 'aria-invalid'
+  | 'aria-describedby'
+  | 'aria-label'
+  | 'aria-labelledby'
+  | Extra
+>
+
+/** IBAN, card, SIREN, SIRET or your own mask. The value is the raw characters. */
+function MaskedField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof MaskedInput, 'onChange'>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | null | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <MaskedInput
+        id={meta.id}
+        name={field.name}
+        value={value ?? ''}
+        onValueChange={(raw) => {
+          field.handleChange(raw)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A "#rrggbb" colour from swatches, a hex code or the system dialog. */
+function ColorField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof ColorPicker>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <ColorPicker
+        id={meta.id}
+        value={value}
+        onValueChange={(hex) => {
+          field.handleChange(hex)
+          field.handleBlur()
+        }}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Stars; the value is a number, 0 for no score. */
+function RatingField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof Rating, 'readOnly'>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as number | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <Rating
+        name={field.name}
+        value={value ?? 0}
+        onValueChange={(n) => {
+          field.handleChange(n)
+          field.handleBlur()
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A slider and a number field on one value. `label` is text: it also names the slider. */
+function SliderField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: Omit<VerticalShellProps, 'label'> & { label: string } & ControlProps<
+    typeof SliderInput,
+    'label'
+  >) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as number | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <SliderInput
+        id={meta.id}
+        label={label}
+        value={value}
+        onValueChange={(n) => {
+          field.handleChange(n)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A number with its unit; the value is `{ value, unit }`. */
+function UnitField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof UnitInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as UnitValue | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <UnitInput
+        id={meta.id}
+        name={field.name}
+        value={value}
+        onValueChange={(next) => {
+          field.handleChange(next)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A typed duration ("1h30"); the value is minutes, or null. */
+function DurationField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof DurationInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as number | null | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <DurationInput
+        id={meta.id}
+        name={field.name}
+        value={value ?? null}
+        onValueChange={(n) => {
+          field.handleChange(n)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A month; the value is "YYYY-MM" or "". */
+function MonthField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof MonthPicker>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <MonthPicker
+        id={meta.id}
+        value={value ?? ''}
+        onValueChange={(next) => {
+          field.handleChange(next)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** An ISO week; the value is "YYYY-Www" or "". */
+function WeekField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof WeekPicker>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <WeekPicker
+        id={meta.id}
+        value={value ?? ''}
+        onValueChange={(next) => {
+          field.handleChange(next)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Pick one of a few options in a pill ("Monthly · Yearly"). */
+function SegmentedField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof SegmentedControl>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <SegmentedControl
+        name={field.name}
+        value={value ?? ''}
+        onValueChange={(next) => {
+          field.handleChange(next)
+          field.handleBlur()
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+interface CardOption {
+  value: string
+  title: React.ReactNode
+  description?: React.ReactNode
+  icon?: React.ReactNode
+  disabled?: boolean
+}
+
+/** One choice among cards with a title and a description (a plan, a delivery option). */
+function RadioCardField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  options,
+  orientation,
+  disabled,
+}: VerticalShellProps & {
+  options: CardOption[]
+  orientation?: 'vertical' | 'horizontal'
+  disabled?: boolean
+}) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <RadioCardGroup
+        name={field.name}
+        value={value ?? ''}
+        onValueChange={(next) => {
+          field.handleChange(next)
+          field.handleBlur()
+        }}
+        orientation={orientation}
+        disabled={disabled}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        aria-invalid={meta.invalid || undefined}
+      >
+        {options.map((o) => (
+          <RadioCard
+            key={o.value}
+            value={o.value}
+            title={o.title}
+            description={o.description}
+            icon={o.icon}
+            disabled={o.disabled}
+          />
+        ))}
+      </RadioCardGroup>
+    </VerticalShell>
+  )
+}
+
+/** Several checkboxes on one field; the value is the array of ticked values. */
+function CheckboxGroupField({
+  label,
+  description,
+  className,
+  options,
+  disabled,
+}: FieldShellProps & { options: Option[]; disabled?: boolean }) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string[] | undefined
+  const picked = value ?? []
+  return (
+    <Field
+      role="group"
+      aria-labelledby={meta.labelId}
+      aria-describedby={describedBy(meta, description)}
+      data-invalid={meta.invalid || undefined}
+      className={className}
+    >
+      <FieldLabel id={meta.labelId}>{label}</FieldLabel>
+      {description ? (
+        <FieldDescription id={meta.descriptionId}>{description}</FieldDescription>
+      ) : null}
+      <div className="grid gap-3">
+        {options.map((o) => (
+          <Field key={o.value} orientation="horizontal">
+            <Checkbox
+              id={`${meta.id}-${o.value}`}
+              name={field.name}
+              value={o.value}
+              checked={picked.includes(o.value)}
+              disabled={(disabled ?? false) || (o.disabled ?? false)}
+              aria-invalid={meta.invalid || undefined}
+              onCheckedChange={(c) => {
+                field.handleChange(
+                  c === true
+                    ? [...picked.filter((v) => v !== o.value), o.value]
+                    : picked.filter((v) => v !== o.value),
+                )
+                field.handleBlur()
+              }}
+            />
+            <FieldLabel htmlFor={`${meta.id}-${o.value}`}>{o.label}</FieldLabel>
+          </Field>
+        ))}
+      </div>
+      {meta.invalid && <FieldError id={meta.errorId} errors={meta.issues} />}
+    </Field>
+  )
+}
+
+/** Key and value rows (headers, variables); the value is `{ key, value }[]`. */
+function KeyValueField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof KeyValueEditor>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as KeyValuePair[] | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <KeyValueEditor
+        value={value ?? [{ key: '', value: '' }]}
+        onValueChange={(pairs) => {
+          field.handleChange(pairs)
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
 /** Checkbox or switch on the left, label (and description) beside it. */
 function ToggleField({
   label,
@@ -1105,6 +1628,18 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     TimeField,
     DateTimeField,
     RadioGroupField,
+    MaskedField,
+    ColorField,
+    RatingField,
+    SliderField,
+    UnitField,
+    DurationField,
+    MonthField,
+    WeekField,
+    SegmentedField,
+    RadioCardField,
+    CheckboxGroupField,
+    KeyValueField,
     CheckboxField,
     SwitchField,
     OTPField,
@@ -1117,27 +1652,38 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
 
 export {
   CheckboxField,
+  CheckboxGroupField,
+  ColorField,
   ComboboxField,
   DateField,
   DateRangeField,
   DateTimeField,
   describedBy,
+  DurationField,
   FileField,
   FormErrors,
+  KeyValueField,
+  MaskedField,
   MoneyField,
+  MonthField,
   MultiSelectField,
   NumberField,
   OTPField,
   PasswordField,
   PhoneField,
+  RadioCardField,
   RadioGroupField,
+  RatingField,
+  SegmentedField,
   SelectField,
+  SliderField,
   SubmitButton,
   SwitchField,
   TagsField,
   TextareaField,
   TextField,
   TimeField,
+  UnitField,
   useAppForm,
   useFieldContext,
   // For your own field components (see rich-text-field.tsx): ids, errors and the label / description / error frame.
@@ -1145,6 +1691,7 @@ export {
   useFormContext,
   VerticalShell,
   type VerticalShellProps,
+  WeekField,
   withFieldGroup,
   withForm,
 }

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Forms" height=120 subtitle=""YYYY-MM" from a month grid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.MonthPicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { MonthPicker } = UI;
+      function Demo() {
+        const [v, setV] = React.useState('2026-10');
+        return h(MonthPicker, { 'aria-label': 'Month', value: v, onValueChange: setV });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
