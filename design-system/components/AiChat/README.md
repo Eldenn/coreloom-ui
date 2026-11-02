@@ -10,7 +10,8 @@ A conversation with an assistant: messages with their reasoning, tool calls, sou
 - `suggestions`, `emptyTitle` and `emptyDescription` for the empty state;
 - `header`, `toolbar`, `allowAttachments`, `accept` and `placeholder`;
 - `onEdit(id, text)` to let people edit a message they sent;
-- `branches` and `onBranchChange(id, index)` to show the other versions of a message.
+- `branches` and `onBranchChange(id, index)` to show the other versions of a message;
+- `assistantAvatar` (`{ seed, variant }`) to draw the assistant as an animated Agent Avatar.
 
 **Citations.** An answer's `source-url` / `source-document` parts are its sources, numbered in order. The model's `[1]` markers in the text become inline citations that show the source, and the chips under the answer carry the same numbers. Nothing to wire: ask the model to cite as `[1]`, `[2]` and send sources (`sendSources` with the AI SDK).
 
