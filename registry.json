@@ -1140,7 +1140,7 @@
       "name": "form",
       "type": "registry:ui",
       "title": "Form",
-      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, masked (IBAN, card, SIRET), unit, duration, slider, select, segmented, combobox, multi-select, date (picked or typed), time, date and time, month, week, date range, tags, file, money, phone, colour, rating, radio, radio cards, checkbox, checkbox group, switch, key-value, chips, survey scale, number range, time range, JSON, mentions, tree select, transfer list and one-time-code fields, a submit button and form-level errors.",
+      "description": "TanStack Form wired to Field: useAppForm with text and textarea (optional character count), password, number, masked (IBAN, card, SIRET), unit, duration, slider, select, segmented, combobox, multi-select, date (picked or typed), time, date and time, month, week, date range, tags, file, money, phone, colour, rating, radio, radio cards, checkbox, checkbox group, switch, key-value, chips, survey scale, number range, time range, JSON, mentions, tree select, transfer list, image, ranking, recurrence, time zone and one-time-code fields, a submit button and form-level errors.",
       "dependencies": ["@tanstack/react-form@^1", "input-otp@^1"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -1186,7 +1186,11 @@
         "@coreloom/json-input",
         "@coreloom/mention-textarea",
         "@coreloom/tree-select",
-        "@coreloom/transfer-list"
+        "@coreloom/transfer-list",
+        "@coreloom/image-input",
+        "@coreloom/sortable-list",
+        "@coreloom/recurrence-input",
+        "@coreloom/timezone-select"
       ],
       "files": [
         {
@@ -1800,6 +1804,89 @@
       ]
     },
     {
+      "name": "image-input",
+      "type": "registry:ui",
+      "title": "ImageInput",
+      "description": "One image with its preview (avatar, logo, cover): click or drop to choose, replace or remove; type and size checked.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/file-upload"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/image-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sortable-list",
+      "type": "registry:ui",
+      "title": "SortableList",
+      "description": "Items to put in order (a ranking): drag by the handle, with the keyboard, or with up and down buttons; announced to screen readers.",
+      "dependencies": [
+        "lucide-react",
+        "@dnd-kit/core@^6",
+        "@dnd-kit/sortable@^10",
+        "@dnd-kit/utilities@^3"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/sortable-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "recurrence-input",
+      "type": "registry:ui",
+      "title": "RecurrenceInput",
+      "description": "How often something repeats (every 2 weeks on Mon and Wed, until a date or N times), read back as a sentence; toRRule and parseRRule convert to iCalendar RRULE.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/chip-group",
+        "@coreloom/date-picker",
+        "@coreloom/native-select",
+        "@coreloom/number-input"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/recurrence-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timezone-select",
+      "type": "registry:ui",
+      "title": "TimezoneSelect",
+      "description": "Searchable IANA time zones with their UTC offsets, the person's own zone marked. Built on Combobox.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/combobox"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/timezone-select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2228,7 +2315,11 @@
         "@coreloom/json-input",
         "@coreloom/mention-textarea",
         "@coreloom/tree-select",
-        "@coreloom/transfer-list"
+        "@coreloom/transfer-list",
+        "@coreloom/image-input",
+        "@coreloom/sortable-list",
+        "@coreloom/recurrence-input",
+        "@coreloom/timezone-select"
       ],
       "dependencies": []
     },

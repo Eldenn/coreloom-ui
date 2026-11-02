@@ -150,3 +150,88 @@ test('French labels', async ({ page }) => {
   await open(page, 'components-forms-tree-select--french', 'fr')
   await expect(page.getByLabel('Équipes')).toHaveText('2 sélectionnés')
 })
+
+// A 1×1 PNG.
+const pixel = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+  'base64',
+)
+
+test('image input previews, refuses a non-image, replaces and removes', async ({ page }) => {
+  await open(page, 'components-forms-image-input--default')
+  const file = page.locator('input[type=file]')
+  await file.setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hi') })
+  await expect(page.getByRole('alert')).toHaveText('This file isn’t an image.')
+  await file.setInputFiles({ name: 'me.png', mimeType: 'image/png', buffer: pixel })
+  await expect(page.getByRole('img', { name: 'Image preview' })).toBeVisible()
+  await expect(page.getByText('Chosen: me.png')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Replace' })).toBeVisible()
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page.getByText('No photo yet')).toBeVisible()
+  await expect(page.getByText('PNG, JPEG, WEBP, GIF, up to 2 MB.')).toBeVisible()
+})
+
+test('sortable list: buttons move and keep the focus, the keyboard drags', async ({ page }) => {
+  await open(page, 'components-forms-sortable-list--default')
+  await page.getByRole('button', { name: 'Move Design up' }).click()
+  await expect(page.getByText('Order: speed, design, security, integrations')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Move Design up' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Order: design, speed, security, integrations')).toBeVisible()
+  // At the top, the focus moves to the other button.
+  await expect(page.getByRole('button', { name: 'Move Design down' })).toBeFocused()
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Design dropped at position 1 of 4.' }),
+  ).toBeAttached()
+
+  const handle = page.getByRole('button', { name: 'Move Integrations', exact: true })
+  await handle.focus()
+  await page.keyboard.press('Space')
+  await expect(handle).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('ArrowUp')
+  await expect(page.getByText('Integrations is at position 3 of 4.')).toBeAttached()
+  await page.keyboard.press('Space')
+  await expect(page.getByText('Order: design, speed, integrations, security')).toBeVisible()
+})
+
+test('recurrence: fields change the rule and the sentence reads it back', async ({ page }) => {
+  await open(page, 'components-forms-recurrence-input--default')
+  const summary = page.locator('[data-slot=recurrence-summary]')
+  await expect(summary).toHaveText('Every 2 weeks on Mon and Wed, 10 times')
+  await page.getByRole('checkbox', { name: 'Fri' }).check({ force: true })
+  await expect(page.getByText('BYDAY=MO,WE,FR')).toBeVisible()
+  await page.getByLabel('Team sync').fill('1')
+  await page.getByLabel('Team sync').blur()
+  await expect(summary).toHaveText('Every week on Mon, Wed, and Fri, 10 times')
+  await page.getByRole('radio', { name: 'Never' }).check()
+  await expect(page.getByText('RRULE: FREQ=WEEKLY;BYDAY=MO,WE,FR')).toBeVisible()
+  await page.getByRole('combobox', { name: 'Frequency' }).selectOption('month')
+  await expect(page.getByRole('spinbutton', { name: 'On day' })).toBeVisible()
+  await expect(summary).toHaveText('Every month on day 1')
+})
+
+test('time zones: search by city or offset', async ({ page }) => {
+  await open(page, 'components-forms-timezone-select--default')
+  const trigger = page.getByLabel('Time zone')
+  await expect(trigger).toHaveText(/\(UTC\+0[12]:00\) Paris/)
+  await trigger.click()
+  await page.getByPlaceholder('Search time zones…').fill('tokyo')
+  await page.getByRole('option', { name: /Tokyo/ }).click()
+  await expect(page.getByText('Value: Asia/Tokyo')).toBeVisible()
+
+  await open(page, 'components-forms-timezone-select--subset')
+  await page.getByLabel('Office').click()
+  await expect(page.getByRole('option')).toHaveText([
+    /\(UTC−05:00\) New York/,
+    /\(UTC\) London/,
+    /\(UTC\+01:00\) Paris/,
+    /\(UTC\+09:00\) Tokyo/,
+  ])
+})
+
+test('French recurrence', async ({ page }) => {
+  await open(page, 'components-forms-recurrence-input--french', 'fr')
+  await expect(page.locator('[data-slot=recurrence-summary]')).toHaveText(
+    'Toutes les 2 semaines le mar. et jeu.',
+  )
+})
