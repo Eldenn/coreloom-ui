@@ -848,6 +848,18 @@ export const es: Messages = {
       comparedWith: (n) => `Comparada con la v${n}`,
       noChanges: 'Sin cambios respecto a la versión anterior.',
     },
+    agentAvatar: {
+      agent: 'Agente de IA',
+      state: {
+        idle: 'en espera',
+        thinking: 'pensando',
+        speaking: 'respondiendo',
+        done: 'terminado',
+        error: 'con error',
+        offline: 'sin conexión',
+      },
+      label: (name, state) => `${name}, ${state}`,
+    },
     agentGraph: {
       label: 'Los agentes y cómo trabajan juntos',
       view: 'Vista',

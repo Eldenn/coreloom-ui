@@ -37,6 +37,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { AgentPlan } from '@/components/ui/agent-plan'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
@@ -107,6 +108,17 @@ interface MessageOptions {
   branches?: Record<string, Branch | undefined>
   /** Show another version (`index` from 0) of the message with this id. */
   onBranchChange?: (messageId: string, index: number) => void
+}
+
+interface AvatarOptions {
+  /**
+   * Draw the assistant as an animated AgentAvatar that thinks while it waits and talks while it
+   * writes: `{ variant: 'dots' }`, `{ seed: agent.id }`… Left out, a sparkle.
+   */
+  assistantAvatar?: Pick<
+    React.ComponentProps<typeof AgentAvatar>,
+    'variant' | 'seed' | 'tone' | 'eyes'
+  >
 }
 
 interface ToolOptions {
@@ -373,6 +385,7 @@ function ChatMessage({
   onToolApprovalResponse,
   onToolOutput,
   renderData,
+  assistantAvatar,
   className,
 }: {
   message: AiMessage
@@ -391,7 +404,8 @@ function ChatMessage({
   /** A reply is on its way: Edit hides and the versions wait. */
   busy?: boolean
   className?: string
-} & ToolOptions) {
+} & ToolOptions &
+  AvatarOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   const [copied, setCopied] = React.useState(false)
   // Editing belongs to one message: if another takes this place, the box doesn't carry over.
@@ -503,12 +517,21 @@ function ChatMessage({
       aria-busy={streaming || undefined}
       className={cn('flex gap-3 outline-none', className)}
     >
-      <div
-        aria-hidden
-        className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
-      >
-        <SparklesIcon className="size-3.5" />
-      </div>
+      {assistantAvatar ? (
+        <AgentAvatar
+          {...assistantAvatar}
+          state={streaming ? (textParts.some((p) => p.text) ? 'speaking' : 'thinking') : 'idle'}
+          decorative
+          className="mt-0.5 size-7"
+        />
+      ) : (
+        <div
+          aria-hidden
+          className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+        >
+          <SparklesIcon className="size-3.5" />
+        </div>
+      )}
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         {message.parts.map((part, i) => {
           if (isTextPart(part))
@@ -654,16 +677,20 @@ function useStickToBottom<T extends HTMLElement>() {
   return { ref, pinned, scrollToBottom }
 }
 
-function TypingIndicator() {
+function TypingIndicator({ assistantAvatar }: AvatarOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   return (
     <div data-slot="chat-typing" className="flex gap-3">
-      <div
-        aria-hidden
-        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
-      >
-        <SparklesIcon className="size-3.5" />
-      </div>
+      {assistantAvatar ? (
+        <AgentAvatar {...assistantAvatar} state="thinking" decorative className="size-7" />
+      ) : (
+        <div
+          aria-hidden
+          className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+        >
+          <SparklesIcon className="size-3.5" />
+        </div>
+      )}
       <div className="flex h-7 items-center gap-1" role="status" aria-label={t.waiting}>
         {[0, 150, 300].map((d) => (
           <span
@@ -689,6 +716,7 @@ function ChatMessages({
   onEdit,
   branches,
   onBranchChange,
+  assistantAvatar,
   className,
   ...toolOptions
 }: {
@@ -703,7 +731,8 @@ function ChatMessages({
   onFeedback?: (messageId: string, feedback: Feedback | undefined) => void
   className?: string
 } & MessageOptions &
-  ToolOptions) {
+  ToolOptions &
+  AvatarOptions) {
   const t = useCoreloomI18n().messages.ai.chat
   const { ref, pinned, scrollToBottom } = useStickToBottom<HTMLDivElement>()
   const last = messages[messages.length - 1]
@@ -797,10 +826,11 @@ function ChatMessages({
               branch={branches?.[m.id]}
               onBranchChange={onBranchChange && changeBranch(i)}
               busy={busy}
+              assistantAvatar={assistantAvatar}
               {...toolOptions}
             />
           ))}
-          {status === 'submitted' && <TypingIndicator />}
+          {status === 'submitted' && <TypingIndicator assistantAvatar={assistantAvatar} />}
           {(status === 'error' || error) && (
             <Alert variant="destructive">
               <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
@@ -932,7 +962,8 @@ function Chat({
   autoFocus?: boolean
   className?: string
 } & MessageOptions &
-  ToolOptions) {
+  ToolOptions &
+  AvatarOptions) {
   const empty = messages.filter((m) => m.role !== 'system').length === 0
   return (
     <section data-slot="chat" className={cn('flex h-full min-h-0 flex-col', className)}>
