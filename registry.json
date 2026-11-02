@@ -3415,6 +3415,77 @@
       ]
     },
     {
+      "name": "file-manager",
+      "type": "registry:block",
+      "title": "File manager",
+      "description": "Folders and files in a grid or a list: breadcrumb, multi-selection, drag and drop onto folders (or Move to), uploads dropped from the computer and a details panel.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/breadcrumb",
+        "@coreloom/button",
+        "@coreloom/description-list",
+        "@coreloom/dropdown-menu",
+        "@coreloom/empty",
+        "@coreloom/file-upload",
+        "@coreloom/segmented-control"
+      ],
+      "files": [
+        {
+          "path": "src/components/file-manager.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "inbox",
+      "type": "registry:block",
+      "title": "Inbox",
+      "description": "Shared conversations for a support or sales team: list with search and filters, thread with internal notes and attachments, reply or note composer, status and assignee. A base for a helpdesk.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/empty",
+        "@coreloom/file-upload",
+        "@coreloom/input",
+        "@coreloom/kbd",
+        "@coreloom/segmented-control",
+        "@coreloom/select",
+        "@coreloom/spinner",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/inbox.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "spreadsheet",
+      "type": "registry:block",
+      "title": "Spreadsheet",
+      "description": "An editable grid like a spreadsheet: keyboard navigation, type or Enter to edit, range selection, copy, cut and paste as TSV with Excel or Google Sheets, undo, and a sum of the numbers selected.",
+      "categories": ["application", "table"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/spreadsheet.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "workflow-builder",
       "type": "registry:block",
       "title": "Workflow builder",
@@ -3663,6 +3734,35 @@
       "files": [
         {
           "path": "src/components/ai-runs.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ai-evals",
+      "type": "registry:block",
+      "title": "AI evaluations",
+      "description": "Eval suites with pass rate, threshold and trend; one run case by case with scores, the judge’s verdict and metrics; two runs compared with regressions, improvements and a split diff of the outputs.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ai",
+        "@coreloom/link",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/diff-viewer",
+        "@coreloom/empty",
+        "@coreloom/relative-time",
+        "@coreloom/segmented-control",
+        "@coreloom/sparkline",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-evals.tsx",
           "type": "registry:component"
         }
       ]
