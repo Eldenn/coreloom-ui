@@ -32,6 +32,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { FileUpload } from '@/components/ui/file-upload'
+import { ImageInput, type ImageValue } from '@/components/ui/image-input'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/input-group'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
@@ -52,6 +53,7 @@ import {
   TimeRangePicker,
 } from '@/components/ui/range-inputs'
 import { Rating } from '@/components/ui/rating'
+import { type Recurrence, RecurrenceInput } from '@/components/ui/recurrence-input'
 import { ScaleInput } from '@/components/ui/scale-input'
 import { SegmentedControl } from '@/components/ui/segmented-control'
 import {
@@ -62,11 +64,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SliderInput } from '@/components/ui/slider-input'
+import { SortableList } from '@/components/ui/sortable-list'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker, TimePicker } from '@/components/ui/time-picker'
+import { TimezoneSelect } from '@/components/ui/timezone-select'
 import { TransferList } from '@/components/ui/transfer-list'
 import { type TreeNode, TreeSelect } from '@/components/ui/tree-select'
 import { UnitInput, type UnitValue } from '@/components/ui/unit-input'
@@ -1864,6 +1868,150 @@ function TransferField({
   )
 }
 
+/** One image with its preview (avatar, logo, cover); the value is a File, a saved URL, or null. */
+function ImageField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof ImageInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as ImageValue | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <ImageInput
+        id={meta.id}
+        value={value ?? null}
+        onValueChange={(file) => {
+          field.handleChange(file)
+          field.handleBlur()
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** Items to put in order (a ranking); the value is the values in their order. */
+function SortableField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof SortableList>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string[] | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+      group
+    >
+      <SortableList
+        value={value}
+        onValueChange={(next) => {
+          field.handleChange(next)
+          field.handleBlur()
+        }}
+        aria-labelledby={meta.labelId}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** How often something repeats; the value is a `Recurrence` (see `toRRule`). */
+function RecurrenceField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof RecurrenceInput>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as Recurrence | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <RecurrenceInput
+        id={meta.id}
+        value={value ?? { frequency: 'week', interval: 1, weekdays: [1], end: { type: 'never' } }}
+        onValueChange={(rule) => {
+          field.handleChange(rule)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** An IANA time zone ("Europe/Paris"), searchable, with offsets. */
+function TimezoneField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps & ControlProps<typeof TimezoneSelect>) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <TimezoneSelect
+        id={meta.id}
+        value={value ?? ''}
+        onValueChange={(zone) => {
+          field.handleChange(zone)
+          field.handleBlur()
+        }}
+        aria-invalid={meta.invalid || undefined}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
 /** Checkbox or switch on the left, label (and description) beside it. */
 function ToggleField({
   label,
@@ -2003,6 +2151,10 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     MentionField,
     TreeSelectField,
     TransferField,
+    ImageField,
+    SortableField,
+    RecurrenceField,
+    TimezoneField,
     CheckboxField,
     SwitchField,
     OTPField,
@@ -2026,6 +2178,7 @@ export {
   DurationField,
   FileField,
   FormErrors,
+  ImageField,
   JsonField,
   KeyValueField,
   MaskedField,
@@ -2041,10 +2194,12 @@ export {
   RadioCardField,
   RadioGroupField,
   RatingField,
+  RecurrenceField,
   ScaleField,
   SegmentedField,
   SelectField,
   SliderField,
+  SortableField,
   SubmitButton,
   SwitchField,
   TagsField,
@@ -2052,6 +2207,7 @@ export {
   TextField,
   TimeField,
   TimeRangeField,
+  TimezoneField,
   TransferField,
   TreeSelectField,
   UnitField,

@@ -20,6 +20,10 @@ const schema = z.object({
   note: z.string().min(1, 'Write a note.'),
   team: z.string().min(1, 'Pick a team.'),
   columns: z.array(z.string()).min(1, 'Show at least one column.'),
+  logo: z.custom<File | string | null>((v) => v !== null, 'Add a logo.'),
+  ranking: z.array(z.string()),
+  standup: z.object({ frequency: z.string() }).loose(),
+  zone: z.string().min(1, 'Pick a time zone.'),
 })
 
 const people = [
@@ -39,6 +43,14 @@ function FilterFieldsForm({ submitOnMount = false }: { submitOnMount?: boolean }
       note: '',
       team: '',
       columns: ['name'] as string[],
+      logo: null as File | string | null,
+      ranking: ['speed', 'price', 'support'],
+      standup: {
+        frequency: 'day',
+        interval: 1,
+        end: { type: 'never' },
+      },
+      zone: '',
     },
     validators: { onChange: schema as never },
     onSubmit: async () => {
@@ -131,6 +143,27 @@ function FilterFieldsForm({ submitOnMount = false }: { submitOnMount?: boolean }
             />
           )}
         </form.AppField>
+        <form.AppField name="logo">
+          {(field) => <field.ImageField label="Logo" shape="square" />}
+        </form.AppField>
+        <form.AppField name="ranking">
+          {(field) => (
+            <field.SortableField
+              label="Rank by importance"
+              options={[
+                { value: 'speed', label: 'Speed' },
+                { value: 'price', label: 'Price' },
+                { value: 'support', label: 'Support' },
+              ]}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="standup">
+          {(field) => <field.RecurrenceField label="Stand-up" />}
+        </form.AppField>
+        <form.AppField name="zone">
+          {(field) => <field.TimezoneField label="Time zone" />}
+        </form.AppField>
         <form.AppForm>
           <form.SubmitButton>Save</form.SubmitButton>
         </form.AppForm>
@@ -148,7 +181,7 @@ const meta = {
     docs: {
       description: {
         component:
-          '`ChipField` (string[] or string), `ScaleField` (number or null), `NumberRangeField` (`{ min, max }`), `TimeRangeField` (`{ start, end }`), `JsonField` (text), `MentionField` (text), `TreeSelectField` (string or string[]) and `TransferField` (string[]) on `useAppForm`.',
+          '`ChipField` (string[] or string), `ScaleField` (number or null), `NumberRangeField` (`{ min, max }`), `TimeRangeField` (`{ start, end }`), `JsonField` (text), `MentionField` (text), `TreeSelectField` (string or string[]), `TransferField` (string[]), `ImageField` (File, URL or null), `SortableField` (string[] in order), `RecurrenceField` (`Recurrence`) and `TimezoneField` (IANA name) on `useAppForm`.',
       },
     },
   },
