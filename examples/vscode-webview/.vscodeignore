@@ -1,0 +1,5 @@
+src/
+preview/
+.vscode/
+build.mjs
+dist/preview*

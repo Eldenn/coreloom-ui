@@ -1,0 +1,10 @@
+/* The webview's stylesheet: Tailwind, the Coreloom tokens and theme, then the VS Code theme on top.
+   The Coreloom brand fonts are left out: vscode.css uses the editor's fonts. In your extension,
+   import the copies `shadcn add @coreloom/theme @coreloom/vscode` wrote instead of ../../../../src. */
+@import 'tailwindcss' source(none);
+@import 'tw-animate-css';
+@import '../../../../src/styles/tokens.css';
+@import '../../../../src/styles/theme.css';
+@import '../../../../src/styles/vscode.css';
+@source '../../../../src/components';
+@source '../webview';
