@@ -283,8 +283,14 @@ interface IdeProps {
   diagnostics?: Record<string, CodeEditorDiagnostic[]>
   /** More tabs in the bottom panel, after Problems. */
   panels?: IdePanel[]
+  /** The bottom panel is shown (controlled): open it when your app runs something. */
+  panelOpen?: boolean
   defaultPanelOpen?: boolean
+  onPanelOpenChange?: (open: boolean) => void
+  /** The bottom panel's tab: "problems" or a panel's id (controlled). */
+  panel?: string
   defaultPanel?: string
+  onPanelChange?: (panel: string) => void
   /** The project's name in the title bar. */
   title?: React.ReactNode
   /** At the end of the title bar: a share button, a branch picker. */
@@ -310,8 +316,12 @@ function Ide({
   running = false,
   diagnostics = {},
   panels = [],
+  panelOpen: panelOpenProp,
   defaultPanelOpen = false,
+  onPanelOpenChange,
+  panel: panelProp,
   defaultPanel = 'problems',
+  onPanelChange,
   title,
   actions,
   readOnly = false,
@@ -363,8 +373,19 @@ function Ide({
   )
   const [explorerOpen, setExplorerOpen] = React.useState(true)
   const [sheetOpen, setSheetOpen] = React.useState(false)
-  const [panelOpen, setPanelOpen] = React.useState(defaultPanelOpen)
-  const [panel, setPanel] = React.useState(defaultPanel)
+  const [innerPanelOpen, setInnerPanelOpen] = React.useState(defaultPanelOpen)
+  const panelOpen = panelOpenProp ?? innerPanelOpen
+  const setPanelOpen = (next: boolean | ((open: boolean) => boolean)) => {
+    const value = typeof next === 'function' ? next(panelOpen) : next
+    if (panelOpenProp === undefined) setInnerPanelOpen(value)
+    if (value !== panelOpen) onPanelOpenChange?.(value)
+  }
+  const [innerPanel, setInnerPanel] = React.useState(defaultPanel)
+  const panel = panelProp ?? innerPanel
+  const setPanel = (next: string) => {
+    if (panelProp === undefined) setInnerPanel(next)
+    if (next !== panel) onPanelChange?.(next)
+  }
   const [wrap, setWrap] = React.useState(defaultWrap)
   const [cursor, setCursor] = React.useState<CodeEditorCursor>({ line: 1, column: 1, selected: 0 })
   const [palette, setPalette] = React.useState<'files' | 'commands' | 'language' | null>(null)

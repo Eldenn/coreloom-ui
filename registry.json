@@ -2013,6 +2013,65 @@
       ]
     },
     {
+      "name": "ansi-output",
+      "type": "registry:ui",
+      "title": "AnsiOutput",
+      "description": "Program output with its ANSI colours (16, 256, true colour), styles, OSC 8 links and progress-bar rewrites; an incremental parser (writeAnsi) for streamed chunks.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/ansi-output.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "terminal",
+      "type": "registry:ui",
+      "title": "Terminal",
+      "description": "A command line in the page: prompt, history, Tab completion, ANSI output, Ctrl+C; commands are your callback (text, promise or stream, read() for questions) or a PTY-shaped session.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ansi-output",
+        "@coreloom/button",
+        "@coreloom/spinner",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/terminal.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "log-viewer",
+      "type": "registry:ui",
+      "title": "LogViewer",
+      "description": "A long log, virtualized: ANSI colours, levels and timestamps detected from text, search with marked words, level filters, wrap, follow the end, copy.",
+      "dependencies": ["lucide-react", "@tanstack/react-virtual@^3"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/ansi-output",
+        "@coreloom/button",
+        "@coreloom/highlight",
+        "@coreloom/input-group",
+        "@coreloom/toggle",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/log-viewer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "json-viewer",
       "type": "registry:ui",
       "title": "JsonViewer",
@@ -2632,7 +2691,10 @@
         "@coreloom/highlight",
         "@coreloom/tour",
         "@coreloom/image-gallery",
-        "@coreloom/comment-thread"
+        "@coreloom/comment-thread",
+        "@coreloom/ansi-output",
+        "@coreloom/terminal",
+        "@coreloom/log-viewer"
       ],
       "dependencies": []
     },
@@ -3243,6 +3305,55 @@
       "files": [
         {
           "path": "src/components/ide.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "terminal-console",
+      "type": "registry:block",
+      "title": "Terminal console",
+      "description": "Several terminals in tabs, as in an IDE's panel: New terminal with a menu of profiles, side by side split, Close; each terminal is a controller your app creates, so output survives tab switches.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/terminal",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/empty",
+        "@coreloom/spinner",
+        "@coreloom/toggle",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/terminal-console.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "pipeline-run",
+      "type": "registry:block",
+      "title": "Pipeline run",
+      "description": "One run of a CI pipeline or a deploy: status, duration, jobs, steps and each step's searchable ANSI log; the failed step opens by itself; Re-run and Cancel are your callbacks.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/log-viewer",
+        "@coreloom/button",
+        "@coreloom/collapsible",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/pipeline-run.tsx",
           "type": "registry:component"
         }
       ]
