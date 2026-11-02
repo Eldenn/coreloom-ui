@@ -98,6 +98,12 @@ function Gauge({
   const ticks = [warning, critical]
     .filter((v): v is number => v !== undefined && v > min && v < max)
     .map((v) => (v - min) / span)
+  // The text sits on the ring's center and stays inside the threshold ticks, which reach in to a
+  // radius of 34.5 (of 100): a width of 0.6 × size leaves them clear. The number shrinks with its
+  // length (about 0.6 em per character) so "99.32 %" fits as well as "7 %".
+  const inner = size * 0.6
+  const valueSize = Math.min(size * 0.16, inner / (Math.max(shown.length, 3) * 0.6))
+  const labelSize = Math.max(11, Math.round(size * 0.075))
 
   return (
     <div
@@ -110,7 +116,7 @@ function Gauge({
         hasThresholds ? t.valueTextStatus(shown, fmt(max), t[status]) : t.valueText(shown, fmt(max))
       }
       aria-labelledby={label != null ? labelId : undefined}
-      className={cn('relative inline-grid shrink-0 place-items-center', className)}
+      className={cn('relative inline-block shrink-0', className)}
       style={{ width: size, height: size * 0.86 }}
       {...props}
     >
@@ -146,21 +152,29 @@ function Gauge({
           )
         })}
       </svg>
-      <div className="relative flex flex-col items-center pt-1 text-center">
-        <span className="font-display text-[26px] leading-tight tracking-[-0.02em] text-foreground tabular-nums">
+      <div
+        className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
+        style={{ left: '50%', top: `${(50 / 86) * 100}%`, width: inner }}
+      >
+        <span
+          className="max-w-full font-display leading-tight tracking-[-0.02em] whitespace-nowrap text-foreground tabular-nums"
+          style={{ fontSize: valueSize }}
+        >
           {shown}
         </span>
         {label != null && (
-          <span id={labelId} className="max-w-[9rem] truncate text-[12px] text-muted-foreground">
+          <span
+            id={labelId}
+            className="max-w-full truncate text-muted-foreground"
+            style={{ fontSize: labelSize }}
+          >
             {label}
           </span>
         )}
         {hasThresholds && (
           <span
-            className={cn(
-              'font-mono text-[11px] font-semibold tracking-[0.08em] uppercase',
-              tone.text,
-            )}
+            className={cn('font-mono font-semibold tracking-[0.08em] uppercase', tone.text)}
+            style={{ fontSize: labelSize - 1 }}
           >
             {t[status]}
           </span>
