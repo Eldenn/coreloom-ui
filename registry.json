@@ -1940,6 +1940,35 @@
       ]
     },
     {
+      "name": "code-editor",
+      "type": "registry:ui",
+      "title": "CodeEditor",
+      "description": "Code to write, on CodeMirror 6 in Coreloom's colours: JS/TS (JSX), JSON, CSS, HTML, Markdown and Python, folding, autocompletion, search, diagnostics by line, Mod-S, one undo history per file path.",
+      "dependencies": [
+        "@codemirror/autocomplete@^6",
+        "@codemirror/commands@^6",
+        "@codemirror/lang-css@^6",
+        "@codemirror/lang-html@^6",
+        "@codemirror/lang-javascript@^6",
+        "@codemirror/lang-json@^6",
+        "@codemirror/lang-markdown@^6",
+        "@codemirror/lang-python@^6",
+        "@codemirror/language@^6",
+        "@codemirror/lint@^6",
+        "@codemirror/search@^6",
+        "@codemirror/state@^6",
+        "@codemirror/view@^6",
+        "@lezer/highlight@^1"
+      ],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/code-editor.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "code-viewer",
       "type": "registry:ui",
       "title": "CodeViewer",
@@ -2546,6 +2575,7 @@
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
+        "@coreloom/code-editor",
         "@coreloom/code-viewer",
         "@coreloom/json-viewer",
         "@coreloom/description-list",
@@ -3096,6 +3126,39 @@
       "files": [
         {
           "path": "src/components/workflow-builder.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "ide",
+      "type": "registry:block",
+      "title": "IDE",
+      "description": "A code workspace laid out like VS Code, in the browser: file explorer, tabs, CodeMirror editor, Problems and your own bottom panels, status bar, Mod-P file search and a command palette; saving, running and diagnostics are your app's callbacks.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react", "@codemirror/view@^6", "react-resizable-panels@^4"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/code-editor",
+        "@coreloom/tree-view",
+        "@coreloom/alert-dialog",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/dialog",
+        "@coreloom/empty",
+        "@coreloom/input",
+        "@coreloom/kbd",
+        "@coreloom/label",
+        "@coreloom/resizable",
+        "@coreloom/sheet",
+        "@coreloom/tabs",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ide.tsx",
           "type": "registry:component"
         }
       ]
