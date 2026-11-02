@@ -1,0 +1,30 @@
+<!-- @dsCard group="Layout" height=220 subtitle="16 / 9 · 1 / 1 · 4 / 3 boxes for media" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AspectRatio || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AspectRatio } = UI;
+      const box = (label) => h('div', { className: 'flex size-full items-center justify-center rounded-md border border-border-subtle bg-inset font-mono text-[11px] font-semibold tracking-[0.08em] text-fg-secondary uppercase' }, label);
+      function Demo() {
+        return h('div', { className: 'grid grid-cols-3 items-start gap-4', style: { maxWidth: 520 } },
+          h(AspectRatio, { ratio: 16 / 9 }, box('16 / 9')), h(AspectRatio, { ratio: 1 }, box('1 / 1')), h(AspectRatio, { ratio: 4 / 3 }, box('4 / 3')));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

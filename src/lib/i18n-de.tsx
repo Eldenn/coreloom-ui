@@ -76,6 +76,19 @@ export const de: Messages = {
   },
   money: { amount: 'Betrag' },
   phone: { country: 'Land', searchCountry: 'Land suchen…', number: 'Telefonnummer' },
+  inputs: {
+    showPassword: 'Passwort anzeigen',
+    clearSearch: 'Suche löschen',
+    increase: 'Erhöhen',
+    decrease: 'Verringern',
+    time: {
+      openList: 'Aus einer Liste wählen',
+      times: 'Uhrzeiten',
+      invalid: (format) => `Gib die Uhrzeit als ${format} ein.`,
+      formatTokens: { hour: 'hh', minute: 'mm' },
+    },
+    dateTime: { date: 'Datum', time: 'Uhrzeit' },
+  },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {
     filter: 'Filtern…',

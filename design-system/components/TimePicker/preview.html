@@ -1,0 +1,32 @@
+<!-- @dsCard group="Forms" height=230 subtitle="Typed or listed time · reader’s clock · date + time" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TimePicker || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { TimePicker, DateTimePicker, Field, FieldLabel, FieldDescription, FieldGroup } = UI;
+      function Demo() {
+        const [time, setTime] = React.useState('14:30');
+        const [when, setWhen] = React.useState(new Date(2026, 9, 14, 15, 0));
+        return h(FieldGroup, { style: { maxWidth: 380 }, className: 'gap-4' },
+          h(Field, { style: { maxWidth: 180 } }, h(FieldLabel, { htmlFor: 'start' }, 'Starts at'), h(TimePicker, { id: 'start', value: time, onValueChange: setTime }), h(FieldDescription, null, 'Value: ' + (time || 'empty'))),
+          h(Field, null, h(FieldLabel, { htmlFor: 'when' }, 'Meeting'), h(DateTimePicker, { id: 'when', value: when, onValueChange: setWhen, step: 15 })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

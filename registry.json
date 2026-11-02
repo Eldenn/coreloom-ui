@@ -1296,6 +1296,103 @@
       ]
     },
     {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "InputGroup",
+      "description": "A field with addons inside its border (icon, prefix, unit, button, kbd, a toolbar above or below a textarea), plus ready-made PasswordInput (show/hide) and SearchInput (clear).",
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/input-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "title": "ButtonGroup",
+      "description": "Buttons, selects, inputs or a text label joined edge to edge: split buttons, related actions, horizontal or vertical.",
+      "dependencies": ["class-variance-authority", "radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/separator"],
+      "files": [
+        {
+          "path": "src/components/ui/button-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "number-input",
+      "type": "registry:ui",
+      "title": "NumberInput",
+      "description": "A number typed the reader's way, with − / + buttons and spin-button keys (arrows, Page Up/Down, Home/End); units and percents through Intl; the value is a number.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/number-input.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "native-select",
+      "type": "registry:ui",
+      "title": "NativeSelect",
+      "description": "The browser's own <select>, styled like the other fields: the best picker on phones and in long forms.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/native-select.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "title": "AspectRatio",
+      "description": "Keeps a box at a width-to-height ratio (16/9, 1, 4/3) for images, videos and previews.",
+      "dependencies": ["radix-ui"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/aspect-ratio.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "time-picker",
+      "type": "registry:ui",
+      "title": "TimePicker",
+      "description": "A time of day, typed (\"14:30\", \"2:30 pm\", \"14h30\") or picked from a list, shown in the reader's clock; the value is \"HH:mm\". DateTimePicker joins it with a DatePicker for one Date.",
+      "dependencies": ["date-fns@^4", "lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/popover",
+        "@coreloom/date-picker"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/time-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -1679,6 +1776,12 @@
         "@coreloom/multi-select",
         "@coreloom/money-input",
         "@coreloom/phone-input",
+        "@coreloom/input-group",
+        "@coreloom/button-group",
+        "@coreloom/number-input",
+        "@coreloom/native-select",
+        "@coreloom/aspect-ratio",
+        "@coreloom/time-picker",
         "@coreloom/rich-text-editor",
         "@coreloom/markdown",
         "@coreloom/prompt-input",
