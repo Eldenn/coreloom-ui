@@ -1,0 +1,31 @@
+<!-- @dsCard group="Forms" height=230 subtitle="120/280 · amber near, red over · quiet announcements" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.CharacterCount || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { CharacterCount, Field, FieldLabel, Textarea } = UI;
+      function Demo() {
+        const [text, setText] = React.useState('Shipping the new billing page today, with the redesigned invoices.');
+        return h(Field, { style: { maxWidth: 360 } }, h(FieldLabel, { htmlFor: 'status' }, 'Status'),
+          h(Textarea, { id: 'status', value: text, 'aria-describedby': 'status-count', onChange: (e) => setText(e.target.value) }),
+          h(CharacterCount, { id: 'status-count', value: text, max: 80 }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

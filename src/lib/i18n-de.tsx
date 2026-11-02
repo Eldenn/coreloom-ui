@@ -88,6 +88,25 @@ export const de: Messages = {
       formatTokens: { hour: 'hh', minute: 'mm' },
     },
     dateTime: { date: 'Datum', time: 'Uhrzeit' },
+    clear: 'Löschen',
+    count: {
+      used: (n, max) => `${n} von ${max} Zeichen`,
+      left: (n) => (n === 1 ? 'Noch 1 Zeichen' : `Noch ${n} Zeichen`),
+      over: (n) => (n === 1 ? '1 Zeichen zu viel' : `${n} Zeichen zu viel`),
+    },
+    editable: { edit: (label) => `${label} bearbeiten`, empty: 'Leer' },
+    masked: { invalid: 'Prüfe diese Nummer: Sie ist ungültig.' },
+    color: {
+      open: 'Farbe wählen',
+      swatches: 'Farbfelder',
+      hex: 'Hex-Code',
+      custom: 'Eigene Farbe',
+      invalid: 'Gib eine Farbe als #rrggbb ein.',
+    },
+    rating: {
+      value: (n, max) => `${n} von ${max}`,
+      star: (n) => (n === 1 ? '1 Stern' : `${n} Sterne`),
+    },
   },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {

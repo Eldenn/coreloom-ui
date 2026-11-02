@@ -15,6 +15,7 @@ import * as React from 'react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { CharacterCount } from '@/components/ui/character-count'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Combobox } from '@/components/ui/combobox'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -28,9 +29,11 @@ import {
 } from '@/components/ui/field'
 import { FileUpload } from '@/components/ui/file-upload'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/input-group'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
 import { MoneyInput } from '@/components/ui/money-input'
 import { MultiSelect } from '@/components/ui/multi-select'
+import { NumberInput } from '@/components/ui/number-input'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
@@ -44,6 +47,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { TagsInput } from '@/components/ui/tags-input'
 import { Textarea } from '@/components/ui/textarea'
+import { DateTimePicker, TimePicker } from '@/components/ui/time-picker'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -145,15 +149,19 @@ function TextField({
   className,
   labelAction,
   hideLabel,
+  maxCount,
   ...props
-}: VerticalShellProps &
-  Omit<
+}: VerticalShellProps & {
+  /** Shows a "120/280" counter under the field (a soft limit: validate the length too). */
+  maxCount?: number
+} & Omit<
     React.ComponentProps<typeof Input>,
     'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
   >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useSelector(field.store, (s) => s.value)
+  const countId = `${meta.id}-count`
   return (
     <VerticalShell
       meta={meta}
@@ -179,9 +187,17 @@ function TextField({
         }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
+        aria-describedby={
+          [describedBy(meta, description), maxCount === undefined ? null : countId]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
         {...props}
       />
+      {maxCount !== undefined && (
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- the field holds a string or a number.
+        <CharacterCount id={countId} value={value == null ? '' : String(value)} max={maxCount} />
+      )}
     </VerticalShell>
   )
 }
@@ -192,15 +208,19 @@ function TextareaField({
   className,
   labelAction,
   hideLabel,
+  maxCount,
   ...props
-}: VerticalShellProps &
-  Omit<
+}: VerticalShellProps & {
+  /** Shows a "120/280" counter under the field (a soft limit: validate the length too). */
+  maxCount?: number
+} & Omit<
     React.ComponentProps<typeof Textarea>,
     'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
   >) {
   const meta = useFieldMeta()
   const field = meta.field
   const value = useSelector(field.store, (s) => s.value)
+  const countId = `${meta.id}-count`
   return (
     <VerticalShell
       meta={meta}
@@ -220,9 +240,17 @@ function TextareaField({
         }}
         onBlur={field.handleBlur}
         aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
+        aria-describedby={
+          [describedBy(meta, description), maxCount === undefined ? null : countId]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
         {...props}
       />
+      {maxCount !== undefined && (
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- the field holds a string or a number.
+        <CharacterCount id={countId} value={value == null ? '' : String(value)} max={maxCount} />
+      )}
     </VerticalShell>
   )
 }
@@ -679,6 +707,192 @@ function PhoneField({
   )
 }
 
+/** A number (or null when empty) from NumberInput: units, percents, bounds and steps as props. */
+function NumberField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof NumberInput>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'name'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as number | null | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <NumberInput
+        id={meta.id}
+        name={field.name}
+        value={value ?? null}
+        onValueChange={(n) => {
+          field.handleChange(n)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A password with a show/hide toggle. Put a "Forgot password?" link in `labelAction`. */
+function PasswordField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof PasswordInput>,
+    'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
+  >) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <PasswordInput
+        id={meta.id}
+        name={field.name}
+        value={value ?? ''}
+        onChange={(e) => {
+          field.handleChange(e.target.value)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A time of day as "HH:mm" (or undefined), typed or picked. */
+function TimeField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof TimePicker>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'name'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as string | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <TimePicker
+        id={meta.id}
+        name={field.name}
+        value={value}
+        onValueChange={(t) => {
+          field.handleChange(t)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
+/** A day and a time as one Date (or undefined): DatePicker and TimePicker side by side. */
+function DateTimeField({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...props
+}: VerticalShellProps &
+  Omit<
+    React.ComponentProps<typeof DateTimePicker>,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onBlur'
+    | 'id'
+    | 'className'
+    | 'aria-invalid'
+    | 'aria-describedby'
+  >) {
+  const meta = useFieldMeta()
+  const field = meta.field
+  const value = useSelector(field.store, (s) => s.value) as Date | undefined
+  return (
+    <VerticalShell
+      meta={meta}
+      label={label}
+      description={description}
+      className={className}
+      labelAction={labelAction}
+      hideLabel={hideLabel}
+    >
+      <DateTimePicker
+        id={meta.id}
+        value={value}
+        onValueChange={(d) => {
+          field.handleChange(d)
+        }}
+        onBlur={field.handleBlur}
+        aria-invalid={meta.invalid || undefined}
+        aria-describedby={describedBy(meta, description)}
+        {...props}
+      />
+    </VerticalShell>
+  )
+}
+
 /** Files from a drop zone (File[]). Type and size limits refuse files with their own message. */
 function FileField({
   label,
@@ -886,6 +1100,10 @@ const { useAppForm, withForm, withFieldGroup } = createFormHook({
     FileField,
     MoneyField,
     PhoneField,
+    NumberField,
+    PasswordField,
+    TimeField,
+    DateTimeField,
     RadioGroupField,
     CheckboxField,
     SwitchField,
@@ -902,12 +1120,15 @@ export {
   ComboboxField,
   DateField,
   DateRangeField,
+  DateTimeField,
   describedBy,
   FileField,
   FormErrors,
   MoneyField,
   MultiSelectField,
+  NumberField,
   OTPField,
+  PasswordField,
   PhoneField,
   RadioGroupField,
   SelectField,
@@ -916,6 +1137,7 @@ export {
   TagsField,
   TextareaField,
   TextField,
+  TimeField,
   useAppForm,
   useFieldContext,
   // For your own field components (see rich-text-field.tsx): ids, errors and the label / description / error frame.
