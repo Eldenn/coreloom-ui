@@ -22,6 +22,7 @@ const GUIDE_FOR = {
   'model-field': ['ModelPicker'],
   'theme-toggle': ['Accents'],
   'command-menu': ['Command'],
+  highlight: ['TruncatedText'],
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
 }

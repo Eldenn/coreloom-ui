@@ -1982,6 +1982,133 @@
       ]
     },
     {
+      "name": "description-list",
+      "type": "registry:ui",
+      "title": "DescriptionList",
+      "description": "Labels and their values, stacked, inline or in a grid; empty values say \"Not set\", Copy for IDs.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/description-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-indicator",
+      "type": "registry:ui",
+      "title": "StatusIndicator",
+      "description": "A coloured dot and the word for it, plain or in a pill, with an optional pulse; StatusDot alone.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/status-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "banner",
+      "type": "registry:ui",
+      "title": "Banner",
+      "description": "A message across the top of a page or app, by tone, with an action and an optional close button.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/banner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "truncated-text",
+      "type": "registry:ui",
+      "title": "TruncatedText",
+      "description": "A long text cut after a few lines, with Show more when it is actually cut.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/truncated-text.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "highlight",
+      "type": "registry:ui",
+      "title": "Highlight",
+      "description": "Marks searched terms in a text, ignoring case and accents; findMatches is exported.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/highlight.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tour",
+      "type": "registry:ui",
+      "title": "Tour",
+      "description": "A guided tour: steps that light up a target and explain it, with Back, Next, Skip and a step count.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/tour.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "image-gallery",
+      "type": "registry:ui",
+      "title": "ImageGallery",
+      "description": "A grid of thumbnails opening a full-screen viewer with arrows, zoom and captions; ImageLightbox alone.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/image-gallery.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "comment-thread",
+      "type": "registry:ui",
+      "title": "CommentThread",
+      "description": "Comments with one level of replies, emoji reactions, @ mentions and a box to write; front-end only.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/button",
+        "@coreloom/emoji-picker",
+        "@coreloom/mention-textarea",
+        "@coreloom/relative-time",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/comment-thread.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2420,7 +2547,15 @@
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
         "@coreloom/code-viewer",
-        "@coreloom/json-viewer"
+        "@coreloom/json-viewer",
+        "@coreloom/description-list",
+        "@coreloom/status-indicator",
+        "@coreloom/banner",
+        "@coreloom/truncated-text",
+        "@coreloom/highlight",
+        "@coreloom/tour",
+        "@coreloom/image-gallery",
+        "@coreloom/comment-thread"
       ],
       "dependencies": []
     },
