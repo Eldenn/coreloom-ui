@@ -32,7 +32,8 @@ function useActiveHeading(ids: string[]) {
     return () => {
       observer.disconnect()
     }
-  }, [ids.join('|')]) // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the joined ids are the dependency: a new array with the same ids keeps the observer.
+  }, [ids.join('|')])
   return active
 }
 

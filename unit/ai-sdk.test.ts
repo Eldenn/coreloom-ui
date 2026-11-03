@@ -51,17 +51,17 @@ type Props<C> = C extends (props: infer P) => unknown ? P : never
 
 // An app's tools, the way the SDK infers them from `tool({ inputSchema, execute })` on the server.
 // Type aliases, not interfaces: the SDK's UITools needs the implicit index signature.
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- the SDK's UITools needs a type alias's implicit index signature.
 type WeatherOutput = { city: string; celsius: number; sky: 'sun' | 'rain' }
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- the SDK's UITools needs a type alias's implicit index signature.
 type AppTools = {
   getWeather: Tool<{ city: string }, WeatherOutput>
   searchDocs: Tool<{ query: string }, { title: string; url: string }[]>
 }
 type AppUITools = InferUITools<AppTools>
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- the SDK's UITools needs a type alias's implicit index signature.
 type AppData = { progress: { step: number; of: number } }
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- the SDK's UITools needs a type alias's implicit index signature.
 type AppMetadata = { model: string; createdAt: number }
 type AppMessage = UIMessage<AppMetadata, AppData, AppUITools>
 

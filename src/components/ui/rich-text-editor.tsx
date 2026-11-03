@@ -100,6 +100,7 @@ function LinkButton({ editor, disabled }: { editor: Editor; disabled?: boolean }
   const t = useCoreloomI18n().messages.editor
   const [open, setOpen] = React.useState(false)
   const [url, setUrl] = React.useState('')
+  const urlId = React.useId()
   const active = editor.isActive('link')
   const apply = () => {
     const href = url.trim()
@@ -143,11 +144,11 @@ function LinkButton({ editor, disabled }: { editor: Editor; disabled?: boolean }
             apply()
           }}
         >
-          <label htmlFor="rte-link" className="text-[13px] font-medium text-foreground">
+          <label htmlFor={urlId} className="text-[13px] font-medium text-foreground">
             {t.linkUrl}
           </label>
           <Input
-            id="rte-link"
+            id={urlId}
             value={url}
             onChange={(e) => {
               setUrl(e.target.value)

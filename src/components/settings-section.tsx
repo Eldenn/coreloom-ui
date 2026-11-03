@@ -175,6 +175,7 @@ function DangerZone({
   const t = useCoreloomI18n().messages
   title ??= t.settings.dangerZone
   const [typed, setTyped] = React.useState('')
+  const confirmId = React.useId()
   return (
     <section className="overflow-hidden rounded-lg border border-destructive/40 bg-card">
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5">
@@ -203,11 +204,9 @@ function DangerZone({
               <AlertDialogDescription>{confirmDescription}</AlertDialogDescription>
             </AlertDialogHeader>
             <Field>
-              <FieldLabel htmlFor="danger-confirm">
-                {t.settings.typeToConfirm(resourceName)}
-              </FieldLabel>
+              <FieldLabel htmlFor={confirmId}>{t.settings.typeToConfirm(resourceName)}</FieldLabel>
               <Input
-                id="danger-confirm"
+                id={confirmId}
                 value={typed}
                 onChange={(e) => {
                   setTyped(e.target.value)
