@@ -8,4 +8,4 @@
 
 ### Added
 
-- `renderIcon` and the `IconLike` type (`@coreloom/icon`), and `initials` (`@coreloom/initials`): the helpers that AppSidebar, NavUser, CommandMenu, FeatureGrid and SettingsLayout (icons), and Team, Kanban, Inbox, AuditLog and CommentThread (avatar initials) each carried their own copy of. Those blocks now install them; nothing changes in how they render.
+- `renderIcon` and the `IconLike` type (`@coreloom/render-icon`), and `initials` (`@coreloom/initials`): the helpers that AppSidebar, NavUser, CommandMenu, FeatureGrid and SettingsLayout (icons), and Team, Kanban, Inbox, AuditLog and CommentThread (avatar initials) each carried their own copy of. Those blocks now install them; nothing changes in how they render.
