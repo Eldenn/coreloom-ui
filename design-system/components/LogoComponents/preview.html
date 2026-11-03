@@ -1,0 +1,33 @@
+<!-- @dsCard group="Motion" height=170 subtitle="Draw · stagger · assemble · loader · cloud" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Logo || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Logo } = UI;
+      const mark = () => h('svg', { viewBox: '0 0 120 40', fill: 'currentColor' },
+        h('g', null, h('circle', { cx: 20, cy: 20, r: 16 })),
+        h('g', null, h('rect', { x: 44, y: 8, width: 70, height: 10, rx: 3 })),
+        h('g', null, h('rect', { x: 44, y: 24, width: 46, height: 8, rx: 3 })));
+      const cell = (animation) => h('div', { key: animation, className: 'flex flex-col items-center gap-2' },
+        h(Logo, { label: 'Brand', animation, className: 'h-10 text-primary' }, mark()),
+        h('span', { className: 'text-[12px] text-fg-secondary' }, animation));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'flex flex-wrap items-end gap-8' }, ['draw', 'stagger', 'assemble', 'wipe'].map(cell)));
+    }
+    render();
+  </script>
+</body>
+</html>

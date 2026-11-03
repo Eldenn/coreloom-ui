@@ -11,7 +11,19 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-type RevealEffect = 'fade' | 'up' | 'down' | 'left' | 'right' | 'scale' | 'blur'
+type RevealEffect =
+  | 'fade'
+  | 'up'
+  | 'down'
+  | 'left'
+  | 'right'
+  | 'scale'
+  | 'blur'
+  | 'wipe-up'
+  | 'wipe-down'
+  | 'wipe-left'
+  | 'wipe-right'
+  | 'circle'
 
 interface InViewOptions {
   /** Stop watching after the first time it is seen (the default), or follow it in and out. */
@@ -82,10 +94,25 @@ const hiddenClass: Record<RevealEffect, string> = {
   right: '-translate-x-6 opacity-0',
   scale: 'scale-95 opacity-0',
   blur: 'opacity-0 blur-sm',
+  // Wipes and the circle uncover the content through a mask (clip-path): best for images.
+  'wipe-up': '[clip-path:inset(100%_0_0_0)]',
+  'wipe-down': '[clip-path:inset(0_0_100%_0)]',
+  'wipe-left': '[clip-path:inset(0_0_0_100%)]',
+  'wipe-right': '[clip-path:inset(0_100%_0_0)]',
+  circle: '[clip-path:circle(0%_at_50%_50%)]',
+}
+
+/** The masks need an end value to animate to (a clip-path can't animate from or to none). */
+const shownClass: Partial<Record<RevealEffect, string>> = {
+  'wipe-up': '[clip-path:inset(0_0_0_0)]',
+  'wipe-down': '[clip-path:inset(0_0_0_0)]',
+  'wipe-left': '[clip-path:inset(0_0_0_0)]',
+  'wipe-right': '[clip-path:inset(0_0_0_0)]',
+  circle: '[clip-path:circle(75%_at_50%_50%)]',
 }
 
 const revealClass =
-  'transition-[opacity,translate,scale,filter] duration-reveal ease-out motion-reduce:transition-none'
+  'transition-[opacity,translate,scale,filter,clip-path] duration-reveal ease-out motion-reduce:transition-none'
 
 function Reveal({
   effect = 'up',
@@ -98,7 +125,8 @@ function Reveal({
   ref: refProp,
   ...props
 }: {
-  /** fade, up (rises into place), down, left (comes from the right), right, scale or blur. */
+  /** fade, up (rises into place), down, left (comes from the right), right, scale, blur, or a
+   *  mask that uncovers it: wipe-up, wipe-down, wipe-left, wipe-right, circle. */
   effect?: RevealEffect
   /** Milliseconds to wait once it is in view. */
   delay?: number
@@ -106,19 +134,26 @@ function Reveal({
   React.ComponentProps<'div'>) {
   const ref = React.useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once, threshold, rootMargin })
+  const setRef = (node: HTMLDivElement | null) => {
+    ref.current = node
+    if (typeof refProp === 'function') refProp(node)
+    else if (refProp) refProp.current = node
+  }
+  const animated = {
+    className: cn(revealClass, inView ? shownClass[effect] : hiddenClass[effect], className),
+    style: { transitionDelay: delay ? `${delay}ms` : undefined, ...style },
+    ...props,
+  }
+  // A mask hides the element from IntersectionObserver too: watch a plain box around it instead.
+  if (effect in shownClass) {
+    return (
+      <div ref={setRef} data-slot="reveal" data-state={inView ? 'visible' : 'hidden'}>
+        <div {...animated} />
+      </div>
+    )
+  }
   return (
-    <div
-      ref={(node) => {
-        ref.current = node
-        if (typeof refProp === 'function') refProp(node)
-        else if (refProp) refProp.current = node
-      }}
-      data-slot="reveal"
-      data-state={inView ? 'visible' : 'hidden'}
-      className={cn(revealClass, !inView && hiddenClass[effect], className)}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
-      {...props}
-    />
+    <div ref={setRef} data-slot="reveal" data-state={inView ? 'visible' : 'hidden'} {...animated} />
   )
 }
 
@@ -162,7 +197,11 @@ function Stagger({
           // eslint-disable-next-line @eslint-react/no-array-index-key -- toArray keys elements; only plain text items fall back to their place.
           key={React.isValidElement(child) ? (child.key ?? i) : i}
           data-slot="stagger-item"
-          className={cn(revealClass, !inView && hiddenClass[effect], itemClassName)}
+          className={cn(
+            revealClass,
+            inView ? shownClass[effect] : hiddenClass[effect],
+            itemClassName,
+          )}
           // Past ten items the wait would get long: the rest arrive with the tenth.
           style={{ transitionDelay: `${delay + Math.min(i, 9) * step}ms` }}
         >

@@ -86,3 +86,153 @@ test('a view transition changes the step, forward and back', async ({ page }) =>
   await page.getByRole('button', { name: 'Back' }).click()
   await expect(page.getByText('Create a project')).toBeVisible()
 })
+
+test('a status button shows and announces each state', async ({ page }) => {
+  await open(page, 'components-motion-micro-interactions--interactive')
+  const button = page.getByRole('button', { name: 'Save changes' })
+  await button.click()
+  await expect(page.getByRole('button', { name: 'Saving…' })).toHaveAttribute('aria-busy', 'true')
+  await expect(page.getByRole('status').filter({ hasText: 'Saving…' })).toBeAttached()
+  await expect(page.getByRole('button', { name: 'Saved' })).toBeVisible({ timeout: 3000 })
+  await expect(page.getByRole('status').filter({ hasText: 'Saved' })).toBeAttached()
+  await expect(page.getByRole('button', { name: 'Saved' })).toBeFocused()
+  await expect(page.getByRole('button', { name: 'Save changes' })).toBeVisible({ timeout: 3000 })
+})
+
+test('an animated list adds and removes items', async ({ page }) => {
+  await open(page, 'components-motion-micro-interactions--list')
+  const items = page.locator('[data-slot=animated-list-item]')
+  await expect(items).toHaveCount(3)
+  await page.getByRole('button', { name: 'Add a task' }).click()
+  await expect(page.getByText('New task 4')).toBeVisible()
+  await expect(items).toHaveCount(4)
+  await page.getByRole('button', { name: 'Remove Ship the motion tokens' }).click()
+  // Leaving: hidden from screen readers at once, gone after its exit.
+  await expect(page.getByRole('button', { name: 'Remove Ship the motion tokens' })).toHaveCount(0)
+  await expect(items).toHaveCount(3)
+})
+
+test('the tabs indicator follows the active tab', async ({ page }) => {
+  await open(page, 'components-motion-micro-interactions--sliding-tabs')
+  const indicator = page.locator('[data-slot=tabs-indicator][data-variant=pill]')
+  const tab = page.getByRole('tab', { name: 'Settings' })
+  await tab.click()
+  await expect(tab).toHaveAttribute('aria-selected', 'true')
+  await expect
+    .poll(async () => {
+      const [a, b] = await Promise.all([indicator.boundingBox(), tab.boundingBox()])
+      return a && b ? Math.abs(a.x - b.x) < 1 : null
+    })
+    .toBe(true)
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.getByRole('tab', { name: 'Deployments' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+})
+
+test('the animated height follows its content', async ({ page }) => {
+  await open(page, 'components-motion-micro-interactions--height')
+  const box = page.locator('[data-slot=animated-height]')
+  const before = (await box.boundingBox())?.height ?? 0
+  await page.getByRole('button', { name: 'Show more' }).click()
+  await expect.poll(async () => (await box.boundingBox())?.height ?? 0).toBeGreaterThan(before + 20)
+})
+
+test('a ping is named for screen readers', async ({ page }) => {
+  await open(page, 'components-motion-signals--placements')
+  await expect(page.getByText('3 unread')).toBeAttached()
+  await expect(page.getByText('Online')).toBeAttached()
+})
+
+test('confetti bursts and cleans up, and stays off with reduced motion', async ({ page }) => {
+  await open(page, 'components-motion-signals--confetti')
+  await page.getByRole('button', { name: 'Finish onboarding' }).click()
+  await expect(page.locator('[data-slot=confetti]')).toHaveCount(1)
+  await expect(page.locator('[data-slot=confetti]')).toHaveCount(0, { timeout: 5000 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.getByRole('button', { name: 'Finish onboarding' }).click()
+  await expect(page.locator('[data-slot=confetti]')).toHaveCount(0)
+})
+
+test('the page progress bar is busy while loading, then goes away', async ({ page }) => {
+  await open(page, 'components-motion-signals--page-load')
+  await page.getByRole('button', { name: 'Start loading' }).click()
+  const bar = page.getByRole('progressbar', { name: 'Loading the page' })
+  await expect(bar).toHaveAttribute('aria-busy', 'true')
+  await page.getByRole('button', { name: 'Finish' }).click()
+  await expect(bar).toHaveCount(0, { timeout: 3000 })
+})
+
+test('the typing indicator says who is typing, in French too', async ({ page }) => {
+  await open(page, 'components-motion-signals--typing')
+  await expect(page.getByRole('status').filter({ hasText: 'Lena is typing' })).toBeAttached()
+  await open(page, 'components-motion-signals--french', 'fr')
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Lena est en train d’écrire' }),
+  ).toBeAttached()
+})
+
+test('scrambled text settles on the text and reads as it', async ({ page }) => {
+  await open(page, 'components-motion-showcase-effects--scramble')
+  const scramble = page.locator('[data-slot=scramble-text]')
+  await expect(scramble.locator('.sr-only')).toHaveText('ACCESS GRANTED')
+  await expect(scramble.locator('[aria-hidden]')).toHaveText('ACCESS GRANTED', { timeout: 4000 })
+})
+
+test('images revealed by a mask end uncovered', async ({ page }) => {
+  await open(page, 'components-motion-showcase-effects--image-reveal')
+  const items = page.locator('[data-slot=reveal]')
+  await expect(items).toHaveCount(3)
+  for (const item of await items.all()) await expect(item).toHaveAttribute('data-state', 'visible')
+})
+
+test('a logo is an image with its name, and a linked logo names its link', async ({ page }) => {
+  await open(page, 'components-motion-logo--default')
+  await expect(page.getByRole('img', { name: 'Atlas' })).toBeVisible()
+  await open(page, 'components-motion-logo--in-a-header')
+  await expect(page.getByRole('link', { name: 'Atlas, home' })).toBeVisible()
+})
+
+test('a logo indexes its parts and plays its entrance', async ({ page }) => {
+  await open(page, 'components-motion-logo--animations')
+  const stagger = page.locator('[data-slot=logo][data-animation=stagger]')
+  await expect(stagger).toHaveCount(1)
+  // The Atlas logo has three top-level groups: symbol, wordmark, tagline.
+  await expect(stagger.locator('svg > g[data-logo-part]')).toHaveCount(3)
+  const draw = page.locator('[data-slot=logo][data-animation=draw] path').first()
+  expect(
+    Number(await draw.evaluate((el) => getComputedStyle(el).getPropertyValue('--logo-len'))),
+  ).toBeGreaterThan(0)
+})
+
+test('a logo stays still with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 'components-motion-logo--animations')
+  await expect(page.locator('[data-slot=logo]:not([data-animation=none])')).toHaveCount(0)
+})
+
+test('a header logo replays its entrance on hover', async ({ page }) => {
+  await open(page, 'components-motion-logo--in-a-header')
+  const logo = page.locator('[data-slot=logo]')
+  await expect(logo).toHaveAttribute('data-animation', 'none')
+  await page.getByRole('link', { name: 'Atlas, home' }).hover()
+  await expect(logo).toHaveAttribute('data-animation', 'stagger')
+})
+
+test('the logo loader is busy, then hands over to the content', async ({ page }) => {
+  await open(page, 'components-motion-logo--loader')
+  const status = page.getByRole('status')
+  await expect(status).toHaveAttribute('aria-busy', 'true')
+  await expect(status).toContainText('Atlas, Loading')
+  await page.getByRole('button', { name: 'Finish loading' }).click()
+  await expect(page.getByText('Your programs are ready.')).toBeVisible()
+  await expect(page.locator('[data-slot=logo-loader]')).toHaveCount(0)
+})
+
+test('a logo cloud names each logo and links it', async ({ page }) => {
+  await open(page, 'components-motion-logo--cloud')
+  const list = page.getByRole('list', { name: 'Customers' })
+  await expect(list.getByRole('listitem')).toHaveCount(8)
+  await expect(list.getByRole('link', { name: 'Atlas' })).toBeVisible()
+})

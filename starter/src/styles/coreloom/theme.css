@@ -408,3 +408,269 @@
     scale: 1.02;
   }
 }
+
+/* Motion, second lot: drawn icons, status shakes, list items, page progress, typing dots,
+   animated backgrounds and scroll-driven effects. Finite unless they carry state or decorate. */
+@theme {
+  --animate-draw: draw var(--draw-duration, 420ms) cubic-bezier(0.65, 0, 0.35, 1) both;
+  --animate-shake: shake 0.4s ease-in-out 1;
+  --animate-pop-in: pop-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-list-in: list-in var(--duration-slow) cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-list-out: list-out var(--duration-base) cubic-bezier(0.65, 0, 0.35, 1) both;
+  --animate-page-progress: page-progress 8s cubic-bezier(0.1, 0.6, 0.3, 1) both;
+  --animate-typing: typing 1.2s ease-in-out infinite;
+  --animate-bg-pan: bg-pan var(--bg-duration, 24s) linear infinite;
+  --animate-aurora: aurora var(--bg-duration, 24s) ease-in-out infinite alternate;
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    20%,
+    60% {
+      translate: -4px 0;
+    }
+    40%,
+    80% {
+      translate: 4px 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+  @keyframes list-in {
+    from {
+      opacity: 0;
+      grid-template-rows: 0fr;
+      translate: 0 -6px;
+    }
+    to {
+      opacity: 1;
+      grid-template-rows: 1fr;
+      translate: 0 0;
+    }
+  }
+  @keyframes list-out {
+    from {
+      opacity: 1;
+      grid-template-rows: 1fr;
+    }
+    to {
+      opacity: 0;
+      grid-template-rows: 0fr;
+    }
+  }
+  @keyframes page-progress {
+    from {
+      scale: 0 1;
+    }
+    to {
+      scale: 0.9 1;
+    }
+  }
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      translate: 0 0;
+      opacity: 0.5;
+    }
+    30% {
+      translate: 0 -3px;
+      opacity: 1;
+    }
+  }
+  @keyframes bg-pan {
+    to {
+      background-position: var(--bg-size, 32px) var(--bg-size, 32px);
+    }
+  }
+  @keyframes aurora {
+    from {
+      background-position:
+        0% 50%,
+        100% 50%,
+        50% 0%;
+    }
+    to {
+      background-position:
+        100% 50%,
+        0% 50%,
+        50% 100%;
+    }
+  }
+}
+
+/* Scroll-driven: ScrollProgress and Parallax follow the scroll with no script, where the browser
+   has animation-timeline; elsewhere the bar is hidden and the layers stay put. */
+@keyframes scroll-progress {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes parallax {
+  from {
+    translate: 0 calc(var(--parallax-distance, 80px) * -1);
+  }
+  to {
+    translate: 0 var(--parallax-distance, 80px);
+  }
+}
+@supports (animation-timeline: scroll()) {
+  [data-slot='scroll-progress'] {
+    display: block;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+  [data-slot='parallax'] {
+    animation: parallax linear both;
+    animation-timeline: view();
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='parallax'] {
+    animation: none !important;
+  }
+}
+
+/* TabsIndicator: the row becomes its positioning context, and the active tab lends it its
+   background and underline, so the highlight slides instead of jumping. */
+:has(> [data-slot='tabs-indicator']) {
+  position: relative;
+  isolation: isolate;
+}
+@media not (forced-colors: active) {
+  :has(> [data-slot='tabs-indicator']) > [data-state='active'] {
+    background-color: transparent;
+  }
+  :has(> [data-slot='tabs-indicator']) > [data-state='active']::after {
+    opacity: 0;
+  }
+}
+
+/* Logo: entrance animations on the logo or on its parts (data-logo-part, indexed by --logo-i).
+   They only run while data-animation is set, which Logo leaves at none for reduced motion. */
+[data-slot='logo'][data-tint]
+  :is(path, rect, circle, ellipse, polygon, polyline, line):not([fill='none']) {
+  fill: currentColor;
+}
+[data-slot='logo'] [data-logo-part] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+[data-slot='logo'][data-animation='fade'] {
+  animation: logo-fade var(--logo-duration) var(--ease-out) both;
+}
+[data-slot='logo'][data-animation='stagger'] [data-logo-part] {
+  animation: logo-rise calc(var(--logo-duration) * 0.6) var(--ease-out) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.15);
+}
+[data-slot='logo'][data-animation='assemble'] [data-logo-part] {
+  animation: logo-assemble calc(var(--logo-duration) * 0.7) var(--ease-spring) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.1);
+}
+[data-slot='logo'][data-animation='draw']
+  :is(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke: currentColor;
+  stroke-width: var(--logo-stroke, 1);
+  stroke-dasharray: var(--logo-len, 1000);
+  animation: logo-draw var(--logo-duration) var(--ease-in-out) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.12);
+}
+[data-slot='logo'][data-animation='wipe'] {
+  animation: logo-wipe var(--logo-duration) var(--ease-in-out) both;
+}
+[data-slot='logo'][data-animation='shine'] {
+  animation: logo-shine var(--logo-duration) linear 1;
+}
+[data-slot='logo'][data-animation='pulse'] {
+  animation: logo-pulse var(--logo-duration) ease-in-out infinite;
+}
+@keyframes logo-fade {
+  from {
+    opacity: 0;
+    scale: 0.92;
+    filter: blur(6px);
+  }
+}
+@keyframes logo-rise {
+  from {
+    opacity: 0;
+    translate: 0 30%;
+  }
+}
+@keyframes logo-assemble {
+  from {
+    opacity: 0;
+    translate: var(--logo-x, 0) var(--logo-y, 0);
+    rotate: var(--logo-r, 0deg);
+    scale: 0.6;
+  }
+}
+@keyframes logo-draw {
+  0% {
+    stroke-dashoffset: var(--logo-len, 1000);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+  }
+  65% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+    stroke-opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+    stroke-opacity: 0;
+  }
+}
+@keyframes logo-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes logo-shine {
+  from {
+    mask-image: linear-gradient(100deg, rgb(0 0 0 / 0.55) 40%, #000 50%, rgb(0 0 0 / 0.55) 60%);
+    mask-size: 300% 100%;
+    mask-position: 100% 0;
+  }
+  to {
+    mask-image: linear-gradient(100deg, rgb(0 0 0 / 0.55) 40%, #000 50%, rgb(0 0 0 / 0.55) 60%);
+    mask-size: 300% 100%;
+    mask-position: 0 0;
+  }
+}
+@keyframes logo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.6;
+    scale: 0.96;
+  }
+}

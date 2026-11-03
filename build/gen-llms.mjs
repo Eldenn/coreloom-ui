@@ -27,6 +27,21 @@ const GUIDE_FOR = {
   i18n: ['Language'],
   accent: ['ThemeGenerator'],
   vscode: ['VsCode'],
+  'animated-icon': ['MicroInteractions'],
+  'status-button': ['MicroInteractions'],
+  'animated-list': ['MicroInteractions'],
+  'animated-height': ['MicroInteractions'],
+  'tabs-indicator': ['MicroInteractions'],
+  ping: ['Signals'],
+  confetti: ['Signals'],
+  'page-progress': ['Signals'],
+  'typing-indicator': ['Signals'],
+  'scroll-effects': ['ShowcaseEffects'],
+  'animated-background': ['ShowcaseEffects'],
+  'tilt-card': ['ShowcaseEffects'],
+  logo: ['Logo'],
+  'logo-loader': ['Logo'],
+  'logo-cloud': ['Logo'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */
