@@ -16,6 +16,7 @@ Motion confirms what happened; it never carries information on its own. Keep ent
 
 - In app screens (micro-interactions): `StatusButton`, `DrawIcon`, `MorphIcon`, `MenuToggleIcon`, `AnimatedList`, `TabsIndicator`, `AnimatedHeight`, `useViewTransition`. Quick, on `duration-base` and `duration-slow`.
 - Signals: `Ping`, `fireConfetti`, `PageProgress`, `TypingIndicator`, `ShimmerText`.
+- Your brand: `Logo` (entrance animations for an SVG logo), `LogoLoader` (the logo as a loading screen), `LogoCloud` (customer logos). See Guidelines/Motion/Logo.
 - On marketing pages and first-time screens: `Reveal` and `Stagger` (also image wipes), `WordReveal`, `Typewriter`, `GradientText`, `ScrambleText`, `Marquee`, `Spotlight`, `BorderGlow`, `TiltCard`, `AnimatedBackground`, `ScrollProgress`, `Parallax`. One or two moving things per view, never in the screens people work in every day.
 
 **Loops.** Loops that carry state (the `Spinner`, a caret, `ShimmerText` on "Thinking…") may run while the state lasts. Decorative loops (`Marquee`, `BorderGlow`, `AnimatedBackground`, an animated `GradientText`, a looping `Typewriter`) stop for reduced motion, and anything that moves for more than five seconds next to other content can be paused (the `Marquee` has a button).

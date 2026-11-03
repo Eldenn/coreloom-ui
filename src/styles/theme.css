@@ -566,3 +566,111 @@
     opacity: 0;
   }
 }
+
+/* Logo: entrance animations on the logo or on its parts (data-logo-part, indexed by --logo-i).
+   They only run while data-animation is set, which Logo leaves at none for reduced motion. */
+[data-slot='logo'][data-tint]
+  :is(path, rect, circle, ellipse, polygon, polyline, line):not([fill='none']) {
+  fill: currentColor;
+}
+[data-slot='logo'] [data-logo-part] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+[data-slot='logo'][data-animation='fade'] {
+  animation: logo-fade var(--logo-duration) var(--ease-out) both;
+}
+[data-slot='logo'][data-animation='stagger'] [data-logo-part] {
+  animation: logo-rise calc(var(--logo-duration) * 0.6) var(--ease-out) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.15);
+}
+[data-slot='logo'][data-animation='assemble'] [data-logo-part] {
+  animation: logo-assemble calc(var(--logo-duration) * 0.7) var(--ease-spring) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.1);
+}
+[data-slot='logo'][data-animation='draw']
+  :is(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke: currentColor;
+  stroke-width: var(--logo-stroke, 1);
+  stroke-dasharray: var(--logo-len, 1000);
+  animation: logo-draw var(--logo-duration) var(--ease-in-out) both;
+  animation-delay: calc(var(--logo-i, 0) * var(--logo-duration) * 0.12);
+}
+[data-slot='logo'][data-animation='wipe'] {
+  animation: logo-wipe var(--logo-duration) var(--ease-in-out) both;
+}
+[data-slot='logo'][data-animation='shine'] {
+  animation: logo-shine var(--logo-duration) linear 1;
+}
+[data-slot='logo'][data-animation='pulse'] {
+  animation: logo-pulse var(--logo-duration) ease-in-out infinite;
+}
+@keyframes logo-fade {
+  from {
+    opacity: 0;
+    scale: 0.92;
+    filter: blur(6px);
+  }
+}
+@keyframes logo-rise {
+  from {
+    opacity: 0;
+    translate: 0 30%;
+  }
+}
+@keyframes logo-assemble {
+  from {
+    opacity: 0;
+    translate: var(--logo-x, 0) var(--logo-y, 0);
+    rotate: var(--logo-r, 0deg);
+    scale: 0.6;
+  }
+}
+@keyframes logo-draw {
+  0% {
+    stroke-dashoffset: var(--logo-len, 1000);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+  }
+  65% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+    stroke-opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+    stroke-opacity: 0;
+  }
+}
+@keyframes logo-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes logo-shine {
+  from {
+    mask-image: linear-gradient(100deg, rgb(0 0 0 / 0.55) 40%, #000 50%, rgb(0 0 0 / 0.55) 60%);
+    mask-size: 300% 100%;
+    mask-position: 100% 0;
+  }
+  to {
+    mask-image: linear-gradient(100deg, rgb(0 0 0 / 0.55) 40%, #000 50%, rgb(0 0 0 / 0.55) 60%);
+    mask-size: 300% 100%;
+    mask-position: 0 0;
+  }
+}
+@keyframes logo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.6;
+    scale: 0.96;
+  }
+}

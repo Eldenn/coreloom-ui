@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { mergeItems } from '@/components/ui/animated-list'
+import { assembleOffset } from '@/components/ui/logo'
 import { scrambleFrame } from '@/components/ui/text-effects'
 
 const el = (key: string) => ({ key, props: {}, type: 'div' }) as unknown as React.ReactElement
@@ -61,5 +62,22 @@ describe('scrambleFrame', () => {
 
   it('handles an empty text', () => {
     expect(scrambleFrame('', 0.5, 1)).toBe('')
+  })
+})
+
+describe('assembleOffset', () => {
+  it('places each part around the logo, the same every time', () => {
+    const a = assembleOffset(0, 4)
+    expect(assembleOffset(0, 4)).toEqual(a)
+    expect(assembleOffset(1, 4)).not.toEqual(a)
+    for (let i = 0; i < 4; i++) {
+      const { x, y, r } = assembleOffset(i, 4)
+      expect(Math.hypot(x, y)).toBeLessThanOrEqual(41)
+      expect(Math.abs(r)).toBe(12)
+    }
+  })
+
+  it('copes with a single part', () => {
+    expect(Number.isFinite(assembleOffset(0, 0).x)).toBe(true)
   })
 })

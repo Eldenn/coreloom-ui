@@ -2431,6 +2431,60 @@
       ]
     },
     {
+      "name": "logo",
+      "type": "registry:ui",
+      "title": "Logo",
+      "description": "Your logo, handled once: inline SVG or image (light and dark versions), a name for screen readers, an optional link home, and entrance animations (fade, stagger, draw, assemble, wipe, shine, pulse) on mount, in view or on hover.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/reveal",
+        "@coreloom/link"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/logo.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "logo-loader",
+      "type": "registry:ui",
+      "title": "Logo loader",
+      "description": "Your logo as the loading screen of the app or a panel: it breathes or draws itself, then fades away and hands over to the content, announced as a busy status.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/logo"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/logo-loader.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "logo-cloud",
+      "type": "registry:ui",
+      "title": "Logo cloud",
+      "description": "A row of customer or partner logos, in a grid or a scrolling marquee, muted until hovered, with names for screen readers and optional links.",
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/marquee",
+        "@coreloom/link"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/logo-cloud.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "marquee",
       "type": "registry:ui",
       "title": "Marquee",
@@ -3139,6 +3193,9 @@
         "@coreloom/log-viewer",
         "@coreloom/reveal",
         "@coreloom/text-effects",
+        "@coreloom/logo",
+        "@coreloom/logo-loader",
+        "@coreloom/logo-cloud",
         "@coreloom/marquee",
         "@coreloom/spotlight",
         "@coreloom/view-transition",
