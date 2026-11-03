@@ -1,0 +1,35 @@
+<!-- @dsCard group="Blocks" height=420 subtitle="TerminalConsole · tabs, new terminal, split" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TerminalConsole || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const e = '\x1b';
+      const prompt = e + '[36m~/orbit' + e + '[0m ' + e + '[32m❯' + e + '[0m ';
+      const onCommand = (command) => (command === 'help' ? 'Try: echo <text>' : command.startsWith('echo ') ? command.slice(5) : Promise.reject(new Error(command + ': command not found')));
+      const make = (title, welcome) => ({ title, terminal: UI.createTerminal({ prompt, onCommand, welcome }) });
+      function Demo() {
+        const [sessions] = React.useState(() => [
+          { id: 'zsh', ...make('zsh', e + '[2mType help.' + e + '[0m\n') },
+          { id: 'dev', ...make('pnpm dev', e + '[36mVITE v7.1.4' + e + '[0m ready in 312 ms\n  ' + e + '[32m➜' + e + '[0m Local: http://localhost:5173/\n') },
+        ]);
+        return h(UI.TerminalConsole, { defaultSessions: sessions, createSession: () => make('zsh', ''), className: 'h-[360px]' });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
