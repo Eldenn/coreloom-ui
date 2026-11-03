@@ -2,8 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
 import { Ide, type IdeFile } from '@/components/ide'
+import { Terminal, useTerminal } from '@/components/ui/terminal'
 
 import { demoProject, lintFiles } from './ide-data'
+import { createDemoShell } from './terminal-data'
 
 const meta = {
   title: 'Blocks/Developer/IDE',
@@ -79,6 +81,57 @@ export const Default: Story = {
           }, 900)
         }}
         panels={[{ id: 'output', label: 'Output', content: <OutputLog lines={output} /> }]}
+      />
+    )
+  },
+}
+
+/**
+ * A Terminal in the bottom panel. `useTerminal` lives in the page, so the output and the history
+ * stay when the panel closes. Run opens the panel on the terminal and runs `pnpm build` in it.
+ */
+export const WithTerminal: Story = {
+  render: function Render(args) {
+    const [files, setFiles] = React.useState<IdeFile[]>(args.defaultFiles ?? [])
+    const [panel, setPanel] = React.useState('terminal')
+    const [panelOpen, setPanelOpen] = React.useState(true)
+    const terminal = useTerminal({
+      ...createDemoShell(files),
+      welcome: 'Type help, or press Run.\n',
+    })
+    const { running } = React.useSyncExternalStore(
+      terminal.subscribe,
+      terminal.getState,
+      terminal.getState,
+    )
+    return (
+      <Ide
+        {...args}
+        files={files}
+        onFilesChange={setFiles}
+        panels={[
+          {
+            id: 'terminal',
+            label: 'Terminal',
+            content: (
+              <Terminal
+                terminal={terminal}
+                toolbar={false}
+                className="h-full rounded-none border-0"
+              />
+            ),
+          },
+        ]}
+        panel={panel}
+        onPanelChange={setPanel}
+        panelOpen={panelOpen}
+        onPanelOpenChange={setPanelOpen}
+        running={running}
+        onRun={() => {
+          setPanel('terminal')
+          setPanelOpen(true)
+          void terminal.run('pnpm build')
+        }}
       />
     )
   },
