@@ -1,0 +1,1479 @@
+{
+  "src/components/ai-agent-builder.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-depth": {
+      "count": 3
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "max-params": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ai-agent-teams.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ai-agents.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ai-artifact.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ai-chat-widget.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ai-chat.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ai-evals.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 6
+    }
+  },
+  "src/components/ai-knowledge.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ai-playground.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ai-runs.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/audit-log.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/billing.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/contact-section.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/dashboard.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/event-calendar.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/file-manager.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/form-builder.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "src/components/gantt.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "src/components/hero.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ide.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 10
+    }
+  },
+  "src/components/inbox.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 5
+    }
+  },
+  "src/components/integrations.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/kanban.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/pipeline-run.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/pricing.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/prompt-manager.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/security-settings.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/site-footer.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/spreadsheet.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "max-params": {
+      "count": 1
+    }
+  },
+  "src/components/status-page.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/team.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/terminal-console.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/theme-toggle.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/agent-avatar.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ui/agent-graph.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "max-params": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 6
+    }
+  },
+  "src/components/ui/agent-plan.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/animated-list.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/ansi-output.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-depth": {
+      "count": 3
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/character-count.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/chart.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/chip-group.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ui/code-editor.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/color-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/combobox.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/context-meter.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/countdown.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/data-table.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ui/date-picker.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ui/date-range-picker.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/diff-viewer.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/emoji-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/file-card.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/file-upload.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/form-renderer.tsx": {
+    "complexity": {
+      "count": 7
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "src/components/ui/form.tsx": {
+    "max-lines": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/format.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/funnel-chart.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/heatmap.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/image-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/inline-citation.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/json-input.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/json-viewer.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/key-value-editor.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/keyboard-shortcuts.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ui/log-viewer.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/logo.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/marquee.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/masked-input.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/mention-textarea.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/model-picker.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/month-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/multi-select.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/node-editor-fields.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ui/node-editor.tsx": {
+    "complexity": {
+      "count": 11
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "no-nested-ternary": {
+      "count": 8
+    }
+  },
+  "src/components/ui/notification-badge.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ui/number-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/overflow-list.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/password-strength.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ui/phone-input.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/prompt-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/quota-bar.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/range-inputs.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/recurrence-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/rich-text-ai.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "src/components/ui/rich-text-editor.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/rich-text-review.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/sidebar.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/ui/signature-pad.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/slider.tsx": {
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/components/ui/sparkline.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/ui/status-button.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/stepper.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/components/ui/terminal.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "src/components/ui/tool-call.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/tool-form.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/components/ui/tour.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/ui/tree-select.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/tree-view.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/components/ui/virtual-list.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/webhooks.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/components/workflow-builder.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "src/hooks/use-demo-chat.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/accent.ts": {
+    "max-params": {
+      "count": 2
+    }
+  },
+  "src/lib/ai.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "src/lib/i18n-de.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "src/lib/i18n-es.tsx": {
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "src/lib/i18n.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ai-agents.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ai-chat.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ai-knowledge.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ai-playground.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ai-runs.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/billing.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/dashboard.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/team.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/theme-toggle.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/agent-avatar.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ui/agent-graph.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "max-params": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 6
+    }
+  },
+  "starter/src/components/ui/agent-plan.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/animated-list.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/ansi-output.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-depth": {
+      "count": 3
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/character-count.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/chart.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/chip-group.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/code-editor.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/color-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/combobox.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/context-meter.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/countdown.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/data-table.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ui/date-picker.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/date-range-picker.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/diff-viewer.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/emoji-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/file-card.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/file-upload.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/form-renderer.tsx": {
+    "complexity": {
+      "count": 7
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "starter/src/components/ui/form.tsx": {
+    "max-lines": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/format.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/funnel-chart.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/heatmap.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/image-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/inline-citation.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/json-input.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/json-viewer.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/key-value-editor.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/keyboard-shortcuts.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ui/log-viewer.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/logo.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/marquee.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/masked-input.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/mention-textarea.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/model-picker.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/month-picker.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/multi-select.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/node-editor-fields.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ui/node-editor.tsx": {
+    "complexity": {
+      "count": 11
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "no-nested-ternary": {
+      "count": 8
+    }
+  },
+  "starter/src/components/ui/notification-badge.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/number-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/overflow-list.tsx": {
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/password-strength.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/phone-input.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/prompt-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/quota-bar.tsx": {
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/range-inputs.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/recurrence-input.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/rich-text-ai.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "no-nested-ternary": {
+      "count": 7
+    }
+  },
+  "starter/src/components/ui/rich-text-editor.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/rich-text-review.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/sidebar.tsx": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/signature-pad.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/slider.tsx": {
+    "no-nested-ternary": {
+      "count": 3
+    }
+  },
+  "starter/src/components/ui/sparkline.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/status-button.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/stepper.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/terminal.tsx": {
+    "complexity": {
+      "count": 3
+    },
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "starter/src/components/ui/tool-call.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/tool-form.tsx": {
+    "complexity": {
+      "count": 4
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/tour.tsx": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/components/ui/tree-select.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/tree-view.tsx": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "no-nested-ternary": {
+      "count": 4
+    }
+  },
+  "starter/src/components/ui/virtual-list.tsx": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "starter/src/hooks/use-demo-chat.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "starter/src/lib/ai-api.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/lib/ai.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/lib/api.ts": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/lib/i18n.tsx": {
+    "no-nested-ternary": {
+      "count": 2
+    }
+  },
+  "starter/src/routes/_app.tsx": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  }
+}

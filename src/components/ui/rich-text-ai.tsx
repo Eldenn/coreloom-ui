@@ -878,8 +878,7 @@ function RichTextAi({
     initial.current = null
     reset()
     editor.view.dispatch(editor.state.tr.setMeta(highlightKey, null).setMeta(caretKey, null))
-    // run and reset read refs and setters only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run and reset read refs and setters only.
   }, [open, editor])
 
   // Watch the selection while the panel is open: if edits elsewhere remove it, say so instead of guessing.
@@ -1596,8 +1595,7 @@ function RichTextAiSlashMenu({
     return () => {
       window.removeEventListener('scroll', check, true)
     }
-    // close reads the editor only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- close reads the editor only.
   }, [open, from, editor])
 
   return (
