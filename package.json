@@ -16,7 +16,7 @@
     "test:a11y": "playwright test a11y",
     "test:visual": "playwright test visual",
     "test:update": "playwright test visual --update-snapshots",
-    "artifact:build": "mkdir -p dist/lib && node build/build-artifact.mjs dist/bundle.js && node build/build-libs.mjs dist/lib && tailwindcss -i build/artifact.css -o dist/tailwind.css --minify && cat build/extras.css src/styles/accents.css dist/components.css dist/tailwind.css > dist/bundle.css",
+    "artifact:build": "mkdir -p dist/lib && node build/build-artifact.mjs dist/bundle.js && node build/build-libs.mjs dist/lib && tailwindcss -i build/artifact.css -o dist/tailwind.css --minify && cat build/extras.css src/styles/accents.css src/styles/surfaces.css dist/components.css dist/tailwind.css > dist/bundle.css",
     "starter:sync": "node build/sync-starter.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -39,7 +39,7 @@ test.describe('theme generator', () => {
     await name.fill('Acme Orange!')
     await expect(name).toHaveAccessibleDescription('Used as data-accent="acme-orange"')
     await expect(page.getByRole('region', { name: 'brand.css source' })).toContainText(
-      "[data-theme='light'] [data-accent='acme-orange'] {",
+      ":where([data-theme='light']) [data-accent='acme-orange'] {",
     )
   })
 
