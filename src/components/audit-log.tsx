@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { initials } from '@/lib/initials'
 import { cn } from '@/lib/utils'
 
 interface AuditActor {
@@ -51,14 +52,6 @@ interface AuditAction {
 }
 
 const ALL = '__all__'
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((p) => p.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
 
 /** The events that match a search text, an actor and an action (each optional). */
 function filterAuditEvents(

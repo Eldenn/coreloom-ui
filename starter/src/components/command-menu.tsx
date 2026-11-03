@@ -4,7 +4,7 @@
 // CommandDialog bound to ⌘K / Ctrl+K. Items are plain data; navigate or act in onSelect. With
 // `onAskAi`, what you type can also go to an assistant: "Ask AI: “…”" comes first in the list.
 import { defaultFilter } from 'cmdk'
-import { type LucideIcon, SearchIcon, SparklesIcon } from 'lucide-react'
+import { SearchIcon, SparklesIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -20,28 +20,8 @@ import {
 } from '@/components/ui/command'
 import { Kbd } from '@/components/ui/kbd'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { type IconLike, renderIcon } from '@/lib/icon'
 import { cn } from '@/lib/utils'
-
-/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
- *  server → client boundary in Next.js, components don't. */
-type IconLike = LucideIcon | React.ReactElement
-
-function renderIcon(icon: IconLike | undefined) {
-  if (!icon) return null
-  // A component (function, forwardRef or memo, like Lucide's icons) is rendered here. Anything
-  // else is already a node: an element, or what a server component's element became on the way to
-  // the client (React dedupes repeated elements into lazy references).
-  const kind = (icon as { $$typeof?: symbol }).$$typeof
-  if (
-    typeof icon === 'function' ||
-    kind === Symbol.for('react.forward_ref') ||
-    kind === Symbol.for('react.memo')
-  ) {
-    const Icon = icon as LucideIcon
-    return <Icon />
-  }
-  return icon as React.ReactNode
-}
 
 interface CommandMenuItem {
   label: string

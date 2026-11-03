@@ -1,30 +1,9 @@
 // Coreloom UI — FeatureGrid (marketing block). Eyebrow, title and a grid of feature cards.
-import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Card, CardDescription, CardHeader, CardIcon, CardTitle } from '@/components/ui/card'
+import { type IconLike, renderIcon } from '@/lib/icon'
 import { cn } from '@/lib/utils'
-
-/** A Lucide icon component (`HomeIcon`) or an element (`<HomeIcon />`): elements also cross the
- *  server → client boundary in Next.js, components don't. */
-type IconLike = LucideIcon | React.ReactElement
-
-function renderIcon(icon: IconLike | undefined) {
-  if (!icon) return null
-  // A component (function, forwardRef or memo, like Lucide's icons) is rendered here. Anything
-  // else is already a node: an element, or what a server component's element became on the way to
-  // the client (React dedupes repeated elements into lazy references).
-  const kind = (icon as { $$typeof?: symbol }).$$typeof
-  if (
-    typeof icon === 'function' ||
-    kind === Symbol.for('react.forward_ref') ||
-    kind === Symbol.for('react.memo')
-  ) {
-    const Icon = icon as LucideIcon
-    return <Icon />
-  }
-  return icon as React.ReactNode
-}
 
 interface Feature {
   icon: IconLike
