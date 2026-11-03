@@ -1,0 +1,38 @@
+<!-- @dsCard group="Blocks" width=1280 height=560 subtitle="gantt block · bars · milestones · dependencies · zoom" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Gantt || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { Gantt, TooltipProvider } = UI;
+      const d = (m, day) => new Date(2026, m - 1, day);
+      function Demo() {
+        const [tasks, setTasks] = React.useState([
+          { id: 'research', name: 'User research', start: d(9, 28), end: d(10, 9), progress: 100, group: 'Discovery', tone: 'success' },
+          { id: 'spec', name: 'Write the spec', start: d(10, 5), end: d(10, 16), progress: 70, group: 'Discovery', dependsOn: ['research'] },
+          { id: 'kickoff', name: 'Kick-off', start: d(10, 19), end: d(10, 19), milestone: true, group: 'Discovery', dependsOn: ['spec'], tone: 'info' },
+          { id: 'api', name: 'Billing API', start: d(10, 19), end: d(11, 6), progress: 20, group: 'Build', dependsOn: ['kickoff'] },
+          { id: 'ui', name: 'Checkout screens', start: d(10, 26), end: d(11, 13), group: 'Build', dependsOn: ['kickoff'] },
+          { id: 'launch', name: 'Public launch', start: d(11, 24), end: d(11, 24), milestone: true, group: 'Launch', dependsOn: ['api', 'ui'], tone: 'danger' }]);
+        return h(Gantt, { tasks, today: d(10, 14), title: 'Checkout v2',
+          onTaskChange: (id, r) => setTasks((l) => l.map((t) => t.id === id ? Object.assign({}, t, r) : t)) });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

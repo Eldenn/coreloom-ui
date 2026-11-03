@@ -1,0 +1,36 @@
+<!-- @dsCard group="Blocks" width=1280 height=680 subtitle="settings block · audit log · filters · details" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AuditLog || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { AuditLog, TooltipProvider } = UI;
+      const at = (d, hh, mm) => new Date(2026, 9, d, hh, mm);
+      const actions = [{ value: 'member.invited', label: 'invited' }, { value: 'api_key.revoked', label: 'revoked the API key' }, { value: 'deployment.promoted', label: 'promoted to production' }, { value: 'project.deleted', label: 'deleted the project' }];
+      const events = [
+        { id: 'a1', actor: { name: 'Ada Lovelace' }, action: 'member.invited', target: 'linus@acme.dev', at: at(14, 9, 40), ip: '92.184.10.7', metadata: { role: 'developer' } },
+        { id: 'a2', actor: { name: 'GitHub Actions', type: 'api' }, action: 'deployment.promoted', target: 'coreloom-web', at: at(14, 9, 12), ip: '140.82.112.4' },
+        { id: 'a3', actor: { name: 'Grace Hopper' }, action: 'api_key.revoked', target: 'Old CI key', at: at(13, 17, 2) },
+        { id: 'a4', actor: { name: 'Grace Hopper' }, action: 'project.deleted', target: 'legacy-landing', at: at(12, 7, 31), metadata: { deployments: 128 } }];
+      function Demo() {
+        return h('div', { style: { maxWidth: 860, margin: '0 auto' } }, h(AuditLog, { events, actions, onExport: () => {} }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -3424,6 +3424,222 @@
       ]
     },
     {
+      "name": "gantt",
+      "type": "registry:block",
+      "title": "Gantt",
+      "description": "A roadmap on a timeline: bars with progress, milestones, dependency arrows, groups, a today line and a day / week / month zoom; bars move and resize with the mouse or the keyboard (onTaskChange).",
+      "categories": ["application"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/segmented-control"
+      ],
+      "files": [
+        {
+          "path": "src/components/gantt.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "status-page",
+      "type": "registry:block",
+      "title": "Status page",
+      "description": "A public status page: the overall state, each component with 90 days of uptime, ongoing incidents with their updates, and past incidents; UptimeBar and IncidentTimeline work alone too.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/collapsible",
+        "@coreloom/status-indicator",
+        "@coreloom/timeline"
+      ],
+      "files": [
+        {
+          "path": "src/components/status-page.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "api-keys",
+      "type": "registry:block",
+      "title": "API keys",
+      "description": "The workspace's API keys (visible ends, access, created, last used, expiry) with Create (the secret shown once, with Copy) and confirmed Revoke.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react", "zod"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert-dialog",
+        "@coreloom/badge",
+        "@coreloom/banner",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/dialog",
+        "@coreloom/form",
+        "@coreloom/relative-time",
+        "@coreloom/secret-value"
+      ],
+      "files": [
+        {
+          "path": "src/components/api-keys.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "webhooks",
+      "type": "registry:block",
+      "title": "Webhooks",
+      "description": "Webhook endpoints with their events, on / off, the signing secret, and each endpoint's deliveries with payload, response and Redeliver.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react", "zod"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert-dialog",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/collapsible",
+        "@coreloom/dialog",
+        "@coreloom/form",
+        "@coreloom/json-viewer",
+        "@coreloom/relative-time",
+        "@coreloom/secret-value",
+        "@coreloom/segmented-control",
+        "@coreloom/spinner",
+        "@coreloom/status-indicator",
+        "@coreloom/switch"
+      ],
+      "files": [
+        {
+          "path": "src/components/webhooks.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "security-settings",
+      "type": "registry:block",
+      "title": "Security settings",
+      "description": "Two-step sign-in with an authenticator app (setup, code check, recovery codes, turn off) and the active sessions with Sign out.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react", "zod"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/copy-button",
+        "@coreloom/alert",
+        "@coreloom/alert-dialog",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/dialog",
+        "@coreloom/form",
+        "@coreloom/relative-time",
+        "@coreloom/secret-value",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/security-settings.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "audit-log",
+      "type": "registry:block",
+      "title": "Audit log",
+      "description": "Who did what and when, grouped by day, with search, actor and action filters, each event's details, Export and Load more.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/button",
+        "@coreloom/collapsible",
+        "@coreloom/input",
+        "@coreloom/json-viewer",
+        "@coreloom/select",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/audit-log.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "integrations",
+      "type": "registry:block",
+      "title": "Integrations",
+      "description": "The apps a workspace can connect, as cards with search and category filters; Connect, Configure and confirmed Disconnect are callbacks.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert-dialog",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/chip-group",
+        "@coreloom/input",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/integrations.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "prompt-manager",
+      "type": "registry:block",
+      "title": "Prompt manager",
+      "description": "One prompt and its versions: edit with {{variables}} found as you type, save a version, compare two as a diff, deploy to a label and test with a streamed answer.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/diff-viewer",
+        "@coreloom/input",
+        "@coreloom/label",
+        "@coreloom/relative-time",
+        "@coreloom/segmented-control",
+        "@coreloom/select",
+        "@coreloom/spinner",
+        "@coreloom/tabs",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/prompt-manager.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "billing",
       "type": "registry:block",
       "title": "Billing",
