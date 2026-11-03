@@ -119,7 +119,7 @@
       ]
     },
     {
-      "name": "icon",
+      "name": "render-icon",
       "type": "registry:lib",
       "title": "renderIcon()",
       "description": "Draws an icon given as a Lucide component or as an element; the IconLike type that blocks take for their icon props.",
@@ -3274,7 +3274,7 @@
         "@coreloom/button",
         "@coreloom/command",
         "@coreloom/kbd",
-        "@coreloom/icon"
+        "@coreloom/render-icon"
       ],
       "files": [
         {
@@ -3366,7 +3366,7 @@
         "@coreloom/theme-toggle",
         "@coreloom/command-menu",
         "@coreloom/sparkline",
-        "@coreloom/icon"
+        "@coreloom/render-icon"
       ],
       "files": [
         {
@@ -3453,7 +3453,7 @@
         "@coreloom/input",
         "@coreloom/spinner",
         "@coreloom/form",
-        "@coreloom/icon"
+        "@coreloom/render-icon"
       ],
       "files": [
         {
@@ -3483,7 +3483,7 @@
         "@coreloom/copy-button",
         "@coreloom/site-header",
         "@coreloom/site-footer",
-        "@coreloom/icon"
+        "@coreloom/render-icon"
       ],
       "files": [
         {
