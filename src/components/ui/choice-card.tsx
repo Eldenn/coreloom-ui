@@ -20,7 +20,7 @@ interface RadioCardGroupContext {
 const GroupContext = React.createContext<RadioCardGroupContext | null>(null)
 
 const cardClass =
-  'group/choice-card relative flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-4 text-left transition-[border-color,background-color,box-shadow] duration-120 ease-out hover:border-border-strong has-checked:border-primary has-checked:bg-primary-subtle has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55 has-disabled:hover:border-border has-[[aria-invalid=true]]:border-destructive data-[invalid]:border-destructive'
+  'group/choice-card relative flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-4 text-left transition-[border-color,background-color,box-shadow] duration-fast ease-out hover:border-border-strong has-checked:border-primary has-checked:bg-primary-subtle has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55 has-disabled:hover:border-border has-[[aria-invalid=true]]:border-destructive data-[invalid]:border-destructive'
 
 /** The cards' text: title, description, and whatever else goes on the card (a price). */
 function CardBody({

@@ -136,7 +136,7 @@ function ImageInput({
         data-invalid={error !== null || ariaInvalid === true || ariaInvalid === 'true' || undefined}
         data-over={over || undefined}
         className={cn(
-          'relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden border border-dashed border-border-strong bg-inset text-muted-foreground transition-[border-color,box-shadow] duration-120 outline-none hover:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-invalid:border-destructive data-over:border-primary data-over:bg-primary-subtle',
+          'relative flex shrink-0 cursor-pointer items-center justify-center overflow-hidden border border-dashed border-border-strong bg-inset text-muted-foreground transition-[border-color,box-shadow] duration-fast outline-none hover:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-invalid:border-destructive data-over:border-primary data-over:bg-primary-subtle',
           src && 'border-solid border-border',
           shapes[shape],
         )}

@@ -20,7 +20,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot="input-group"
       role="group"
       className={cn(
-        'group/input-group relative flex h-[42px] w-full min-w-0 items-center rounded-md border border-input bg-inset font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out outline-none',
+        'group/input-group relative flex h-[42px] w-full min-w-0 items-center rounded-md border border-input bg-inset font-sans text-[14px] transition-[border-color,box-shadow] duration-base ease-out outline-none',
         'has-[>textarea]:h-auto',
         // Addons on the sides take the field's own padding.
         'has-[>[data-align=inline-end]]:[&>input]:pr-2 has-[>[data-align=inline-start]]:[&>input]:pl-2',

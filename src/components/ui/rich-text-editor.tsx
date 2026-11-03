@@ -346,7 +346,7 @@ function RichTextEditor({
       data-slot="rich-text-editor"
       data-disabled={disabled || undefined}
       className={cn(
-        'flex w-full flex-col overflow-hidden rounded-md border border-input bg-inset transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:opacity-55',
+        'flex w-full flex-col overflow-hidden rounded-md border border-input bg-inset transition-[border-color,box-shadow] duration-base ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-[3px] has-[[aria-invalid=true]]:ring-destructive-subtle data-[disabled]:opacity-55',
         className,
       )}
       onKeyDown={

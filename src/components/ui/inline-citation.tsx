@@ -181,7 +181,7 @@ function InlineCitation({
         }}
         className={cn(
           'mx-[0.15em] inline-flex h-[1.45em] min-w-[1.45em] cursor-pointer items-center justify-center rounded-full border border-border bg-card px-[0.35em] align-[0.3em] font-mono text-[11px] leading-none font-semibold text-fg-secondary outline-none',
-          'transition-colors duration-120 hover:border-border-strong hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring data-[state=open]:border-primary data-[state=open]:bg-primary-subtle data-[state=open]:text-primary-text',
+          'transition-colors duration-fast hover:border-border-strong hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring data-[state=open]:border-primary data-[state=open]:bg-primary-subtle data-[state=open]:text-primary-text',
           className,
         )}
       >

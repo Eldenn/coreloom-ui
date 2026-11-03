@@ -1,0 +1,30 @@
+<!-- @dsCard group="Motion" height=230 subtitle="Word reveal · typewriter · shimmer · gradient" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.WordReveal || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { WordReveal, Typewriter, ShimmerText, GradientText } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'grid', gap: 14 } },
+          h(WordReveal, { as: 'p', trigger: 'mount', text: 'Ship interfaces your users trust', className: 'm-0 font-display text-[30px] font-semibold' }),
+          h('p', { className: 'm-0 font-display text-[22px] font-semibold' }, 'Build ', h(Typewriter, { text: ['dashboards', 'AI agents', 'docs sites'], loop: true, className: 'text-primary-text' })),
+          h(ShimmerText, { className: 'text-[14px]' }, 'Thinking…'),
+          h('p', { className: 'm-0 font-display text-[26px] font-semibold' }, 'Design that ', h(GradientText, { animate: true }, 'scales'))));
+    }
+    render();
+  </script>
+</body>
+</html>

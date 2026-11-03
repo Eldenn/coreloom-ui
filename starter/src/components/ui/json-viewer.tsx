@@ -149,7 +149,7 @@ function JsonViewer({
           <ChevronRightIcon
             aria-hidden
             className={cn(
-              'mr-1.5 size-3.5 shrink-0 text-muted-foreground transition-transform duration-120',
+              'mr-1.5 size-3.5 shrink-0 text-muted-foreground transition-transform duration-fast',
               isOpen && 'rotate-90',
             )}
           />

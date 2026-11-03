@@ -16,7 +16,7 @@ function Card({
       data-slot="card"
       data-accent={accent || undefined}
       className={cn(
-        'flex flex-col gap-3.5 rounded-lg border border-border bg-card px-5 py-[18px] text-card-foreground shadow-md transition-[border-color,box-shadow] duration-180 ease-out',
+        'flex flex-col gap-3.5 rounded-lg border border-border bg-card px-5 py-[18px] text-card-foreground shadow-md transition-[border-color,box-shadow] duration-base ease-out',
         accent &&
           'border-transparent bg-[linear-gradient(180deg,color-mix(in_srgb,var(--accent)_6%,transparent),var(--surface-2))] shadow-glow',
         className,

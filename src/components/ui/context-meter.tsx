@@ -104,7 +104,7 @@ function ContextBreakdown({ className, ...props }: ContextMeterProps & { classNa
       >
         <span
           className={cn(
-            'absolute inset-y-0 left-0 rounded-pill transition-[width] duration-320 ease-out',
+            'absolute inset-y-0 left-0 rounded-pill transition-[width] duration-slow ease-out',
             TONE[level].bg,
           )}
           style={{ width: `${ratio * 100}%` }}
@@ -153,7 +153,7 @@ function Ring({ ratio, className }: { ratio: number; className?: string }) {
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeDasharray={`${c * ratio} ${c}`}
-        className="transition-[stroke-dasharray] duration-320 ease-out"
+        className="transition-[stroke-dasharray] duration-slow ease-out"
         style={{ opacity: ratio > 0 ? 1 : 0 }}
       />
     </svg>
