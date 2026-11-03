@@ -215,7 +215,7 @@ function TreeView(props: TreeViewProps) {
               )}
             >
               <ChevronRightIcon
-                className={cn('size-3.5 transition-transform duration-120', isOpen && 'rotate-90')}
+                className={cn('size-3.5 transition-transform duration-fast', isOpen && 'rotate-90')}
               />
             </span>
             {mode === 'multiple' ? (

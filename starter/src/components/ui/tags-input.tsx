@@ -83,7 +83,7 @@ function TagsInput({
       data-slot="tags-input"
       aria-disabled={disabled ? true : undefined}
       className={cn(
-        'flex min-h-[42px] w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-inset px-[7px] py-[6px] font-sans text-[14px] transition-[border-color,box-shadow] duration-180 ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-55',
+        'flex min-h-[42px] w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-input bg-inset px-[7px] py-[6px] font-sans text-[14px] transition-[border-color,box-shadow] duration-base ease-out focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-55',
         ariaInvalid &&
           ariaInvalid !== 'false' &&
           'border-destructive ring-[3px] ring-destructive-subtle focus-within:border-destructive focus-within:ring-destructive/70',

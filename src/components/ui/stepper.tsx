@@ -54,7 +54,7 @@ function Stepper({
               <span
                 data-slot="stepper-indicator"
                 className={cn(
-                  'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-[13px] font-semibold transition-colors duration-180 [&_svg]:size-4',
+                  'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border font-mono text-[13px] font-semibold transition-colors duration-base [&_svg]:size-4',
                   state === 'complete' && 'border-primary bg-primary text-primary-foreground',
                   state === 'current' &&
                     'border-primary bg-primary-subtle text-primary-text ring-[3px] ring-primary-subtle',

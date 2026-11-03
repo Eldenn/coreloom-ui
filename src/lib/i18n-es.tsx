@@ -624,6 +624,7 @@ export const es: Messages = {
       free: 'Libre',
     },
   },
+  motion: { pause: 'Pausar la animación', play: 'Reanudar la animación' },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {
     filter: 'Filtrar…',

@@ -93,7 +93,7 @@ function PasswordStrength({
             <span
               key={n}
               className={cn(
-                'h-1 rounded-pill transition-colors duration-180',
+                'h-1 rounded-pill transition-colors duration-base',
                 n <= score ? barColors[score] : 'bg-accent',
               )}
             />

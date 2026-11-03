@@ -56,7 +56,7 @@ function Slider({
                 : `${ariaLabel}, ${index === 0 ? t.slider.minimum : index === _values.length - 1 ? t.slider.maximum : index + 1}`
           }
           aria-labelledby={ariaLabelledby}
-          className="relative block size-6 shrink-0 cursor-grab rounded-full transition-[box-shadow] duration-180 ease-out outline-none before:absolute before:inset-[3px] before:rounded-full before:border-[3px] before:border-background before:bg-primary before:shadow-sm before:content-[''] hover:ring-4 hover:ring-primary-subtle focus-visible:ring-[3px] focus-visible:ring-ring active:cursor-grabbing disabled:pointer-events-none"
+          className="relative block size-6 shrink-0 cursor-grab rounded-full transition-[box-shadow] duration-base ease-out outline-none before:absolute before:inset-[3px] before:rounded-full before:border-[3px] before:border-background before:bg-primary before:shadow-sm before:content-[''] hover:ring-4 hover:ring-primary-subtle focus-visible:ring-[3px] focus-visible:ring-ring active:cursor-grabbing disabled:pointer-events-none"
         />
       ))}
     </SliderPrimitive.Root>

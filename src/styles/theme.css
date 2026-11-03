@@ -82,7 +82,36 @@
   --font-heading: var(--font-display);
   --radius-pill: 999px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Motion durations. Tailwind has no theme namespace for durations, so the tokens are plain
+   variables and each one gets a utility: `duration-fast` (hover, press, toggles), `duration-base`
+   (colors, borders, focus rings, the accordion), `duration-slow` (overlays entering and leaving)
+   and `duration-reveal` (content arriving on scroll and text effects only). They set --tw-duration
+   too, so `transition-*` and tw-animate-css's enter / exit animations pick them up. */
+:root {
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 320ms;
+  --duration-reveal: 600ms;
+}
+@utility duration-fast {
+  --tw-duration: var(--duration-fast);
+  transition-duration: var(--duration-fast);
+}
+@utility duration-base {
+  --tw-duration: var(--duration-base);
+  transition-duration: var(--duration-base);
+}
+@utility duration-slow {
+  --tw-duration: var(--duration-slow);
+  transition-duration: var(--duration-slow);
+}
+@utility duration-reveal {
+  --tw-duration: var(--duration-reveal);
+  transition-duration: var(--duration-reveal);
 }
 
 /* Accordion open / close — height comes from Radix. */
@@ -131,6 +160,12 @@
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Page transitions (useViewTransition) swap the view without cross-fading or sliding. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 
@@ -241,5 +276,135 @@
     100% {
       transform: scale(1);
     }
+  }
+}
+
+/* Motion components (Reveal, text effects, Marquee, BorderGlow) and page transitions. The loops
+   (marquee, shimmer, gradient, glow) are decorative and stop under reduced motion with the rule
+   above; the enter animations play once and end on the resting state. */
+@property --border-glow-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@theme {
+  --animate-word-in: word-in var(--duration-reveal) cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
+  --animate-marquee-y: marquee-y var(--marquee-duration, 30s) linear infinite;
+  --animate-shimmer: shimmer var(--shimmer-duration, 2s) linear infinite;
+  --animate-gradient-pan: gradient-pan var(--gradient-duration, 6s) ease-in-out infinite;
+  --animate-border-glow: border-glow var(--border-glow-duration, 6s) linear infinite;
+
+  @keyframes word-in {
+    from {
+      opacity: 0;
+      translate: 0 var(--word-y, 0.4em);
+      filter: blur(var(--word-blur, 0));
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+      filter: blur(0);
+    }
+  }
+  @keyframes marquee {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: calc(-100% - var(--marquee-gap)) 0;
+    }
+  }
+  @keyframes marquee-y {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 0 calc(-100% - var(--marquee-gap));
+    }
+  }
+  @keyframes shimmer {
+    from {
+      mask-position: 100% 0;
+    }
+    to {
+      mask-position: 0 0;
+    }
+  }
+  @keyframes gradient-pan {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  @keyframes border-glow {
+    to {
+      --border-glow-angle: 360deg;
+    }
+  }
+}
+
+/* Page transitions: useViewTransition({ effect }) sets data-view-transition on <html> for the
+   length of the transition. Without it the browser cross-fades. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-out);
+}
+:root[data-view-transition='slide']::view-transition-old(root) {
+  animation-name: view-slide-out;
+}
+:root[data-view-transition='slide']::view-transition-new(root) {
+  animation-name: view-slide-in;
+}
+:root[data-view-transition='slide-back']::view-transition-old(root) {
+  animation-name: view-slide-out-back;
+}
+:root[data-view-transition='slide-back']::view-transition-new(root) {
+  animation-name: view-slide-in-back;
+}
+:root[data-view-transition='scale']::view-transition-old(root) {
+  animation-name: view-scale-out;
+}
+:root[data-view-transition='scale']::view-transition-new(root) {
+  animation-name: view-scale-in;
+}
+@keyframes view-slide-out {
+  to {
+    opacity: 0;
+    translate: -32px 0;
+  }
+}
+@keyframes view-slide-in {
+  from {
+    opacity: 0;
+    translate: 32px 0;
+  }
+}
+@keyframes view-slide-out-back {
+  to {
+    opacity: 0;
+    translate: 32px 0;
+  }
+}
+@keyframes view-slide-in-back {
+  from {
+    opacity: 0;
+    translate: -32px 0;
+  }
+}
+@keyframes view-scale-out {
+  to {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+@keyframes view-scale-in {
+  from {
+    opacity: 0;
+    scale: 1.02;
   }
 }

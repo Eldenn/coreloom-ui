@@ -244,7 +244,7 @@ function MaskedInput({
           [failed ? hintId : undefined, ariaDescribedBy].filter(Boolean).join(' ') || undefined
         }
         data-slot="masked-input"
-        className="h-[42px] w-full min-w-0 rounded-md border border-input bg-inset px-[13px] font-mono text-[14px] text-foreground tabular-nums transition-[border-color,box-shadow] duration-180 ease-out outline-none selection:bg-primary-subtle placeholder:font-sans placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70"
+        className="h-[42px] w-full min-w-0 rounded-md border border-input bg-inset px-[13px] font-mono text-[14px] text-foreground tabular-nums transition-[border-color,box-shadow] duration-base ease-out outline-none selection:bg-primary-subtle placeholder:font-sans placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70"
         onChange={(e) => {
           onChange?.(e)
           const typed = e.target.value

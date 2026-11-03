@@ -170,7 +170,7 @@ function FileUpload({
         data-dragging={dragging || undefined}
         data-disabled={disabled ? true : undefined}
         className={cn(
-          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-input bg-inset px-4 py-7 text-center font-sans text-[14px] text-muted-foreground transition-[border-color,background-color,box-shadow] duration-180 ease-out hover:border-primary has-[input:focus-visible]:border-primary has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring data-disabled:pointer-events-none data-disabled:opacity-55 data-dragging:border-primary data-dragging:bg-primary-subtle',
+          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-input bg-inset px-4 py-7 text-center font-sans text-[14px] text-muted-foreground transition-[border-color,background-color,box-shadow] duration-base ease-out hover:border-primary has-[input:focus-visible]:border-primary has-[input:focus-visible]:ring-[3px] has-[input:focus-visible]:ring-ring data-disabled:pointer-events-none data-disabled:opacity-55 data-dragging:border-primary data-dragging:bg-primary-subtle',
           invalid && 'border-destructive',
         )}
         onDragOver={(e) => {

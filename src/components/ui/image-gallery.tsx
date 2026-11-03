@@ -57,7 +57,7 @@ function ImageLightbox({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-(--z-modal) bg-background/95 backdrop-blur-sm duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-(--z-modal) bg-background/95 backdrop-blur-sm duration-base data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           data-slot="image-lightbox"
           aria-describedby={undefined}
@@ -230,7 +230,7 @@ function ImageGallery({
                 src={image.thumbnail ?? image.src}
                 alt=""
                 loading="lazy"
-                className="size-full object-cover transition-transform duration-180 group-hover:scale-[1.03] motion-reduce:transition-none"
+                className="size-full object-cover transition-transform duration-base group-hover:scale-[1.03] motion-reduce:transition-none"
               />
             </button>
           </li>

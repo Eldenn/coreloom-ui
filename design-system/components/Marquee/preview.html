@@ -1,0 +1,28 @@
+<!-- @dsCard group="Motion" height=150 subtitle="Logos · testimonials · pause" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Marquee || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Marquee } = UI;
+      const logos = ['Northwind', 'Acme', 'Globex', 'Initech', 'Umbrella', 'Hooli', 'Vandelay', 'Stark'];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(Marquee, null, logos.map((n) =>
+          h('span', { key: n, className: 'flex h-12 items-center rounded-lg border border-border bg-card px-5 font-display text-[16px] font-semibold text-fg-secondary' }, n))));
+    }
+    render();
+  </script>
+</body>
+</html>

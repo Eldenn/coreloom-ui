@@ -259,7 +259,7 @@ function ModelPicker({
           data-variant={variant}
           data-placeholder={selected ? undefined : ''}
           className={cn(
-            'flex min-w-0 cursor-pointer items-center gap-2 font-sans whitespace-nowrap text-foreground transition-[background-color,border-color,box-shadow] duration-180 ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            'flex min-w-0 cursor-pointer items-center gap-2 font-sans whitespace-nowrap text-foreground transition-[background-color,border-color,box-shadow] duration-base ease-out outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
             variant === 'ghost' &&
               'max-w-full rounded-md border border-transparent bg-transparent px-2 hover:bg-accent aria-expanded:bg-accent',
             variant === 'outline' &&

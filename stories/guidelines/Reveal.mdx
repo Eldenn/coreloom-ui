@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/reveal.stories'
+import guide from './Reveal.md?raw'
+
+<Meta title="Guidelines/Motion/Reveal" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Effects} />
+
+<Canvas of={Stories.StaggeredGrid} />

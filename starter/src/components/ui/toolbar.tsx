@@ -26,7 +26,7 @@ import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const toolClass =
-  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 font-sans text-[13px] font-medium whitespace-nowrap text-fg-secondary outline-none transition-colors duration-120 select-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:text-faint-foreground has-[>svg:only-child]:w-8 has-[>svg:only-child]:px-0 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 font-sans text-[13px] font-medium whitespace-nowrap text-fg-secondary outline-none transition-colors duration-fast select-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:text-faint-foreground has-[>svg:only-child]:w-8 has-[>svg:only-child]:px-0 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
 
 function Toolbar({
   className,

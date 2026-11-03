@@ -17,6 +17,7 @@
   --dur-fast: 120ms;
   --dur-base: 180ms;
   --dur-slow: 320ms;
+  --dur-reveal: 600ms;
 }
 
 /* SEMANTIC TYPE CLASSES — the parts a type style does not carry. */

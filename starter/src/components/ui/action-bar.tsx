@@ -63,7 +63,7 @@ function ActionBar({
           data-position={position}
           className={cn(
             'flex w-max max-w-[calc(100vw-2rem)] items-center gap-1 rounded-lg border border-border bg-popover py-1.5 pr-1.5 pl-3.5 font-sans text-[13.5px] text-foreground shadow-lg',
-            'animate-in duration-180 fade-in-0 slide-in-from-bottom-2 motion-reduce:animate-none',
+            'animate-in duration-base fade-in-0 slide-in-from-bottom-2 motion-reduce:animate-none',
             position === 'fixed' && 'fixed bottom-6 left-1/2 z-(--z-sticky) -translate-x-1/2',
             position === 'sticky' && 'sticky bottom-4 z-(--z-sticky) mx-auto',
             className,

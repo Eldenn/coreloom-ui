@@ -488,7 +488,7 @@ function ChatMessage({
             {branches}
             {canEdit && (
               // Shown on hover and focus; always on touch screens, which can't hover.
-              <div className="opacity-0 transition-opacity duration-120 group-focus-within/message:opacity-100 group-hover/message:opacity-100 pointer-coarse:opacity-100">
+              <div className="opacity-0 transition-opacity duration-fast group-focus-within/message:opacity-100 group-hover/message:opacity-100 pointer-coarse:opacity-100">
                 <IconAction
                   label={t.edit}
                   buttonRef={editButton}
@@ -901,7 +901,7 @@ function ChatEmpty({
               <button
                 type="button"
                 onClick={() => onSuggestion?.(s)}
-                className="w-full cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-left text-[13.5px] text-foreground transition-colors duration-120 outline-none hover:border-border-strong hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
+                className="w-full cursor-pointer rounded-lg border border-border bg-card px-4 py-3 text-left text-[13.5px] text-foreground transition-colors duration-fast outline-none hover:border-border-strong hover:bg-accent/50 focus-visible:ring-[3px] focus-visible:ring-ring"
               >
                 {s}
               </button>

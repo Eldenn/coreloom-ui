@@ -1,0 +1,17 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/text-effects.stories'
+import guide from './TextEffects.md?raw'
+
+<Meta title="Guidelines/Motion/Text effects" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.TypewriterFrozen} />
+
+<Canvas of={Stories.Shimmer} />
+
+<Canvas of={Stories.Gradient} />

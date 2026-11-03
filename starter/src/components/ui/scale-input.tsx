@@ -79,7 +79,7 @@ function ScaleInput({
           <label
             key={n}
             className={cn(
-              'relative flex cursor-pointer items-center justify-center rounded-md border border-border bg-inset px-1 text-center font-sans text-[14px] font-medium text-fg-secondary tabular-nums transition-[background-color,border-color,color] duration-120 ease-out select-none hover:border-border-strong hover:text-foreground has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55',
+              'relative flex cursor-pointer items-center justify-center rounded-md border border-border bg-inset px-1 text-center font-sans text-[14px] font-medium text-fg-secondary tabular-nums transition-[background-color,border-color,color] duration-fast ease-out select-none hover:border-border-strong hover:text-foreground has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55',
               worded ? 'min-h-10 py-2 text-[13px] leading-tight' : 'h-10',
               invalid && 'border-destructive',
             )}

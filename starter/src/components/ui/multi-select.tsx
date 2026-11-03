@@ -105,7 +105,7 @@ function MultiSelect({
           data-slot="multi-select-trigger"
           data-placeholder={selected.length ? undefined : ''}
           className={cn(
-            'flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset py-1.5 pr-[13px] pl-2 text-left font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle data-[placeholder]:pl-[13px] data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
+            'flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-input bg-inset py-1.5 pr-[13px] pl-2 text-left font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-expanded:border-primary aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle data-[placeholder]:pl-[13px] data-[placeholder]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0',
             className,
           )}
         >

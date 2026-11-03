@@ -137,8 +137,11 @@ Apps get these rules (and the accessibility and text ones below) through `@corel
 - **Layers** use the z ladder (`z-(--z-modal)` 1300, popover 1400, toast 1500, tooltip 1600), never a
   raw z-index.
 - **Focus** is always `outline-none focus-visible:ring-[3px] focus-visible:ring-ring`.
-- **Motion** respects `prefers-reduced-motion`. Animations that loop forever (spinners, carets) are
-  fine; everything else must finish.
+- **Motion** respects `prefers-reduced-motion` and uses the duration utilities (`duration-fast`,
+  `duration-base`, `duration-slow`, `duration-reveal`), never `duration-180`. Animations that loop
+  forever are fine when they carry state (spinners, carets, a shimmer on "Thinking…"); decorative
+  loops (`Marquee`, `BorderGlow`) stop under reduced motion and can be paused; everything else must
+  finish.
 - Type scale as in the existing code: `text-[13px]`, `text-[12.5px]`, mono labels
   `font-mono text-[11px] font-semibold tracking-[0.08em] uppercase`, display headings `font-display`.
 - Reuse the ui components (`Button`, `Badge`, `Popover`, `HoverCard`, `Command`, `Tooltip`, `Select`,

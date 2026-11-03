@@ -74,7 +74,7 @@ function SegmentedControl({
             key={o.value}
             title={iconOnly ? labelText : undefined}
             className={cn(
-              'relative flex cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 font-sans font-medium whitespace-nowrap text-muted-foreground transition-[background-color,color,box-shadow] duration-120 ease-out select-none hover:text-foreground has-checked:bg-background has-checked:text-foreground has-checked:shadow-sm has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:text-faint-foreground has-disabled:hover:text-faint-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+              'relative flex cursor-pointer items-center justify-center gap-1.5 rounded-sm px-3 font-sans font-medium whitespace-nowrap text-muted-foreground transition-[background-color,color,box-shadow] duration-fast ease-out select-none hover:text-foreground has-checked:bg-background has-checked:text-foreground has-checked:shadow-sm has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:text-faint-foreground has-disabled:hover:text-faint-foreground [&_svg]:size-4 [&_svg]:shrink-0',
               size === 'sm' ? 'text-[12px]' : 'text-[13px]',
               iconOnly && 'px-2.5',
               fullWidth && 'flex-1',
