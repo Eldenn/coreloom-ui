@@ -2,7 +2,6 @@
 
 // Coreloom UI — NavUser (app-shell block). The account menu at the foot of the sidebar.
 import { ChevronsUpDownIcon, LogOutIcon } from 'lucide-react'
-import * as React from 'react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
