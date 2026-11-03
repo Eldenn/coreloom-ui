@@ -1,0 +1,47 @@
+<!-- @dsCard group="Data display" height=340 subtitle="Prompt · history · Tab · streamed commands" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Terminal || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const e = '\x1b';
+      const prompt = e + '[36m~/orbit' + e + '[0m ' + e + '[32m❯' + e + '[0m ';
+      async function* build(signal) {
+        for (const line of ['transforming…', e + '[32m✓' + e + '[0m 42 modules transformed.', e + '[32m✓ built in 1.24s' + e + '[0m']) {
+          await new Promise((r) => setTimeout(r, 300));
+          if (signal.aborted) return;
+          yield line + '\n';
+        }
+      }
+      function onCommand(command, ctx) {
+        if (command === 'help') return 'Try: pnpm build, echo <text>, date';
+        if (command === 'pnpm build') return build(ctx.signal);
+        if (command.startsWith('echo ')) return command.slice(5);
+        if (command === 'date') return 'Wed Oct 14 10:00:00 CEST 2026';
+        throw new Error(command + ': command not found');
+      }
+      function Demo() {
+        return h('div', { style: { maxWidth: 620 } }, h(UI.Terminal, {
+          prompt, onCommand, onComplete: () => ['help', 'pnpm', 'echo', 'date'],
+          welcome: e + '[2mType help. Tab completes, ↑ recalls.' + e + '[0m\n' + prompt + 'pnpm build\n' + e + '[32m✓ built in 1.24s' + e + '[0m\n',
+          className: 'h-[280px]',
+        }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
