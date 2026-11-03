@@ -39,6 +39,9 @@ const GUIDE_FOR = {
   'scroll-effects': ['ShowcaseEffects'],
   'animated-background': ['ShowcaseEffects'],
   'tilt-card': ['ShowcaseEffects'],
+  logo: ['Logo'],
+  'logo-loader': ['Logo'],
+  'logo-cloud': ['Logo'],
 }
 
 /** Guides about the system rather than one item, listed under "Guides". */

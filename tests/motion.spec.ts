@@ -186,3 +186,53 @@ test('images revealed by a mask end uncovered', async ({ page }) => {
   await expect(items).toHaveCount(3)
   for (const item of await items.all()) await expect(item).toHaveAttribute('data-state', 'visible')
 })
+
+test('a logo is an image with its name, and a linked logo names its link', async ({ page }) => {
+  await open(page, 'components-motion-logo--default')
+  await expect(page.getByRole('img', { name: 'Atlas' })).toBeVisible()
+  await open(page, 'components-motion-logo--in-a-header')
+  await expect(page.getByRole('link', { name: 'Atlas, home' })).toBeVisible()
+})
+
+test('a logo indexes its parts and plays its entrance', async ({ page }) => {
+  await open(page, 'components-motion-logo--animations')
+  const stagger = page.locator('[data-slot=logo][data-animation=stagger]')
+  await expect(stagger).toHaveCount(1)
+  // The Atlas logo has three top-level groups: symbol, wordmark, tagline.
+  await expect(stagger.locator('svg > g[data-logo-part]')).toHaveCount(3)
+  const draw = page.locator('[data-slot=logo][data-animation=draw] path').first()
+  expect(
+    Number(await draw.evaluate((el) => getComputedStyle(el).getPropertyValue('--logo-len'))),
+  ).toBeGreaterThan(0)
+})
+
+test('a logo stays still with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await open(page, 'components-motion-logo--animations')
+  await expect(page.locator('[data-slot=logo]:not([data-animation=none])')).toHaveCount(0)
+})
+
+test('a header logo replays its entrance on hover', async ({ page }) => {
+  await open(page, 'components-motion-logo--in-a-header')
+  const logo = page.locator('[data-slot=logo]')
+  await expect(logo).toHaveAttribute('data-animation', 'none')
+  await page.getByRole('link', { name: 'Atlas, home' }).hover()
+  await expect(logo).toHaveAttribute('data-animation', 'stagger')
+})
+
+test('the logo loader is busy, then hands over to the content', async ({ page }) => {
+  await open(page, 'components-motion-logo--loader')
+  const status = page.getByRole('status')
+  await expect(status).toHaveAttribute('aria-busy', 'true')
+  await expect(status).toContainText('Atlas, Loading')
+  await page.getByRole('button', { name: 'Finish loading' }).click()
+  await expect(page.getByText('Your programs are ready.')).toBeVisible()
+  await expect(page.locator('[data-slot=logo-loader]')).toHaveCount(0)
+})
+
+test('a logo cloud names each logo and links it', async ({ page }) => {
+  await open(page, 'components-motion-logo--cloud')
+  const list = page.getByRole('list', { name: 'Customers' })
+  await expect(list.getByRole('listitem')).toHaveCount(8)
+  await expect(list.getByRole('link', { name: 'Atlas' })).toBeVisible()
+})

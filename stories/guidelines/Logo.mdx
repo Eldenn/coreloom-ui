@@ -1,0 +1,19 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/logo.stories'
+import guide from './Logo.md?raw'
+
+<Meta title="Guidelines/Motion/Logo" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Animations} />
+
+<Canvas of={Stories.InAHeader} />
+
+<Canvas of={Stories.Colors} />
+
+<Canvas of={Stories.Loader} />
+
+<Canvas of={Stories.Cloud} />
