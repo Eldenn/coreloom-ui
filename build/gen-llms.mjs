@@ -35,6 +35,7 @@ const TOPICS = [
   'GenerativeUi',
   'EditorAi',
   'Accents',
+  'Surfaces',
   'ThemeGenerator',
   'Language',
   'InteractionStates',
