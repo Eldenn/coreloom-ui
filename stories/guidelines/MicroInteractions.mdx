@@ -1,0 +1,21 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/micro-interactions.stories'
+import guide from './MicroInteractions.md?raw'
+
+<Meta title="Guidelines/Motion/Micro-interactions" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.States} />
+
+<Canvas of={Stories.DrawnIcons} />
+
+<Canvas of={Stories.MorphingIcons} />
+
+<Canvas of={Stories.List} />
+
+<Canvas of={Stories.SlidingTabs} />
+
+<Canvas of={Stories.Height} />

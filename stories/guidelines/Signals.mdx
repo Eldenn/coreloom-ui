@@ -1,0 +1,17 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/feedback-motion.stories'
+import guide from './Signals.md?raw'
+
+<Meta title="Guidelines/Motion/Signals" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Placements} />
+
+<Canvas of={Stories.Confetti} />
+
+<Canvas of={Stories.PageLoad} />
+
+<Canvas of={Stories.Typing} />

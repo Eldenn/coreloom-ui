@@ -624,7 +624,13 @@ export const es: Messages = {
       free: 'Libre',
     },
   },
-  motion: { pause: 'Pausar la animación', play: 'Reanudar la animación' },
+  motion: {
+    pause: 'Pausar la animación',
+    play: 'Reanudar la animación',
+    status: { loading: 'En curso…', success: 'Hecho', error: 'Algo salió mal' },
+    pageProgress: 'Cargando la página',
+    typing: (name?: string): string => (name ? `${name} está escribiendo` : 'Escribiendo'),
+  },
   command: { title: 'Paleta de comandos', description: 'Busca un comando para ejecutarlo.' },
   dataTable: {
     filter: 'Filtrar…',

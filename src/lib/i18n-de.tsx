@@ -629,7 +629,13 @@ export const de: Messages = {
       free: 'Frei',
     },
   },
-  motion: { pause: 'Animation pausieren', play: 'Animation fortsetzen' },
+  motion: {
+    pause: 'Animation pausieren',
+    play: 'Animation fortsetzen',
+    status: { loading: 'Läuft …', success: 'Erledigt', error: 'Etwas ist schiefgelaufen' },
+    pageProgress: 'Seite wird geladen',
+    typing: (name?: string): string => (name ? `${name} schreibt gerade` : 'Schreibt gerade'),
+  },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {
     filter: 'Filtern…',

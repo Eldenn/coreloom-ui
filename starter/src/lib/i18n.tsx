@@ -643,7 +643,13 @@ const en = {
       free: 'Free',
     },
   },
-  motion: { pause: 'Pause the animation', play: 'Play the animation' },
+  motion: {
+    pause: 'Pause the animation',
+    play: 'Play the animation',
+    status: { loading: 'Working…', success: 'Done', error: 'Something went wrong' },
+    pageProgress: 'Loading the page',
+    typing: (name?: string): string => (name ? `${name} is typing` : 'Typing'),
+  },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -2936,7 +2942,14 @@ const fr: Messages = {
       free: 'Libre',
     },
   },
-  motion: { pause: 'Mettre l’animation en pause', play: 'Relancer l’animation' },
+  motion: {
+    pause: 'Mettre l’animation en pause',
+    play: 'Relancer l’animation',
+    status: { loading: 'En cours…', success: 'Terminé', error: 'Une erreur est survenue' },
+    pageProgress: 'Chargement de la page',
+    typing: (name?: string): string =>
+      name ? `${name} est en train d’écrire` : 'En train d’écrire',
+  },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
   dataTable: {
     filter: 'Filtrer…',
