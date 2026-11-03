@@ -61,6 +61,7 @@ At the top of your global CSS, replacing the colour block `shadcn init` wrote:
 @import './coreloom/tokens.css';
 @import './coreloom/theme.css';
 @import './coreloom/accents.css'; /* optional: accent presets */
+@import './coreloom/surfaces.css'; /* optional: surface presets (mineral, bone) */
 ```
 
 Then wrap the app in `<TooltipProvider>` and render one `<Toaster />`. Using a router? Hand the blocks
@@ -138,19 +139,19 @@ no setup on our side; they read the docs and code but can't install items:
 
 ## What's in the repo
 
-| Path                 | What                                                                                                 |
-| -------------------- | ---------------------------------------------------------------------------------------------------- |
-| `src/components/ui/` | The components. shadcn's code and APIs, Coreloom's look.                                             |
-| `src/components/`    | Block parts, installed with their block (`auth` → `login-form.tsx`, `signup-form.tsx`…).             |
-| `src/styles/`        | `tokens.css` (from the design system), `theme.css` (the shadcn mapping), `fonts.css`, `accents.css`. |
-| `src/lib/`           | `i18n.tsx` (English and French), `i18n-es.tsx`, `i18n-de.tsx`, `link.tsx`, `utils.ts`.               |
-| `registry.json`      | The registry's items. `pnpm registry:build` writes `public/r/`.                                      |
-| `starter/`           | The starter app. `pnpm starter:sync` refreshes its copies of the components.                         |
-| `stories/`           | Storybook: a story per component and block, and a Guidelines page for each.                          |
-| `tests/`, `unit/`    | Playwright (a11y, visual, interactions, guidelines, starter) and Vitest.                             |
-| `brand/logo/`        | The Coreloom logo: symbol, lockups, tile, one-colour versions and usage rules.                       |
-| `build/`             | Scripts: the design-system bundle, accent presets, DTCG tokens, release notes, starter sync.         |
-| `design-system/`     | The design system's component cards and page templates (see its README).                             |
+| Path                 | What                                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `src/components/ui/` | The components. shadcn's code and APIs, Coreloom's look.                                                             |
+| `src/components/`    | Block parts, installed with their block (`auth` → `login-form.tsx`, `signup-form.tsx`…).                             |
+| `src/styles/`        | `tokens.css` (from the design system), `theme.css` (the shadcn mapping), `fonts.css`, `accents.css`, `surfaces.css`. |
+| `src/lib/`           | `i18n.tsx` (English and French), `i18n-es.tsx`, `i18n-de.tsx`, `link.tsx`, `utils.ts`.                               |
+| `registry.json`      | The registry's items. `pnpm registry:build` writes `public/r/`.                                                      |
+| `starter/`           | The starter app. `pnpm starter:sync` refreshes its copies of the components.                                         |
+| `stories/`           | Storybook: a story per component and block, and a Guidelines page for each.                                          |
+| `tests/`, `unit/`    | Playwright (a11y, visual, interactions, guidelines, starter) and Vitest.                                             |
+| `brand/logo/`        | The Coreloom logo: symbol, lockups, tile, one-colour versions and usage rules.                                       |
+| `build/`             | Scripts: the design-system bundle, accent presets, DTCG tokens, release notes, starter sync.                         |
+| `design-system/`     | The design system's component cards and page templates (see its README).                                             |
 
 ## Conventions
 

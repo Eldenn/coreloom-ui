@@ -54,6 +54,8 @@ lines=['/* Coreloom UI — accent presets. Import after theme.css, then set one 
        ' *   <html data-accent="violet">            (dark)',
        ' *   <html data-accent="violet" data-theme="light">',
        ' * "cyan" is the default; set it only to bring it back inside an element with another preset.',
+       ' * A section that changes theme takes the accent on the same element: <section data-theme="dark"',
+       ' * data-accent="violet">.',
        ' * Each preset replaces the whole accent family in both themes; every pairing meets WCAG AA',
        ' * (text 4.5:1, fills and focus rings 3:1 on all surfaces). Generated and checked by',
        ' * build/gen-accents.py: edit the colours there, then run',
@@ -61,8 +63,10 @@ lines=['/* Coreloom UI — accent presets. Import after theme.css, then set one 
        '']
 for name,themes in P.items():
     for theme,c in themes.items():
-        # On <html> or on any element (a section with its own accent); light wins inside light themes.
-        sel=f'[data-accent="{name}"]' if theme=='dark' else f'[data-theme="light"][data-accent="{name}"],\n[data-theme="light"] [data-accent="{name}"]'
+        # On <html> or on any element (a section with its own accent); light wins inside light themes,
+        # except on an element that is itself data-theme="dark" (a dark band in a light page).
+        sel=(f'[data-accent="{name}"],\n[data-theme="dark"][data-accent="{name}"]' if theme=='dark'
+             else f'[data-theme="light"][data-accent="{name}"],\n:where([data-theme="light"]) [data-accent="{name}"]')
         ring=rgba(c['accent'] if theme=='dark' else c['fg'], c.get('ring_a', 0.7 if theme=='dark' else 0.85))
         gc=c.get('glow_c', c['accent'])
         glow=f"0 0 0 1px {rgba(gc,0.40 if theme=='dark' else 0.35)}, 0 6px {'24' if theme=='dark' else '20'}px {rgba(gc,0.22 if theme=='dark' else 0.20)}"

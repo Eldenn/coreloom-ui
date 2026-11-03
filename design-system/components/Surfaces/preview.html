@@ -1,0 +1,33 @@
+<!-- @dsCard group="Foundations" width=980 height=520 page subtitle="data-surface · graphite, mineral, bone · AA with every accent, both themes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:16px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Button || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Button, Badge, Card, CardHeader, CardTitle, CardDescription, Input } = UI;
+      const presets = [[undefined, 'Graphite', 'no attribute'], ['mineral', 'Mineral blue', 'data-surface="mineral"'], ['bone', 'Bone', 'data-surface="bone"']];
+      const swatch = ([id, name, code]) => h('div', { key: name, 'data-surface': id, className: 'flex flex-col gap-4 rounded-xl border border-border bg-background p-5' },
+        h('div', null, h('div', { className: 'font-display text-[18px] font-semibold text-foreground' }, name), h('code', { className: 'font-mono text-[11px] text-muted-foreground' }, code)),
+        h('div', { className: 'grid grid-cols-4 gap-1.5' }, ['bg-base', 'bg-background', 'bg-card', 'bg-inset'].map((c) => h('div', { key: c, className: 'h-10 rounded-md border border-border-subtle ' + c }))),
+        h(Card, null, h(CardHeader, null, h(CardTitle, null, 'First visit'), h(CardDescription, null, 'An hour, history and treatment.')),
+          h(Input, { placeholder: 'you@example.com', 'aria-label': 'Email' }),
+          h('div', { className: 'flex items-center gap-2' }, h(Button, { size: 'sm' }, 'Book'), h(Button, { size: 'sm', variant: 'secondary' }, 'Call'), h(Badge, { variant: 'success' }, 'Open'))),
+        h('p', { className: 'm-0 text-[13px] text-fg-secondary' }, 'Secondary, ', h('span', { className: 'text-muted-foreground' }, 'muted'), ' and ', h('span', { className: 'text-primary-text' }, 'accent text'), '.'));
+      ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'grid grid-cols-3 gap-5' }, presets.map(swatch)));
+    }
+    render();
+  </script>
+</body>
+</html>
