@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/pipeline-run.stories'
+import guide from './PipelineRun.md?raw'
+
+<Meta title="Guidelines/Developer/Pipeline run" />
+
+<Markdown>{guide}</Markdown>
+
+## A failed run
+
+<Canvas of={Stories.Failed} />
+
+## A deploy in progress
+
+<Canvas of={Stories.Running} />
