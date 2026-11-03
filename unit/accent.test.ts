@@ -191,9 +191,9 @@ describe('the CSS', () => {
 
   it('is structured like accents.css, both themes, every variable', () => {
     const g = generateAccent('#ff5a1f', { name: 'orange' })
-    expect(g.css).toContain("[data-accent='orange'] {")
+    expect(g.css).toContain("[data-accent='orange'],\n[data-theme='dark'][data-accent='orange'] {")
     expect(g.css).toContain(
-      "[data-theme='light'][data-accent='orange'],\n[data-theme='light'] [data-accent='orange'] {",
+      "[data-theme='light'][data-accent='orange'],\n:where([data-theme='light']) [data-accent='orange'] {",
     )
     const presetVars = [...accentsCss.matchAll(/^\s+(--[a-z-]+):/gm)].map((m) => m[1])
     for (const v of new Set(presetVars)) expect(g.css.split(`  ${v}: `)).toHaveLength(3)
@@ -205,7 +205,8 @@ describe('the CSS', () => {
   it('writes the preset blocks of accents.css for the preset values', () => {
     // accentVariables is the same writer the CSS uses; with blue's values it gives accents.css's
     // blue block (ring alpha and glow included).
-    const block = /\[data-accent='blue'\] \{\n([^}]+)\}/.exec(accentsCss)?.[1] ?? ''
+    const block =
+      /\[data-theme='dark'\]\[data-accent='blue'\] \{\n([^}]+)\}/.exec(accentsCss)?.[1] ?? ''
     const vars = accentVariables('dark', {
       ...PRESETS.blue.dark,
       border: PRESETS.blue.dark.accent,

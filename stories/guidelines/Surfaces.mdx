@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../foundations/surfaces.stories'
+import guide from './Surfaces.md?raw'
+
+<Meta title="Guidelines/Foundations/Surfaces" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Presets} />
+
+<Canvas of={Stories.Bands} />
