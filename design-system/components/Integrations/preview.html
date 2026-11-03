@@ -1,0 +1,37 @@
+<!-- @dsCard group="Blocks" width=1280 height=620 subtitle="settings block · integrations · connect · filters" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Integrations || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { Integrations, TooltipProvider } = UI;
+      function Demo() {
+        const [list, setList] = React.useState([
+          { id: 'git', name: 'Git provider', description: 'Deploy on every push and comment on pull requests.', category: 'Source control', connected: true, account: 'acme-org' },
+          { id: 'chat', name: 'Team chat', description: 'Post deploys, failed builds and incidents to a channel.', category: 'Notifications', connected: true, account: '#deploys' },
+          { id: 'pager', name: 'On-call alerts', description: 'Page the on-call engineer when production goes down.', category: 'Notifications' },
+          { id: 'metrics', name: 'Metrics export', description: 'Send metrics to your observability tool.', category: 'Monitoring', unavailable: 'On the Team plan' },
+          { id: 'db', name: 'Postgres', description: 'Inject connection strings into environment variables.', category: 'Data' }]);
+        return h('div', { style: { maxWidth: 1040, margin: '0 auto' } }, h(Integrations, { integrations: list,
+          onConnect: (id) => new Promise((r) => setTimeout(r, 600)).then(() => setList((l) => l.map((i) => i.id === id ? Object.assign({}, i, { connected: true, account: 'acme' }) : i))),
+          onConfigure: () => {}, onDisconnect: (id) => setList((l) => l.map((i) => i.id === id ? Object.assign({}, i, { connected: false }) : i)) }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
