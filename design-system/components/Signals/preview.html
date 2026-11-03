@@ -1,0 +1,30 @@
+<!-- @dsCard group="Motion" height=170 subtitle="Ping · confetti · page progress · typing" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Ping || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Ping, PingDot, TypingIndicator, Button, fireConfetti } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' } },
+          h(Ping, { label: 'New' }, h(Button, { variant: 'outline' }, 'Automations')),
+          h('span', { className: 'inline-flex items-center gap-2 text-[14px]' }, h(PingDot, { tone: 'destructive' }), 'Live'),
+          h(TypingIndicator, { name: 'Lena' }),
+          h(Button, { onClick: (e) => fireConfetti(e.currentTarget) }, 'Celebrate')));
+    }
+    render();
+  </script>
+</body>
+</html>

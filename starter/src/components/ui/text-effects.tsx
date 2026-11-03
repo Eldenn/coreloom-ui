@@ -7,6 +7,8 @@
 //   move on to the next.
 // - ShimmerText: a light sweeps across the text, for something in progress ("Thinking…").
 // - GradientText: the text filled with the accent gradient, still or slowly moving.
+// - ScrambleText: the letters flicker through random characters and settle on the text, left to
+//   right, for a code name, a figure or a heading that "decodes".
 // Screen readers always get the whole text once, never letter by letter. For people who ask for
 // reduced motion the text is simply there.
 //
@@ -222,4 +224,66 @@ function GradientText({
   )
 }
 
-export { GradientText, ShimmerText, Typewriter, WordReveal }
+const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=<>/'
+
+/** The text as it looks after `progress` (0 to 1): settled letters, then scrambled ones. */
+function scrambleFrame(text: string, progress: number, tick: number) {
+  const settled = Math.floor(text.length * progress)
+  let out = ''
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charAt(i)
+    if (i < settled || char === ' ') out += char
+    // A cheap, repeatable shuffle: the same tick always shows the same letters.
+    else out += GLYPHS.charAt((i * 7 + tick * 13) % GLYPHS.length)
+  }
+  return out
+}
+
+function ScrambleText({
+  text,
+  duration = 900,
+  trigger = 'in-view',
+  className,
+  ...props
+}: {
+  /** The text it settles on. */
+  text: string
+  /** Milliseconds until every letter has settled. */
+  duration?: number
+  /** Play when it scrolls into view (default), or as soon as it is mounted. */
+  trigger?: 'in-view' | 'mount'
+} & Omit<React.ComponentProps<'span'>, 'children'>) {
+  const ref = React.useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref)
+  const reduced = useReducedMotion()
+  const play = !reduced && (trigger === 'mount' || inView)
+  const [frame, setFrame] = React.useState<{ text: string; shown: string | null }>({
+    text,
+    shown: null,
+  })
+  if (frame.text !== text) setFrame({ text, shown: null })
+  React.useEffect(() => {
+    if (!play) return
+    const start = performance.now()
+    let tick = 0
+    let raf = 0
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration)
+      tick += 1
+      setFrame({ text, shown: progress >= 1 ? null : scrambleFrame(text, progress, tick) })
+      if (progress < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => {
+      cancelAnimationFrame(raf)
+    }
+  }, [play, text, duration])
+  return (
+    <span ref={ref} data-slot="scramble-text" className={cn('tabular-nums', className)} {...props}>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden>{frame.shown ?? text}</span>
+    </span>
+  )
+}
+
+export { GradientText, scrambleFrame, ScrambleText, ShimmerText, Typewriter, WordReveal }

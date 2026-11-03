@@ -1,0 +1,19 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/showcase-motion.stories'
+import guide from './ShowcaseEffects.md?raw'
+
+<Meta title="Guidelines/Motion/Showcase effects" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Backgrounds} />
+
+<Canvas of={Stories.Tilt} />
+
+<Canvas of={Stories.ScrambleSettled} />
+
+<Canvas of={Stories.ImageReveal} />
+
+<Canvas of={Stories.Scroll} />
