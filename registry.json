@@ -2405,6 +2405,72 @@
       ]
     },
     {
+      "name": "reveal",
+      "type": "registry:ui",
+      "title": "Reveal",
+      "description": "Content that fades, slides, scales or comes into focus as it scrolls into view, once; Stagger does it item by item. With useInView and useReducedMotion.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/reveal.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "text-effects",
+      "type": "registry:ui",
+      "title": "Text effects",
+      "description": "WordReveal (words arrive one by one), Typewriter (typed phrases with a caret), ShimmerText (a light sweeping a 'Thinking…' label) and GradientText.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/reveal"],
+      "files": [
+        {
+          "path": "src/components/ui/text-effects.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "marquee",
+      "type": "registry:ui",
+      "title": "Marquee",
+      "description": "A row or column of logos or quotes that scrolls without end, with faded edges, a pause button and a stop on hover and focus.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/marquee.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "spotlight",
+      "type": "registry:ui",
+      "title": "Spotlight",
+      "description": "Spotlight (a soft light that follows the pointer across a card) and BorderGlow (a light running along the border).",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/spotlight.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "view-transition",
+      "type": "registry:ui",
+      "title": "useViewTransition",
+      "description": "Page and view changes with the View Transitions API: fade, slide, slide-back or scale, straight away where unsupported or with reduced motion.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/view-transition.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "rich-text-editor",
       "type": "registry:ui",
       "title": "RichTextEditor",
@@ -2906,7 +2972,12 @@
         "@coreloom/quota-bar",
         "@coreloom/ansi-output",
         "@coreloom/terminal",
-        "@coreloom/log-viewer"
+        "@coreloom/log-viewer",
+        "@coreloom/reveal",
+        "@coreloom/text-effects",
+        "@coreloom/marquee",
+        "@coreloom/spotlight",
+        "@coreloom/view-transition"
       ],
       "dependencies": []
     },

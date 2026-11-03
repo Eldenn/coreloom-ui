@@ -29,7 +29,7 @@ function parseKeyValueLines(text: string): KeyValuePair[] | undefined {
 }
 
 const fieldClass =
-  'h-9 w-full min-w-0 rounded-md border border-input bg-inset px-2.5 font-mono text-[13px] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none placeholder:font-sans placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle'
+  'h-9 w-full min-w-0 rounded-md border border-input bg-inset px-2.5 font-mono text-[13px] text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none placeholder:font-sans placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle'
 
 function KeyValueEditor({
   value,

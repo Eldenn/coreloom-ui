@@ -1,0 +1,33 @@
+<!-- @dsCard group="Motion" height=220 subtitle="Pointer light · border glow" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.BorderGlow || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { Spotlight, BorderGlow, Badge } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'grid grid-cols-2 gap-4' },
+          h(Spotlight, { className: 'rounded-xl border border-border bg-card p-5' },
+            h('p', { className: 'm-0 text-[15px] font-medium' }, 'Analytics'),
+            h('p', { className: 'm-0 mt-1 text-[13px] text-muted-foreground' }, 'Move the pointer over the card.')),
+          h(BorderGlow, { className: 'rounded-xl' },
+            h('div', { className: 'flex flex-col gap-2 p-5' },
+              h('div', { className: 'flex items-center justify-between' }, h('p', { className: 'm-0 text-[15px] font-medium' }, 'Team'), h(Badge, null, 'Popular')),
+              h('p', { className: 'm-0 font-display text-[26px] font-semibold' }, '$24')))));
+    }
+    render();
+  </script>
+</body>
+</html>

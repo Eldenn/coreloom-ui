@@ -141,7 +141,7 @@ function MentionTextarea({
         aria-labelledby={ariaLabelledBy}
         aria-invalid={ariaInvalid}
         aria-describedby={[hintId, ariaDescribedBy].filter(Boolean).join(' ')}
-        className="block w-full resize-y rounded-md border border-input bg-inset px-[13px] py-[11px] font-sans text-[14px] leading-normal text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle"
+        className="block w-full resize-y rounded-md border border-input bg-inset px-[13px] py-[11px] font-sans text-[14px] leading-normal text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle"
         onChange={(e) => {
           set(e.target.value)
           track(e.target)

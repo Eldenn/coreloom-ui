@@ -109,7 +109,7 @@ function Popconfirm({
             cancelRef.current?.focus()
           }}
           className={cn(
-            'z-(--z-popover) w-max max-w-72 origin-(--radix-popover-content-transform-origin) rounded-md border border-border bg-popover p-3.5 font-sans text-[13.5px] leading-snug text-fg-secondary shadow-lg outline-hidden duration-120 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+            'z-(--z-popover) w-max max-w-72 origin-(--radix-popover-content-transform-origin) rounded-md border border-border bg-popover p-3.5 font-sans text-[13.5px] leading-snug text-fg-secondary shadow-lg outline-hidden duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
             className,
           )}
         >

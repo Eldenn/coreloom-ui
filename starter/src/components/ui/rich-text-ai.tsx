@@ -1142,7 +1142,7 @@ function RichTextAi({
                         {label(action)}
                         <ChevronRightIcon
                           className={cn(
-                            'ml-auto transition-transform duration-120',
+                            'ml-auto transition-transform duration-fast',
                             translateOpen && 'rotate-90',
                           )}
                         />

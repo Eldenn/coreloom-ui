@@ -399,7 +399,7 @@ function ChatWidget({
           onClick={() => {
             setOpen(!open)
           }}
-          className="relative inline-flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[background-color,box-shadow,transform] duration-180 ease-out outline-none hover:bg-primary-hover hover:shadow-glow focus-visible:ring-[3px] focus-visible:ring-ring active:translate-y-px"
+          className="relative inline-flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[background-color,box-shadow,transform] duration-base ease-out outline-none hover:bg-primary-hover hover:shadow-glow focus-visible:ring-[3px] focus-visible:ring-ring active:translate-y-px"
         >
           {open ? (
             <XIcon className="size-6" aria-hidden />

@@ -60,7 +60,7 @@ function Reasoning({
         )}
         <span>{streaming ? t.thinking : t.thought(seconds ?? 0)}</span>
         <ChevronRightIcon
-          className="size-3.5 transition-transform duration-180 group-data-[state=open]:rotate-90"
+          className="size-3.5 transition-transform duration-base group-data-[state=open]:rotate-90"
           aria-hidden
         />
       </CollapsibleTrigger>

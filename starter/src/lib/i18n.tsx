@@ -643,6 +643,7 @@ const en = {
       free: 'Free',
     },
   },
+  motion: { pause: 'Pause the animation', play: 'Play the animation' },
   command: { title: 'Command palette', description: 'Search for a command to run.' },
   dataTable: {
     filter: 'Filter…',
@@ -2935,6 +2936,7 @@ const fr: Messages = {
       free: 'Libre',
     },
   },
+  motion: { pause: 'Mettre l’animation en pause', play: 'Relancer l’animation' },
   command: { title: 'Palette de commandes', description: 'Rechercher une commande à lancer.' },
   dataTable: {
     filter: 'Filtrer…',

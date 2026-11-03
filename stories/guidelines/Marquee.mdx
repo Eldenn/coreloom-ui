@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/marquee.stories'
+import guide from './Marquee.md?raw'
+
+<Meta title="Guidelines/Motion/Marquee" />
+
+<Markdown>{guide}</Markdown>
+
+## Examples
+
+<Canvas of={Stories.Default} />
+
+<Canvas of={Stories.Testimonials} />
+
+<Canvas of={Stories.Vertical} />

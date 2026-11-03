@@ -29,7 +29,10 @@ to fit the app.
 - Layers use the z ladder (`z-(--z-modal)`, `--z-popover`, `--z-toast`, `--z-tooltip`), never a raw
   z-index.
 - Focus is always visible: `outline-none focus-visible:ring-[3px] focus-visible:ring-ring`.
-- Motion respects `prefers-reduced-motion`.
+- Motion respects `prefers-reduced-motion` and uses the duration utilities (`duration-fast`,
+  `duration-base`, `duration-slow`, `duration-reveal`). For motion beyond transitions, reach for
+  `Reveal` / `Stagger`, the text effects, `Marquee`, `Spotlight` and `useViewTransition` before
+  writing keyframes; decorative loops must stop under reduced motion and be pausable.
 - Reuse the components (`Button`, `Badge`, `Popover`, `Tooltip`, `Select`, `Spinner`, `Kbd`…)
   instead of rebuilding them, and `cn` from `@/lib/utils` to merge classes.
 - Dark and light both work with no extra code: never style for one theme only.

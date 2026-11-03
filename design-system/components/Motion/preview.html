@@ -1,4 +1,4 @@
-<!-- @dsCard group="Foundations" height=330 page subtitle="Durations · easings · reduced motion" -->
+<!-- @dsCard group="Foundations" height=370 page subtitle="Durations · easings · reduced motion" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +16,7 @@
   .dur-fast .dot{animation-duration:calc(var(--dur-fast) * 10)}
   .dur-base .dot{animation-duration:calc(var(--dur-base) * 10)}
   .dur-slow .dot{animation-duration:calc(var(--dur-slow) * 10)}
+  .dur-reveal .dot{animation-duration:calc(var(--dur-reveal) * 10)}
   .ease-out .dot{animation-duration:8s;animation-timing-function:var(--ease-out)}
   .ease-in-out .dot{animation-duration:8s;animation-timing-function:var(--ease-in-out)}
   .ease-spring .dot{animation-duration:8s;animation-timing-function:var(--ease-spring)}
@@ -36,6 +37,7 @@
     <div class="name">--dur-fast · 120ms<small>Hover, press, toggles</small></div><div class="track dur-fast"><span class="dot"></span></div>
     <div class="name">--dur-base · 180ms<small>Color, border, focus ring</small></div><div class="track dur-base"><span class="dot"></span></div>
     <div class="name">--dur-slow · 320ms<small>Overlays, sheets, drawers</small></div><div class="track dur-slow"><span class="dot"></span></div>
+    <div class="name">--dur-reveal · 600ms<small>Scroll reveals, text effects</small></div><div class="track dur-reveal"><span class="dot"></span></div>
   </div>
   <h3>Easings</h3>
   <div class="grid">

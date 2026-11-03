@@ -629,6 +629,7 @@ export const de: Messages = {
       free: 'Frei',
     },
   },
+  motion: { pause: 'Animation pausieren', play: 'Animation fortsetzen' },
   command: { title: 'Befehlspalette', description: 'Nach einem Befehl suchen.' },
   dataTable: {
     filter: 'Filtern…',

@@ -79,7 +79,7 @@ function PromptInput({
         submit()
       }}
       className={cn(
-        'flex flex-col gap-2 rounded-lg border border-input bg-inset p-2 shadow-sm transition-[border-color,box-shadow] duration-180 focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring',
+        'flex flex-col gap-2 rounded-lg border border-input bg-inset p-2 shadow-sm transition-[border-color,box-shadow] duration-base focus-within:border-primary focus-within:ring-[3px] focus-within:ring-ring',
         disabled && 'opacity-55',
         className,
       )}

@@ -124,7 +124,7 @@ function UnitInput({
             set({ value: n, unit })
           }}
           onBlur={onBlur}
-          className="h-[42px] cursor-pointer appearance-none rounded-r-md border border-input bg-secondary pr-8 pl-3 font-sans text-[13px] font-medium text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none hover:bg-accent focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55"
+          className="h-[42px] cursor-pointer appearance-none rounded-r-md border border-input bg-secondary pr-8 pl-3 font-sans text-[13px] font-medium text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none hover:bg-accent focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55"
         >
           {units.map((u) => (
             <option key={u.value} value={u.value} className="bg-popover text-popover-foreground">
