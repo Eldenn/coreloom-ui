@@ -117,7 +117,7 @@ function AgentList({
             <li key={a.id}>
               <AppLink
                 href={href(a.id)}
-                className="group flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-4 transition-[border-color,box-shadow] duration-120 outline-none hover:border-border-strong focus-visible:ring-[3px] focus-visible:ring-ring"
+                className="group flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-4 transition-[border-color,box-shadow] duration-fast outline-none hover:border-border-strong focus-visible:ring-[3px] focus-visible:ring-ring"
               >
                 <div className="flex items-start gap-3">
                   <div

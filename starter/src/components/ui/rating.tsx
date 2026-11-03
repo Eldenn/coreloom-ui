@@ -129,7 +129,7 @@ function Rating({
             aria-hidden
             className={cn(
               sizes[size],
-              'transition-colors duration-120',
+              'transition-colors duration-fast',
               n <= shown ? 'fill-warning text-warning' : 'text-border-strong',
             )}
           />

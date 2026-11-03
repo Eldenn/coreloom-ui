@@ -288,7 +288,7 @@ function AccentPicker({
             onFocus={() => {
               setAccent(name)
             }}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] ring-offset-2 ring-offset-background transition-shadow duration-120 outline-none focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-ring data-[state=checked]:ring-2 data-[state=checked]:ring-foreground"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-[var(--accent)] text-[var(--fg-on-accent)] ring-offset-2 ring-offset-background transition-shadow duration-fast outline-none focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-ring data-[state=checked]:ring-2 data-[state=checked]:ring-foreground"
           >
             <RadioGroupPrimitive.Indicator>
               <CheckIcon className="size-4" strokeWidth={3} />

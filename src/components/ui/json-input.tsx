@@ -225,7 +225,7 @@ function JsonInput({
           aria-describedby={
             [error ? errorId : undefined, ariaDescribedBy].filter(Boolean).join(' ') || undefined
           }
-          className="block w-full resize-y rounded-md border border-input bg-inset px-[13px] py-[11px] pr-24 font-mono text-[13px] leading-relaxed [tab-size:2] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle"
+          className="block w-full resize-y rounded-md border border-input bg-inset px-[13px] py-[11px] pr-24 font-mono text-[13px] leading-relaxed [tab-size:2] text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle"
           onChange={(e) => {
             set(e.target.value)
             if (error) check(e.target.value)

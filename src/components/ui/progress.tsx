@@ -22,7 +22,7 @@ function Progress({
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="h-full w-full flex-1 rounded-pill bg-primary transition-transform duration-320 ease-out"
+        className="h-full w-full flex-1 rounded-pill bg-primary transition-transform duration-slow ease-out"
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- `||` also turns NaN into 0, as upstream shadcn does.
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />

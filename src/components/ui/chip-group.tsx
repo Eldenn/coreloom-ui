@@ -94,7 +94,7 @@ function ChipGroup(props: ChipGroupProps) {
           <label
             key={o.value}
             className={cn(
-              'relative inline-flex cursor-pointer items-center gap-1.5 rounded-pill border border-border bg-transparent font-sans font-medium whitespace-nowrap text-fg-secondary transition-[background-color,border-color,color] duration-120 ease-out select-none hover:bg-accent hover:text-foreground has-checked:border-primary has-checked:bg-primary-subtle has-checked:text-primary-text has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55 has-disabled:hover:bg-transparent [&_svg]:size-3.5 [&_svg]:shrink-0',
+              'relative inline-flex cursor-pointer items-center gap-1.5 rounded-pill border border-border bg-transparent font-sans font-medium whitespace-nowrap text-fg-secondary transition-[background-color,border-color,color] duration-fast ease-out select-none hover:bg-accent hover:text-foreground has-checked:border-primary has-checked:bg-primary-subtle has-checked:text-primary-text has-focus-visible:ring-[3px] has-focus-visible:ring-ring has-disabled:cursor-not-allowed has-disabled:opacity-55 has-disabled:hover:bg-transparent [&_svg]:size-3.5 [&_svg]:shrink-0',
               size === 'sm' ? 'h-7 px-2.5 text-[12px]' : 'h-8 px-3 text-[13px]',
             )}
           >

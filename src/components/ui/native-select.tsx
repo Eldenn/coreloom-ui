@@ -20,7 +20,7 @@ function NativeSelect({
         data-slot="native-select"
         data-size={size}
         className={cn(
-          'w-full min-w-0 cursor-pointer appearance-none rounded-md border border-input bg-inset py-0 pr-9 pl-[13px] font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-180 ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[size=default]:h-[42px] data-[size=sm]:h-8 data-[size=sm]:text-[13px]',
+          'w-full min-w-0 cursor-pointer appearance-none rounded-md border border-input bg-inset py-0 pr-9 pl-[13px] font-sans text-[14px] text-foreground transition-[border-color,box-shadow] duration-base ease-out outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive-subtle aria-invalid:focus-visible:ring-destructive/70 data-[size=default]:h-[42px] data-[size=sm]:h-8 data-[size=sm]:text-[13px]',
           className,
         )}
         {...props}

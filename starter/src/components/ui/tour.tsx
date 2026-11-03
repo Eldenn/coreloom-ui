@@ -157,7 +157,7 @@ function Tour({
       <div
         aria-hidden
         data-slot="tour-spotlight"
-        className="pointer-events-none fixed z-(--z-modal) rounded-lg transition-[top,left,width,height] duration-180 motion-reduce:transition-none"
+        className="pointer-events-none fixed z-(--z-modal) rounded-lg transition-[top,left,width,height] duration-base motion-reduce:transition-none"
         style={
           rect
             ? {

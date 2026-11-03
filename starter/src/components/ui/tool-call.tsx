@@ -315,7 +315,7 @@ function ToolCall({
           {awaiting ? messages.toolForm.waiting : t.states[part.state]}
         </span>
         <ChevronRightIcon
-          className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-180 group-data-[state=open]:rotate-90"
+          className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-base group-data-[state=open]:rotate-90"
           aria-hidden
         />
       </CollapsibleTrigger>
