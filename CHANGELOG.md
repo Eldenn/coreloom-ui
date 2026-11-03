@@ -13,8 +13,492 @@ registry attached, so a project can pin one by pointing the namespace there in
 `components.json` (dependencies between items resolve through the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.9.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.10.0/{name}.json" }
 ```
+
+## [0.10.0] - 2026-11-03
+
+### Added
+
+- `AgentAvatar` (`@coreloom/agent-avatar`): a small animated face for an AI agent, `face` or
+  `dots`, that is `idle` (blinks), `thinking` (looks around), `speaking` (talks), `done` (smiles),
+  `error` or `offline`. A `seed` gives each agent a stable colour and eyes (`agentAvatarLook`);
+  the state is said to screen readers and the motion stops for reduced motion.
+- `Chat`, `ChatMessages` and `ChatMessage` take `assistantAvatar` to draw the assistant as an
+  AgentAvatar that thinks while it waits and talks while it streams.
+- `AgentPlan` takes `avatar`; `AgentGraph` and `AgentTeams` take `avatars` (`face` or `dots`),
+  whose faces follow the run's `activity`. `agentAvatarState` maps an activity to a state.
+- The theme's `theme.css` has the `agent-*` animations.
+- `AgentBuilder` (`@coreloom/ai-agent-builder`): the agent side of the node editor.
+  - **Reads / Writes**: each node names the state fields it uses and updates.
+  - **Structured output**: an Agent can answer in a JSON Schema (checked as JSON).
+  - **Tool parameters**: `AgentBuilderTool` takes `parameters` (a JSON Schema object) and
+    `sensitive`; each parameter can be fixed per node (a value, an `{{ }}` expression, an `enum`
+    value) or left to the model (`toolArgs`).
+  - **Ask before running** (`askFirst`): tool calls a person approves first; sensitive tools are
+    added when picked.
+  - **Limits**: an Agent's max steps, max tokens per answer and timeout; the graph's recursion limit
+    under State (`config` / `defaultConfig` / `onConfigChange`).
+  - **Pauses**: any Agent, Tools, Function or Subgraph node can pause the run before or after it.
+    `toLangGraphConfig(workflow, config)` gives `interrupt_before`, `interrupt_after` and
+    `recursion_limit`; `onSave` and `onRun` now also get it as `config`.
+  - **Review**: pass `interrupt` when your run pauses and a dialog lets a person approve, edit or
+    reject each tool call, or answer a question; `onResume({ nodeId, decisions })` gets the
+    decisions in LangChain's human-in-the-loop shape. A Human review node picks which decisions it
+    offers.
+- `toLangGraphJSON(workflow, state, config)` keeps the config in START's metadata;
+  `fromLangGraphJSON` returns it as `config`.
+- `AgentGraph` (`@coreloom/agent-graph`): a multi-agent system as a graph. Agents are cards, teams
+  are frames, and links show who delegates to whom (solid), who hands off to whom (dashed) and which
+  tools and knowledge each agent uses (dotted). Laid out in layers without a graph library. One tab
+  stop with arrow-key navigation, a List view that says the same in sentences, zoom and pan, and a
+  run shown live with `activity` and `activePath`.
+- `AgentTeams` (`@coreloom/ai-agent-teams`): the agent graph with a team filter and a panel on the
+  selected agent (role, model, who it reports to, delegates and hands off to, what it uses) and
+  links to its page and runs. `agentActivityFromSpans(spans, agents)` derives the live state from a
+  run's trace spans.
+- `TraceSpan` (ai-runs): optional `agentId` on agent spans, so a multi-agent run's trace can drive
+  `AgentTeams`.
+- `AgentPlan` (`@coreloom/agent-plan`): the steps an agent works through, ticked off live (to do,
+  in progress, done, failed, skipped) with "2 of 5 done" and a bar. It reads the `data-plan` part
+  your stream writes and rewrites with the same `id`. `active` stops the spinner when the agent
+  stops; `announce` reads the step in progress out on its own.
+- `ToolForm` and `formTool()` (`@coreloom/tool-form`): a tool that asks the person with a form
+  (text, email, web address, number, date, choice, checkbox) before it goes on. The answer becomes
+  the tool's output; Cancel answers with an error the model reads. The fields can be the app's, or
+  written by the model as the tool's input (read defensively with `readToolFormFields`).
+- `Chat`, `ChatWidget`, `ChatMessages`, `ChatMessage`: `data-plan` parts show as an `AgentPlan`;
+  `renderData(part)` draws your own `data-*` parts; `onToolOutput` takes `addToolOutput` as it is.
+- `ToolCall`: `onOutput`, and `awaitsInput` on a `tool` entry. While such a call waits, `render`
+  gets `submit(output)` and `cancel(reason?)`, the card says "Waiting for you" and the call isn't
+  marked busy.
+- `@coreloom/ai`: `AiDataPart`, `AiPlan`, `AiPlanStep`, `isDataPart`, `readPlan` (maps other
+  agents' statuses such as `in_progress` and `completed`) and `planProgress`.
+- `agentTeamToWorkflow(team)` and `workflowToAgentTeam(workflow, { tools })` (ai-agent-builder):
+  convert between the agent teams block and the agent builder's graph, in LangGraph's multi-agent
+  patterns. A delegation is a supervisor (a Router to each worker, who comes back when done); a
+  handoff is a swarm move (a route to the next agent, named by the link's label). Teams, roles,
+  descriptions, tools and knowledge survive the trip, including through LangGraph JSON.
+- `AgentTeams`: `onEdit(selectedId)` adds an **Edit graph** button to open your agent builder.
+- `AgentTeams`: the panel shows each link's label next to the agent's name ("Tech support · Bugs").
+- `ai-artifact`: a document or a piece of code a model wrote, opened in a panel beside the chat.
+  `ArtifactPanel` shows its versions (‹ v2 ›, labels and times), Preview and Source for Markdown,
+  **Changes** against the previous version (a line diff with both line numbers and folded unchanged
+  lines), Copy, Download (a file built in the browser) and **Restore this version**.
+  `ArtifactCard` is the chip a message shows to open it, drawn with the Chat's `tools`;
+  `ArtifactLayout` puts the chat and the panel side by side, resizable, and lays the panel over the
+  chat when the space is narrow, keeping the chat mounted. `diffLines` and `artifactFilename` are
+  exported for apps that need the same diff or file names.
+- `@coreloom/rules`: installs `AGENTS.md` at the app's root with the Coreloom design,
+  accessibility and text rules, so coding agents follow them on every change.
+- Usage examples for assistants: every Storybook story file is published as a `registry:example`
+  item (`button-demo`, `overlays-demo`, `ai-chat-demo`…, 42 in all, covering every component). shadcn's
+  MCP server returns their code when an assistant asks for an example.
+- README: reading Coreloom from a remote MCP server (GitMCP, GitHub's MCP server) when there is no
+  local project, for example in claude.ai.
+- `Heatmap` and `CalendarHeatmap` (`@coreloom/heatmap`): values on a grid of squares in five steps
+  of one chart color, with a Less → More legend. `Heatmap` takes `{ row, column, value }` cells
+  (weekday × hour, service × day); `CalendarHeatmap` lays `{ date, value }` days out in Monday-first
+  weeks. One tab stop with arrow keys; every cell is named with its row, column or full date, and
+  value.
+- `FunnelChart` (`@coreloom/funnel-chart`): the steps of a flow as an ordered list, each with a
+  bar against the first step, its count and share of the start, and between steps the share that
+  continued.
+- `TrendChart` (dashboard): `stacked` (`true`, or `'percent'` for 100 %), a per-series `type` to mix
+  bars, lines and areas (combo charts), and `axis: 'right'` with `formatSecondaryValue` for a
+  second axis. The tooltip now shows each series' name next to its formatted value.
+- `RadarChart` (`@coreloom/radar-chart`): up to three series compared on the same measures, one
+  axis each around a circle.
+- `ScatterChart` (`@coreloom/scatter-chart`): two measures across many items, up to three groups,
+  with an optional `size` measure for a bubble chart and named points in the tooltip.
+- `TreemapChart` (`@coreloom/treemap-chart`): many parts of a whole as tiles sized by value,
+  colored by up to five groups, with names and values in tiles that have room for them.
+- `SankeyChart` (`@coreloom/sankey-chart`): flows between nodes in columns, as wide as the flow,
+  colored by the column they leave. Unknown ids, loops and non-positive values are left out.
+- All four sit on Recharts through `ChartContainer`, and give screen readers their data as text:
+  a table (radar, scatter) or a list with values and shares (treemap, sankey).
+- `Sparkline` (`@coreloom/sparkline`): a word-sized trend (line, area or bars) in plain SVG for stat
+  cards, table cells and list rows. Screen readers hear your label plus the first and last value,
+  the low and the high.
+- `DonutChart` (`@coreloom/donut-chart`): parts of a whole as a ring with the total in the middle
+  and a legend that states each value and share. Parts past `maxSlices` (3 by default, 5 at most)
+  fold into a grey "Other".
+- `BarList` (`@coreloom/bar-list`): a ranking as an HTML list, with a proportional bar per row,
+  optional links through the app's router and a "Show all" button past `limit`.
+- `Gauge` (`@coreloom/gauge`): one value against its range as an open ring, exposed as a `meter`,
+  with optional `warning` / `critical` zones (stated in words) and `higherIsBetter` for uptime or
+  scores.
+- `StatCard` (app-shell, dashboard): `sparkline` prop, recent values drawn as a small area chart
+  under the value.
+- `CodeEditor` (`@coreloom/code-editor`): code to write, on CodeMirror 6 in Coreloom's colours
+  (light and dark from the tokens). Syntax colours for JavaScript / TypeScript (JSX), JSON, CSS,
+  HTML, Markdown and Python, line numbers, folding, bracket matching, autocompletion, search and
+  replace, diagnostics by line and column, Mod-S through `onSave`, one undo history per `path`, and
+  more CodeMirror `extensions`. CodeMirror's own words follow the locale. `languageFromPath` is
+  exported.
+- `Ide` (`@coreloom/ide`, block): a code workspace laid out like VS Code, all in the browser: file
+  explorer (folders from the paths), tabs with modified dots, the CodeEditor, a bottom panel with
+  Problems and your own tabs (an output, a terminal, a preview), a status bar, Mod-P file search,
+  a command palette (Mod-Shift-P), New file, Rename and Delete. Saving, running and diagnostics are
+  your app's callbacks (`onSave`, `onRun`, `diagnostics`). Below 640 px of its own width the explorer
+  moves into a sheet.
+- `codeEditor` and `ide` message groups in en, fr, es and de.
+- `CodeEditorLanguageSelect` (`@coreloom/code-editor`): a language picker to put in a CodeEditor's
+  header; `CODE_EDITOR_LANGUAGES` lists the built-in languages with their names.
+- `Ide`: the language in the status bar, and the new command "Change the file’s language", open a
+  list of languages; the choice sets the file's `language` through `onFilesChange`.
+- `Timeline` and `TimelineItem` (`@coreloom/timeline`): events in order on a line, with icon or dot
+  markers tinted by tone, a title, a time, a description and any content below.
+- `RelativeTime` (`@coreloom/relative-time`): "5 minutes ago", "yesterday", "in 3 days", kept up to
+  date, with the full date in its tooltip; `formatRelative` is exported.
+- `TreeView` (`@coreloom/tree-view`): a hierarchy to browse (files, pages, an organisation) with the
+  APG tree keyboard and type-ahead, icons and trailing meta, read only or with single or multiple
+  selection; `branchIds` is exported.
+- `CodeViewer` (`@coreloom/code-viewer`): code with line numbers, highlighted lines ("3, 7-9"), a
+  wrap toggle and Copy; `renderLine` plugs in a highlighter, `parseLineRanges` is exported.
+- `DiffViewer` (`@coreloom/diff-viewer`): a line diff of two texts, unified or split, with unchanged
+  runs folded; `diffLines` and `pairLines` are exported.
+- `JsonViewer` (`@coreloom/json-viewer`): JSON to explore, objects and arrays folding, values
+  coloured by type, Expand all, Collapse all and Copy.
+- `DescriptionList` and `DescriptionItem` (`@coreloom/description-list`): labels and values,
+  stacked, inline or in a grid; empty values say "Not set", `copy` adds a Copy button.
+- `StatusIndicator` and `StatusDot` (`@coreloom/status-indicator`): a coloured dot and the word for
+  it, plain or in a pill, with an optional pulse.
+- `Banner` (`@coreloom/banner`): a message across the top of a page or app, by tone, with an
+  action and an optional close button.
+- `TruncatedText` (`@coreloom/truncated-text`): a text cut after a few lines with Show more, only
+  when it is cut.
+- `Highlight` (`@coreloom/highlight`): searched terms marked in a text, ignoring case and accents;
+  `findMatches` is exported.
+- `Tour` (`@coreloom/tour`): a guided tour lighting up each step's target, with a step count, Back,
+  Next and Skip.
+- `ImageGallery` and `ImageLightbox` (`@coreloom/image-gallery`): thumbnails and a full-screen
+  viewer with arrows, keys, zoom and captions.
+- `CommentThread` and `CommentComposer` (`@coreloom/comment-thread`): comments with one level of
+  replies, emoji reactions, "@" mentions and a box to write.
+- `RichTextEditor`: **Review changes** in the AI panel. A rewrite of existing text (improve, fix,
+  shorten, lengthen, or an instruction) shows as changes in the text itself, removed words struck
+  through and new ones underlined, compared word by word. A bar under the text steps through them
+  (Previous / Next) and accepts or rejects each one, or all at once. Nothing changes in the document
+  or in `value` until a change is accepted; each Accept is one undo step. New file
+  `rich-text-review.tsx`, installed with the editor; new `ai.review` option (`false` removes it).
+- `RichTextEditor`: `suggestion` takes a proposed version of the whole document (light Markdown,
+  like an `onRequest` answer) and shows it as changes to accept or reject, without the AI panel: a
+  review agent or a server-side pass can propose edits. Nothing is focused or scrolled when it
+  arrives. `onReviewEnd({ accepted, rejected })` is called when a review (from `suggestion` or the
+  panel) has nothing left. New type `RichTextReviewResult`.
+- `FormRenderer` (`@coreloom/form-renderer`): builds a form at runtime from a FormSpec, a JSON
+  description of its sections (in 1 to 3 columns), fields, checks and conditions (`visibleWhen`),
+  with the Form fields. Values come back as JSON. `formFieldTypes` is the registry of field types
+  (45, one per Form field: from text and money to chips, tree select, ranking,
+  recurrence, time zone, image, key-value and JSON), extended with `types={{ ...formFieldTypes, mine }}`. `readFormSpec` reads
+  an untrusted spec and reports what it fixed or left out; `fromJSONSchema` (with a
+  react-jsonschema-form style UI schema) and `toJSONSchema` convert from and to JSON Schema.
+- `FormBuilder` block (`@coreloom/form-builder`): makes a FormSpec without code, with a palette of
+  field types, a live canvas (drag and drop, keyboard included), an inspector for each field,
+  section and the form, a Preview, the JSON (editable FormSpec, or JSON Schema) and Import.
+- `InputGroup` (`@coreloom/input-group`): a field with addons inside its border (icon, prefix,
+  unit, button, keyboard hint, or a toolbar above or below a textarea), following shadcn's parts:
+  `InputGroupAddon`, `InputGroupButton`, `InputGroupText`, `InputGroupInput`, `InputGroupTextarea`.
+  Two ready-made groups: `PasswordInput` (show/hide toggle) and `SearchInput` (clear button,
+  Escape clears).
+- `ButtonGroup` (`@coreloom/button-group`): buttons, selects, inputs or a text label joined edge to
+  edge, horizontal or vertical, with `ButtonGroupSeparator` and `ButtonGroupText`.
+- `NumberInput` (`@coreloom/number-input`): a number typed the reader's way, with − / + buttons and
+  spin-button keys (arrows, Shift or Page Up/Down, Home/End). Units and percents through
+  `formatOptions`; `parseNumber` and `stepNumber` are exported.
+- `NativeSelect` (`@coreloom/native-select`): the browser's `<select>` styled like the other fields.
+- `AspectRatio` (`@coreloom/aspect-ratio`): Radix's aspect ratio box, as in shadcn.
+- `TimePicker` and `DateTimePicker` (`@coreloom/time-picker`): a time typed ("14:30", "2:30 pm",
+  "14h30") or picked from a list, shown in the reader's clock, with an `"HH:mm"` value; the
+  date-time picker joins it with a `DatePicker` into one `Date`.
+- i18n: new `inputs` group (show password, clear search, increase / decrease, time list and error,
+  date / time part names) in English, French, Spanish and German.
+- Form: `MaskedField`, `ColorField`, `RatingField`, `SliderField`, `UnitField`, `DurationField`,
+  `MonthField`, `WeekField`, `SegmentedField`, `RadioCardField`, `CheckboxGroupField` and
+  `KeyValueField` on `useAppForm`.
+- `ChoiceCard` (`@coreloom/choice-card`): `RadioCardGroup`, `RadioCard` and `CheckboxCard`, radio
+  buttons and checkboxes drawn as cards with a title, a description and an icon.
+- `SegmentedControl` (`@coreloom/segmented-control`): two to five options in one pill, a radio
+  group underneath.
+- `UnitInput` (`@coreloom/unit-input`): a number with its unit, `{ value, unit }`, with optional
+  conversion.
+- `DurationInput` (`@coreloom/duration-input`): "1h30", "90" or "1:30" read as minutes;
+  `parseDuration` and `formatMinutes` are exported.
+- `MonthPicker` (`@coreloom/month-picker`, "YYYY-MM") and `WeekPicker` (`@coreloom/week-picker`,
+  ISO "YYYY-Www").
+- `KeyValueEditor` (`@coreloom/key-value-editor`): key and value rows, repeated keys flagged,
+  pasted "KEY=value" lines split into rows.
+- `EmojiPicker` (`@coreloom/emoji-picker`): a built-in, searchable set of common emoji, as a popover
+  button or a panel.
+- `SignaturePad` (`@coreloom/signature-pad`): sign with a pointer or type a name; a PNG data URL.
+- `PasswordStrength` (`@coreloom/password-strength`): a strength meter and rule checklist.
+- `CopyInput` in `@coreloom/input-group`: a read-only value with a copy button.
+- Form: `ChipField`, `ScaleField`, `NumberRangeField`, `TimeRangeField`, `JsonField`,
+  `MentionField`, `TreeSelectField`, `TransferField`, `ImageField`, `SortableField`,
+  `RecurrenceField` and `TimezoneField` on `useAppForm`.
+- `ChipGroup` (`@coreloom/chip-group`): pills that toggle on and off, as checkboxes (a `string[]`)
+  or radios (`type="single"`), with optional counts.
+- `ScaleInput` (`@coreloom/scale-input`): a survey scale, NPS (0–10) or worded Likert, as a radio
+  group.
+- `NumberRangeInput` and `TimeRangePicker` (`@coreloom/range-inputs`): two ends of a range, either
+  may stay empty, an upside-down range flagged; `overnight` for night shifts.
+- `JsonInput` (`@coreloom/json-input`): a code field for JSON that says on which line and column it
+  breaks, with Format; `parseJson` is exported.
+- `MentionTextarea` (`@coreloom/mention-textarea`): a textarea with "@" suggestions that stays
+  plain text; `mentionsIn` lists who a text mentions.
+- `TreeSelect` (`@coreloom/tree-select`): a select whose options nest, one value or several;
+  `flattenTree` is exported.
+- `TransferList` (`@coreloom/transfer-list`): two filterable lists with buttons to move items
+  between them.
+- `ImageInput` (`@coreloom/image-input`): one image with its preview (avatar, logo, cover), click
+  or drop, type and size checked.
+- `SortableList` (`@coreloom/sortable-list`): items to put in order by dragging, with the keyboard
+  or with up and down buttons.
+- `RecurrenceInput` (`@coreloom/recurrence-input`): how often something repeats, read back as a
+  sentence; `toRRule` and `parseRRule` convert to and from iCalendar RRULE.
+- `TimezoneSelect` (`@coreloom/timezone-select`): searchable IANA time zones with UTC offsets.
+- `Combobox`: `onCreate` offers "Create “…”" when no option has the searched label.
+- Form: `PasswordField`, `NumberField`, `TimeField` and `DateTimeField` on `useAppForm`, and
+  `maxCount` on `TextField` / `TextareaField` for a character counter.
+- `CharacterCount` (`@coreloom/character-count`): "120/280" under a text field, amber near the
+  limit, red past it, announced to screen readers only when a threshold is crossed.
+- `EditableText` (`@coreloom/editable-text`): text that becomes a field when clicked; Enter or blur
+  saves, Escape restores, focus returns to the text.
+- `SliderInput` (`@coreloom/slider-input`): a Slider and a NumberInput on one value.
+- `MaskedInput` (`@coreloom/masked-input`): groups typed numbers the way they're printed, with
+  presets that check them (IBAN, card, SIREN, SIRET) or your own pattern. `isValidIban`,
+  `isValidLuhn` and `applyMask` are exported.
+- `ColorPicker` (`@coreloom/color-picker`): a "#rrggbb" colour from swatches, a hex field or the
+  system colour dialog.
+- `Rating` (`@coreloom/rating`): radio-button stars to give a score, or a read-only score with halves.
+- `NodeEditor`: the node panel has Settings, Input and Output tabs. `runs` takes each node's
+  `input` and `output`; Input falls back to the output of the node before it.
+- `NodeEditor`: text fields take `{{ path }}` expressions. Typing `{{` (or the braces button)
+  suggests the input's fields, the app's `variables` and earlier nodes' outputs
+  (`$node.<id>.<path>`) with a sample each; a preview under the field fills them from the sample.
+  `expression: false` turns it off for a field.
+- `NodeEditor`: `onRunNode({ node, input, workflow })` adds "Test node". The app runs that one node
+  and resolves with `{ status?, output?, message? }`, shown on the card and under Output and offered
+  to the nodes after it.
+- `NodeEditor`: new field types — `conditions` (rules matched all or any, with the result for the
+  sample), `keyValue` (rows of key and value), `code` (monospace; JSON is checked and an invalid one
+  is an issue with the code `invalid`) and `credential` (one of the app's `credentials`, ids and
+  names only; `onCreateCredential` adds "New credential").
+- `node-editor-fields`: `resolveExpression`, `evaluateConditions`, `keyValuesToObject`, `dataPaths`,
+  `readPath`, `jsonError` — path lookup only, nothing is evaluated.
+- `WorkflowBuilder` passes the new props through `editorProps`; `AgentBuilder` takes `onRunNode` and
+  offers its state fields in expressions.
+- `NodeEditor` (`@coreloom/node-editor`): an n8n-style canvas on React Flow (`@xyflow/react`).
+  The app declares its node kinds (ports, settings as data, icon, a summary line); people add nodes
+  from a searchable list, drag them, draw connections from an output to an input, and configure the
+  selected node in a side panel that also lists and makes connections, so everything works from the
+  keyboard. Undo/redo, tidy up, zoom; missing settings and loose ends are flagged; `runs` shows what
+  the app's run reports for each node. Nothing runs inside. Pure helpers for app code: `addNode`,
+  `connectNodes`, `canConnect`, `removeNodes`, `updateNode`, `duplicateNode`, `layoutWorkflow`,
+  `validateWorkflow`, `nodePorts`.
+- `WorkflowBuilder` (`@coreloom/workflow-builder`): an automation's page — name, Save, Run (which
+  waits until no node needs attention) — above the node editor.
+- `AgentBuilder` (`@coreloom/ai-agent-builder`): design an agent graph the LangGraph way — shared
+  state with replace/append reducers, Agent, Tools, Function, Router (conditional edges, one output
+  per route), Human review and Subgraph nodes between START and END. `toLangGraphJSON` /
+  `fromLangGraphJSON` read and write the shape of LangGraph's `get_graph().to_json()`; `onSave` and
+  `onRun` get the graph and that JSON. No dependency on LangGraph.
+- `NodeEditor`: notes and groups on the canvas. `Workflow.notes` (`{ id, position, width, height,
+text, color? }`) and `Workflow.groups` (`{ id, position, width, height, label, color? }`) sit behind
+  the cards and are never run nor checked. Add them from the toolbar or the canvas menu; Ctrl/⌘+G
+  groups the selection. Text and names are edited in place, both resize from handles and take a
+  colour from their right-click menu; moving a group moves what's inside, and Tidy up refits groups.
+- `NodeEditor`: "Find on the canvas" (Ctrl/⌘+F) lists nodes, notes and groups; picking one selects
+  it, brings it into view and focuses it.
+- `NodeEditor`: a minimap (React Flow's `MiniMap`, pannable and zoomable) with a toolbar toggle; the
+  `minimap` prop (default true) removes both when false.
+- Helpers in `node-editor-canvas`: `addNote`, `addGroup`, `updateNote`, `updateGroup`, `moveGroup`,
+  `groupMembers`, `removeCanvasItems`, `refitGroups`.
+- `NodeEditor`: pinned sample data. `WorkflowNode.pinned` holds a sample output, set from Output
+  ("Pin this output", or "Add sample data" as JSON). It stands in while no run reports an output, and
+  a node without output passes its input on, so a sample pinned to the trigger feeds every node after
+  it.
+- `NodeEditor`: drag a field from the Input tab onto a setting; it lands as `{{ path }}`.
+- `NodeEditor`: "+" after unconnected outputs and on connections adds a node there, connected;
+  right-click menus for nodes, connections and the canvas; Ctrl/⌘+C / X / V copy, cut and paste
+  nodes with their connections (also through the system clipboard); D or `WorkflowNode.disabled`
+  disables a node (dimmed, not checked).
+- Helpers: `insertNodeOnEdge`, `copyNodes`, `pasteNodes` (untrusted input is filtered).
+- `@coreloom/ai-evals`: `EvalSuiteList` (suites with their last pass rate against a threshold, the
+  trend and Run) and `EvalRunReport` (one eval run case by case with scores, the judge's verdict and
+  reasoning, per-metric scores; with `baseline`, two runs side by side with regressions,
+  improvements and a split diff of the outputs). `summarizeEvalRun` and `compareEvalRuns` are
+  exported. It complements `ai-runs`.
+- `@coreloom/file-manager`: `FileManager`, folders and files in a grid or a list with a breadcrumb,
+  multi-selection, drag and drop onto folders and crumbs (or Move to), uploads dropped from the
+  computer and a details panel. Helpers: `fileManagerPath`, `sortFileItems`, `canMoveTo`,
+  `selectRange`, `fileTypeOf`.
+- `@coreloom/inbox`: `Inbox`, shared conversations for a support or sales team: list with search
+  and filters (status, unread, mine, unassigned), thread with internal notes and attachments, a
+  composer for replies and notes, status and assignee. `filterConversations` is exported.
+- `@coreloom/spreadsheet`: `Spreadsheet`, an editable grid like a spreadsheet: keyboard navigation,
+  type or Enter to edit, range selection, copy, cut and paste as tab-separated text, undo and redo,
+  and the sum and average of the selection. `parseTsv`, `toTsv`, `parseSheetValue` and
+  `pasteIntoRows` are exported.
+- New i18n groups `fileManager`, `inbox`, `spreadsheet` and `ai.evals` in all four languages.
+- `Gantt` (`@coreloom/gantt`, block): a roadmap on a timeline, with progress bars, milestones,
+  dependency arrows (red when a task starts too early), groups, a today line and a day / week / month
+  zoom. With `onTaskChange`, bars move and resize with the mouse or the arrow keys (Shift moves the
+  end).
+- `StatusPage` (`@coreloom/status-page`, block): the overall state, components with 90 days of
+  uptime, ongoing incidents with their updates and past incidents. `UptimeBar` (a slider that reads
+  each day aloud) and `IncidentTimeline` are exported too.
+- `ApiKeys` (`@coreloom/api-keys`, block): keys with their visible ends, access, last use and expiry;
+  Create shows the new secret once in a `SecretValue`; Revoke is confirmed.
+- `Webhooks` (`@coreloom/webhooks`, block): endpoints with events, on / off and signing secret, and
+  their deliveries with payload, response, Redeliver and Send test event.
+- `TwoFactorSettings` and `ActiveSessions` (`@coreloom/security-settings`, block): two-step sign-in
+  with an authenticator app (setup, code, recovery codes, turn off) and the signed-in devices.
+- `AuditLog` (`@coreloom/audit-log`, block): events grouped by day, with search, actor and action
+  filters, details, Export and Load more.
+- `Integrations` (`@coreloom/integrations`, block): connectable apps as cards, with search and
+  category filters; Connect, Configure, Disconnect.
+- `PromptManager` (`@coreloom/prompt-manager`, block): a prompt's versions, an editor that finds
+  `{{variables}}`, a diff between versions, Deploy to a label and a streamed test. `templateVariables`
+  and `fillTemplate` are exported.
+- `apiKeys`, `webhooks`, `security`, `auditLog`, `integrations`, `gantt`, `statusPage` and
+  `promptManager` message groups in en, fr, es and de.
+- `@coreloom/showcase`: sections for the public site of a practice, a studio or a firm. `PractitionerCard` and `PractitionerGrid` (portrait or initials, profession, specialties, bio, facts, booking actions). `ContactSection`, `ContactDetails` (address with a directions link, phone, email, access and parking) and `OpeningHours` (the week in the locale's format, today marked, "Open now · Closes at 12:30" / "Opens tomorrow at 9:00", exceptional hours; `openingStatus` is exported). `MediaSection` (image beside text), `Quote` (default, large or card) and `LegalLayout` (legal notice or privacy policy with numbered sections and a table of contents). Guide: Blocks / Showcase.
+- `surfaces.css` in `@coreloom/theme`: the mineral and bone surface presets (`data-surface` on `<html>` or on a band), every background, border and text grey in both themes, checked AA with every accent preset by `build/gen-surfaces.py`. Storybook has a Surface toolbar. Guide: Foundations / Surfaces.
+- `Hero` takes `media` with `layout="split"` (image beside the text, `mediaPosition`) or `layout="cover"` (image behind a scrim, dark theme), an `eyebrow`, `highlightStyle="solid"` and `glow`; extra props go to the `<section>`.
+- `SiteFooter` takes `brand`, `columns` (`{ title, links?, content? }`) and `social` for a multi-column footer. Its link row's label is translated.
+- `Terminal` (`@coreloom/terminal`): a command line in the page, with a prompt, history (↑ ↓), Tab
+  completion (`onComplete`), ANSI output, Ctrl+C, Ctrl+L, Stop, Clear and Copy. It runs nothing
+  itself. `onCommand(command, context)` returns text, a promise or an async iterable (a stream).
+  `context.signal` aborts on Ctrl+C, and `context.read({ prompt, secret })` asks a question
+  mid-command. You can also connect a `session` (`onData`, `write`, `resize`, `interrupt`, `onExit`):
+  a process that prints its own prompt, the shape xterm.js uses. `useTerminal` and `createTerminal`
+  keep the output outside the component; `useTerminalState` reads it.
+- `AnsiOutput` (`@coreloom/ansi-output`): program output with ANSI colours (16 from the theme's
+  tokens, 256, true colour), styles, OSC 8 links and progress-bar rewrites (carriage return, erase
+  line, cursor up). The incremental parser is exported as `writeAnsi`, `parseAnsi` and `stripAnsi`.
+- `LogViewer` (`@coreloom/log-viewer`): a long, virtualized log with ANSI colours. It has search
+  (marked words), level filters with counts, wrap, follow the end and copy. Levels and ISO
+  timestamps are read from raw `text` (`parseLogText`), or you pass `entries`.
+- `TerminalConsole` (`@coreloom/terminal-console`, block): several terminals in tabs, with New
+  terminal (a menu of `profiles`), a side by side split and Close.
+- `PipelineRun` (`@coreloom/pipeline-run`, block): one CI or deploy run, with its status, jobs,
+  steps and each step's searchable log. The failed step opens by itself; Re-run, Cancel and Re-run
+  job are callbacks.
+- `Ide`: the bottom panel can be controlled (`panelOpen` / `onPanelOpenChange`, `panel` /
+  `onPanelChange`), so Run can open a Terminal panel.
+- `terminal`, `logViewer`, `terminalConsole` and `pipelineRun` message groups in en, fr, es and de.
+- `Toolbar` and its parts (`@coreloom/toolbar`): a row of tools that is one Tab stop, with
+  arrow-key navigation, toggle groups, links, separators and a More menu.
+- `ActionBar` (`@coreloom/action-bar`): a bar for the selected items, with their count, bulk
+  actions, and Escape or a close button to clear the selection.
+- `Popconfirm` (`@coreloom/popconfirm`): a small confirmation anchored to its trigger, Cancel
+  focused first, with an async confirm.
+- `SecretValue` (`@coreloom/secret-value`): an API key or token as dots, with Show and Copy;
+  `maskSecret` is exported.
+- `FormatNumber`, `AnimatedNumber` and `formatValue` (`@coreloom/format`): numbers, percentages,
+  currencies, compact numbers and bytes written for the locale, and a count-up.
+- `NotificationBadge` (`@coreloom/notification-badge`): a count (99+) or a dot on an icon or an
+  avatar, with the count in words for screen readers.
+- `OverflowList` (`@coreloom/overflow-list`): a one-line row that shows what fits and ends with
+  "+N" opening the rest.
+- `FileCard` and `FileCardList` (`@coreloom/file-card`): an attached file with its type, size,
+  upload progress, error, Retry and Remove.
+- `useHotkeys`, `Hotkey` and `ShortcutsDialog` (`@coreloom/keyboard-shortcuts`): shortcuts with
+  "mod" and sequences, drawn as keys, and a dialog listing them.
+- `Countdown` (`@coreloom/countdown`): the time left as a clock, boxes or a short phrase, with
+  `onComplete`.
+- `QuotaBar` (`@coreloom/quota-bar`): how much of a limit is used, by segment, turning amber then
+  red near the limit.
+- `@coreloom/vscode`: Coreloom UI in VS Code extension webviews. `vscode.css` maps the tokens onto the editor's `--vscode-*` variables (dark, light, high contrast, the editor's fonts) and cancels the default styles VS Code injects into webviews. `syncVsCodeTheme()` follows the editor's theme live. `useVsCodeState` keeps UI state while the tab is hidden. `postToExtension` and `useExtensionMessages` exchange typed messages with the extension. Guide: Foundations / VS Code. The new `examples/vscode-webview` is a working extension with a strict Content Security Policy and a browser preview.
+- `SidebarProvider` takes `keyboardShortcut={false}` and `CommandMenu` takes `shortcut={false}`, to leave Ctrl/Cmd+B and Ctrl/Cmd+K to the host (VS Code uses both).
+
+### Changed
+
+- `AgentGraph`: an agent selected out of sight (from the panel's links, say) scrolls into view.
+- `AgentGraph`: without `defaultView`, a box too narrow to read the graph (a phone) starts on the
+  list view.
+- AI artifact: the Changes tab uses `DiffViewer`; `diffLines` now lives in `@coreloom/diff-viewer`
+  (still re-exported from the block). The diff strings moved from `ai.artifact` to `display.diff`
+  in the messages (`ai.artifact.noChanges` stays).
+- `RichTextEditor`: for a rewrite, **Review changes** is now the main (focused) button in the AI
+  panel, and Replace is next to it. Translations, summaries, continuations and answers at the `/`
+  spot keep their main action.
+- `SelectTrigger` takes `onClear` and `Combobox` takes `clearable`: a × button that empties the
+  field while something is picked. With it, `className` goes on a wrapper around the trigger.
+- `NumberInput`: holding − or + repeats the step.
+- `NodeEditor`: key/value rows put the key above the value, so both stay readable in the panel.
+- `updateNode` takes `disabled` and `pinned`; `undefined` (or `disabled: false`) removes the key.
+- Every registry item that has a guide now links it: the published `r/<name>.json` and
+  `r/registry.json` end the item's description with `Guide: <url>` and carry the same links in
+  `docs`. Assistants that browse `@coreloom` through shadcn's MCP server (which only shows
+  descriptions) can now open the guide: when to use the item, its props and accessibility rules.
+- README: setting up shadcn's MCP server for Codex and OpenCode, and for any other MCP client.
+- `Hero`'s highlight gradient follows the accent (from the accent text colour towards the text colour) instead of a fixed cyan, so it matches every accent preset and generated accent.
+- Accent presets and generated accents (`generateAccent`) also apply on an element that is itself `data-theme="dark"` inside a light page, so a dark band keeps its accent: put `data-accent` on the same element as `data-theme`.
+
+### Fixed
+
+Gauge: the number, label and status now sit on the ring's center and stay inside the threshold ticks. The number shrinks to fit when it's long ("99.32 %", "7.4M"), and the text scales with `size`.
+
+- `removeNodes` kept only `nodes` and `edges`; it now keeps the rest of the workflow.
+- `DiffViewer` (split view): a short line no longer sits vertically centred next to a long wrapped
+  one on the other side; both start at the top of the row.
+
+### Upgrading
+
+- To use AgentAvatar in an app that installed `@coreloom/theme` before, add the theme again
+  (`pnpm dlx shadcn@latest add @coreloom/theme`) for the new animations.
+- New strings in `ai.agentBuilder`: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first. The block now also needs
+  `@coreloom/radio-group`.
+- Both items read new strings (`ai.agentGraph`, `ai.agentTeams`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- These read new strings (`ai.plan`, `ai.toolForm`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) and `@coreloom/ai` with `--overwrite`
+  first, then `@coreloom/tool-call` and `@coreloom/ai-chat`.
+- `AgentTeams` reads a new string (`ai.agentTeams.edit`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- `ai-agent-builder` now depends on `@coreloom/agent-graph` (types only).
+- The panel reads new strings (`ai.artifact`): re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` before adding
+  `@coreloom/ai-artifact`.
+- The new items read new strings in the `charts` group: re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- The new items read new strings in the `charts` group: re-install `@coreloom/i18n` (and
+  `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with `--overwrite` first.
+- The new items read new strings (`charts`): re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first. Re-installing the app-shell or
+  dashboard block pulls in `@coreloom/sparkline` for `StatCard`.
+- The editor reads new strings: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` /
+  `@coreloom/i18n-de` if you use them) with `--overwrite` first, then
+  `@coreloom/rich-text-editor` with `--overwrite`.
+- To keep Replace as the main action, pass `ai={{ onRequest, review: false }}`. Tests that press
+  Enter on the panel's focused button after a rewrite now start a review instead of replacing.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite`, then `@coreloom/node-editor`:
+  it now has a second file, `node-editor-fields.tsx`, and needs `@coreloom/tabs`.
+- `text` and `textarea` fields now take expressions and show the braces button; add
+  `expression: false` where that isn't wanted.
+- `WorkflowIssue` has a new code, `invalid`: handle it if you switch over the codes.
+- The new items read new strings (`nodeEditor`, `workflow`, `ai.agentBuilder`): re-install
+  `@coreloom/i18n` (and `@coreloom/i18n-es` / `@coreloom/i18n-de` if you use them) with
+  `--overwrite` first.
+- `@coreloom/node-editor` adds the `@xyflow/react` dependency and imports its base stylesheet
+  (`@xyflow/react/dist/base.css`) from the component.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite` (new `nodeCanvas` group), then
+  `@coreloom/node-editor`, which adds `node-editor-canvas.tsx`.
+- If your app stores or executes workflows, keep `notes` and `groups` when you save, and ignore them
+  when you run.
+- Re-install `@coreloom/i18n` (and `-es` / `-de`) with `--overwrite`, then `@coreloom/node-editor`
+  (it now uses `@coreloom/context-menu`).
+- If your run executes the graph, skip nodes with `disabled: true` (pass their input on), and decide
+  whether a `pinned` output replaces running the node.
+- New strings: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` / `@coreloom/i18n-de` if you
+  use them) with `--overwrite` before adding these items.
+- Re-add `@coreloom/theme` for `surfaces.css` and import it after `accents.css`. Regenerate a `brand.css` made with the theme generator if a dark band of your page should use it.
+- New strings: re-install `@coreloom/i18n` (and `@coreloom/i18n-es` / `@coreloom/i18n-de` if you
+  use them) with `--overwrite` before adding these items.
 
 ## [0.9.0] - 2026-11-01
 
@@ -298,6 +782,7 @@ registry attached, so a project can pin one by pointing the namespace there in
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
 [0.8.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.8.0
 [0.7.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.7.0
