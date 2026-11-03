@@ -119,6 +119,31 @@
       ]
     },
     {
+      "name": "icon",
+      "type": "registry:lib",
+      "title": "renderIcon()",
+      "description": "Draws an icon given as a Lucide component or as an element; the IconLike type that blocks take for their icon props.",
+      "dependencies": ["lucide-react"],
+      "files": [
+        {
+          "path": "src/lib/icon.tsx",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "initials",
+      "type": "registry:lib",
+      "title": "initials()",
+      "description": "The letters an avatar shows without a picture: \"Ada Lovelace\" → \"AL\".",
+      "files": [
+        {
+          "path": "src/lib/initials.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "ai",
       "type": "registry:lib",
       "title": "AI message types",
@@ -2215,7 +2240,8 @@
         "@coreloom/emoji-picker",
         "@coreloom/mention-textarea",
         "@coreloom/relative-time",
-        "@coreloom/textarea"
+        "@coreloom/textarea",
+        "@coreloom/initials"
       ],
       "files": [
         {
@@ -3247,7 +3273,8 @@
         "@coreloom/i18n",
         "@coreloom/button",
         "@coreloom/command",
-        "@coreloom/kbd"
+        "@coreloom/kbd",
+        "@coreloom/icon"
       ],
       "files": [
         {
@@ -3338,7 +3365,8 @@
         "@coreloom/card",
         "@coreloom/theme-toggle",
         "@coreloom/command-menu",
-        "@coreloom/sparkline"
+        "@coreloom/sparkline",
+        "@coreloom/icon"
       ],
       "files": [
         {
@@ -3424,7 +3452,8 @@
         "@coreloom/field",
         "@coreloom/input",
         "@coreloom/spinner",
-        "@coreloom/form"
+        "@coreloom/form",
+        "@coreloom/icon"
       ],
       "files": [
         {
@@ -3453,7 +3482,8 @@
         "@coreloom/accordion",
         "@coreloom/copy-button",
         "@coreloom/site-header",
-        "@coreloom/site-footer"
+        "@coreloom/site-footer",
+        "@coreloom/icon"
       ],
       "files": [
         {
@@ -3718,7 +3748,8 @@
         "@coreloom/card",
         "@coreloom/dialog",
         "@coreloom/form",
-        "@coreloom/select"
+        "@coreloom/select",
+        "@coreloom/initials"
       ],
       "files": [
         {
@@ -3879,7 +3910,8 @@
         "@coreloom/input",
         "@coreloom/json-viewer",
         "@coreloom/select",
-        "@coreloom/spinner"
+        "@coreloom/spinner",
+        "@coreloom/initials"
       ],
       "files": [
         {
@@ -3987,7 +4019,8 @@
         "@coreloom/avatar",
         "@coreloom/badge",
         "@coreloom/button",
-        "@coreloom/dropdown-menu"
+        "@coreloom/dropdown-menu",
+        "@coreloom/initials"
       ],
       "files": [
         {
@@ -4044,7 +4077,8 @@
         "@coreloom/segmented-control",
         "@coreloom/select",
         "@coreloom/spinner",
-        "@coreloom/textarea"
+        "@coreloom/textarea",
+        "@coreloom/initials"
       ],
       "files": [
         {

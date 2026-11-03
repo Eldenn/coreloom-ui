@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { initials } from '@/lib/initials'
 import { cn } from '@/lib/utils'
 
 interface TeamRole {
@@ -67,14 +68,6 @@ interface TeamInvite {
   role: string
   invitedAt: Date
 }
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((p) => p.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
