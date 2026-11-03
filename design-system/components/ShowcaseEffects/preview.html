@@ -1,0 +1,32 @@
+<!-- @dsCard group="Motion" height=250 subtitle="Backgrounds · tilt · scramble · image reveal" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AnimatedBackground || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AnimatedBackground, TiltCard, ScrambleText } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { className: 'grid grid-cols-2 gap-4' },
+          h('div', { className: 'relative isolate flex h-48 items-center justify-center overflow-hidden rounded-xl border border-border bg-background' },
+            h(AnimatedBackground, { variant: 'aurora' }),
+            h('p', { className: 'm-0 font-mono text-[18px] font-semibold' }, h(ScrambleText, { text: 'ACCESS GRANTED', trigger: 'mount', duration: 1400 }))),
+          h(TiltCard, { className: 'flex h-48 flex-col justify-end gap-1 rounded-xl border border-border bg-card p-5' },
+            h('p', { className: 'm-0 font-display text-[20px] font-semibold' }, 'Agent teams'),
+            h('p', { className: 'm-0 text-[13px] text-muted-foreground' }, 'Move the pointer over the card.'))));
+    }
+    render();
+  </script>
+</body>
+</html>

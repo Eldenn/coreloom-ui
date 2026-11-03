@@ -2408,7 +2408,7 @@
       "name": "reveal",
       "type": "registry:ui",
       "title": "Reveal",
-      "description": "Content that fades, slides, scales or comes into focus as it scrolls into view, once; Stagger does it item by item. With useInView and useReducedMotion.",
+      "description": "Content that fades, slides, scales, comes into focus or is uncovered by a mask (wipes, circle) as it scrolls into view, once; Stagger does it item by item. With useInView and useReducedMotion.",
       "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
       "files": [
         {
@@ -2421,7 +2421,7 @@
       "name": "text-effects",
       "type": "registry:ui",
       "title": "Text effects",
-      "description": "WordReveal (words arrive one by one), Typewriter (typed phrases with a caret), ShimmerText (a light sweeping a 'Thinking…' label) and GradientText.",
+      "description": "WordReveal (words arrive one by one), Typewriter (typed phrases with a caret), ShimmerText (a light sweeping a 'Thinking…' label), GradientText and ScrambleText (letters that decode).",
       "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/reveal"],
       "files": [
         {
@@ -2466,6 +2466,170 @@
       "files": [
         {
           "path": "src/components/ui/view-transition.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "animated-icon",
+      "type": "registry:ui",
+      "title": "Animated icons",
+      "description": "DrawIcon (a check, cross or arrow that draws itself), MorphIcon (one icon turning into another) and MenuToggleIcon (menu lines folding into a cross).",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/animated-icon.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "status-button",
+      "type": "registry:ui",
+      "title": "StatusButton",
+      "description": "A button that shows its action: a spinner while it runs, a drawn check on success, a shake on error, each announced.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/spinner",
+        "@coreloom/animated-icon"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/status-button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "animated-list",
+      "type": "registry:ui",
+      "title": "AnimatedList",
+      "description": "A list whose keyed items slide open when added and fold away when removed.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/animated-list.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "animated-height",
+      "type": "registry:ui",
+      "title": "AnimatedHeight",
+      "description": "A box that animates to the height of its content when the content changes.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/animated-height.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tabs-indicator",
+      "type": "registry:ui",
+      "title": "TabsIndicator",
+      "description": "A highlight or underline that slides to the active tab of a TabsList.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/tabs-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "ping",
+      "type": "registry:ui",
+      "title": "Ping",
+      "description": "A pulsing dot on any element (new, unread, live), with a label for screen readers; PingDot alone.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/ping.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "confetti",
+      "type": "registry:ui",
+      "title": "Confetti",
+      "description": "fireConfetti: a short confetti burst from an element or a point, with the Web Animations API; nothing with reduced motion.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/confetti.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "page-progress",
+      "type": "registry:ui",
+      "title": "PageProgress",
+      "description": "A thin bar at the top of the page while the next page loads.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/page-progress.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "typing-indicator",
+      "type": "registry:ui",
+      "title": "TypingIndicator",
+      "description": "Three bobbing dots while someone is typing, said once to screen readers.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/i18n"],
+      "files": [
+        {
+          "path": "src/components/ui/typing-indicator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scroll-effects",
+      "type": "registry:ui",
+      "title": "Scroll effects",
+      "description": "ScrollProgress (a reading bar) and Parallax (a layer that drifts as it crosses the screen), with CSS scroll-driven animations.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/scroll-effects.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "animated-background",
+      "type": "registry:ui",
+      "title": "AnimatedBackground",
+      "description": "A slowly moving grid, dots or aurora behind a hero or a sign-in page.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils"],
+      "files": [
+        {
+          "path": "src/components/ui/animated-background.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tilt-card",
+      "type": "registry:ui",
+      "title": "TiltCard",
+      "description": "A card that tilts toward the pointer, with an optional glare.",
+      "registryDependencies": ["@coreloom/theme", "@coreloom/utils", "@coreloom/reveal"],
+      "files": [
+        {
+          "path": "src/components/ui/tilt-card.tsx",
           "type": "registry:ui"
         }
       ]
@@ -2977,7 +3141,19 @@
         "@coreloom/text-effects",
         "@coreloom/marquee",
         "@coreloom/spotlight",
-        "@coreloom/view-transition"
+        "@coreloom/view-transition",
+        "@coreloom/animated-icon",
+        "@coreloom/status-button",
+        "@coreloom/animated-list",
+        "@coreloom/animated-height",
+        "@coreloom/tabs-indicator",
+        "@coreloom/ping",
+        "@coreloom/confetti",
+        "@coreloom/page-progress",
+        "@coreloom/typing-indicator",
+        "@coreloom/scroll-effects",
+        "@coreloom/animated-background",
+        "@coreloom/tilt-card"
       ],
       "dependencies": []
     },

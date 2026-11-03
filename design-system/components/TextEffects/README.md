@@ -1,8 +1,8 @@
 # Text effects
 
-Four ways to bring a line of text to life, for hero titles, empty states and labels of work in progress: `WordReveal`, `Typewriter`, `ShimmerText` and `GradientText`.
+Five ways to bring a line of text to life, for hero titles, empty states and labels of work in progress: `WordReveal`, `Typewriter`, `ShimmerText`, `GradientText` and `ScrambleText`.
 
-**The consumer provides**, for `WordReveal`, a `text` (split on spaces). Optional: `as` (`span` by default, `p`, `div`, or a heading level you own), `effect` (`up`, `blur`, `fade`), `step` (ms between words, default 60), `delay`, and `trigger` (`in-view` by default, or `mount`). `Typewriter` takes `text`, one phrase or an array. Optional: `speed` (ms per character, 45), `eraseSpeed` (25), `hold` (ms a phrase stays, 1600), `loop`, `caret` (default `true`), `frozen` (shows the first phrase whole) and `onDone`. `ShimmerText` wraps any text, with `duration` (seconds per sweep, 2). `GradientText` wraps any text, with `animate` (default `false`) and `duration` (6).
+**The consumer provides**, for `WordReveal`, a `text` (split on spaces). Optional: `as` (`span` by default, `p`, `div`, or a heading level you own), `effect` (`up`, `blur`, `fade`), `step` (ms between words, default 60), `delay`, and `trigger` (`in-view` by default, or `mount`). `Typewriter` takes `text`, one phrase or an array. Optional: `speed` (ms per character, 45), `eraseSpeed` (25), `hold` (ms a phrase stays, 1600), `loop`, `caret` (default `true`), `frozen` (shows the first phrase whole) and `onDone`. `ShimmerText` wraps any text, with `duration` (seconds per sweep, 2). `GradientText` wraps any text, with `animate` (default `false`) and `duration` (6). `ScrambleText` takes a `text` that its letters decode into, `duration` (900 ms) and `trigger` (`in-view` or `mount`).
 
 - Screen readers get the whole text once (all phrases of a typewriter, separated by commas), never letter by letter or word by word.
 - For people who ask for reduced motion the words are there at once, the typewriter shows its first phrase, the shimmer and the gradient stand still.

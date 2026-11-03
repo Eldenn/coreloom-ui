@@ -2,7 +2,7 @@
 
 Content that arrives as it scrolls into view: a fade, a short slide, a scale or a blur, once. `Stagger` does the same for a list or a grid, one item after the other.
 
-**The consumer provides**, for `Reveal`, the content as children. Optional: `effect` (`up` by default, `fade`, `down`, `left` comes in from the right, `right`, `scale`, `blur`), `delay` in ms, and the observer's `once` (default `true`), `threshold` (default `0.15`) and `rootMargin`. `Stagger` takes the items as children, the same `effect` and observer options, `step` (ms between items, default 70), `delay` and `itemClassName` for the element around each item. `useInView(ref, options)` and `useReducedMotion()` are exported for your own effects.
+**The consumer provides**, for `Reveal`, the content as children. Optional: `effect` (`up` by default, `fade`, `down`, `left` comes in from the right, `right`, `scale`, `blur`, or a mask that uncovers it: `wipe-up`, `wipe-down`, `wipe-left`, `wipe-right`, `circle`), `delay` in ms, and the observer's `once` (default `true`), `threshold` (default `0.15`) and `rootMargin`. `Stagger` takes the items as children, the same `effect` and observer options, `step` (ms between items, default 70), `delay` and `itemClassName` for the element around each item. `useInView(ref, options)` and `useReducedMotion()` are exported for your own effects.
 
 - It plays once, on the `duration-reveal` token (600 ms) with `ease-out`; past the tenth item `Stagger` stops adding delay, so a long list doesn't make people wait.
 - For people who ask for reduced motion the content is simply there: no slide, no fade.

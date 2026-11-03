@@ -58,10 +58,16 @@ export async function openStory(
   )
   // Popovers, toasts and progress bars animate in: axe would measure the contrast of a half-faded
   // element, and only on a busy machine where the animation is still running. Wait for the finite
-  // ones to end (spinners and carets loop forever: skip those).
+  // ones to end (spinners and carets loop forever: skip those; scroll-driven ones follow the
+  // scroll, not the clock, and never end on their own: skip those too).
   await page.waitForFunction(() =>
     document
       .getAnimations()
-      .every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+      .every(
+        (a) =>
+          a.playState !== 'running' ||
+          a.effect?.getTiming().iterations === Infinity ||
+          a.timeline !== document.timeline,
+      ),
   )
 }
