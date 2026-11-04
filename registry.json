@@ -3063,8 +3063,8 @@
     {
       "name": "all",
       "type": "registry:item",
-      "title": "Coreloom UI — everything",
-      "description": "Theme, utils and every Coreloom UI component in one install.",
+      "title": "Coreloom UI — every light component",
+      "description": "Theme, utils and every Coreloom UI component that needs no heavy library, in one install. Add `charts`, `editors` and `node-editor` for the rest, or install `everything`.",
       "registryDependencies": [
         "@coreloom/i18n",
         "@coreloom/alert",
@@ -3120,17 +3120,12 @@
         "@coreloom/resizable",
         "@coreloom/carousel",
         "@coreloom/drawer",
-        "@coreloom/chart",
         "@coreloom/sparkline",
         "@coreloom/donut-chart",
         "@coreloom/bar-list",
         "@coreloom/gauge",
         "@coreloom/heatmap",
         "@coreloom/funnel-chart",
-        "@coreloom/radar-chart",
-        "@coreloom/scatter-chart",
-        "@coreloom/treemap-chart",
-        "@coreloom/sankey-chart",
         "@coreloom/form",
         "@coreloom/date-range-picker",
         "@coreloom/tags-input",
@@ -3152,7 +3147,6 @@
         "@coreloom/masked-input",
         "@coreloom/color-picker",
         "@coreloom/rating",
-        "@coreloom/rich-text-editor",
         "@coreloom/markdown",
         "@coreloom/prompt-input",
         "@coreloom/reasoning",
@@ -3166,7 +3160,6 @@
         "@coreloom/model-field",
         "@coreloom/context-meter",
         "@coreloom/agent-graph",
-        "@coreloom/node-editor",
         "@coreloom/choice-card",
         "@coreloom/segmented-control",
         "@coreloom/unit-input",
@@ -3192,7 +3185,6 @@
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
-        "@coreloom/code-editor",
         "@coreloom/code-viewer",
         "@coreloom/json-viewer",
         "@coreloom/description-list",
@@ -3237,6 +3229,41 @@
         "@coreloom/scroll-effects",
         "@coreloom/animated-background",
         "@coreloom/tilt-card"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "charts",
+      "type": "registry:item",
+      "title": "Coreloom UI — Recharts charts",
+      "description": "The charts drawn with Recharts: Chart (area, bar, line, pie), RadarChart, ScatterChart, TreemapChart and SankeyChart. The light charts (Sparkline, DonutChart, BarList, Gauge, Heatmap, FunnelChart) are in `all`.",
+      "registryDependencies": [
+        "@coreloom/chart",
+        "@coreloom/radar-chart",
+        "@coreloom/scatter-chart",
+        "@coreloom/treemap-chart",
+        "@coreloom/sankey-chart"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "editors",
+      "type": "registry:item",
+      "title": "Coreloom UI — editors",
+      "description": "The editors built on large libraries: RichTextEditor (Tiptap) and CodeEditor (CodeMirror).",
+      "registryDependencies": ["@coreloom/rich-text-editor", "@coreloom/code-editor"],
+      "dependencies": []
+    },
+    {
+      "name": "everything",
+      "type": "registry:item",
+      "title": "Coreloom UI — everything",
+      "description": "Every Coreloom UI component in one install: `all`, `charts`, `editors` and `node-editor`.",
+      "registryDependencies": [
+        "@coreloom/all",
+        "@coreloom/charts",
+        "@coreloom/editors",
+        "@coreloom/node-editor"
       ],
       "dependencies": []
     },
