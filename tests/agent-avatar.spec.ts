@@ -87,3 +87,33 @@ test('agents with different seeds start their idle loops at different points', a
     .evaluateAll((els) => els.map((el) => getComputedStyle(el).getPropertyValue('--agent-phase')))
   expect(new Set(phases).size).toBeGreaterThan(3)
 })
+
+test('each shape draws its own outline, and the halo follows it', async ({ page }) => {
+  await open(page, 'components-ai-agent-avatar--shapes')
+  const avatars = page.locator('[data-slot=agent-avatar][data-variant=face]')
+  await expect(avatars).toHaveCount(6)
+  const shapes = await avatars.evaluateAll((els) => els.map((el) => el.dataset.shape))
+  expect(shapes).toEqual(['square', 'circle', 'hexagon', 'diamond', 'shield', 'blob'])
+  // Square and circle stay a CSS box; the others draw a path, filled with the tone.
+  await expect(
+    page.locator('[data-shape=square][data-variant=face] path[vector-effect]'),
+  ).toHaveCount(0)
+  await expect(
+    page.locator('[data-shape=hexagon][data-variant=face] path[vector-effect]'),
+  ).toHaveCount(1)
+  // The dots think, with a halo: on a drawn shape the halo is the same path, not a box.
+  await expect(page.locator('[data-shape=shield][data-variant=dots] path[fill=none]')).toHaveCount(
+    1,
+  )
+  await expect(page.locator('[data-shape=circle][data-variant=dots] path[fill=none]')).toHaveCount(
+    0,
+  )
+})
+
+test('shape="seed" gives a team several outlines', async ({ page }) => {
+  await open(page, 'components-ai-agent-avatar--seeded-shapes')
+  const shapes = await page
+    .locator('[data-slot=agent-avatar]')
+    .evaluateAll((els) => els.map((el) => el.dataset.shape))
+  expect(new Set(shapes).size).toBeGreaterThan(2)
+})

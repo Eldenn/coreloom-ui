@@ -5,8 +5,9 @@
 // opens its eyes wide while it listens, smiles when it is done, frowns on an error and dozes when
 // offline. `variant="dots"` is the quieter version: three dots that breathe, wave and bounce. Give
 // each agent a `seed` (its id or name) and it keeps the same colour, eyes and rhythm everywhere, so
-// the members of a team are told apart at a glance and never blink in step. The state is said in
-// words to screen readers; the motion stops for people who ask for reduced motion.
+// the members of a team are told apart at a glance and never blink in step. `shape` gives it another
+// outline (circle, hexagon, diamond, shield, blob), or `shape="seed"` lets the seed pick one. The state
+// is said in words to screen readers; the motion stops for people who ask for reduced motion.
 //
 //   <AgentAvatar name="Researcher" seed="researcher" state="thinking" />
 //   <AgentAvatar variant="dots" state={status === 'streaming' ? 'speaking' : 'idle'} decorative />
@@ -21,6 +22,7 @@ type AgentAvatarVariant = 'face' | 'dots'
 type AgentAvatarTone = 'primary' | 'neutral' | 'teal' | 'violet' | 'orange' | 'blue' | 'pink'
 type AgentAvatarEyes = 'round' | 'tall' | 'square'
 type AgentAvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+type AgentAvatarShape = 'square' | 'circle' | 'hexagon' | 'diamond' | 'shield' | 'blob'
 
 /**
  * The tones a seed picks from: chart colours, distinct from one another in both themes. Pink is
@@ -28,6 +30,7 @@ type AgentAvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
  */
 const SEED_TONES = ['teal', 'violet', 'orange', 'blue'] as const
 const SEED_EYES = ['round', 'tall', 'square'] as const
+const SEED_SHAPES = ['square', 'circle', 'hexagon', 'diamond', 'shield', 'blob'] as const
 
 /** A well-spread 32-bit hash of a seed: FNV-1a over its UTF-16 units, then a final mix. */
 function seedHash(seed: string) {
@@ -46,19 +49,21 @@ function seedHash(seed: string) {
 }
 
 /**
- * The colour, eyes and rhythm an agent gets from its seed (an id or a name): the same seed always
- * gives the same look, so an agent is recognisable wherever it appears. `phase` (ms) is where its
- * idle loops start, so that a team doesn't blink in step.
+ * The colour, eyes, shape and rhythm an agent gets from its seed (an id or a name): the same seed
+ * always gives the same look, so an agent is recognisable wherever it appears. `phase` (ms) is where
+ * its idle loops start, so that a team doesn't blink in step. `shape` is used with `shape="seed"`.
  */
 function agentAvatarLook(seed: string): {
   tone: AgentAvatarTone
   eyes: AgentAvatarEyes
+  shape: AgentAvatarShape
   phase: number
 } {
   const hash = seedHash(seed)
   return {
     tone: SEED_TONES[hash % SEED_TONES.length] ?? 'teal',
     eyes: SEED_EYES[(hash >>> 8) % SEED_EYES.length] ?? 'round',
+    shape: SEED_SHAPES[(hash >>> 24) % SEED_SHAPES.length] ?? 'square',
     phase: (hash >>> 12) % 5000,
   }
 }
@@ -73,6 +78,65 @@ const TONES: Record<AgentAvatarTone | 'danger' | 'muted', string> = {
   pink: 'border-chart-5/35 bg-chart-5/15 text-chart-5',
   danger: 'border-destructive/40 bg-destructive-subtle text-destructive',
   muted: 'border-border-subtle bg-inset text-muted-foreground',
+}
+
+// The same tones for a drawn outline (hexagon, diamond, shield, blob).
+const FILLS: Record<keyof typeof TONES, string> = {
+  primary: 'fill-primary-subtle stroke-primary/30',
+  neutral: 'fill-secondary stroke-border',
+  teal: 'fill-chart-1/15 stroke-chart-1/35',
+  violet: 'fill-chart-2/15 stroke-chart-2/35',
+  orange: 'fill-chart-3/15 stroke-chart-3/35',
+  blue: 'fill-chart-4/15 stroke-chart-4/35',
+  pink: 'fill-chart-5/15 stroke-chart-5/35',
+  danger: 'fill-destructive-subtle stroke-destructive/40',
+  muted: 'fill-inset stroke-border-subtle',
+}
+
+/** A closed path through `points` (in the 32 × 32 box) with each corner rounded by `r`. */
+function roundedPolygon(points: [number, number][], r: number) {
+  const n = points.length
+  const toward = (from: [number, number], to: [number, number]) => {
+    const [dx, dy] = [to[0] - from[0], to[1] - from[1]]
+    const k = r / Math.hypot(dx, dy)
+    return `${(from[0] + dx * k).toFixed(2)} ${(from[1] + dy * k).toFixed(2)}`
+  }
+  return (
+    points
+      .map((p, i) => {
+        const prev = points[(i + n - 1) % n] ?? p
+        const next = points[(i + 1) % n] ?? p
+        return `${i === 0 ? 'M' : 'L'}${toward(p, prev)} Q${String(p[0])} ${String(p[1])} ${toward(p, next)}`
+      })
+      .join(' ') + 'Z'
+  )
+}
+
+/** The outlines drawn in SVG; square and circle stay a CSS box. Each fits the 32 × 32 box, half a unit in. */
+const OUTLINES: Record<Exclude<AgentAvatarShape, 'square' | 'circle'>, string> = {
+  hexagon: roundedPolygon(
+    [
+      [16, 0.5],
+      [29.9, 8.5],
+      [29.9, 23.5],
+      [16, 31.5],
+      [2.1, 23.5],
+      [2.1, 8.5],
+    ],
+    3.2,
+  ),
+  diamond: roundedPolygon(
+    [
+      [16, 0.5],
+      [31.5, 16],
+      [16, 31.5],
+      [0.5, 16],
+    ],
+    4,
+  ),
+  shield:
+    'M5 1.5 H27 Q30.5 1.5 30.5 5 V14.5 Q30.5 25.5 16 31.5 Q1.5 25.5 1.5 14.5 V5 Q1.5 1.5 5 1.5Z',
+  blob: 'M16.5 1.5 C25 1.3 30.7 7 30.5 15 C30.3 23.5 25.5 30.6 16 30.5 C6.8 30.4 1.4 24.6 1.5 16.5 C1.6 7.6 8.2 1.7 16.5 1.5Z',
 }
 
 const SIZES: Record<AgentAvatarSize, string> = {
@@ -288,6 +352,7 @@ function AgentAvatar({
   seed,
   tone,
   eyes,
+  shape,
   size = 'md',
   animated = true,
   decorative = false,
@@ -304,6 +369,11 @@ function AgentAvatar({
   state?: AgentAvatarState
   /** face: eyes on a rounded square; dots: three dots in a circle. Default face. */
   variant?: AgentAvatarVariant
+  /**
+   * The outline: square (rounded, the face's default), circle (the dots' default), hexagon,
+   * diamond, shield or blob; `seed` lets the seed pick one, so each agent keeps its own.
+   */
+  shape?: AgentAvatarShape | 'seed'
   /** Picks a stable colour, eyes and rhythm for this agent (its id or name). Without it, the accent colour and round eyes. */
   seed?: string
   /** Overrides the seed's colour; `primary` follows the app's accent. */
@@ -319,7 +389,12 @@ function AgentAvatar({
 } & Omit<React.ComponentProps<'span'>, 'children'>) {
   const t = useCoreloomI18n().messages.ai.agentAvatar
   const look = seed === undefined ? undefined : agentAvatarLook(seed)
-  const shape = eyes ?? look?.eyes ?? 'round'
+  const eyeShape = eyes ?? look?.eyes ?? 'round'
+  const outline: AgentAvatarShape =
+    shape === 'seed'
+      ? (look?.shape ?? 'square')
+      : (shape ?? (variant === 'dots' ? 'circle' : 'square'))
+  const drawn = outline === 'square' || outline === 'circle' ? undefined : OUTLINES[outline]
   const colour =
     state === 'error' ? 'danger' : state === 'offline' ? 'muted' : (tone ?? look?.tone ?? 'primary')
   const shell =
@@ -337,14 +412,17 @@ function AgentAvatar({
       data-slot="agent-avatar"
       data-state={state}
       data-variant={variant}
+      data-shape={outline}
       {...(decorative
         ? { 'aria-hidden': true }
         : { role: 'img', 'aria-label': t.label(name ?? t.agent, t.state[state]) })}
       className={cn(
         'group/agent-avatar relative inline-flex shrink-0 items-center justify-center border select-none motion-reduce:animate-none',
         SIZES[size],
-        variant === 'dots' && 'rounded-full',
+        outline === 'circle' && 'rounded-full',
         TONES[colour],
+        // A drawn outline takes the fill and the border instead of the box.
+        drawn && 'border-transparent bg-transparent',
         shell,
         !animated && 'animate-none [&_*]:animate-none [&_*]:transition-none',
         className,
@@ -357,24 +435,51 @@ function AgentAvatar({
       }
       {...props}
     >
-      {halo && (
-        <span
+      {drawn && (
+        <svg
+          viewBox="0 0 32 32"
           aria-hidden
-          className={cn(
-            'pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-current opacity-0 motion-reduce:animate-none',
-            halo,
-          )}
-        />
+          className="pointer-events-none absolute -inset-px size-[calc(100%+2px)] overflow-visible"
+        >
+          <path d={drawn} vectorEffect="non-scaling-stroke" className={FILLS[colour]} />
+        </svg>
       )}
+      {halo &&
+        (drawn ? (
+          <svg
+            viewBox="0 0 32 32"
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute -inset-px size-[calc(100%+2px)] overflow-visible opacity-0 motion-reduce:animate-none',
+              halo,
+            )}
+          >
+            <path
+              d={drawn}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+        ) : (
+          <span
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-current opacity-0 motion-reduce:animate-none',
+              halo,
+            )}
+          />
+        ))}
       {/* Keyed by state: each change plays a short bounce instead of a jump. */}
       <svg
         key={state}
         viewBox="0 0 32 32"
         fill="currentColor"
         aria-hidden
-        className="size-full animate-agent-enter motion-reduce:animate-none"
+        className="relative size-full animate-agent-enter motion-reduce:animate-none"
       >
-        {variant === 'dots' ? <Dots state={state} /> : <Face state={state} eyes={shape} />}
+        {variant === 'dots' ? <Dots state={state} /> : <Face state={state} eyes={eyeShape} />}
       </svg>
     </span>
   )
@@ -384,6 +489,7 @@ export {
   AgentAvatar,
   type AgentAvatarEyes,
   agentAvatarLook,
+  type AgentAvatarShape,
   type AgentAvatarSize,
   type AgentAvatarState,
   type AgentAvatarTone,

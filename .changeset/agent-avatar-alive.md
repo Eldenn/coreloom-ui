@@ -6,7 +6,11 @@
 
 - `AgentAvatar` has a `listening` state (wide eyes, sound waves) and an `animated` prop
   (`false` shows the state without moving, for long lists).
-- `agentAvatarLook(seed)` also returns `phase`, where the agent's idle loops start.
+- `AgentAvatar` has a `shape` prop: `square` (rounded, the face's default), `circle` (the dots'
+  default), `hexagon`, `diamond`, `shield` or `blob`, or `seed` to let the seed pick one. The halo
+  and the error flash follow the outline. `Chat`'s `assistantAvatar` and `AgentPlan`'s `avatar`
+  take it too.
+- `agentAvatarLook(seed)` also returns `phase`, where the agent's idle loops start, and `shape`.
 
 ### Changed
 

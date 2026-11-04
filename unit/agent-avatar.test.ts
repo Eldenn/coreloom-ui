@@ -12,6 +12,7 @@ describe('agentAvatarLook', () => {
     const looks = Array.from({ length: 40 }, (_, i) => agentAvatarLook(`agent-${String(i)}`))
     expect(new Set(looks.map((l) => l.tone)).size).toBe(4)
     expect(new Set(looks.map((l) => l.eyes)).size).toBe(3)
+    expect(new Set(looks.map((l) => l.shape)).size).toBe(6)
   })
 
   it('starts each agent at its own point of the idle loops', () => {

@@ -117,7 +117,7 @@ interface AvatarOptions {
    */
   assistantAvatar?: Pick<
     React.ComponentProps<typeof AgentAvatar>,
-    'variant' | 'seed' | 'tone' | 'eyes'
+    'variant' | 'seed' | 'tone' | 'eyes' | 'shape'
   >
 }
 
