@@ -311,9 +311,6 @@
   "src/components/ui/agent-avatar.tsx": {
     "complexity": {
       "count": 1
-    },
-    "no-nested-ternary": {
-      "count": 3
     }
   },
   "src/components/ui/agent-graph.tsx": {
@@ -925,9 +922,6 @@
   "starter/src/components/ui/agent-avatar.tsx": {
     "complexity": {
       "count": 1
-    },
-    "no-nested-ternary": {
-      "count": 3
     }
   },
   "starter/src/components/ui/agent-graph.tsx": {
