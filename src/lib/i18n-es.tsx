@@ -921,6 +921,7 @@ export const es: Messages = {
         idle: 'en espera',
         thinking: 'pensando',
         speaking: 'respondiendo',
+        listening: 'escuchando',
         done: 'terminado',
         error: 'con error',
         offline: 'sin conexión',

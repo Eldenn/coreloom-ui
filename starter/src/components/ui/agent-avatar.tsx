@@ -1,11 +1,12 @@
 'use client'
 
-// Coreloom UI — AgentAvatar. A small animated face for an AI agent: it blinks while it waits, looks
-// around while it thinks, talks while it answers, smiles when it is done and frowns on an error.
-// `variant="dots"` is the quieter version: three dots that wave and bounce. Give each agent a `seed`
-// (its id or name) and it keeps the same colour and eyes everywhere, so the members of a team are
-// told apart at a glance. The state is said in words to screen readers; the motion stops for people
-// who ask for reduced motion.
+// Coreloom UI — AgentAvatar. A small animated face for an AI agent: it breathes, blinks and glances
+// around while it waits, looks up with a glowing halo while it thinks, talks while it answers,
+// opens its eyes wide while it listens, smiles when it is done, frowns on an error and dozes when
+// offline. `variant="dots"` is the quieter version: three dots that breathe, wave and bounce. Give
+// each agent a `seed` (its id or name) and it keeps the same colour, eyes and rhythm everywhere, so
+// the members of a team are told apart at a glance and never blink in step. The state is said in
+// words to screen readers; the motion stops for people who ask for reduced motion.
 //
 //   <AgentAvatar name="Researcher" seed="researcher" state="thinking" />
 //   <AgentAvatar variant="dots" state={status === 'streaming' ? 'speaking' : 'idle'} decorative />
@@ -14,7 +15,8 @@ import * as React from 'react'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-type AgentAvatarState = 'idle' | 'thinking' | 'speaking' | 'done' | 'error' | 'offline'
+type AgentAvatarState =
+  'idle' | 'thinking' | 'speaking' | 'listening' | 'done' | 'error' | 'offline'
 type AgentAvatarVariant = 'face' | 'dots'
 type AgentAvatarTone = 'primary' | 'neutral' | 'teal' | 'violet' | 'orange' | 'blue' | 'pink'
 type AgentAvatarEyes = 'round' | 'tall' | 'square'
@@ -27,27 +29,37 @@ type AgentAvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 const SEED_TONES = ['teal', 'violet', 'orange', 'blue'] as const
 const SEED_EYES = ['round', 'tall', 'square'] as const
 
-/**
- * The colour and eyes an agent gets from its seed (an id or a name): the same seed always gives
- * the same look, so an agent is recognisable wherever it appears.
- */
-function agentAvatarLook(seed: string): { tone: AgentAvatarTone; eyes: AgentAvatarEyes } {
-  // FNV-1a over the seed's UTF-16 units, then a final mix so that close seeds ("agent-1",
-  // "agent-2") land on different looks.
+/** A well-spread 32-bit hash of a seed: FNV-1a over its UTF-16 units, then a final mix. */
+function seedHash(seed: string) {
   let hash = 0x811c9dc5
   for (let i = 0; i < seed.length; i++) {
     hash ^= seed.charCodeAt(i)
     hash = Math.imul(hash, 0x01000193)
   }
+  // The final mix spreads close seeds ("agent-1", "agent-2") over different looks.
   hash ^= hash >>> 16
   hash = Math.imul(hash, 0x85ebca6b)
   hash ^= hash >>> 13
   hash = Math.imul(hash, 0xc2b2ae35)
   hash ^= hash >>> 16
-  hash >>>= 0
+  return hash >>> 0
+}
+
+/**
+ * The colour, eyes and rhythm an agent gets from its seed (an id or a name): the same seed always
+ * gives the same look, so an agent is recognisable wherever it appears. `phase` (ms) is where its
+ * idle loops start, so that a team doesn't blink in step.
+ */
+function agentAvatarLook(seed: string): {
+  tone: AgentAvatarTone
+  eyes: AgentAvatarEyes
+  phase: number
+} {
+  const hash = seedHash(seed)
   return {
     tone: SEED_TONES[hash % SEED_TONES.length] ?? 'teal',
     eyes: SEED_EYES[(hash >>> 8) % SEED_EYES.length] ?? 'round',
+    phase: (hash >>> 12) % 5000,
   }
 }
 
@@ -73,51 +85,74 @@ const SIZES: Record<AgentAvatarSize, string> = {
 
 // SVG parts move around their own centre.
 const own = '[transform-box:fill-box] origin-center motion-reduce:animate-none'
+// Idle loops start at the agent's own point in the cycle (a negative delay: already under way).
+const phased = '[animation-delay:calc(var(--agent-phase,0ms)*-1)]'
 
 /** One eye, open, centred on (cx, cy) of the 32 × 32 face. */
 function Eye({
   shape,
   cx,
   cy,
+  scale = 1,
   className,
-  style,
 }: {
   shape: AgentAvatarEyes
   cx: number
   cy: number
+  scale?: number
   className?: string
-  style?: React.CSSProperties
 }) {
-  if (shape === 'round')
-    return <circle cx={cx} cy={cy} r={3.4} className={className} style={style} />
-  const [w, h, r] = shape === 'tall' ? [4.2, 8.6, 2.1] : [6, 6, 1.6]
+  if (shape === 'round') return <circle cx={cx} cy={cy} r={3.4 * scale} className={className} />
+  const [w, h, r] = (shape === 'tall' ? [4.2, 8.6, 2.1] : [6, 6, 1.6]).map((n) => n * scale) as [
+    number,
+    number,
+    number,
+  ]
+  return <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={r} className={className} />
+}
+
+const line = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const
+
+/** A four-pointed spark, centred on (cx, cy). */
+function Spark({
+  cx,
+  cy,
+  r,
+  className,
+}: {
+  cx: number
+  cy: number
+  r: number
+  className?: string
+}) {
+  const k = r * 0.28
   return (
-    <rect
-      x={cx - w / 2}
-      y={cy - h / 2}
-      width={w}
-      height={h}
-      rx={r}
+    <path
+      d={`M${String(cx)} ${String(cy - r)} Q${String(cx + k)} ${String(cy - k)} ${String(cx + r)} ${String(cy)} Q${String(cx + k)} ${String(cy + k)} ${String(cx)} ${String(cy + r)} Q${String(cx - k)} ${String(cy + k)} ${String(cx - r)} ${String(cy)} Q${String(cx - k)} ${String(cy - k)} ${String(cx)} ${String(cy - r)}Z`}
       className={className}
-      style={style}
     />
   )
 }
 
 function Face({ state, eyes }: { state: AgentAvatarState; eyes: AgentAvatarEyes }) {
-  const line = {
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 2,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-  } as const
   if (state === 'done')
     return (
-      <g {...line}>
-        <path d="M8.5 16.5 Q11 12.5 13.5 16.5" />
-        <path d="M18.5 16.5 Q21 12.5 23.5 16.5" />
-      </g>
+      <>
+        <g {...line}>
+          <path d="M8.5 16.5 Q11 12.5 13.5 16.5" />
+          <path d="M18.5 16.5 Q21 12.5 23.5 16.5" />
+        </g>
+        {/* Cheeks, and a spark that pops out once. */}
+        <ellipse cx={7.5} cy={20.5} rx={2.2} ry={1.3} opacity={0.35} />
+        <ellipse cx={24.5} cy={20.5} rx={2.2} ry={1.3} opacity={0.35} />
+        <Spark cx={26} cy={6.5} r={3} className={cn(own, 'animate-agent-sparkle')} />
+      </>
     )
   if (state === 'error')
     return (
@@ -129,17 +164,28 @@ function Face({ state, eyes }: { state: AgentAvatarState; eyes: AgentAvatarEyes 
     )
   if (state === 'offline')
     return (
-      <g {...line}>
-        <path d="M8.5 15.5 H13.5" />
-        <path d="M18.5 15.5 H23.5" />
-      </g>
+      <>
+        <g {...line}>
+          <path d="M8.5 16 Q11 17.5 13.5 16" />
+          <path d="M18.5 16 Q21 17.5 23.5 16" />
+        </g>
+        <path
+          d="M22.5 5.5 H26 L22.5 9.5 H26"
+          {...line}
+          strokeWidth={1.4}
+          className={cn(own, 'animate-agent-snooze')}
+        />
+      </>
     )
   if (state === 'thinking')
     return (
-      <g className={cn(own, 'animate-agent-scan')}>
-        <Eye shape={eyes} cx={11} cy={13.5} />
-        <Eye shape={eyes} cx={21} cy={13.5} />
-      </g>
+      <>
+        <g className={cn(own, 'animate-agent-scan')}>
+          <Eye shape={eyes} cx={11} cy={13} />
+          <Eye shape={eyes} cx={21} cy={13} />
+        </g>
+        <Spark cx={26} cy={6} r={2.4} className={cn(own, 'animate-agent-twinkle')} />
+      </>
     )
   if (state === 'speaking')
     return (
@@ -158,11 +204,37 @@ function Face({ state, eyes }: { state: AgentAvatarState; eyes: AgentAvatarEyes 
         />
       </>
     )
+  if (state === 'listening')
+    return (
+      <>
+        <Eye shape={eyes} cx={11} cy={15} scale={1.18} />
+        <Eye shape={eyes} cx={21} cy={15} scale={1.18} />
+        {/* Sound coming in from the side. */}
+        <g {...line} strokeWidth={1.4}>
+          <path d="M26 13 Q27.4 15 26 17" className={cn(own, 'animate-agent-ripple')} />
+          <path
+            d="M28 11.5 Q30.2 15 28 18.5"
+            className={cn(own, 'animate-agent-ripple [animation-delay:300ms]')}
+          />
+        </g>
+      </>
+    )
+  // Idle: breathing, a glance aside now and then, and blinks, each agent on its own beat. Hovering
+  // the avatar makes it squint, pleased.
   return (
-    <>
-      <Eye shape={eyes} cx={11} cy={15} className={cn(own, 'animate-agent-blink')} />
-      <Eye shape={eyes} cx={21} cy={15} className={cn(own, 'animate-agent-blink')} />
-    </>
+    <g className={cn(own, phased, 'animate-agent-breathe')}>
+      <g className={cn(own, phased, 'animate-agent-glance')}>
+        <g
+          className={cn(
+            own,
+            'transition-transform duration-200 group-hover/agent-avatar:scale-y-[0.55]',
+          )}
+        >
+          <Eye shape={eyes} cx={11} cy={15} className={cn(own, phased, 'animate-agent-blink')} />
+          <Eye shape={eyes} cx={21} cy={15} className={cn(own, phased, 'animate-agent-blink')} />
+        </g>
+      </g>
+    </g>
   )
 }
 
@@ -170,8 +242,17 @@ function Dots({ state }: { state: AgentAvatarState }) {
   // A smile when it is done, smaller dots when offline, a row otherwise.
   const ys = state === 'done' ? [14.5, 17.5, 14.5] : [16, 16, 16]
   const r = state === 'offline' ? 1.6 : 2.2
-  const motion =
-    state === 'thinking' ? 'animate-agent-wave' : state === 'speaking' ? 'animate-agent-eq' : ''
+  const motion = {
+    idle: 'animate-agent-dot-breathe',
+    thinking: 'animate-agent-wave',
+    speaking: 'animate-agent-eq',
+    listening: 'animate-agent-dot-listen',
+    done: '',
+    error: '',
+    offline: '',
+  }[state]
+  // Speaking dots run at slightly different speeds, so the bounce never settles into a pattern.
+  const speeds = ['0.8s', '0.65s', '0.95s']
   return (
     <>
       {[10, 16, 22].map((cx, i) => (
@@ -183,7 +264,17 @@ function Dots({ state }: { state: AgentAvatarState }) {
           height={r * 2}
           rx={r}
           className={cn(own, motion)}
-          style={motion ? { animationDelay: `${String(i * 150)}ms` } : undefined}
+          style={
+            motion
+              ? {
+                  animationDelay:
+                    state === 'idle'
+                      ? `calc(var(--agent-phase, 0ms) * -1 + ${String(i * 400)}ms)`
+                      : `${String(i * 150)}ms`,
+                  animationDuration: state === 'speaking' ? speeds[i] : undefined,
+                }
+              : undefined
+          }
         />
       ))}
     </>
@@ -198,17 +289,22 @@ function AgentAvatar({
   tone,
   eyes,
   size = 'md',
+  animated = true,
   decorative = false,
   className,
+  style,
   ...props
 }: {
   /** The agent's name, said with its state to screen readers ("Researcher, thinking"). Default "AI agent". */
   name?: string
-  /** idle (blinks), thinking (looks around), speaking (talks), done (smiles), error, offline. Default idle. */
+  /**
+   * idle (breathes, blinks, glances), thinking (looks up, halo), speaking (talks, halo), listening
+   * (wide eyes, sound waves), done (smiles), error (shakes), offline (dozes). Default idle.
+   */
   state?: AgentAvatarState
   /** face: eyes on a rounded square; dots: three dots in a circle. Default face. */
   variant?: AgentAvatarVariant
-  /** Picks a stable colour and eyes for this agent (its id or name). Without it, the accent colour and round eyes. */
+  /** Picks a stable colour, eyes and rhythm for this agent (its id or name). Without it, the accent colour and round eyes. */
   seed?: string
   /** Overrides the seed's colour; `primary` follows the app's accent. */
   tone?: AgentAvatarTone
@@ -216,6 +312,8 @@ function AgentAvatar({
   eyes?: AgentAvatarEyes
   /** xs 16 px, sm 24, md 32 (default), lg 40, xl 56. */
   size?: AgentAvatarSize
+  /** false: the face shows its state without moving (long lists, a print view). Default true. */
+  animated?: boolean
   /** Hide it from screen readers when the name and state are already said next to it. */
   decorative?: boolean
 } & Omit<React.ComponentProps<'span'>, 'children'>) {
@@ -226,6 +324,14 @@ function AgentAvatar({
     state === 'error' ? 'danger' : state === 'offline' ? 'muted' : (tone ?? look?.tone ?? 'primary')
   const shell =
     state === 'error' ? 'animate-agent-shake' : state === 'done' ? 'animate-agent-pop' : ''
+  const halo =
+    state === 'thinking' || state === 'speaking'
+      ? 'animate-agent-halo'
+      : state === 'listening'
+        ? 'animate-agent-halo [animation-duration:2.6s]'
+        : state === 'error'
+          ? 'animate-agent-flash'
+          : ''
   return (
     <span
       data-slot="agent-avatar"
@@ -235,16 +341,39 @@ function AgentAvatar({
         ? { 'aria-hidden': true }
         : { role: 'img', 'aria-label': t.label(name ?? t.agent, t.state[state]) })}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center border select-none motion-reduce:animate-none',
+        'group/agent-avatar relative inline-flex shrink-0 items-center justify-center border select-none motion-reduce:animate-none',
         SIZES[size],
         variant === 'dots' && 'rounded-full',
         TONES[colour],
         shell,
+        !animated && 'animate-none [&_*]:animate-none [&_*]:transition-none',
         className,
       )}
+      style={
+        {
+          '--agent-phase': `${String(look?.phase ?? 0)}ms`,
+          ...style,
+        } as React.CSSProperties
+      }
       {...props}
     >
-      <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden className="size-full">
+      {halo && (
+        <span
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute -inset-px rounded-[inherit] border-2 border-current opacity-0 motion-reduce:animate-none',
+            halo,
+          )}
+        />
+      )}
+      {/* Keyed by state: each change plays a short bounce instead of a jump. */}
+      <svg
+        key={state}
+        viewBox="0 0 32 32"
+        fill="currentColor"
+        aria-hidden
+        className="size-full animate-agent-enter motion-reduce:animate-none"
+      >
         {variant === 'dots' ? <Dots state={state} /> : <Face state={state} eyes={shape} />}
       </svg>
     </span>

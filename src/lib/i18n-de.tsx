@@ -929,6 +929,7 @@ export const de: Messages = {
         idle: 'bereit',
         thinking: 'denkt nach',
         speaking: 'antwortet',
+        listening: 'hört zu',
         done: 'fertig',
         error: 'Fehler',
         offline: 'offline',

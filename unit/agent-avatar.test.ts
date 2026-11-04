@@ -14,6 +14,15 @@ describe('agentAvatarLook', () => {
     expect(new Set(looks.map((l) => l.eyes)).size).toBe(3)
   })
 
+  it('starts each agent at its own point of the idle loops', () => {
+    const phases = Array.from({ length: 20 }, (_, i) => agentAvatarLook(`agent-${String(i)}`).phase)
+    expect(new Set(phases).size).toBeGreaterThan(15)
+    for (const p of phases) {
+      expect(p).toBeGreaterThanOrEqual(0)
+      expect(p).toBeLessThan(5000)
+    }
+  })
+
   it('never picks pink, kept apart from the error colour', () => {
     for (let i = 0; i < 200; i++) expect(agentAvatarLook(String(i)).tone).not.toBe('pink')
   })

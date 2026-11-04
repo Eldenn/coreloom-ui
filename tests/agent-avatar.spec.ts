@@ -58,3 +58,32 @@ test('the plan’s avatar smiles when every step is done', async ({ page }) => {
     'done',
   )
 })
+
+test('a listening agent says so', async ({ page }) => {
+  await open(page, 'components-ai-agent-avatar--states')
+  await expect(page.getByRole('img', { name: 'Researcher, listening' })).toHaveCount(2)
+})
+
+test('animated={false} shows every state without moving', async ({ page }) => {
+  await open(page, 'components-ai-agent-avatar--still')
+  await expect(page.locator('[data-slot=agent-avatar]')).toHaveCount(7)
+  const moving = await page.evaluate(
+    () =>
+      document
+        .getAnimations()
+        .filter(
+          (a) =>
+            a.effect instanceof KeyframeEffect &&
+            a.effect.target?.closest('[data-slot=agent-avatar]'),
+        ).length,
+  )
+  expect(moving).toBe(0)
+})
+
+test('agents with different seeds start their idle loops at different points', async ({ page }) => {
+  await open(page, 'components-ai-agent-avatar--team')
+  const phases = await page
+    .locator('[data-slot=agent-avatar]')
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).getPropertyValue('--agent-phase')))
+  expect(new Set(phases).size).toBeGreaterThan(3)
+})

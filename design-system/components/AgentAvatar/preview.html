@@ -1,4 +1,4 @@
-<!-- @dsCard group="AI" height=140 subtitle="AgentAvatar · face or dots: idle, thinking, speaking, done, error, offline" -->
+<!-- @dsCard group="AI" height=140 subtitle="AgentAvatar · face or dots: idle, thinking, speaking, listening, done, error, offline" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +17,7 @@
       if (!UI || !UI.AgentAvatar || !window.ReactDOM) return setTimeout(render, 50);
       const h = React.createElement;
       const { AgentAvatar } = UI;
-      const states = ['idle', 'thinking', 'speaking', 'done', 'error', 'offline'];
+      const states = ['idle', 'thinking', 'speaking', 'listening', 'done', 'error', 'offline'];
       function Row(variant) {
         return h('div', { style: { display: 'flex', gap: 16 } },
           states.map((s) => h(AgentAvatar, { key: s, name: 'Researcher', seed: 'researcher', variant, state: s, size: 'lg' })));

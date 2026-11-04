@@ -4,7 +4,15 @@ import * as React from 'react'
 import { AgentAvatar, type AgentAvatarState } from '@/components/ui/agent-avatar'
 import { Button } from '@/components/ui/button'
 
-const STATES: AgentAvatarState[] = ['idle', 'thinking', 'speaking', 'done', 'error', 'offline']
+const STATES: AgentAvatarState[] = [
+  'idle',
+  'thinking',
+  'speaking',
+  'listening',
+  'done',
+  'error',
+  'offline',
+]
 
 const meta = {
   title: 'Components/AI/Agent avatar',
@@ -20,13 +28,14 @@ const meta = {
       options: [undefined, 'primary', 'neutral', 'teal', 'violet', 'orange', 'blue', 'pink'],
     },
     eyes: { control: 'inline-radio', options: [undefined, 'round', 'tall', 'square'] },
+    animated: { control: 'boolean' },
   },
   parameters: {
     layout: 'padded',
     docs: {
       description: {
         component:
-          'A small animated face for an AI agent. The consumer provides its `name` (said with the state to screen readers), a `state` (`idle`, `thinking`, `speaking`, `done`, `error`, `offline`), and a `seed` (the agent’s id) for a stable colour and eyes; optionally `variant` (`face` or `dots`), `tone`, `eyes`, `size` and `decorative`.',
+          'A small animated face for an AI agent. The consumer provides its `name` (said with the state to screen readers), a `state` (`idle`, `thinking`, `speaking`, `listening`, `done`, `error`, `offline`), and a `seed` (the agent’s id) for a stable colour and eyes; optionally `variant` (`face` or `dots`), `tone`, `eyes`, `size`, `animated` and `decorative`.',
       },
     },
   },
@@ -39,7 +48,7 @@ export const Default: Story = {}
 /** Every state, in both variants. */
 export const States: Story = {
   render: () => (
-    <div className="grid w-fit grid-cols-[auto_repeat(6,minmax(0,1fr))] items-center gap-x-6 gap-y-4">
+    <div className="grid w-fit grid-cols-[auto_repeat(7,minmax(0,1fr))] items-center gap-x-6 gap-y-4">
       <span />
       {STATES.map((s) => (
         <span key={s} className="text-center font-mono text-[11px] text-muted-foreground">
@@ -81,6 +90,17 @@ export const Team: Story = {
       </ul>
     )
   },
+}
+
+/** Still: `animated={false}` shows each state without moving, for long lists. */
+export const Still: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-3">
+      {STATES.map((s) => (
+        <AgentAvatar key={s} name="Writer" seed="writer" state={s} size="lg" animated={false} />
+      ))}
+    </div>
+  ),
 }
 
 export const Sizes: Story = {
