@@ -44,6 +44,8 @@ pnpm lint:prune              # drop eslint-suppressions.json entries for code th
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
+pnpm registry:size           # gzip cost of every item; --check against build/registry-sizes.json (CI), --write after an intended change
+pnpm docs:check              # guides ↔ code: props a guide names exist, props a component declares are in its guide
 pnpm llms                    # public/llms.txt, llms-full.txt and guides/ from registry.json + guides
 pnpm brand "#ff5a1f" --name orange > brand.css   # an accent family from one brand colour
 pnpm changeset               # describe a change for the next release (changeset:check in CI)
@@ -80,13 +82,16 @@ A change is finished when all of this is true:
    never by weakening a test or tagging a story `no-test`.
 2. **Every new component or block** has:
    - its file(s) in `src/components/ui/` or `src/components/`;
-   - an item in `registry.json` (and in `all` for ui items), with exact `dependencies` and
-     `registryDependencies` — derive them from the file's imports;
+   - an item in `registry.json` (and in `all` for ui items, or in `charts` / `editors` when it pulls
+     Recharts, Tiptap, CodeMirror or React Flow), with exact `dependencies` and
+     `registryDependencies` — derive them from the file's imports — and its size budget
+     (`pnpm registry:size --write`);
    - stories (states below), a guide (`.md` + `.mdx`), and tests for any behaviour;
    - exports in `build/artifact-entry.ts` and its name in `COMPONENTS` in `build/build-artifact.mjs`;
    - a design-system card: `design-system/components/<Name>/preview.html` and `README.md`.
 3. **Changed components** have their guide updated: every prop, default and behaviour a guide states
-   must match the code. Re-read the guide after changing an API.
+   must match the code. Re-read the guide after changing an API; `pnpm docs:check` (CI) fails on a prop a guide names
+   that the code doesn't have, and on a prop the component declares that its guide never names.
 4. **A changeset** (`pnpm changeset`, or a file in `.changeset/`) says what changed for someone who
    installed the item, under Added / Changed / Fixed, and **Upgrading** when they must do something.
    Don't edit `CHANGELOG.md`: the release writes it from the changesets.

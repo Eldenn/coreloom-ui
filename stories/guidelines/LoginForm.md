@@ -7,7 +7,7 @@ Sign-in, sign-up and code verification forms with a centered layout, as one inst
 **The consumer provides**:
 
 - `onSubmit(values)` on each form: `{ email, password }`, `{ name, email, password }` or the 6-digit code. It's called only with valid values (email format, required fields, password length, six digits); return a promise and the button shows a spinner until it settles.
-- `error` with the server's message, shown as a destructive `Alert` above the fields. `pending` adds a busy state you control (an OAuth redirect). `defaultEmail` prefills sign-in.
+- `error` with the server's message, shown as a destructive `Alert` above the fields. `pending` adds a busy state you control (an OAuth redirect). `defaultEmail` prefills sign-in. `title` and `description` replace the heading and the line under it.
 - On login and sign-up: `providers` (`{ id, label, icon }`) and `onProvider` for OAuth buttons; `forgotPasswordHref`, `signUpHref`, `signInHref` and `terms`.
 - On the code form: `destination` (masked), `onResend` and `resendIn` (seconds).
 - Wrap a form in `<AuthLayout brand footer>` for the full page: the `bg-base` backdrop with the faint cyan top-light, the brand on top and small print below.
