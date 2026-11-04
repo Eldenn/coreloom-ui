@@ -147,7 +147,7 @@
       "name": "uml",
       "type": "registry:lib",
       "title": "UML model and Mermaid",
-      "description": "The typed model of class, sequence, state, entity–relationship and C4 diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (tolerant: problems by line), and the layout UmlDiagram draws with. No mermaid dependency.",
+      "description": "The typed model of class, sequence, state, entity–relationship and C4 diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (tolerant: problems by line), editing functions (add, connect, rename, change properties, delete) and the layout UmlDiagram draws with. No mermaid dependency.",
       "dependencies": ["zod@^4"],
       "files": [
         {
@@ -192,6 +192,14 @@
         },
         {
           "path": "src/lib/uml-sequence.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-edit.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-edit-fields.ts",
           "type": "registry:lib"
         }
       ]
@@ -2307,7 +2315,7 @@
       "name": "toolbar",
       "type": "registry:ui",
       "title": "Toolbar",
-      "description": "A row of tools that is one Tab stop with arrow-key navigation: buttons, toggles, links, separators and a More menu.",
+      "description": "A row of tools that is one Tab stop with arrow-key navigation: buttons, toggles, links, separators, named menus (Add ▾) and a More menu.",
       "dependencies": ["lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -3097,7 +3105,7 @@
       "name": "uml-diagram",
       "type": "registry:ui",
       "title": "UmlDiagram",
-      "description": "Software diagrams from the UML model: class, state, ER and C4 on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; draggable with `editable`), sequence diagrams as an SVG with the steps as a list for screen readers.",
+      "description": "Software diagrams from the UML model: class, state, ER and C4 on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; with `editable`, draggable, and selection, drag-to-connect and Delete for apps that edit the model), sequence diagrams as an SVG with the steps as a list for screen readers.",
       "dependencies": ["@xyflow/react@^12", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -3145,7 +3153,7 @@
       "name": "all",
       "type": "registry:item",
       "title": "Coreloom UI — every light component",
-      "description": "Theme, utils and every Coreloom UI component that needs no heavy library, in one install. Add `charts`, `editors` and `node-editor` for the rest, or install `everything`.",
+      "description": "Theme, utils and every Coreloom UI component that needs no heavy library, in one install. Add `charts`, `editors`, `node-editor` and `uml-diagram` for the rest, or install `everything`.",
       "registryDependencies": [
         "@coreloom/i18n",
         "@coreloom/alert",
@@ -3309,8 +3317,7 @@
         "@coreloom/typing-indicator",
         "@coreloom/scroll-effects",
         "@coreloom/animated-background",
-        "@coreloom/tilt-card",
-        "@coreloom/uml-diagram"
+        "@coreloom/tilt-card"
       ],
       "dependencies": []
     },
@@ -3340,12 +3347,13 @@
       "name": "everything",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
-      "description": "Every Coreloom UI component in one install: `all`, `charts`, `editors` and `node-editor`.",
+      "description": "Every Coreloom UI component in one install: `all`, `charts`, `editors`, `node-editor` and `uml-diagram`.",
       "registryDependencies": [
         "@coreloom/all",
         "@coreloom/charts",
         "@coreloom/editors",
-        "@coreloom/node-editor"
+        "@coreloom/node-editor",
+        "@coreloom/uml-diagram"
       ],
       "dependencies": []
     },
@@ -4238,7 +4246,7 @@
       "name": "diagram-editor",
       "type": "registry:block",
       "title": "Diagram editor",
-      "description": "Software diagrams as text: Mermaid (class, sequence, state, ER, C4) or UML JSON beside the drawing, problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy and download.",
+      "description": "Software diagrams as text: Mermaid (class, sequence, state, ER, C4) or UML JSON beside the drawing, with drawing tools (add elements, connect, delete, undo, redo) and a properties panel that change the model and rewrite the text; problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy and download.",
       "categories": ["application"],
       "dependencies": ["lucide-react"],
       "registryDependencies": [
@@ -4248,13 +4256,31 @@
         "@coreloom/uml",
         "@coreloom/uml-diagram",
         "@coreloom/code-editor",
-        "@coreloom/button",
+        "@coreloom/toolbar",
         "@coreloom/dropdown-menu",
-        "@coreloom/toggle-group"
+        "@coreloom/popover",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/label",
+        "@coreloom/native-select",
+        "@coreloom/textarea",
+        "@coreloom/checkbox"
       ],
       "files": [
         {
           "path": "src/components/diagram-editor.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-tools.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-properties.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/use-diagram-editing.ts",
           "type": "registry:component"
         }
       ]
