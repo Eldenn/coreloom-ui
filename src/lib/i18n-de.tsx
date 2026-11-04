@@ -2409,6 +2409,8 @@ export const de: Messages = {
       c4: (from, to) => `${from} nutzt ${to}`,
     },
     labelled: (relation, label) => `${relation}: ${label}`,
+    named: (role, name) => `${role}: ${name}`,
+    withTechnology: (kind, technology) => `${kind}: ${technology}`,
     cardinality: {
       zeroOrOne: 'null oder eins',
       exactlyOne: 'genau eins',

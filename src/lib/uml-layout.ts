@@ -93,6 +93,13 @@ function ranks(ids: readonly string[], edges: readonly LayoutEdge[]): Map<string
         rank.set(e.target, Math.max(rank.get(e.target) ?? 0, (rank.get(id) ?? 0) + 1))
     }
   }
+  // A node nothing points to sits just above the nearest thing it points to, not on the top row:
+  // its lines stay short instead of crossing the layers in between.
+  for (const id of ids) {
+    if (kept.some((e) => e.target === id)) continue
+    const below = kept.filter((e) => e.source === id).map((e) => rank.get(e.target) ?? 0)
+    if (below.length) rank.set(id, Math.max(rank.get(id) ?? 0, Math.min(...below) - 1))
+  }
   return rank
 }
 

@@ -254,8 +254,8 @@ interface C4Diagram {
   layout?: UmlLayout
 }
 
-type UmlDiagram = ClassDiagram | SequenceDiagram | StateDiagram | ErDiagram | C4Diagram
-type UmlDiagramKind = UmlDiagram['kind']
+type UmlSpec = ClassDiagram | SequenceDiagram | StateDiagram | ErDiagram | C4Diagram
+type UmlDiagramKind = UmlSpec['kind']
 
 /**
  * Something the parser couldn't read, or read and set aside. `code` says which (the UI words it
@@ -272,7 +272,7 @@ interface UmlProblem {
 
 /** What parsing gives: the diagram it could read (null when it couldn't tell which), and problems. */
 type UmlParseResult =
-  { diagram: UmlDiagram; problems: UmlProblem[] } | { diagram: null; problems: UmlProblem[] }
+  { diagram: UmlSpec; problems: UmlProblem[] } | { diagram: null; problems: UmlProblem[] }
 
 // ── JSON ────────────────────────────────────────────────────────────────────────────────────────
 
@@ -507,12 +507,12 @@ function parseUmlValue(raw: unknown): UmlParseResult {
 }
 
 /** The diagram as JSON text, two-space indented, with its layout when there is one. */
-function toUmlJson(diagram: UmlDiagram): string {
+function toUmlJson(diagram: UmlSpec): string {
   return JSON.stringify(diagram, null, 2)
 }
 
 /** The ids a diagram's layout can hold positions for (every element it draws as a node). */
-function umlElementIds(diagram: UmlDiagram): string[] {
+function umlElementIds(diagram: UmlSpec): string[] {
   switch (diagram.kind) {
     case 'class':
       return diagram.classes.map((c) => c.id)
@@ -557,7 +557,6 @@ export {
   type StateTransition,
   toUmlJson,
   type UmlClass,
-  type UmlDiagram,
   type UmlDiagramKind,
   type UmlDirection,
   umlElementIds,
@@ -566,5 +565,6 @@ export {
   type UmlParseResult,
   type UmlPoint,
   type UmlProblem,
+  type UmlSpec,
   type UmlState,
 }

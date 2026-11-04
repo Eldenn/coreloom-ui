@@ -1,0 +1,19 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/uml-diagram.stories'
+import guide from './UmlDiagram.md?raw'
+
+<Meta title="Guidelines/Diagrams/UML Diagram" />
+
+<Markdown>{guide}</Markdown>
+
+## Class diagram
+
+<Canvas of={Stories.Class} />
+
+## Sequence diagram
+
+<Canvas of={Stories.Sequence} />
+
+## C4 containers
+
+<Canvas of={Stories.C4Container} />

@@ -327,8 +327,10 @@ function layoutSequence(d: SequenceDiagram): SequenceLayout {
     for (let i = open.length; i > 0; i--) endActivation(w, id, bottom - 8)
   // Blocks are drawn first so messages sit on top; inner blocks after outer ones.
   const blocks = w.items.filter((i) => i.type === 'block').sort((a, b) => a.depth - b.depth)
-  const rest = w.items.filter((i) => i.type !== 'block')
-  const items = [...blocks, ...rest]
+  // Activation bars next, under the messages and their numbers.
+  const bars = w.items.filter((i) => i.type === 'activation')
+  const rest = w.items.filter((i) => i.type !== 'block' && i.type !== 'activation')
+  const items = [...blocks, ...bars, ...rest]
   const right = Math.max(
     ...cols.map((c) => c.x + c.width / 2),
     ...items.map((i) => ('width' in i ? i.x + i.width : 0)),

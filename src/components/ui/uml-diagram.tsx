@@ -21,7 +21,7 @@ import {
   nodeLabel,
 } from '@/components/ui/uml-diagram-parts'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
-import type { SequenceDiagram, UmlDiagram as UmlDiagramModel, UmlLayout } from '@/lib/uml'
+import type { SequenceDiagram, UmlLayout, UmlSpec } from '@/lib/uml'
 import {
   type DiagramEdge,
   type DiagramGraph,
@@ -32,7 +32,7 @@ import { type LayoutBox, layoutDiagram } from '@/lib/uml-layout'
 import { cn } from '@/lib/utils'
 
 interface UmlDiagramProps {
-  diagram: UmlDiagramModel
+  diagram: UmlSpec
   /** People can drag elements (and arrange them again). Default: false. */
   editable?: boolean
   /** The positions after a drag or "Arrange", to keep in the diagram's `layout`. */
@@ -49,7 +49,7 @@ interface UmlDiagramProps {
 type DiagramText = Messages['diagram']
 
 /** The diagrams drawn on the canvas (every kind but sequence). */
-type GraphDiagram = Exclude<UmlDiagramModel, SequenceDiagram>
+type GraphDiagram = Exclude<UmlSpec, SequenceDiagram>
 
 /** Frames before what they hold: React Flow needs a parent before its children. */
 function byDepth(nodes: readonly DiagramNode[]): DiagramNode[] {
@@ -137,7 +137,7 @@ function flowEdges(graph: DiagramGraph, markers: string, t: DiagramText): Diagra
       source: edge.source,
       target: edge.target,
       type: 'uml',
-      data: { edge, markers, offset },
+      data: { edge, markers, offset, flow: graph.direction },
       ariaLabel: edgeLabel(edge, names, t),
     }
   })
