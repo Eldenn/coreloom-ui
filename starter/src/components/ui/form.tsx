@@ -136,6 +136,30 @@ function describedBy(meta: Meta, description?: React.ReactNode) {
   )
 }
 
+/** What every labelled field wires the same way: the shell's props, and the control's id and ARIA
+ *  plus the props the caller passed through. The field adds its own value and change handler. */
+function useVerticalField<P extends VerticalShellProps>({
+  label,
+  description,
+  className,
+  labelAction,
+  hideLabel,
+  ...rest
+}: P) {
+  const meta = useFieldMeta()
+  return {
+    meta,
+    field: meta.field,
+    shell: { meta, label, description, className, labelAction, hideLabel },
+    control: {
+      ...rest,
+      id: meta.id,
+      'aria-invalid': meta.invalid || undefined,
+      'aria-describedby': describedBy(meta, description),
+    },
+  }
+}
+
 /** Label on top, control, then the description and the error. */
 function VerticalShell({
   meta,
@@ -424,77 +448,49 @@ function SelectField({
   )
 }
 
-function ComboboxField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof Combobox>,
-    'value' | 'defaultValue' | 'onValueChange' | 'id' | 'className' | 'aria-invalid'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function ComboboxField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof Combobox>,
+      'value' | 'defaultValue' | 'onValueChange' | 'id' | 'className' | 'aria-invalid'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <Combobox
-        id={meta.id}
+        {...control}
         value={value ?? ''}
         onValueChange={(v) => {
           field.handleChange(v)
           field.handleBlur()
         }}
-        aria-invalid={meta.invalid || undefined}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
-function DateField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof DatePicker>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function DateField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof DatePicker>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as Date | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <DatePicker
-        id={meta.id}
+        {...control}
         value={value}
         onValueChange={(d) => {
           field.handleChange(d)
@@ -502,477 +498,314 @@ function DateField({
           if (!props.typing) field.handleBlur()
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
-function DateRangeField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof DateRangePicker>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function DateRangeField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof DateRangePicker>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as DateRange | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <DateRangePicker
-        id={meta.id}
+        {...control}
         value={value ?? { from: undefined }}
         onValueChange={(r) => {
           field.handleChange(r)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** Tags typed into one field (string[]). */
-function TagsField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof TagsInput>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function TagsField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof TagsInput>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string[] | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <TagsInput
-        id={meta.id}
+        {...control}
         value={value ?? []}
         onValueChange={(tags) => {
           field.handleChange(tags)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** Several values from a known list (string[]). */
-function MultiSelectField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof MultiSelect>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function MultiSelectField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof MultiSelect>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string[] | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <MultiSelect
-        id={meta.id}
+        {...control}
         value={value ?? []}
         onValueChange={(v) => {
           field.handleChange(v)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** An amount (number | null, in major units) in `currency`. */
-function MoneyField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof MoneyInput>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function MoneyField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof MoneyInput>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as number | null | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <MoneyInput
-        id={meta.id}
+        {...control}
         value={value ?? null}
         onValueChange={(n) => {
           field.handleChange(n)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A phone number, as E.164 ("+33612345678"). Validate with `isValidPhone`. */
-function PhoneField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof PhoneInput>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function PhoneField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof PhoneInput>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <PhoneInput
-        id={meta.id}
+        {...control}
         value={value ?? ''}
         onValueChange={(v) => {
           field.handleChange(v)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A number (or null when empty) from NumberInput: units, percents, bounds and steps as props. */
-function NumberField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof NumberInput>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'name'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function NumberField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof NumberInput>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'name'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as number | null | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <NumberInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? null}
         onValueChange={(n) => {
           field.handleChange(n)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A password with a show/hide toggle. Put a "Forgot password?" link in `labelAction`. */
-function PasswordField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof PasswordInput>,
-    'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function PasswordField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof PasswordInput>,
+      'value' | 'defaultValue' | 'onChange' | 'onBlur' | 'id' | 'name' | 'className'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <PasswordInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? ''}
         onChange={(e) => {
           field.handleChange(e.target.value)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A time of day as "HH:mm" (or undefined), typed or picked. */
-function TimeField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof TimePicker>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'name'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function TimeField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof TimePicker>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'name'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <TimePicker
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value}
         onValueChange={(t) => {
           field.handleChange(t)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A day and a time as one Date (or undefined): DatePicker and TimePicker side by side. */
-function DateTimeField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof DateTimePicker>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function DateTimeField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof DateTimePicker>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as Date | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <DateTimePicker
-        id={meta.id}
+        {...control}
         value={value}
         onValueChange={(d) => {
           field.handleChange(d)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** Files from a drop zone (File[]). Type and size limits refuse files with their own message. */
-function FileField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps &
-  Omit<
-    React.ComponentProps<typeof FileUpload>,
-    | 'value'
-    | 'defaultValue'
-    | 'onValueChange'
-    | 'onBlur'
-    | 'id'
-    | 'className'
-    | 'aria-invalid'
-    | 'aria-describedby'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function FileField(
+  props: VerticalShellProps &
+    Omit<
+      React.ComponentProps<typeof FileUpload>,
+      | 'value'
+      | 'defaultValue'
+      | 'onValueChange'
+      | 'onBlur'
+      | 'id'
+      | 'className'
+      | 'aria-invalid'
+      | 'aria-describedby'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as File[] | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <FileUpload
-        id={meta.id}
+        {...control}
         value={value ?? []}
         onValueChange={(files) => {
           field.handleChange(files)
           field.handleBlur()
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
@@ -1042,73 +875,37 @@ type ControlProps<C extends React.JSXElementConstructor<any>, Extra extends stri
 >
 
 /** IBAN, card, SIREN, SIRET or your own mask. The value is the raw characters. */
-function MaskedField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof MaskedInput, 'onChange'>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function MaskedField(props: VerticalShellProps & ControlProps<typeof MaskedInput, 'onChange'>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | null | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <MaskedInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? ''}
         onValueChange={(raw) => {
           field.handleChange(raw)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A "#rrggbb" colour from swatches, a hex code or the system dialog. */
-function ColorField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof ColorPicker>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function ColorField(props: VerticalShellProps & ControlProps<typeof ColorPicker>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <ColorPicker
-        id={meta.id}
+        {...control}
         value={value}
         onValueChange={(hex) => {
           field.handleChange(hex)
           field.handleBlur()
         }}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
@@ -1152,186 +949,98 @@ function RatingField({
 }
 
 /** A slider and a number field on one value. `label` is text: it also names the slider. */
-function SliderField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: Omit<VerticalShellProps, 'label'> & { label: string } & ControlProps<
-    typeof SliderInput,
-    'label'
-  >) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function SliderField(
+  props: Omit<VerticalShellProps, 'label'> & { label: string } & ControlProps<
+      typeof SliderInput,
+      'label'
+    >,
+) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as number | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <SliderInput
-        id={meta.id}
-        label={label}
+        {...control}
+        label={props.label}
         value={value}
         onValueChange={(n) => {
           field.handleChange(n)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A number with its unit; the value is `{ value, unit }`. */
-function UnitField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof UnitInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function UnitField(props: VerticalShellProps & ControlProps<typeof UnitInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as UnitValue | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <UnitInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value}
         onValueChange={(next) => {
           field.handleChange(next)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A typed duration ("1h30"); the value is minutes, or null. */
-function DurationField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof DurationInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function DurationField(props: VerticalShellProps & ControlProps<typeof DurationInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as number | null | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <DurationInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? null}
         onValueChange={(n) => {
           field.handleChange(n)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A month; the value is "YYYY-MM" or "". */
-function MonthField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof MonthPicker>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function MonthField(props: VerticalShellProps & ControlProps<typeof MonthPicker>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <MonthPicker
-        id={meta.id}
+        {...control}
         value={value ?? ''}
         onValueChange={(next) => {
           field.handleChange(next)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** An ISO week; the value is "YYYY-Www" or "". */
-function WeekField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof WeekPicker>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function WeekField(props: VerticalShellProps & ControlProps<typeof WeekPicker>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <WeekPicker
-        id={meta.id}
+        {...control}
         value={value ?? ''}
         onValueChange={(next) => {
           field.handleChange(next)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
@@ -1627,146 +1336,74 @@ function ScaleField({
 }
 
 /** A minimum and a maximum; the value is `{ min, max }`, each a number or null. */
-function NumberRangeField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof NumberRangeInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function NumberRangeField(props: VerticalShellProps & ControlProps<typeof NumberRangeInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as NumberRange | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <NumberRangeInput
-        id={meta.id}
+        {...control}
         value={value ?? { min: null, max: null }}
         onValueChange={(next) => {
           field.handleChange(next)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A start and an end time; the value is `{ start, end }` as "HH:mm". */
-function TimeRangeField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof TimeRangePicker>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function TimeRangeField(props: VerticalShellProps & ControlProps<typeof TimeRangePicker>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as TimeRange | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <TimeRangePicker
-        id={meta.id}
+        {...control}
         value={value ?? {}}
         onValueChange={(next) => {
           field.handleChange(next)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** JSON as text; validate it with `parseJson` or a schema on the parsed value. */
-function JsonField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof JsonInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function JsonField(props: VerticalShellProps & ControlProps<typeof JsonInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <JsonInput
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? ''}
         onValueChange={(text) => {
           field.handleChange(text)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** A textarea with @mentions; the value is the plain text. */
-function MentionField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof MentionTextarea>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function MentionField(props: VerticalShellProps & ControlProps<typeof MentionTextarea>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <MentionTextarea
-        id={meta.id}
+        {...control}
         name={field.name}
         value={value ?? ''}
         onValueChange={(text) => {
           field.handleChange(text)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
@@ -1869,37 +1506,19 @@ function TransferField({
 }
 
 /** One image with its preview (avatar, logo, cover); the value is a File, a saved URL, or null. */
-function ImageField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof ImageInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function ImageField(props: VerticalShellProps & ControlProps<typeof ImageInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as ImageValue | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <ImageInput
-        id={meta.id}
+        {...control}
         value={value ?? null}
         onValueChange={(file) => {
           field.handleChange(file)
           field.handleBlur()
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
@@ -1942,71 +1561,36 @@ function SortableField({
 }
 
 /** How often something repeats; the value is a `Recurrence` (see `toRRule`). */
-function RecurrenceField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof RecurrenceInput>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function RecurrenceField(props: VerticalShellProps & ControlProps<typeof RecurrenceInput>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as Recurrence | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <RecurrenceInput
-        id={meta.id}
+        {...control}
         value={value ?? { frequency: 'week', interval: 1, weekdays: [1], end: { type: 'never' } }}
         onValueChange={(rule) => {
           field.handleChange(rule)
         }}
         onBlur={field.handleBlur}
-        aria-invalid={meta.invalid || undefined}
-        aria-describedby={describedBy(meta, description)}
-        {...props}
       />
     </VerticalShell>
   )
 }
 
 /** An IANA time zone ("Europe/Paris"), searchable, with offsets. */
-function TimezoneField({
-  label,
-  description,
-  className,
-  labelAction,
-  hideLabel,
-  ...props
-}: VerticalShellProps & ControlProps<typeof TimezoneSelect>) {
-  const meta = useFieldMeta()
-  const field = meta.field
+function TimezoneField(props: VerticalShellProps & ControlProps<typeof TimezoneSelect>) {
+  const { shell, control, field } = useVerticalField(props)
   const value = useSelector(field.store, (s) => s.value) as string | undefined
   return (
-    <VerticalShell
-      meta={meta}
-      label={label}
-      description={description}
-      className={className}
-      labelAction={labelAction}
-      hideLabel={hideLabel}
-    >
+    <VerticalShell {...shell}>
       <TimezoneSelect
-        id={meta.id}
+        {...control}
         value={value ?? ''}
         onValueChange={(zone) => {
           field.handleChange(zone)
           field.handleBlur()
         }}
-        aria-invalid={meta.invalid || undefined}
-        {...props}
       />
     </VerticalShell>
   )

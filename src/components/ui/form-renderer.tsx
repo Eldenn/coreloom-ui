@@ -1144,36 +1144,33 @@ function toSubmitted(field: FormFieldSpec, value: unknown, types: FormFieldTypes
   return isEmptyFor(type, field, json) ? null : json
 }
 
+type ConditionTest = (actual: unknown, expected: unknown) => boolean
+
+const contains: ConditionTest = (actual, expected) =>
+  Array.isArray(actual)
+    ? actual.includes(expected)
+    : typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected)
+
+/** What each operator checks. `gt` and `lt` compare values of the same type only. */
+const CONDITION_TESTS = new Map<FormConditionOp, ConditionTest>([
+  ['equals', (a, e) => (Array.isArray(a) ? a.includes(e) : a === e)],
+  ['notEquals', (a, e) => (Array.isArray(a) ? !a.includes(e) : a !== e)],
+  ['in', (a, e) => Array.isArray(e) && e.includes(a)],
+  ['filled', (a) => !isEmptyValue(a)],
+  ['empty', (a) => isEmptyValue(a)],
+  ['gt', (a, e) => typeof a === typeof e && (a as number) > (e as number)],
+  ['lt', (a, e) => typeof a === typeof e && (a as number) < (e as number)],
+  ['contains', contains],
+])
+
 /** Whether `condition` holds for these submitted values. Missing or broken conditions hold. */
 function evaluateCondition(condition: FormCondition | undefined, values: FormValues): boolean {
   if (!condition) return true
   if ('all' in condition) return condition.all.every((c) => evaluateCondition(c, values))
   if ('any' in condition)
     return condition.any.length === 0 || condition.any.some((c) => evaluateCondition(c, values))
-  const actual = values[condition.field]
-  const expected = condition.value
-  switch (condition.op) {
-    case 'equals':
-      return Array.isArray(actual) ? actual.includes(expected) : actual === expected
-    case 'notEquals':
-      return Array.isArray(actual) ? !actual.includes(expected) : actual !== expected
-    case 'in':
-      return Array.isArray(expected) && expected.includes(actual)
-    case 'filled':
-      return !isEmptyValue(actual)
-    case 'empty':
-      return isEmptyValue(actual)
-    case 'gt':
-      return typeof actual === typeof expected && (actual as number) > (expected as number)
-    case 'lt':
-      return typeof actual === typeof expected && (actual as number) < (expected as number)
-    case 'contains':
-      return Array.isArray(actual)
-        ? actual.includes(expected)
-        : typeof actual === 'string' && typeof expected === 'string' && actual.includes(expected)
-    default:
-      return true
-  }
+  const test = CONDITION_TESTS.get(condition.op)
+  return test ? test(values[condition.field], condition.value) : true
 }
 
 function allFields(spec: FormSpec) {
@@ -1248,6 +1245,72 @@ function compilePattern(source: string) {
   return patternCache.get(source) ?? null
 }
 
+function checkTextRange(
+  field: FormFieldSpec,
+  value: string,
+  kind: 'date' | 'time',
+): FormFieldError | undefined {
+  if (typeof field.min === 'string' && value < field.min)
+    return { type: `${kind}Min`, limit: field.min }
+  if (typeof field.max === 'string' && value > field.max)
+    return { type: `${kind}Max`, limit: field.max }
+  return undefined
+}
+
+function checkLength(field: FormFieldSpec, length: number): FormFieldError | undefined {
+  if (field.minLength !== undefined && length < field.minLength)
+    return { type: 'minLength', limit: field.minLength }
+  if (field.maxLength !== undefined && length > field.maxLength)
+    return { type: 'maxLength', limit: field.maxLength }
+  return undefined
+}
+
+function checkPattern(field: FormFieldSpec, value: string): FormFieldError | undefined {
+  const re = field.pattern ? compilePattern(field.pattern) : null
+  if (!re || re.test(value)) return undefined
+  return field.patternMessage
+    ? { type: 'custom', message: field.patternMessage }
+    : { type: 'pattern' }
+}
+
+function checkText(
+  field: FormFieldSpec,
+  value: string,
+  type: FormFieldType | undefined,
+): FormFieldError | undefined {
+  // Dates, months and weeks are ISO strings: they compare as text.
+  if (type?.checks?.includes('dateRange')) return checkTextRange(field, value, 'date')
+  if (TIME.test(value) && type?.checks?.includes('timeRange'))
+    return checkTextRange(field, value, 'time')
+  return checkLength(field, value.length) ?? checkPattern(field, value)
+}
+
+function checkNumber(field: FormFieldSpec, value: number): FormFieldError | undefined {
+  if (typeof field.min === 'number' && value < field.min) return { type: 'min', limit: field.min }
+  if (typeof field.max === 'number' && value > field.max) return { type: 'max', limit: field.max }
+  return undefined
+}
+
+function checkItems(field: FormFieldSpec, value: unknown[]): FormFieldError | undefined {
+  if (field.minItems !== undefined && value.length < field.minItems)
+    return { type: 'minItems', limit: field.minItems }
+  if (field.maxItems !== undefined && value.length > field.maxItems)
+    return { type: 'maxItems', limit: field.maxItems }
+  return undefined
+}
+
+/** The bounds that fit the value's shape: text, number or list. */
+function checkBounds(
+  field: FormFieldSpec,
+  value: unknown,
+  type: FormFieldType | undefined,
+): FormFieldError | undefined {
+  if (typeof value === 'string') return checkText(field, value, type)
+  if (typeof value === 'number') return checkNumber(field, value)
+  if (Array.isArray(value)) return checkItems(field, value)
+  return undefined
+}
+
 /**
  * Checks one submitted value against its field: required, then the bounds that fit the value's shape
  * (length for text, min / max for numbers, dates and times, item counts for lists), then the type's own check.
@@ -1262,40 +1325,7 @@ function checkFormField(
     if (!field.required) return undefined
     return { type: emptyOf(type, field) === false ? 'checked' : 'required' }
   }
-  if (typeof value === 'string') {
-    // Dates, months and weeks are ISO strings: they compare as text.
-    const isDate = type?.checks?.includes('dateRange') ?? false
-    const isTime = TIME.test(value) && type?.checks?.includes('timeRange')
-    if (isDate || isTime) {
-      const prefix = isDate ? 'date' : 'time'
-      if (typeof field.min === 'string' && value < field.min)
-        return { type: `${prefix}Min`, limit: field.min }
-      if (typeof field.max === 'string' && value > field.max)
-        return { type: `${prefix}Max`, limit: field.max }
-    } else {
-      const length = value.length
-      if (field.minLength !== undefined && length < field.minLength)
-        return { type: 'minLength', limit: field.minLength }
-      if (field.maxLength !== undefined && length > field.maxLength)
-        return { type: 'maxLength', limit: field.maxLength }
-      const re = field.pattern ? compilePattern(field.pattern) : null
-      if (re && !re.test(value))
-        return field.patternMessage
-          ? { type: 'custom', message: field.patternMessage }
-          : { type: 'pattern' }
-    }
-  }
-  if (typeof value === 'number') {
-    if (typeof field.min === 'number' && value < field.min) return { type: 'min', limit: field.min }
-    if (typeof field.max === 'number' && value > field.max) return { type: 'max', limit: field.max }
-  }
-  if (Array.isArray(value)) {
-    if (field.minItems !== undefined && value.length < field.minItems)
-      return { type: 'minItems', limit: field.minItems }
-    if (field.maxItems !== undefined && value.length > field.maxItems)
-      return { type: 'maxItems', limit: field.maxItems }
-  }
-  return type?.validate?.(value, field)
+  return checkBounds(field, value, type) ?? type?.validate?.(value, field)
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -1318,16 +1348,7 @@ interface FormSpecIssue {
 
 const NAME = /^[A-Za-z_][\w-]{0,63}$/
 const MAX_FIELDS = 200
-const OPS = new Set<FormConditionOp>([
-  'equals',
-  'notEquals',
-  'in',
-  'filled',
-  'empty',
-  'gt',
-  'lt',
-  'contains',
-])
+const OPS = new Set(CONDITION_TESTS.keys())
 const COMMON_KEYS = new Set([
   'name',
   'type',
@@ -1357,42 +1378,182 @@ const columnsOf = (v: unknown) => (v === 2 || v === 3 ? v : v === 1 ? 1 : undefi
 const isJSONScalar = (v: unknown) =>
   v === null || ['string', 'number', 'boolean'].includes(typeof v)
 
-function readCondition(value: unknown, depth = 0): FormCondition | undefined {
-  if (!isRecord(value) || depth > 4) return undefined
-  if (Array.isArray(value.all) || Array.isArray(value.any)) {
-    const key = Array.isArray(value.all) ? 'all' : 'any'
-    const list = (value[key] as unknown[])
-      .map((c) => readCondition(c, depth + 1))
-      .filter((c): c is FormCondition => c !== undefined)
-    return key === 'all' ? { all: list } : { any: list }
-  }
+const isConditionValue = (v: unknown) =>
+  isJSONScalar(v) || (Array.isArray(v) && v.every(isJSONScalar))
+
+function readConditions(list: unknown[], depth: number): FormCondition[] {
+  return list
+    .map((c) => readCondition(c, depth + 1))
+    .filter((c): c is FormCondition => c !== undefined)
+}
+
+function readComparison(value: Record<string, unknown>): FormCondition | undefined {
   const field = str(value.field)
   const op = (str(value.op) ?? 'equals') as FormConditionOp
   if (!field || !OPS.has(op)) return undefined
-  const v = value.value
-  const ok = isJSONScalar(v) || (Array.isArray(v) && v.every(isJSONScalar)) || v === undefined
-  return ok ? { field, op, ...(v === undefined ? {} : { value: v }) } : undefined
+  if (value.value === undefined) return { field, op }
+  return isConditionValue(value.value) ? { field, op, value: value.value } : undefined
+}
+
+function readCondition(value: unknown, depth = 0): FormCondition | undefined {
+  if (!isRecord(value) || depth > 4) return undefined
+  if (Array.isArray(value.all)) return { all: readConditions(value.all, depth) }
+  if (Array.isArray(value.any)) return { any: readConditions(value.any, depth) }
+  return readComparison(value)
+}
+
+/** One option: a non-empty string, or `{ value, label?, description?, disabled? }`. */
+function readOption(o: unknown): FormOption | undefined {
+  if (typeof o === 'string') return o ? { value: o, label: o } : undefined
+  if (!isRecord(o) || (typeof o.value !== 'string' && typeof o.value !== 'number')) return undefined
+  const description = str(o.description)
+  return {
+    value: String(o.value),
+    label: str(o.label) ?? String(o.value),
+    ...(description ? { description } : {}),
+    ...(o.disabled === true ? { disabled: true } : {}),
+  }
 }
 
 function readOptions(value: unknown, seen = new Set<string>(), depth = 0): FormOption[] {
   if (!Array.isArray(value) || depth > 5) return []
   return (value as unknown[]).flatMap((o): FormOption[] => {
-    const option: FormOption | undefined =
-      typeof o === 'string' && o
-        ? { value: o, label: o }
-        : isRecord(o) && (typeof o.value === 'string' || typeof o.value === 'number')
-          ? {
-              value: String(o.value),
-              label: str(o.label) ?? String(o.value),
-              ...(str(o.description) ? { description: str(o.description) } : {}),
-              ...(o.disabled === true ? { disabled: true } : {}),
-            }
-          : undefined
+    const option = readOption(o)
     if (!option || option.value === '' || seen.has(option.value)) return []
     seen.add(option.value)
     const children = isRecord(o) ? readOptions(o.children, seen, depth + 1) : []
     return [children.length ? { ...option, children } : option]
   })
+}
+
+/** What reading a spec keeps track of across sections: names and ids taken, fields read, issues. */
+interface SpecReader {
+  types: FormFieldTypes
+  issues: FormSpecIssue[]
+  names: Set<string>
+  ids: Set<string>
+  total: number
+}
+
+/** The field's name if it is usable, unique and under the field cap; otherwise says why not. */
+function claimName(reader: SpecReader, raw: Record<string, unknown>, path: string) {
+  const name = str(raw.name)
+  if (!name || !NAME.test(name)) {
+    reader.issues.push({ path, code: 'missingName', detail: name })
+    return undefined
+  }
+  if (reader.names.has(name)) {
+    reader.issues.push({ path, code: 'duplicateName', detail: name })
+    return undefined
+  }
+  reader.total++
+  if (reader.total > MAX_FIELDS) {
+    if (reader.total === MAX_FIELDS + 1) reader.issues.push({ path, code: 'tooMany' })
+    return undefined
+  }
+  reader.names.add(name)
+  return name
+}
+
+function readFieldType(reader: SpecReader, raw: Record<string, unknown>, path: string) {
+  const type = str(raw.type) ?? 'text'
+  if (type in reader.types) return type
+  reader.issues.push({ path, code: 'unknownType', detail: type })
+  return 'text'
+}
+
+/** Type settings are kept as long as they are plain JSON scalars or lists of strings. */
+const isTypeSetting = (v: unknown) =>
+  (isJSONScalar(v) && v !== null) ||
+  (Array.isArray(v) && v.length <= 500 && v.every((x) => typeof x === 'string'))
+
+/** The common keys that need no checking beyond their shape. */
+function readFieldKeys(field: FormFieldSpec, raw: Record<string, unknown>) {
+  for (const key of ['description', 'placeholder', 'pattern', 'patternMessage'] as const)
+    if (str(raw[key])) field[key] = str(raw[key])
+  if (raw.required === true) field.required = true
+  for (const key of ['minLength', 'maxLength', 'minItems', 'maxItems'] as const)
+    if (count(raw[key]) !== undefined) field[key] = count(raw[key])
+  for (const key of ['min', 'max'] as const)
+    if (num(raw[key]) !== undefined || str(raw[key])) field[key] = raw[key] as number | string
+  const span = columnsOf(raw.span)
+  if (span && span > 1) field.span = span
+  if (raw.defaultValue !== undefined) field.defaultValue = raw.defaultValue
+}
+
+/** Options and the visibility condition: kept when usable, reported when not. */
+function readFieldRules(
+  reader: SpecReader,
+  field: FormFieldSpec,
+  raw: Record<string, unknown>,
+  path: string,
+) {
+  if (reader.types[field.type].hasOptions) {
+    field.options = readOptions(raw.options)
+    if (!field.options.length) reader.issues.push({ path, code: 'noOptions', detail: field.name })
+  }
+  if (raw.visibleWhen === undefined) return
+  const condition = readCondition(raw.visibleWhen)
+  if (condition) field.visibleWhen = condition
+  else reader.issues.push({ path, code: 'badCondition', detail: field.name })
+}
+
+function readField(reader: SpecReader, raw: unknown, path: string): FormFieldSpec | undefined {
+  if (!isRecord(raw)) {
+    reader.issues.push({ path, code: 'notObject' })
+    return undefined
+  }
+  const name = claimName(reader, raw, path)
+  if (!name) return undefined
+  const type = readFieldType(reader, raw, path)
+  const field: FormFieldSpec = { name, type, label: str(raw.label) ?? name }
+  readFieldKeys(field, raw)
+  readFieldRules(reader, field, raw, path)
+  for (const [key, v] of Object.entries(raw))
+    if (!COMMON_KEYS.has(key) && isTypeSetting(v)) field[key] = v
+  return field
+}
+
+function readSection(
+  reader: SpecReader,
+  raw: unknown,
+  index: number,
+  path: string,
+): FormSectionSpec | undefined {
+  if (!isRecord(raw)) {
+    reader.issues.push({ path, code: 'notObject' })
+    return undefined
+  }
+  let id = str(raw.id) ?? `section-${index + 1}`
+  while (reader.ids.has(id)) id = `${id}-${index + 1}`
+  reader.ids.add(id)
+  const section: FormSectionSpec = { id, fields: [] }
+  for (const key of ['title', 'description'] as const)
+    if (str(raw[key])) section[key] = str(raw[key])
+  const columns = columnsOf(raw.columns)
+  if (columns) section.columns = columns
+  const rawFields = Array.isArray(raw.fields) ? (raw.fields as unknown[]) : []
+  rawFields.forEach((rawField, fi) => {
+    const field = readField(reader, rawField, `${path ? `${path}.` : ''}fields[${fi}]`)
+    if (field) section.fields.push(field)
+  })
+  return section
+}
+
+/** `{ sections }`, or the one-section shorthand `{ fields }`. */
+function rawSectionsOf(value: Record<string, unknown>): unknown[] {
+  if (Array.isArray(value.sections)) return value.sections
+  if (Array.isArray(value.fields)) return [{ id: 'main', fields: value.fields }]
+  return []
+}
+
+/** A condition on a field that doesn't exist would hide its field forever: drop it. */
+function dropDanglingConditions(spec: FormSpec, reader: SpecReader) {
+  for (const field of allFields(spec))
+    if (field.visibleWhen && conditionFields(field.visibleWhen).some((n) => !reader.names.has(n))) {
+      delete field.visibleWhen
+      reader.issues.push({ path: field.name, code: 'badCondition', detail: field.name })
+    }
 }
 
 /**
@@ -1405,106 +1566,22 @@ function readFormSpec(
   value: unknown,
   types: FormFieldTypes = formFieldTypes,
 ): { spec: FormSpec; issues: FormSpecIssue[] } {
-  const issues: FormSpecIssue[] = []
+  const reader: SpecReader = { types, issues: [], names: new Set(), ids: new Set(), total: 0 }
   const spec: FormSpec = { version: 1, sections: [] }
   if (!isRecord(value)) {
-    issues.push({ path: '', code: 'notObject' })
-    return { spec, issues }
+    reader.issues.push({ path: '', code: 'notObject' })
+    return { spec, issues: reader.issues }
   }
-  if (str(value.title)) spec.title = str(value.title)
-  if (str(value.description)) spec.description = str(value.description)
-  if (str(value.submitLabel)) spec.submitLabel = str(value.submitLabel)
-  const rawSections: unknown[] = Array.isArray(value.sections)
-    ? value.sections
-    : Array.isArray(value.fields)
-      ? [{ id: 'main', fields: value.fields }]
-      : []
-  const names = new Set<string>()
-  const ids = new Set<string>()
-  let total = 0
-  rawSections.forEach((rawSection, si) => {
-    const sPath = Array.isArray(value.sections) ? `sections[${si}]` : ''
-    if (!isRecord(rawSection)) {
-      issues.push({ path: sPath, code: 'notObject' })
-      return
-    }
-    let id = str(rawSection.id) ?? `section-${si + 1}`
-    while (ids.has(id)) id = `${id}-${si + 1}`
-    ids.add(id)
-    const section: FormSectionSpec = { id, fields: [] }
-    if (str(rawSection.title)) section.title = str(rawSection.title)
-    if (str(rawSection.description)) section.description = str(rawSection.description)
-    const columns = columnsOf(rawSection.columns)
-    if (columns) section.columns = columns
-    const rawFields = Array.isArray(rawSection.fields) ? (rawSection.fields as unknown[]) : []
-    rawFields.forEach((raw, fi) => {
-      const path = `${sPath ? `${sPath}.` : ''}fields[${fi}]`
-      if (!isRecord(raw)) {
-        issues.push({ path, code: 'notObject' })
-        return
-      }
-      const name = str(raw.name)
-      if (!name || !NAME.test(name)) {
-        issues.push({ path, code: 'missingName', detail: name })
-        return
-      }
-      if (names.has(name)) {
-        issues.push({ path, code: 'duplicateName', detail: name })
-        return
-      }
-      if (total >= MAX_FIELDS) {
-        if (total === MAX_FIELDS) issues.push({ path, code: 'tooMany' })
-        total++
-        return
-      }
-      total++
-      names.add(name)
-      let type = str(raw.type) ?? 'text'
-      if (!(type in types)) {
-        issues.push({ path, code: 'unknownType', detail: type })
-        type = 'text'
-      }
-      const field: FormFieldSpec = { name, type, label: str(raw.label) ?? name }
-      for (const key of ['description', 'placeholder', 'pattern', 'patternMessage'] as const)
-        if (str(raw[key])) field[key] = str(raw[key])
-      if (raw.required === true) field.required = true
-      for (const key of ['minLength', 'maxLength', 'minItems', 'maxItems'] as const)
-        if (count(raw[key]) !== undefined) field[key] = count(raw[key])
-      for (const key of ['min', 'max'] as const)
-        if (num(raw[key]) !== undefined || str(raw[key])) field[key] = raw[key] as number | string
-      const span = columnsOf(raw.span)
-      if (span && span > 1) field.span = span
-      if (raw.defaultValue !== undefined) field.defaultValue = raw.defaultValue
-      if (types[type].hasOptions) {
-        field.options = readOptions(raw.options)
-        if (!field.options.length) issues.push({ path, code: 'noOptions', detail: name })
-      }
-      if (raw.visibleWhen !== undefined) {
-        const condition = readCondition(raw.visibleWhen)
-        if (condition) field.visibleWhen = condition
-        else issues.push({ path, code: 'badCondition', detail: name })
-      }
-      // Type settings: kept as long as they are plain JSON scalars or lists of strings.
-      for (const [key, v] of Object.entries(raw))
-        if (
-          !COMMON_KEYS.has(key) &&
-          ((isJSONScalar(v) && v !== null) ||
-            (Array.isArray(v) && v.length <= 500 && v.every((x) => typeof x === 'string')))
-        )
-          field[key] = v
-      section.fields.push(field)
-    })
-    spec.sections.push(section)
+  for (const key of ['title', 'description', 'submitLabel'] as const)
+    if (str(value[key])) spec[key] = str(value[key])
+  const listed = Array.isArray(value.sections)
+  rawSectionsOf(value).forEach((raw, si) => {
+    const section = readSection(reader, raw, si, listed ? `sections[${si}]` : '')
+    if (section) spec.sections.push(section)
   })
   if (!spec.sections.length) spec.sections.push({ id: 'main', fields: [] })
-  // A condition on a field that doesn't exist would hide its field forever.
-  for (const section of spec.sections)
-    for (const field of section.fields)
-      if (field.visibleWhen && conditionFields(field.visibleWhen).some((n) => !names.has(n))) {
-        delete field.visibleWhen
-        issues.push({ path: field.name, code: 'badCondition', detail: field.name })
-      }
-  return { spec, issues }
+  dropDanglingConditions(spec, reader)
+  return { spec, issues: reader.issues }
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -1555,6 +1632,94 @@ function schemaOptions(schema: JSONSchema): FormOption[] {
   return []
 }
 
+/** Property names in `ui:order` order; `*` stands for the ones it doesn't name. */
+function orderedKeys(props: Record<string, unknown>, order: unknown[]) {
+  const rest = order.indexOf('*')
+  const rank = (key: string) => {
+    const i = order.indexOf(key)
+    if (i !== -1) return i
+    return rest === -1 ? order.length : rest
+  }
+  return Object.keys(props).sort((a, b) => rank(a) - rank(b))
+}
+
+/** The field type a property maps to without a widget: by `type`, then options, then `format`. */
+function schemaType(p: JSONSchema, hasOptions: boolean): string {
+  if (p.type === 'boolean') return 'checkbox'
+  if (p.type === 'number' || p.type === 'integer') return 'number'
+  if (p.type === 'array') return hasOptions ? 'multiselect' : 'tags'
+  if (hasOptions) return 'select'
+  return FORMATS[str(p.format) ?? ''] ?? 'text'
+}
+
+/** A `ui:widget` wins: one of our type names, or theirs mapped to ours; unknown ones are ignored. */
+function widgetType(widget: string | undefined, fallback: string, types: FormFieldTypes): string {
+  if (!widget) return fallback
+  return widget in types ? widget : (WIDGETS[widget] ?? fallback)
+}
+
+/** One property as raw field JSON (readFormSpec checks it afterwards). */
+function schemaField(
+  name: string,
+  p: JSONSchema,
+  ui: { pUi: Record<string, unknown>; required: boolean; types: FormFieldTypes },
+): Record<string, unknown> {
+  const items = isRecord(p.items) ? p.items : {}
+  const opts = schemaOptions(p.type === 'array' ? items : p)
+  const uiOptions = isRecord(ui.pUi['ui:options']) ? ui.pUi['ui:options'] : {}
+  return {
+    ...uiOptions,
+    name,
+    type: widgetType(str(ui.pUi['ui:widget']), schemaType(p, opts.length > 0), ui.types),
+    label: str(p.title) ?? name,
+    description: str(ui.pUi['ui:help']) ?? str(p.description),
+    placeholder: str(ui.pUi['ui:placeholder']),
+    required: ui.required || undefined,
+    defaultValue: p.default,
+    minLength: p.minLength,
+    maxLength: p.maxLength,
+    pattern: p.pattern,
+    min: p.minimum ?? p.formatMinimum,
+    max: p.maximum ?? p.formatMaximum,
+    step: p.multipleOf ?? (p.type === 'integer' ? 1 : undefined),
+    minItems: p.minItems,
+    maxItems: p.maxItems,
+    options: opts.length ? opts : undefined,
+  }
+}
+
+/**
+ * The fields of an object schema. Nested objects become sections, pushed to `sections` (the deepest
+ * first), and their fields stay flat in the values.
+ */
+function schemaFields(
+  obj: JSONSchema,
+  objUi: Record<string, unknown>,
+  ctx: { types: FormFieldTypes; sections: Record<string, unknown>[] },
+): Record<string, unknown>[] {
+  const props = isRecord(obj.properties) ? obj.properties : {}
+  const required = new Set(Array.isArray(obj.required) ? (obj.required as unknown[]) : [])
+  const order = Array.isArray(objUi['ui:order']) ? (objUi['ui:order'] as unknown[]) : []
+  const fields: Record<string, unknown>[] = []
+  for (const name of orderedKeys(props, order)) {
+    const p = props[name]
+    if (!isRecord(p)) continue
+    const pUi = isRecord(objUi[name]) ? objUi[name] : {}
+    if (p.type !== 'object') {
+      fields.push(schemaField(name, p, { pUi, required: required.has(name), types: ctx.types }))
+      continue
+    }
+    const nested = schemaFields(p, pUi, ctx)
+    ctx.sections.push({
+      id: name,
+      title: str(p.title) ?? name,
+      description: str(p.description),
+      fields: nested,
+    })
+  }
+  return fields
+}
+
 /**
  * Turns an object JSON Schema into a FormSpec: a field per property (strings by `format`, enums and
  * `oneOf` consts as selects, numbers, booleans, arrays as multi-selects or tags), `required`, titles,
@@ -1568,74 +1733,8 @@ function fromJSONSchema(
   types: FormFieldTypes = formFieldTypes,
 ): { spec: FormSpec; issues: FormSpecIssue[] } {
   if (!isRecord(schema)) return readFormSpec(undefined, types)
-  const ui = isRecord(uiSchema) ? uiSchema : {}
   const sections: Record<string, unknown>[] = []
-  const toFields = (obj: JSONSchema, objUi: Record<string, unknown>) => {
-    const props = isRecord(obj.properties) ? obj.properties : {}
-    const required = new Set(Array.isArray(obj.required) ? (obj.required as unknown[]) : [])
-    const order = Array.isArray(objUi['ui:order']) ? (objUi['ui:order'] as unknown[]) : []
-    const keys = Object.keys(props).sort((a, b) => {
-      const rank = (k: string) => {
-        const i = order.indexOf(k)
-        const rest = order.indexOf('*')
-        return i === -1 ? (rest === -1 ? order.length : rest) : i
-      }
-      return rank(a) - rank(b)
-    })
-    const fields: Record<string, unknown>[] = []
-    for (const name of keys) {
-      const p = props[name]
-      if (!isRecord(p)) continue
-      const pUi = isRecord(objUi[name]) ? objUi[name] : {}
-      if (p.type === 'object') {
-        sections.push({
-          id: name,
-          title: str(p.title) ?? name,
-          description: str(p.description),
-          fields: toFields(p, pUi),
-        })
-        continue
-      }
-      const items = isRecord(p.items) ? p.items : {}
-      const widget = str(pUi['ui:widget'])
-      const opts = schemaOptions(p.type === 'array' ? items : p)
-      let type =
-        p.type === 'boolean'
-          ? 'checkbox'
-          : p.type === 'number' || p.type === 'integer'
-            ? 'number'
-            : p.type === 'array'
-              ? opts.length
-                ? 'multiselect'
-                : 'tags'
-              : opts.length
-                ? 'select'
-                : (FORMATS[str(p.format) ?? ''] ?? 'text')
-      if (widget) type = widget in types ? widget : (WIDGETS[widget] ?? type)
-      const uiOptions = isRecord(pUi['ui:options']) ? pUi['ui:options'] : {}
-      fields.push({
-        ...uiOptions,
-        name,
-        type,
-        label: str(p.title) ?? name,
-        description: str(pUi['ui:help']) ?? str(p.description),
-        placeholder: str(pUi['ui:placeholder']),
-        required: required.has(name) || undefined,
-        defaultValue: p.default,
-        minLength: p.minLength,
-        maxLength: p.maxLength,
-        pattern: p.pattern,
-        min: p.minimum ?? p.formatMinimum,
-        max: p.maximum ?? p.formatMaximum,
-        step: p.multipleOf ?? (p.type === 'integer' ? 1 : undefined),
-        minItems: p.minItems,
-        maxItems: p.maxItems,
-        options: opts.length ? opts : undefined,
-      })
-    }
-    return fields
-  }
-  const rootFields = toFields(schema, ui)
+  const rootFields = schemaFields(schema, isRecord(uiSchema) ? uiSchema : {}, { types, sections })
   return readFormSpec(
     {
       title: schema.title,
@@ -1649,81 +1748,86 @@ function fromJSONSchema(
   )
 }
 
+const STRING_FORMATS: Record<string, string> = {
+  email: 'email',
+  url: 'uri',
+  date: 'date',
+  datetime: 'date-time',
+  time: 'time',
+}
+
+const definedOnly = (o: Record<string, unknown>) =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined))
+
+function stringSchema(f: FormFieldSpec, oneOf: JSONSchema[] | undefined): JSONSchema {
+  return {
+    type: 'string',
+    ...(oneOf ? { oneOf } : {}),
+    format: STRING_FORMATS[f.type],
+    minLength: f.minLength,
+    maxLength: f.maxLength,
+    pattern: f.pattern,
+    ...(typeof f.min === 'string' ? { formatMinimum: f.min } : {}),
+    ...(typeof f.max === 'string' ? { formatMaximum: f.max } : {}),
+  }
+}
+
+/** What one field submits, as a JSON Schema property (before its title and default). */
+function valueSchema(f: FormFieldSpec): JSONSchema {
+  const oneOf = f.options?.map((o) => ({ const: o.value, title: o.label }))
+  switch (f.type) {
+    case 'number':
+    case 'money':
+      return { type: 'number', minimum: f.min, maximum: f.max, multipleOf: f.step }
+    case 'checkbox':
+    case 'switch':
+      return { type: 'boolean' }
+    case 'multiselect':
+    case 'tags':
+      return {
+        type: 'array',
+        items: oneOf ? { oneOf } : { type: 'string' },
+        minItems: f.minItems,
+        maxItems: f.maxItems,
+      }
+    case 'daterange':
+      return {
+        type: 'object',
+        properties: {
+          from: { type: 'string', format: 'date' },
+          to: { type: ['string', 'null'], format: 'date' },
+        },
+      }
+    case 'file':
+      return { type: 'array', items: { type: 'string', contentEncoding: 'binary' } }
+    default:
+      return stringSchema(f, oneOf)
+  }
+}
+
+function fieldSchema(f: FormFieldSpec): JSONSchema {
+  return definedOnly({
+    title: f.label,
+    ...(f.description ? { description: f.description } : {}),
+    ...valueSchema(f),
+    default: f.defaultValue,
+  })
+}
+
 /** A JSON Schema (draft 2020-12) for what the form submits, plus the UI schema that rebuilds it. */
 function toJSONSchema(spec: FormSpec): { schema: JSONSchema; uiSchema: Record<string, unknown> } {
-  const properties: Record<string, JSONSchema> = {}
-  const uiSchema: Record<string, unknown> = { 'ui:order': allFields(spec).map((f) => f.name) }
-  const required: string[] = []
-  for (const f of allFields(spec)) {
-    const opts = f.options?.map((o) => ({ const: o.value, title: o.label }))
-    const base: JSONSchema = {
-      title: f.label,
-      ...(f.description ? { description: f.description } : {}),
-    }
-    let p: JSONSchema
-    switch (f.type) {
-      case 'number':
-      case 'money':
-        p = { ...base, type: 'number', minimum: f.min, maximum: f.max, multipleOf: f.step }
-        break
-      case 'checkbox':
-      case 'switch':
-        p = { ...base, type: 'boolean' }
-        break
-      case 'multiselect':
-      case 'tags':
-        p = {
-          ...base,
-          type: 'array',
-          items: opts ? { oneOf: opts } : { type: 'string' },
-          minItems: f.minItems,
-          maxItems: f.maxItems,
-        }
-        break
-      case 'daterange':
-        p = {
-          ...base,
-          type: 'object',
-          properties: {
-            from: { type: 'string', format: 'date' },
-            to: { type: ['string', 'null'], format: 'date' },
-          },
-        }
-        break
-      case 'file':
-        p = { ...base, type: 'array', items: { type: 'string', contentEncoding: 'binary' } }
-        break
-      default:
-        p = {
-          ...base,
-          type: 'string',
-          ...(opts ? { oneOf: opts } : {}),
-          format: { email: 'email', url: 'uri', date: 'date', datetime: 'date-time', time: 'time' }[
-            f.type
-          ],
-          minLength: f.minLength,
-          maxLength: f.maxLength,
-          pattern: f.pattern,
-          ...(typeof f.min === 'string' ? { formatMinimum: f.min } : {}),
-          ...(typeof f.max === 'string' ? { formatMaximum: f.max } : {}),
-        }
-    }
-    if (f.defaultValue !== undefined) p.default = f.defaultValue
-    properties[f.name] = Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined))
-    if (f.required) required.push(f.name)
-    uiSchema[f.name] = Object.fromEntries(
-      Object.entries({ 'ui:widget': f.type, 'ui:placeholder': f.placeholder }).filter(
-        ([, v]) => v !== undefined,
-      ),
-    )
-  }
+  const fields = allFields(spec)
+  const uiSchema: Record<string, unknown> = { 'ui:order': fields.map((f) => f.name) }
+  for (const f of fields)
+    uiSchema[f.name] = definedOnly({ 'ui:widget': f.type, 'ui:placeholder': f.placeholder })
+  const required = fields.filter((f) => f.required).map((f) => f.name)
   return {
     schema: {
       $schema: 'https://json-schema.org/draft/2020-12/schema',
       type: 'object',
       ...(spec.title ? { title: spec.title } : {}),
       ...(spec.description ? { description: spec.description } : {}),
-      properties,
+      properties: Object.fromEntries(fields.map((f) => [f.name, fieldSchema(f)])),
       ...(required.length ? { required } : {}),
     },
     uiSchema,

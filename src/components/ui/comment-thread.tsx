@@ -17,6 +17,7 @@ import { type MentionOption, MentionTextarea } from '@/components/ui/mention-tex
 import { RelativeTime } from '@/components/ui/relative-time'
 import { Textarea } from '@/components/ui/textarea'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { initials } from '@/lib/initials'
 import { cn } from '@/lib/utils'
 
 interface CommentAuthor {
@@ -43,14 +44,6 @@ interface CommentData {
   /** Replies, oldest first. Replies have no replies of their own. */
   replies?: CommentData[]
 }
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.at(0)?.toUpperCase() ?? '')
-    .join('')
 
 /** The body with "@value" drawn as a mention when value is one of the mentionables. */
 function Body({ text, mentionables }: { text: string; mentionables?: MentionOption[] }) {

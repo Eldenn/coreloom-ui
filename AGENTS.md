@@ -39,7 +39,8 @@ Storybook as its documentation and a Vite starter app that uses it.
 ```bash
 pnpm install                 # only installs versions published ≥ 14 days ago (pnpm-workspace.yaml)
 pnpm format                  # Prettier writes (format:check in CI)
-pnpm lint                    # ESLint, type-aware (lint:fix applies the safe fixes)
+pnpm lint                    # ESLint, type-aware, cached, zero warnings (lint:fix applies the safe fixes)
+pnpm lint:prune              # drop eslint-suppressions.json entries for code that now passes
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
@@ -72,7 +73,8 @@ SB_PORT=6201 pnpm exec playwright test ai-chat-messages   # SB_PORT when several
 
 A change is finished when all of this is true:
 
-1. **`pnpm format:check`, `pnpm lint` (no errors, no warnings), typecheck, unit tests and the
+1. **`pnpm format:check`, `pnpm lint` (no errors, no warnings, nothing new in
+   `eslint-suppressions.json`), typecheck, unit tests and the
    relevant Playwright specs pass** (a11y on your stories in dark,
    light and fr / es / de; interactions; docs; starter if touched). Fix violations in the component,
    never by weakening a test or tagging a story `no-test`.
@@ -94,6 +96,53 @@ A change is finished when all of this is true:
 6. **You looked at it.** Screenshot your stories at 1280 and 390 px, dark and light, and fix overflow,
    truncation and misalignment. axe passing is not the same as looking right.
 
+## How to change code
+
+Every change goes in this order: make it work, then make it right, then leave a clean trail.
+
+### Make it work
+
+- **Smallest change that solves the problem.** One decision lives in one place.
+- **Data shape first.** Write the types (props, state, the parsed value) before the logic. Model
+  states as discriminated unions (`{ status: 'loading' } | { status: 'error'; error: string }`),
+  not as a bag of booleans that allows impossible combinations.
+- **Test first when behaviour changes.** Write the failing interaction spec or Vitest case, see it
+  fail for the reason you expect, then make it pass. If an honest test is impractical, say so in
+  the PR instead of writing a weak one.
+- **Subtract before you add.** A requirement that doesn't fit a component's design is a redesign of
+  that piece, delivered in steps; not one more boolean prop bolted on.
+- **Boundaries.** Data from outside (imported JSON, pasted text, URL params, `localStorage`, a
+  callback's result) is parsed once, where it enters, into a typed value; inside, trust it. Never
+  silence the compiler (`as unknown as`, `!` on a value you didn't just check).
+- **Logic out of JSX.** Parsers, reducers, graph transforms and formatters are plain functions
+  (in the file, or in `src/lib/`), tested with Vitest. Components wire state to markup.
+
+### Make it right
+
+- **Fix the cause.** Reproduce it, fix the cause. A guard that only hides the crash is not a fix.
+- **Size limits** (ESLint enforces them in `src/` and `starter/src/`): complexity ≤ 15 per
+  function, ≤ 150 lines per function, ≤ 600 lines per file (locale files excepted), nesting ≤ 4,
+  ≤ 4 positional parameters (pass an object), no nested ternaries (early return, a `switch`, or a
+  small component). Code written before these limits is listed in `eslint-suppressions.json`:
+  never add to it (no `--suppress-*` runs). When you touch a listed function, leave it smaller,
+  and run `pnpm lint:prune` once it passes.
+- **One component, one job.** More than about five `useState` or effects: extract a hook or a
+  reducer. A JSX branch with its own state: its own component. Derive values during render;
+  don't sync them with effects.
+- **Duplication.** A helper copied in three or more places moves to `src/lib/`. Don't add a
+  `registryDependency` between blocks only to share a few lines: a block must install alone.
+  Never deduplicate shadcn's upstream files.
+- **Refactoring.** Pin the behaviour (specs green), change the structure in its own commit with
+  no behaviour change, prove it (same specs, same visual baselines).
+- **Tests test behaviour.** If a test would still pass with the function returning nothing,
+  delete it.
+
+### Leave a clean trail
+
+- Refactor commits are separate from behaviour commits. Each message says why, what changed, and
+  how you checked it.
+- The PR description is the log: what was done, in order, and why.
+
 ## Code style
 
 **Prettier formats, ESLint checks quality** — never the other way round. Format on save (the repo's
@@ -103,12 +152,15 @@ A change is finished when all of this is true:
   prettier-plugin-tailwindcss (also inside `cn()` and `cva()`). Don't fight it, don't hand-align.
 - ESLint (`eslint.config.mjs`): typescript-eslint strict + stylistic **type-checked**, react-hooks
   (including the React Compiler rules), @eslint-react, jsx-a11y, react-refresh, sorted imports and
-  exports. Named exports only in `src/`. `pnpm lint:fix` applies the safe fixes; review the diff.
+  exports, eslint-comments, and the size limits above. Named exports only in `src/`.
+  `pnpm lint:fix` applies the safe fixes; review the diff.
 - **Disabling a rule** is a last resort and always targeted: on the line, with the reason —
   `// eslint-disable-next-line <rule> -- <why>` (in JSX children:
-  `{/* eslint-disable-next-line <rule> -- <why> */}`). Never a bare or file-wide disable. A rule that
-  conflicts with an established shadcn/Radix pattern is turned off for a glob in `eslint.config.mjs`,
-  with a comment saying why — don't rewrite shadcn code to please the linter.
+  `{/* eslint-disable-next-line <rule> -- <why> */}`). The linter rejects a disable without
+  `-- <why>` and one that no longer silences anything. A file-wide disable only at the top of a
+  story file, with its reason. A rule that conflicts with an established shadcn/Radix pattern is
+  turned off for a glob in `eslint.config.mjs`, with a comment saying why — don't rewrite shadcn
+  code to please the linter.
 - TypeScript: `tsc` is TypeScript 7; the `typescript` package is the TS 6 compatibility build that
   typescript-eslint needs (TS 7 has no JS API yet). The root `tsconfig.json` is a solution
   (`tsconfig.app.json`, `tsconfig.storybook.json`, `tsconfig.tests.json`); a new folder of TS files

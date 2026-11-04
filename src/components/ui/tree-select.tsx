@@ -139,8 +139,7 @@ function TreeSelect(props: TreeSelectProps) {
     return () => {
       cancelAnimationFrame(frame)
     }
-    // Only when the popover opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the popover opens.
   }, [open])
 
   const toggleOpen = (value: string, next?: boolean) => {

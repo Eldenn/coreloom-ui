@@ -1,6 +1,7 @@
 // Code quality for the library, stories, tests, build scripts and the starter. Formatting is
 // Prettier's job: eslint-config-prettier (last) turns off every rule that would fight it.
 import js from '@eslint/js'
+import comments from '@eslint-community/eslint-plugin-eslint-comments/configs'
 import eslintReact from '@eslint-react/eslint-plugin'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import prettier from 'eslint-config-prettier'
@@ -27,6 +28,23 @@ export default defineConfig(
     'starter/src/routeTree.gen.ts',
   ]),
   js.configs.recommended,
+  {
+    // A disable that no longer silences anything is noise: it goes.
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
+  },
+  {
+    // Disables are a last resort: targeted, and always with `-- <why>` (AGENTS.md → Code style).
+    extends: [comments.recommended],
+    rules: {
+      '@eslint-community/eslint-comments/require-description': [
+        'error',
+        { ignore: ['eslint-enable'] },
+      ],
+      // A whole-file disable at the top is allowed when it says why (story files that pass
+      // autoFocus={false} everywhere); anywhere else a disable is paired with an enable.
+      '@eslint-community/eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
+    },
+  },
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
   {
@@ -178,6 +196,38 @@ export default defineConfig(
             namedFrom: true,
             namespaceFrom: true,
           },
+        },
+      ],
+    },
+  },
+  {
+    // Size limits (AGENTS.md → How to change code). Code written before them is listed in
+    // eslint-suppressions.json; that list only shrinks (`pnpm lint:prune` once a function passes).
+    files: ['src/**/*.{ts,tsx}', 'starter/src/**/*.{ts,tsx}'],
+    rules: {
+      complexity: ['error', 15],
+      'max-lines-per-function': ['error', { max: 150, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', { max: 600, skipBlankLines: true, skipComments: true }],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 4],
+      'no-nested-ternary': 'error',
+    },
+  },
+  {
+    // Locale files are one long table of strings per locale, split by group for parallel work.
+    files: ['src/lib/i18n*.tsx', 'starter/src/lib/i18n*.tsx', 'starter/src/lib/messages.ts'],
+    rules: { 'max-lines': 'off' },
+  },
+  {
+    // Library code: ids come from React.useId(), never a fixed string (two instances on a page
+    // must not clash).
+    files: ['src/components/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='htmlFor'] > Literal",
+          message: 'Use an id from React.useId(), never a fixed string.',
         },
       ],
     },

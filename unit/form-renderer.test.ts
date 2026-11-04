@@ -359,3 +359,213 @@ describe('types from the input primitives', () => {
     expect(read.sections[0].fields[1]).not.toHaveProperty('units')
   })
 })
+
+// Edge cases that pin the behaviour of the pure helpers before and after they were split up.
+describe('edge cases', () => {
+  it('reads every condition operator, and holds on an unknown one', () => {
+    const values = { kind: 'company', tags: ['a'], note: 'hello', seats: 3 }
+    expect(evaluateCondition({ field: 'kind', op: 'notEquals', value: 'person' }, values)).toBe(
+      true,
+    )
+    expect(evaluateCondition({ field: 'tags', op: 'notEquals', value: 'a' }, values)).toBe(false)
+    expect(evaluateCondition({ field: 'tags', op: 'equals', value: 'a' }, values)).toBe(true)
+    expect(evaluateCondition({ field: 'note', op: 'contains', value: 'ell' }, values)).toBe(true)
+    expect(evaluateCondition({ field: 'seats', op: 'contains', value: 3 }, values)).toBe(false)
+    expect(evaluateCondition({ field: 'seats', op: 'gt', value: '2' }, values)).toBe(false)
+    expect(evaluateCondition({ field: 'kind', op: 'in', value: 'company' }, values)).toBe(false)
+    expect(evaluateCondition({ field: 'kind', op: 'filled' }, values)).toBe(true)
+    expect(evaluateCondition({ any: [] }, values)).toBe(true)
+    expect(evaluateCondition({ all: [] }, values)).toBe(true)
+    expect(evaluateCondition(undefined, values)).toBe(true)
+    const unknown = { field: 'kind', op: 'toString' } as unknown as Parameters<
+      typeof evaluateCondition
+    >[0]
+    expect(evaluateCondition(unknown, values)).toBe(true)
+  })
+
+  it('checks lengths, time bounds and item counts', () => {
+    const text = { name: 'c', type: 'text', label: 'c', minLength: 2, maxLength: 3 }
+    expect(checkFormField(text, 'a')).toEqual({ type: 'minLength', limit: 2 })
+    expect(checkFormField(text, 'abcd')).toEqual({ type: 'maxLength', limit: 3 })
+    expect(checkFormField(text, 'abc')).toBeUndefined()
+    expect(
+      checkFormField({ name: 'p', type: 'text', label: 'p', pattern: '[a-z]+' }, 'A1'),
+    ).toEqual({ type: 'pattern' })
+    const time = { name: 't', type: 'time', label: 't', min: '09:00', max: '18:00' }
+    expect(checkFormField(time, '08:30')).toEqual({ type: 'timeMin', limit: '09:00' })
+    expect(checkFormField(time, '19:00')).toEqual({ type: 'timeMax', limit: '18:00' })
+    expect(checkFormField(time, '12:00')).toBeUndefined()
+    expect(
+      checkFormField({ name: 'd', type: 'date', label: 'd', max: '2026-12-31' }, '2027-01-01'),
+    ).toEqual({ type: 'dateMax', limit: '2026-12-31' })
+    expect(checkFormField({ name: 's', type: 'number', label: 's', min: 1 }, 0)).toEqual({
+      type: 'min',
+      limit: 1,
+    })
+    expect(
+      checkFormField({ name: 'g', type: 'tags', label: 'g', maxItems: 1 }, ['a', 'b']),
+    ).toEqual({ type: 'maxItems', limit: 1 })
+  })
+
+  it('reads combined conditions, and drops the broken parts', () => {
+    const { spec: read, issues } = readFormSpec({
+      fields: [
+        { name: 'a', type: 'text' },
+        {
+          name: 'b',
+          visibleWhen: {
+            all: [{ field: 'a', op: 'filled' }, { field: 'a', op: 'nope' }, 'junk'],
+          },
+        },
+        { name: 'c', visibleWhen: { any: [{ field: 'a', value: ['x', 1, null] }] } },
+        { name: 'd', visibleWhen: { field: 'a', op: 'equals', value: { evil: true } } },
+        { name: 'e', visibleWhen: { field: 'a', value: [{}] } },
+      ],
+    })
+    const [, b, c, d, e] = read.sections[0].fields
+    expect(b.visibleWhen).toEqual({ all: [{ field: 'a', op: 'filled' }] })
+    expect(c.visibleWhen).toEqual({ any: [{ field: 'a', op: 'equals', value: ['x', 1, null] }] })
+    expect(d.visibleWhen).toBeUndefined()
+    expect(e.visibleWhen).toBeUndefined()
+    expect(issues).toEqual([
+      { path: 'fields[3]', code: 'badCondition', detail: 'd' },
+      { path: 'fields[4]', code: 'badCondition', detail: 'e' },
+    ])
+  })
+
+  it('reads sections, settings and hostile values', () => {
+    expect(readFormSpec('nope').issues).toEqual([{ path: '', code: 'notObject' }])
+    expect(readFormSpec({}).spec).toEqual({ version: 1, sections: [{ id: 'main', fields: [] }] })
+    const { spec: read, issues } = readFormSpec({
+      title: 'T',
+      description: '',
+      submitLabel: 'Go',
+      sections: [
+        'nope',
+        { id: 'x', title: 'X', columns: 3, fields: [{ name: 'a', span: 2, minLength: -1 }] },
+        {
+          id: 'x',
+          columns: 5,
+          fields: [
+            {
+              name: 'b',
+              type: 'select',
+              required: 'yes',
+              min: '2026-01-01',
+              currency: 'EUR',
+              list: ['a', 'b'],
+              bad: [1],
+              none: null,
+            },
+          ],
+        },
+      ],
+    })
+    expect(read.title).toBe('T')
+    expect(read.description).toBeUndefined()
+    expect(read.submitLabel).toBe('Go')
+    expect(read.sections.map((s) => [s.id, s.columns])).toEqual([
+      ['x', 3],
+      ['x-3', undefined],
+    ])
+    expect(read.sections[0].fields[0]).toEqual({ name: 'a', type: 'text', label: 'a', span: 2 })
+    expect(read.sections[1].fields[0]).toEqual({
+      name: 'b',
+      type: 'select',
+      label: 'b',
+      min: '2026-01-01',
+      options: [],
+      currency: 'EUR',
+      list: ['a', 'b'],
+    })
+    expect(issues).toEqual([
+      { path: 'sections[0]', code: 'notObject' },
+      { path: 'sections[2].fields[0]', code: 'noOptions', detail: 'b' },
+    ])
+  })
+
+  it('writes every kind of field to JSON Schema', () => {
+    const { schema, uiSchema } = toJSONSchema({
+      version: 1,
+      description: 'D',
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            { name: 'on', type: 'checkbox', label: 'On', defaultValue: true },
+            { name: 'period', type: 'daterange', label: 'Period' },
+            { name: 'files', type: 'file', label: 'Files' },
+            { name: 'price', type: 'money', label: 'Price', min: 0, step: 0.01 },
+            { name: 'when', type: 'date', label: 'When', min: '2026-01-01', max: '2026-12-31' },
+            {
+              name: 'tags',
+              type: 'tags',
+              label: 'Tags',
+              options: [{ value: 'a', label: 'A' }],
+              placeholder: 'Pick',
+            },
+          ],
+        },
+      ],
+    })
+    const p = schema.properties as Record<string, Record<string, unknown>>
+    expect(schema.description).toBe('D')
+    expect(schema.required).toBeUndefined()
+    expect(p.on).toEqual({ title: 'On', type: 'boolean', default: true })
+    expect(p.period).toMatchObject({ type: 'object' })
+    expect(p.files).toEqual({
+      title: 'Files',
+      type: 'array',
+      items: { type: 'string', contentEncoding: 'binary' },
+    })
+    expect(p.price).toEqual({ title: 'Price', type: 'number', minimum: 0, multipleOf: 0.01 })
+    expect(p.when).toEqual({
+      title: 'When',
+      type: 'string',
+      format: 'date',
+      formatMinimum: '2026-01-01',
+      formatMaximum: '2026-12-31',
+    })
+    expect(p.tags).toEqual({
+      title: 'Tags',
+      type: 'array',
+      items: { oneOf: [{ const: 'a', title: 'A' }] },
+    })
+    expect(uiSchema.tags).toEqual({ 'ui:widget': 'tags', 'ui:placeholder': 'Pick' })
+  })
+
+  it('reads a schema with oneOf options, formats, widgets and nested objects only', () => {
+    const { spec: read } = fromJSONSchema(
+      {
+        type: 'object',
+        properties: {
+          site: { type: 'string', format: 'uri' },
+          size: { type: 'string', oneOf: [{ const: 's', title: 'Small' }, 'junk'] },
+          words: { type: 'array', items: { type: 'string' } },
+          n: { type: 'number', multipleOf: 5 },
+          color: { type: 'string' },
+          skip: true,
+          deep: { type: 'object', properties: { inner: { type: 'object', properties: {} } } },
+        },
+      },
+      { color: { 'ui:widget': 'radio', 'ui:options': { inline: true } }, n: { 'ui:widget': 'x' } },
+    )
+    const fields = read.sections[0].fields
+    expect(fields.map((f) => [f.name, f.type])).toEqual([
+      ['site', 'url'],
+      ['size', 'select'],
+      ['words', 'tags'],
+      ['n', 'number'],
+      ['color', 'radio'],
+    ])
+    expect(fields[3]).toMatchObject({ step: 5 })
+    expect(fields[4]).toMatchObject({ inline: true })
+    expect(read.sections.map((s) => s.id)).toEqual(['main', 'inner', 'deep'])
+    expect(fromJSONSchema('nope').issues).toEqual([{ path: '', code: 'notObject' }])
+    expect(
+      fromJSONSchema({ type: 'object', properties: { o: { type: 'object' } } }).spec.sections.map(
+        (s) => s.id,
+      ),
+    ).toEqual(['o'])
+  })
+})

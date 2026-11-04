@@ -100,7 +100,7 @@ function MoneyInput({
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft text from the value while the field isn't focused.
     if (!focused) setText(display(current))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- display() is rebuilt each render from the locale and currency listed here.
   }, [current, locale, currency])
 
   const commit = (n: number | null) => {
