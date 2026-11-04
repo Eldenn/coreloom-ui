@@ -220,6 +220,26 @@ test('a header logo replays its entrance on hover', async ({ page }) => {
   await expect(logo).toHaveAttribute('data-animation', 'stagger')
 })
 
+test('a header logo replays in place, so the first click lands', async ({ page }) => {
+  await open(page, 'components-motion-logo--in-a-header')
+  const link = page.getByRole('link', { name: 'Atlas, home' })
+  const logo = page.locator('[data-slot=logo]')
+  await link.hover()
+  await expect(logo).toHaveAttribute('data-animation', 'stagger')
+  await logo.evaluate((el) => el.setAttribute('data-test-node', 'first'))
+  // Leave and come back: the replay must not swap the element under the pointer.
+  await page.mouse.move(0, 0)
+  await link.hover()
+  await expect(logo).toHaveAttribute('data-test-node', 'first')
+  await expect(logo).toHaveAttribute('data-animation', 'stagger')
+  await page.evaluate(() => {
+    window.location.hash = 'away'
+  })
+  await page.mouse.move(0, 0)
+  await link.click()
+  await expect(page).toHaveURL(/#$/)
+})
+
 test('the logo loader is busy, then hands over to the content', async ({ page }) => {
   await open(page, 'components-motion-logo--loader')
   const status = page.getByRole('status')
