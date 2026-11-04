@@ -96,3 +96,57 @@ test.describe('Diagram editor (Blocks/Diagrams/Diagram editor)', () => {
     await expect(page.getByText('Nothing to draw yet.')).toBeVisible()
   })
 })
+
+test.describe('Diagram editor tools (Blocks/Diagrams/Diagram editor)', () => {
+  test('adds a class from the toolbar and names it in the properties', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    const tools = page.getByRole('toolbar', { name: 'Drawing tools' })
+    await tools.getByRole('button', { name: 'Add', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Interface' }).click()
+    const name = page.getByRole('textbox', { name: 'Name' })
+    await expect(name).toBeFocused()
+    await expect(name).toHaveValue('Interface')
+    await name.fill('Billing')
+    await name.press('Enter')
+    await expect(page.getByRole('status')).toHaveText('Change applied · Class diagram, 8 elements')
+    await expect(page.getByRole('group', { name: /^Class: Billing, «interface»/ })).toBeVisible()
+    await expect(name).toBeFocused()
+  })
+
+  test('connects two classes with the form, then changes the line’s kind', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('button', { name: 'Connect' }).click()
+    await page.getByRole('combobox', { name: 'Kind' }).selectOption({ label: 'Inheritance' })
+    await page.getByRole('combobox', { name: 'From' }).selectOption('LineItem')
+    await page.getByRole('combobox', { name: 'To' }).selectOption('Customer')
+    await page.getByRole('button', { name: 'Connect' }).last().click()
+    await expect(page.getByLabel('LineItem inherits from Customer')).toHaveCount(1)
+    const properties = page.getByRole('group', { name: 'Properties' })
+    await expect(properties.getByText('LineItem to Customer')).toBeVisible()
+    await properties.getByRole('combobox', { name: 'Kind' }).selectOption({ label: 'Dependency' })
+    await expect(page.getByLabel('LineItem depends on Customer')).toHaveCount(1)
+  })
+
+  test('deletes the selection, keeps focus on the drawing, and undoes it', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    const customer = page.getByRole('group', { name: /^Class: Customer/ })
+    await customer.click()
+    await page.getByRole('button', { name: 'Delete' }).click()
+    await expect(customer).toHaveCount(0)
+    await expect(page.getByRole('status')).toHaveText('1 item deleted · Class diagram, 6 elements')
+    await expect(page.getByRole('application', { name: /^Preview/ })).toBeFocused()
+    await page.getByRole('button', { name: 'Undo' }).click()
+    await expect(customer).toBeVisible()
+    await page.keyboard.press('ControlOrMeta+Shift+Z')
+    await expect(customer).toHaveCount(0)
+  })
+
+  test('keeps the tools off while the text has problems', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--with-problems')
+    const tools = page.getByRole('toolbar', { name: 'Drawing tools' })
+    await expect(tools.getByRole('button', { name: 'Add', exact: true })).toBeDisabled()
+    await expect(
+      page.getByText('Fix the problems in the text to edit with the tools.'),
+    ).toBeVisible()
+  })
+})

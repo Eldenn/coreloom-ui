@@ -61,16 +61,23 @@ function ensureEntity(p: ErParse, id: string): ErEntity {
   return entity
 }
 
-function readAttribute(entity: ErEntity, line: SourceLine, p: ErParse) {
-  const m = match(ATTRIBUTE, line.text)
-  if (!m) {
-    p.problems.push(problem(line, 'syntax'))
-    return
-  }
+/** One attribute line, `string email UK "comment"`; null when it isn't one. */
+function parseErAttribute(text: string): ErAttribute | null {
+  const m = match(ATTRIBUTE, text.trim())
+  if (!m) return null
   const [, type = '', name = '', keys, comment] = m
   const attribute: ErAttribute = { type, name }
   if (keys) attribute.keys = keys.split(',').map((k) => k.trim() as ErKey)
   if (comment) attribute.comment = comment
+  return attribute
+}
+
+function readAttribute(entity: ErEntity, line: SourceLine, p: ErParse) {
+  const attribute = parseErAttribute(line.text)
+  if (!attribute) {
+    p.problems.push(problem(line, 'syntax'))
+    return
+  }
   entity.attributes = [...(entity.attributes ?? []), attribute]
 }
 
@@ -137,7 +144,8 @@ const RIGHT_OF = Object.fromEntries(Object.entries(RIGHT).map(([k, v]) => [v, k]
   string
 >
 
-function attributeLine(a: ErAttribute): string {
+/** An attribute as one Mermaid line. */
+function erAttributeText(a: ErAttribute): string {
   const keys = a.keys?.length ? ` ${a.keys.join(', ')}` : ''
   const comment = a.comment ? ` ${quote(a.comment)}` : ''
   return `${a.type.replace(/\s+/g, '_')} ${a.name.replace(/\s+/g, '_')}${keys}${comment}`
@@ -153,7 +161,7 @@ function erToMermaid(diagram: ErDiagram): string {
       out.push(`  ${head}`)
       continue
     }
-    out.push(`  ${head} {`, ...e.attributes.map((a) => `    ${attributeLine(a)}`), '  }')
+    out.push(`  ${head} {`, ...e.attributes.map((a) => `    ${erAttributeText(a)}`), '  }')
   }
   for (const r of diagram.relations) {
     const line = r.identifying === false ? '..' : '--'
@@ -163,4 +171,4 @@ function erToMermaid(diagram: ErDiagram): string {
   return out.join('\n')
 }
 
-export { erToMermaid, parseErDiagram }
+export { erAttributeText, erToMermaid, parseErAttribute, parseErDiagram }

@@ -147,6 +147,8 @@ export * from '@/hooks/use-demo-chat'
 export * from '@/lib/accent'
 export * from '@/lib/ai'
 export * from '@/lib/uml'
+export * from '@/lib/uml-edit'
+export * from '@/lib/uml-edit-fields'
 export * from '@/lib/uml-mermaid'
 // Recharts primitives, for the Chart preview only (apps import "recharts" directly).
 export * as Recharts from 'recharts'
