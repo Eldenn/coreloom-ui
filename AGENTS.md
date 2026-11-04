@@ -320,6 +320,10 @@ a `<Canvas of={Stories.X} />`. `tests/docs.spec.ts` checks every page renders.
   - A breaking change for someone who installed an item adds `!` after the type or scope and a
     `BREAKING CHANGE: <what to do>` footer; its changeset has an **Upgrading** section too.
   - Pull request titles follow the same format, since they become the merge or squash commit.
+- **Branch names** use the same types: `<type>/<short-description>`, lower case, words joined by
+  hyphens, no tool or agent name: `feat/uml-diagrams`, `fix/gauge-center-text`,
+  `chore/starter-sync`. `main` and `changeset-release/main` (opened by the release workflow) are
+  the only exceptions.
 - **The repository owner is the only author.** Commits are authored and committed under the owner's
   name and email. No `Co-Authored-By` naming an AI assistant, no session or tool trailers (such as
   `Claude-Session:`), no "Generated with …" footer. Commit messages, pull request titles and bodies,
