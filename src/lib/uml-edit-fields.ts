@@ -24,6 +24,16 @@ import {
   toIdentifier,
   type UmlRelationType,
 } from '@/lib/uml-edit'
+import {
+  fieldsIn,
+  isElementDiagram,
+  relationFieldsIn,
+  renameIdIn,
+  reverseIn,
+  setElementField,
+  setRelationIn,
+} from '@/lib/uml-edit-elements'
+import type { ElementDiagram } from '@/lib/uml-elements'
 import { parseMember } from '@/lib/uml-mermaid-class'
 import { erAttributeText, parseErAttribute } from '@/lib/uml-mermaid-er'
 
@@ -150,7 +160,11 @@ function renameSequence(d: SequenceDiagram, from: string, to: string): SequenceD
 }
 
 /** Gives the element a new id and updates everything that points to it. */
-function renameId(d: Exclude<UmlSpec, C4Diagram>, from: string, to: string): UmlSpec {
+function renameId(
+  d: Exclude<UmlSpec, C4Diagram | ElementDiagram>,
+  from: string,
+  to: string,
+): UmlSpec {
   switch (d.kind) {
     case 'class':
       return renameClass(d, from, to)
@@ -169,7 +183,10 @@ interface Labelled {
 }
 
 /** The element's own record, for the kinds whose elements are named by their id or a label. */
-function labelled(d: Exclude<UmlSpec, C4Diagram>, id: string): Labelled | undefined {
+function labelled(
+  d: Exclude<UmlSpec, C4Diagram | ElementDiagram>,
+  id: string,
+): Labelled | undefined {
   switch (d.kind) {
     case 'class':
       return d.classes.find((c) => c.id === id)
@@ -182,7 +199,11 @@ function labelled(d: Exclude<UmlSpec, C4Diagram>, id: string): Labelled | undefi
   }
 }
 
-function setLabel(d: Exclude<UmlSpec, C4Diagram>, id: string, label: string | null): UmlSpec {
+function setLabel(
+  d: Exclude<UmlSpec, C4Diagram | ElementDiagram>,
+  id: string,
+  label: string | null,
+): UmlSpec {
   const apply = <T extends Labelled>(x: T): T => {
     if (x.id !== id) return x
     const { label: _old, ...rest } = x
@@ -210,7 +231,9 @@ function renameC4(d: C4Diagram, id: string, name: string): C4Diagram {
   }
 }
 
-function renameNote(d: ClassDiagram | StateDiagram, index: number, text: string): UmlSpec {
+type WithNotes = ClassDiagram | StateDiagram | ElementDiagram
+
+function renameNote(d: WithNotes, index: number, text: string): UmlSpec {
   const notes = (d.notes ?? []).map((n, i) => (i === index ? { ...n, text } : n))
   return { ...d, notes }
 }
@@ -227,6 +250,7 @@ function renameElement(diagram: UmlSpec, id: string, name: string): EditResult {
   const note = noteIndex(id)
   if (note !== null && (diagram.kind === 'class' || diagram.kind === 'state'))
     return { diagram: renameNote(diagram, note, next), id }
+  if (isElementDiagram(diagram)) return renameIn(diagram, id, next, note)
   if (id.startsWith(NAMESPACE)) {
     const ns = toIdentifier(next, 'Namespace')
     return { diagram: renameId(diagram, id, ns), id: `${NAMESPACE}${ns}` }
@@ -237,7 +261,18 @@ function renameElement(diagram: UmlSpec, id: string, name: string): EditResult {
   const free = toIdentifier(next) === next && !takenIds(diagram).has(next)
   if (!free) return { diagram: setLabel(diagram, id, next), id }
   const renamed = renameId(diagram, id, next)
-  return { diagram: renamed.kind === 'c4' ? renamed : setLabel(renamed, next, null), id: next }
+  if (renamed.kind === 'c4' || isElementDiagram(renamed)) return { diagram: renamed, id: next }
+  return { diagram: setLabel(renamed, next, null), id: next }
+}
+
+/** The same rule for use case, activity and deployment elements, which all have a label. */
+function renameIn(d: ElementDiagram, id: string, name: string, note: number | null): EditResult {
+  if (note !== null) return { diagram: renameNote(d, note, name), id }
+  if (!d.elements.some((e) => e.id === id)) return { diagram: d, id }
+  if (name === id) return { diagram: setElementField(d, id, 'label', null), id }
+  const free = toIdentifier(name) === name && !takenIds(d).has(name)
+  if (!free) return { diagram: setElementField(d, id, 'label', name), id }
+  return { diagram: setElementField(renameIdIn(d, id, name), name, 'label', null), id: name }
 }
 
 // ── Element fields ──────────────────────────────────────────────────────────────────────────────
@@ -257,7 +292,7 @@ function classFields(d: ClassDiagram, id: string): UmlElementFields | null {
   return { name: c.label ?? c.id, stereotype: c.stereotype ?? '', members }
 }
 
-function noteFields(d: ClassDiagram | StateDiagram, id: string): UmlElementFields | null {
+function noteFields(d: WithNotes, id: string): UmlElementFields | null {
   const index = noteIndex(id)
   const note = index === null ? undefined : d.notes?.[index]
   return note ? { name: note.text } : null
@@ -290,6 +325,8 @@ function erFields(d: ErDiagram, id: string): UmlElementFields | null {
 
 /** What a properties panel shows for an element; null when the id isn't one. */
 function elementFields(diagram: UmlSpec, id: string): UmlElementFields | null {
+  if (isElementDiagram(diagram))
+    return noteIndex(id) === null ? fieldsIn(diagram, id) : noteFields(diagram, id)
   switch (diagram.kind) {
     case 'class':
       return noteIndex(id) === null ? classFields(diagram, id) : noteFields(diagram, id)
@@ -318,6 +355,10 @@ const optional = <K extends string>(key: K, value: string | undefined) =>
   (value?.trim() ? { [key]: value.trim() } : {}) as Partial<Record<K, string>>
 
 function applyFields(d: UmlSpec, id: string, f: UmlElementFields): UmlSpec {
+  if (isElementDiagram(d)) {
+    if (d.kind !== 'deployment' || f.stereotype === undefined) return d
+    return setElementField(d, id, 'stereotype', f.stereotype.trim() || null)
+  }
   switch (d.kind) {
     case 'class': {
       const members = f.members?.filter((m) => m.text.trim())
@@ -423,6 +464,7 @@ function c4RelationFields(d: C4Diagram, index: number): UmlRelationFields | null
 
 /** What a properties panel shows for the relation at `index`; null when there's none. */
 function relationFields(diagram: UmlSpec, index: number): UmlRelationFields | null {
+  if (isElementDiagram(diagram)) return relationFieldsIn(diagram, index)
   switch (diagram.kind) {
     case 'class':
       return classRelationFields(diagram, index)
@@ -449,6 +491,8 @@ const CLASS_TYPES = new Set<string>(relationTypes({ kind: 'class', classes: [], 
 
 /** Changes the relation at `index`. */
 function setRelationFields(diagram: UmlSpec, index: number, f: UmlRelationFields): UmlSpec {
+  if (isElementDiagram(diagram))
+    return setRelationIn(diagram, index, { label: f.label, ...(f.type ? { type: f.type } : {}) })
   switch (diagram.kind) {
     case 'class':
       return {
@@ -504,6 +548,7 @@ function setRelationFields(diagram: UmlSpec, index: number, f: UmlRelationFields
 
 /** Turns the relation at `index` round: `from` becomes `to`, and their ends swap too. */
 function reverseRelation(diagram: UmlSpec, index: number): UmlSpec {
+  if (isElementDiagram(diagram)) return reverseIn(diagram, index)
   switch (diagram.kind) {
     case 'class':
       return {

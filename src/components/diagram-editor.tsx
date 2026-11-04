@@ -1,7 +1,9 @@
 'use client'
 
-// Coreloom UI — Diagram editor. Software diagrams as text: Mermaid (class, sequence, state, ER and
-// C4) or Coreloom's UML JSON on the left, the drawing on the right, problems marked on their line.
+// Coreloom UI — Diagram editor. Software diagrams as text: Mermaid (class, sequence, state, ER, C4
+// and flowcharts as activity diagrams), PlantUML (those, use case and deployment diagrams) or
+// Coreloom's UML JSON on the left, the drawing on the right, problems marked on their line. Pasting
+// text in the other syntax switches to it.
 // The drawing has its own tools: add elements (or drag them in), connect them, rename in place,
 // copy, paste, duplicate, delete, align and arrange, change what's selected in the properties
 // panel (a sequence diagram's steps too), undo. Each change is made on the model and the text is
@@ -38,9 +40,10 @@ import {
 import { DIRECTIONS } from '@/lib/uml-arrange'
 import type { UmlImageFormat } from '@/lib/uml-image'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
+import { isPlantUml, parsePlantUml, toPlantUml } from '@/lib/uml-plantuml'
 import { cn } from '@/lib/utils'
 
-type DiagramFormat = 'mermaid' | 'json'
+type DiagramFormat = 'mermaid' | 'plantuml' | 'json'
 
 interface DiagramEditorProps {
   /** The text (controlled), in `format`. */
@@ -53,7 +56,7 @@ interface DiagramEditorProps {
   onFormatChange?: (format: DiagramFormat) => void
   /** Each time the text is read: the diagram (null when nothing could be drawn) and its problems. */
   onDiagramChange?: (result: UmlParseResult) => void
-  /** Starting points under "New diagram", as Mermaid. Default: one per diagram type. */
+  /** Starting points under "New diagram", in Mermaid or PlantUML. Default: one per diagram type. */
   templates?: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
   /** CSS height of both panes on wide screens (they stack on narrow ones). Default: 560px. */
   height?: string
@@ -109,17 +112,121 @@ const DIAGRAM_TEMPLATES: readonly { kind: UmlDiagramKind; text: string }[] = [
   System(app, "Our app", "What we build")
   Rel(user, app, "Uses")`,
   },
+  {
+    kind: 'usecase',
+    text: `@startuml
+left to right direction
+actor Customer
+rectangle Shop {
+  usecase "Place an order" as Order
+  usecase "Pay" as Pay
+}
+Customer -- Order
+Order ..> Pay : <<include>>
+@enduml`,
+  },
+  {
+    kind: 'activity',
+    text: `flowchart TB
+  start@{ shape: sm-circ }
+  Fill("Fill the cart")
+  Paid{"Paid?"}
+  Ship("Ship the order")
+  done@{ shape: fr-circ }
+  start --> Fill --> Paid
+  Paid -->|yes| Ship --> done
+  Paid -->|no| Fill`,
+  },
+  {
+    kind: 'deployment',
+    text: `@startuml
+node "Web server" as web {
+  artifact "app.jar" as app
+}
+database "PostgreSQL" as db
+web -- db : JDBC
+@enduml`,
+  },
 ]
 
-/** Reads text in either format. */
+/** Reads text in any of the formats. */
 function parseDiagram(text: string, format: DiagramFormat): UmlParseResult {
-  return format === 'json' ? parseUmlJson(text) : parseMermaid(text)
+  switch (format) {
+    case 'json':
+      return parseUmlJson(text)
+    case 'plantuml':
+      return parsePlantUml(text)
+    case 'mermaid':
+      return parseMermaid(text)
+  }
 }
 
 /** The diagram as text in `format`, with the positions people dragged (JSON keeps them). */
 function writeDiagram(diagram: UmlSpec, format: DiagramFormat): string {
-  return format === 'json' ? toUmlJson(diagram) : toMermaid(diagram)
+  switch (format) {
+    case 'json':
+      return toUmlJson(diagram)
+    case 'plantuml':
+      return toPlantUml(diagram)
+    case 'mermaid':
+      return toMermaid(diagram)
+  }
 }
+
+/**
+ * True when a diagram of this kind reads back the same from text in `format`: Mermaid has no use
+ * case or deployment diagrams, and PlantUML's activity syntax can't hold every graph.
+ */
+function canWrite(kind: UmlDiagramKind, format: DiagramFormat): boolean {
+  if (format === 'mermaid') return kind !== 'usecase' && kind !== 'deployment'
+  if (format === 'plantuml') return kind !== 'activity'
+  return true
+}
+
+/** The syntax pasted text is written in, when it clearly says: `@startuml`, or a Mermaid header. */
+function sniffFormat(text: string): DiagramFormat | null {
+  if (isPlantUml(text)) return 'plantuml'
+  if (/^\s*[{[]/.test(text)) return 'json'
+  const first = text.trimStart().split(/\s/)[0] ?? ''
+  return /^(classDiagram|sequenceDiagram|stateDiagram|erDiagram|flowchart|graph|C4\w+|---)/.test(
+    first,
+  )
+    ? 'mermaid'
+    : null
+}
+
+/**
+ * A template's text in the current format when that format can hold its kind; otherwise as
+ * written, in the format it's written in.
+ */
+function templateIn(
+  template: string,
+  format: DiagramFormat,
+): { text: string; format: DiagramFormat } {
+  const own: DiagramFormat = isPlantUml(template) ? 'plantuml' : 'mermaid'
+  const read = parseDiagram(template, own).diagram
+  if (format !== own && read && canWrite(read.kind, format))
+    return { text: writeDiagram(read, format), format }
+  return { text: template, format: own }
+}
+
+/**
+ * The format to switch to when `next` is text pasted in another syntax; null when typing (a few
+ * characters changed) or when it says nothing clear.
+ */
+function pastedFormat(next: string, previous: string, format: DiagramFormat): DiagramFormat | null {
+  if (Math.abs(next.length - previous.length) <= 8) return null
+  const sniffed = sniffFormat(next)
+  return sniffed && sniffed !== format ? sniffed : null
+}
+
+const FORMATS: readonly [DiagramFormat, string][] = [
+  ['mermaid', 'Mermaid'],
+  ['plantuml', 'PlantUML'],
+  ['json', 'JSON'],
+]
+
+const EXTENSIONS: Record<DiagramFormat, string> = { mermaid: 'mmd', plantuml: 'puml', json: 'json' }
 
 /** Positions only for elements the diagram still has. */
 function withLayout(diagram: UmlSpec, layout: UmlLayout | null): UmlSpec {
@@ -152,12 +259,18 @@ function readout(result: UmlParseResult, layout: UmlLayout | null, messages: Mes
     .filter((p) => p.line > 0)
     .map((p) => ({ line: p.line, severity: p.severity, message: t.problem[p.code] }))
   const invalid = result.problems.some((p) => p.severity === 'error')
-  return { diagram, kindName, status, diagnostics, invalid }
+  return { diagram, kind: diagram?.kind ?? null, kindName, status, diagnostics, invalid }
 }
 
-/** The directions the text can keep: Mermaid's C4 has none (only JSON keeps one). */
+/**
+ * The directions the text can keep: Mermaid's C4 has none, PlantUML only left to right (only JSON
+ * keeps every one).
+ */
 function keptDirections(diagram: UmlSpec | null, format: DiagramFormat) {
-  return diagram?.kind === 'c4' && format === 'mermaid' ? [] : DIRECTIONS
+  if (format === 'json') return DIRECTIONS
+  if (format === 'plantuml')
+    return diagram?.kind === 'c4' ? [] : DIRECTIONS.filter((d) => d === 'TB' || d === 'LR')
+  return diagram?.kind === 'c4' ? [] : DIRECTIONS
 }
 
 /** Hands a URL to the browser as a file download. */
@@ -195,10 +308,9 @@ function useDownload({
         })
       return
     }
-    const ext = format === 'json' ? 'json' : 'mmd'
     const blob = new Blob([text()], { type: format === 'json' ? 'application/json' : 'text/plain' })
     const url = URL.createObjectURL(blob)
-    save(url, `${fileName}.${ext}`)
+    save(url, `${fileName}.${EXTENSIONS[format]}`)
     URL.revokeObjectURL(url)
   }
   return { download, failed }
@@ -226,6 +338,7 @@ function FileTools({
   templates,
   status,
   kinds,
+  kind,
 }: {
   t: EditorText
   format: DiagramFormat
@@ -239,6 +352,8 @@ function FileTools({
   templates: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
   status: string
   kinds: Messages['diagram']['kinds']
+  /** The kind drawn now: a format that can't hold it can't be picked. */
+  kind: UmlDiagramKind | null
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1.5">
@@ -248,11 +363,18 @@ function FileTools({
           value={format}
           aria-label={t.format}
           onValueChange={(v) => {
-            if (v === 'mermaid' || v === 'json') onFormat(v)
+            if (v === 'mermaid' || v === 'plantuml' || v === 'json') onFormat(v)
           }}
         >
-          <ToolbarToggleItem value="mermaid">Mermaid</ToolbarToggleItem>
-          <ToolbarToggleItem value="json">JSON</ToolbarToggleItem>
+          {FORMATS.map(([value, name]) => (
+            <ToolbarToggleItem
+              key={value}
+              value={value}
+              disabled={kind !== null && !canWrite(kind, value)}
+            >
+              {name}
+            </ToolbarToggleItem>
+          ))}
         </ToolbarToggleGroup>
         <ToolbarSeparator />
         <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />}>
@@ -282,7 +404,7 @@ function FileTools({
               onDownload(format)
             }}
           >
-            {t.downloadText(format === 'json' ? 'json' : 'mmd')}
+            {t.downloadText(EXTENSIONS[format])}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {(['svg', 'png'] as const).map((image) => (
@@ -358,7 +480,11 @@ function DiagramEditor({
   const deferred = React.useDeferredValue(text)
   const source = text === written ? text : deferred
   const result = React.useMemo(() => parseDiagram(source, format), [source, format])
-  const { diagram, kindName, status, diagnostics, invalid } = readout(result, layout, messages)
+  const { diagram, kind, kindName, status, diagnostics, invalid } = readout(
+    result,
+    layout,
+    messages,
+  )
   const editing = useDiagramEditing({
     diagram,
     text,
@@ -386,15 +512,26 @@ function DiagramEditor({
     if (next === format) return
     editing.reset()
     // Convert what could be read; text that couldn't stays as it is.
-    if (diagram) setText(writeDiagram(diagram, next))
+    if (diagram && canWrite(diagram.kind, next)) setText(writeDiagram(diagram, next))
     setFormat(next)
   }
 
-  const applyTemplate = (mermaid: string) => {
+  const changeFormat = (next: DiagramFormat) => {
+    if (next !== format) setFormat(next)
+  }
+
+  const applyTemplate = (template: string) => {
     editing.reset()
     setLayout(null)
-    const read = parseMermaid(mermaid).diagram
-    setText(format === 'json' && read ? toUmlJson(read) : mermaid)
+    const next = templateIn(template, format)
+    setText(next.text)
+    changeFormat(next.format)
+  }
+
+  const type = (next: string) => {
+    editing.reset()
+    setText(next)
+    changeFormat(pastedFormat(next, text, format) ?? format)
   }
 
   const copy = () => {
@@ -431,6 +568,7 @@ function DiagramEditor({
         templates={templates}
         status={[failed ? t.imageFailed : editing.notice, status].filter(Boolean).join(' · ')}
         kinds={messages.diagram.kinds}
+        kind={kind}
       />
       <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="flex min-h-0 min-w-0 flex-col border-b border-border lg:border-r lg:border-b-0">
@@ -440,12 +578,9 @@ function DiagramEditor({
           <div className="h-[280px] min-h-0 lg:h-auto lg:flex-1">
             <CodeEditor
               value={text}
-              onChange={(next) => {
-                editing.reset()
-                setText(next)
-              }}
+              onChange={type}
               language={format === 'json' ? 'json' : 'text'}
-              path={`${fileName}.${format}`}
+              path={`${fileName}.${EXTENSIONS[format]}`}
               diagnostics={diagnostics}
               height="100%"
               className="h-full"
@@ -471,6 +606,7 @@ function DiagramEditor({
 }
 
 export {
+  canWrite,
   DIAGRAM_TEMPLATES,
   DiagramEditor,
   type DiagramEditorProps,

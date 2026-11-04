@@ -78,12 +78,15 @@ function targetOf(diagram: UmlSpec, selection: DiagramPropertiesProps['selection
 
 function ElementForm({
   target,
+  kind,
   locked,
   onChange,
   nameRef,
   t,
 }: {
   target: Extract<Target, { kind: 'element' }>
+  /** The diagram's kind: a deployment node's stereotype is a platform, a class's a role. */
+  kind: UmlSpec['kind']
   locked: boolean
   onChange: (id: string, fields: UmlElementFields) => void
   nameRef?: React.Ref<HTMLInputElement> | undefined
@@ -130,7 +133,7 @@ function ElementForm({
         <TextField
           label={p.stereotype}
           value={text('stereotype')}
-          hint={p.stereotypeHint}
+          hint={kind === 'deployment' ? p.deploymentStereotypeHint : p.stereotypeHint}
           disabled={locked}
           onChange={(v) => {
             set('stereotype', v)
@@ -322,6 +325,7 @@ function DiagramProperties({
       {target.kind === 'element' && (
         <ElementForm
           target={target}
+          kind={diagram.kind}
           locked={locked}
           onChange={onElementChange}
           nameRef={nameRef}

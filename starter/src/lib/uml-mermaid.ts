@@ -1,12 +1,17 @@
 // Coreloom UI — Mermaid text for UML diagrams. `parseMermaid` reads the subset of Mermaid that
-// covers class, sequence, state, entity–relationship and C4 diagrams into Coreloom's UML model,
-// tolerantly: what it can't read becomes a problem on its line and the rest still draws.
-// `toMermaid` writes a diagram back (positions people dragged stay in the JSON only).
+// covers class, sequence, state, entity–relationship and C4 diagrams, and flowcharts as activity
+// diagrams, into Coreloom's UML model, tolerantly: what it can't read becomes a problem on its line
+// and the rest still draws. `toMermaid` writes a diagram back (positions people dragged stay in
+// the JSON only). Mermaid has no use case or deployment diagrams: `toMermaid` writes them as a
+// flowchart any Mermaid renderer draws, which reads back as an activity diagram (PlantUML and JSON
+// keep them whole; `isMermaidSpec` says which kinds round-trip).
 // No `mermaid` dependency: the parsers are plain functions, and nothing is rendered as HTML.
 import type { UmlParseResult, UmlSpec } from '@/lib/uml'
+import type { ActivityDiagram, DeploymentDiagram, UseCaseDiagram } from '@/lib/uml-elements'
 import { c4Level, c4ToMermaid, parseC4Diagram } from '@/lib/uml-mermaid-c4'
 import { classToMermaid, parseClassDiagram } from '@/lib/uml-mermaid-class'
 import { erToMermaid, parseErDiagram } from '@/lib/uml-mermaid-er'
+import { activityToMermaid, isFlowchart, parseFlowchart } from '@/lib/uml-mermaid-flowchart'
 import { parseSequenceDiagram, sequenceToMermaid } from '@/lib/uml-mermaid-sequence'
 import { parseStateDiagram, stateToMermaid } from '@/lib/uml-mermaid-state'
 import { frontMatter, sourceLines } from '@/lib/uml-text'
@@ -31,6 +36,7 @@ function parseMermaid(input: string): UmlParseResult {
     case 'sequenceDiagram':
       return parseSequenceDiagram(lines, title)
   }
+  if (isFlowchart(header.text)) return parseFlowchart(header.text, lines, title)
   const level = c4Level(word)
   if (level) return parseC4Diagram(level, lines, title)
   return {
@@ -39,7 +45,38 @@ function parseMermaid(input: string): UmlParseResult {
   }
 }
 
-/** The diagram as Mermaid text. */
+/** The diagrams Mermaid can write: every kind but use case and deployment. */
+type MermaidSpec = Exclude<UmlSpec, UseCaseDiagram | DeploymentDiagram>
+
+function isMermaidSpec(diagram: UmlSpec): diagram is MermaidSpec {
+  return diagram.kind !== 'usecase' && diagram.kind !== 'deployment'
+}
+
+/** A use case or deployment diagram as the flowchart that draws like it: frames, boxes, links. */
+function asFlowchart(d: UseCaseDiagram | DeploymentDiagram): ActivityDiagram {
+  const holders = new Set(d.elements.flatMap((e) => (e.parent ? [e.parent] : [])))
+  return {
+    kind: 'activity',
+    ...(d.title ? { title: d.title } : {}),
+    direction: d.direction ?? (d.kind === 'usecase' ? 'LR' : 'TB'),
+    elements: d.elements.map((e) => ({
+      id: e.id,
+      kind: e.kind === 'system' || holders.has(e.id) ? 'partition' : 'action',
+      label: e.label ?? e.id,
+      ...(e.parent ? { parent: e.parent } : {}),
+    })),
+    relations: d.relations.map((r) => {
+      const keyword = r.kind && !['association', 'link'].includes(r.kind) ? `«${r.kind}»` : ''
+      const label = [keyword, r.label].filter(Boolean).join(' ')
+      return { from: r.from, to: r.to, ...(label ? { label } : {}) }
+    }),
+  }
+}
+
+/**
+ * The diagram as Mermaid text. Use case and deployment diagrams, which Mermaid lacks, come out as
+ * a flowchart (see `isMermaidSpec`).
+ */
 function toMermaid(diagram: UmlSpec): string {
   switch (diagram.kind) {
     case 'class':
@@ -52,7 +89,12 @@ function toMermaid(diagram: UmlSpec): string {
       return sequenceToMermaid(diagram)
     case 'c4':
       return c4ToMermaid(diagram)
+    case 'activity':
+      return activityToMermaid(diagram)
+    case 'usecase':
+    case 'deployment':
+      return activityToMermaid(asFlowchart(diagram))
   }
 }
 
-export { parseMermaid, toMermaid }
+export { isMermaidSpec, type MermaidSpec, parseMermaid, toMermaid }

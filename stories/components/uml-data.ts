@@ -1,7 +1,8 @@
-// Example diagrams for the UML stories, written as Mermaid and read with parseMermaid, the way an
-// app would load them.
+// Example diagrams for the UML stories, written as Mermaid or PlantUML and read with parseMermaid
+// or parsePlantUml, the way an app would load them.
 import type { UmlSpec } from '@/lib/uml'
 import { parseMermaid } from '@/lib/uml-mermaid'
+import { parsePlantUml } from '@/lib/uml-plantuml'
 
 export const classText = `---
 title: Orders
@@ -137,9 +138,75 @@ export const c4ContainerText = `C4Container
   Rel(api, events, "Publishes to")
   Rel(api, core, "Uses", "XML/HTTPS")`
 
+export const activityText = `flowchart TB
+  start@{ shape: sm-circ }
+  subgraph Shop
+    Cart("Fill the cart")
+    Check("Check out")
+  end
+  subgraph Warehouse
+    Pack("Pack the order")
+    Ship("Ship it")
+  end
+  Paid{"Paid?"}
+  split@{ shape: fork }
+  Mail("Send the receipt")
+  merged@{ shape: join }
+  done@{ shape: fr-circ }
+  start --> Cart --> Check --> Paid
+  Paid -->|no| Cart
+  Paid -->|yes| split
+  split --> Pack --> Ship --> merged
+  split --> Mail --> merged
+  merged --> done`
+
+export const usecaseText = `@startuml
+left to right direction
+actor Customer
+actor "Payment provider" as Provider
+actor Clerk
+rectangle "Online shop" {
+  usecase "Browse the catalogue" as Browse
+  usecase "Place an order" as Order
+  usecase "Pay" as Pay
+  usecase "Apply a coupon" as Coupon
+  usecase "Refund an order" as Refund
+}
+Customer -- Browse
+Customer -- Order
+Clerk -- Refund
+Order ..> Pay : <<include>>
+Coupon ..> Order : <<extend>>
+Pay -- Provider
+Refund -- Provider
+@enduml`
+
+export const deploymentText = `@startuml
+cloud "AWS eu-west-1" as aws {
+  node "Load balancer" as lb
+  node "App server" as app <<executionEnvironment>> {
+    artifact "api.jar" as api
+    component "Worker" as worker
+  }
+  database "PostgreSQL" as db
+}
+node "Phone" as phone <<device>>
+phone -- lb : HTTPS
+lb -- app : HTTP
+api -- db : JDBC
+worker ..> db
+@enduml`
+
 /** Reads one of the texts above; they're known to parse. */
 export function fromMermaid(text: string): UmlSpec {
   const { diagram } = parseMermaid(text)
+  if (!diagram) throw new Error('The example diagram must parse')
+  return diagram
+}
+
+/** Reads one of the PlantUML texts above; they're known to parse. */
+export function fromPlantUml(text: string): UmlSpec {
+  const { diagram } = parsePlantUml(text)
   if (!diagram) throw new Error('The example diagram must parse')
   return diagram
 }
