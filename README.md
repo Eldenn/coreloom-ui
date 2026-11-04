@@ -47,7 +47,8 @@ pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-
 Install what you need:
 
 ```bash
-pnpm dlx shadcn@latest add @coreloom/all         # theme, fonts, utils and every component
+pnpm dlx shadcn@latest add @coreloom/all         # theme, fonts, utils and every light component
+pnpm dlx shadcn@latest add @coreloom/charts      # + Recharts charts (or editors, node-editor, or everything)
 pnpm dlx shadcn@latest add @coreloom/dialog      # or one at a time (pulls its dependencies)
 pnpm dlx shadcn@latest add @coreloom/app-shell   # or a whole screen: auth, settings, dashboard…
 ```
@@ -78,6 +79,11 @@ pnpm dlx degit Eldenn/coreloom-ui/starter my-app && cd my-app && pnpm install &&
 A Vite + TanStack Router / Query / Form app with sign-in, sign-up, password reset, dashboard, projects,
 deployments, settings and error pages. Demo data is local; [`starter/README.md`](./starter/README.md) says
 where to plug in your API.
+
+What an item costs an app (its JavaScript and npm packages, gzipped, React excluded) is in
+[`r/sizes.json`](https://eldenn.github.io/coreloom-ui/r/sizes.json). `all` leaves out the components
+built on large libraries (Recharts, Tiptap, CodeMirror, React Flow): add `charts`, `editors` or
+`node-editor` when you need them.
 
 ### Pin a release
 

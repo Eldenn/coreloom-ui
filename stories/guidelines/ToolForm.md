@@ -2,7 +2,7 @@
 
 A tool that asks before it goes on. The agent needs a date, a name or a choice, and the person fills them in right in the conversation; the answer goes back as the tool's output and the agent carries on. It's the AI SDK's pattern for tools without an `execute` function: the call stops at `input-available` and waits for `addToolOutput`.
 
-**The consumer provides** an entry in `Chat`'s `tools`, built with `formTool()`, and `onToolOutput` wired to `addToolOutput` from `useChat`:
+**The consumer provides** an entry in `Chat`'s `tools`, built with `formTool()`, and `onToolOutput` (wired to `addToolOutput` from `useChat`):
 
 ```tsx
 import { formTool } from '@/components/ui/tool-form'
