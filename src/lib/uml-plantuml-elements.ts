@@ -323,9 +323,14 @@ function notesText(notes: readonly UmlNote[] | undefined): string[] {
   )
 }
 
+/**
+ * PlantUML lays out top to bottom unless told; `usual` is how we draw the kind when no direction
+ * is set, so the text says it whenever the two differ.
+ */
 function directionLine(direction: UmlDirection | undefined, usual: UmlDirection): string[] {
   const d = direction ?? usual
-  return d === 'LR' || d === 'RL' ? ['left to right direction'] : []
+  if (d === 'LR' || d === 'RL') return ['left to right direction']
+  return direction && usual !== 'TB' ? ['top to bottom direction'] : []
 }
 
 function usecaseToPlantUml(d: UseCaseDiagram): string {

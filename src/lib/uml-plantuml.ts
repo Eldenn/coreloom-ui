@@ -316,9 +316,9 @@ function parsePlantUml(input: string): UmlParseResult {
   return readKind(kind, lines)
 }
 
-/** True when the text looks like PlantUML rather than Mermaid: it starts with `@startuml`. */
+/** True when the text looks like PlantUML rather than Mermaid: `@startuml`, after any `'` comments. */
 function isPlantUml(input: string): boolean {
-  return /^\s*@start(uml|mindmap)?\b/i.test(input)
+  return /^(?:\s*'[^\n]*\n)*\s*@start(uml|mindmap)?\b/i.test(input)
 }
 
 export { isPlantUml, parsePlantUml, toPlantUml }

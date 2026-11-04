@@ -87,15 +87,28 @@ function contents(node: DiagramNode, t: DiagramText): string | null {
   return null
 }
 
+/** The UML keyword deployment elements show by default, which their role already names. */
+const ROLE_KEYWORDS: Partial<Record<DiagramNode['role'], string>> = {
+  device: 'device',
+  environment: 'executionEnvironment',
+  artifact: 'artifact',
+  component: 'component',
+  database: 'database',
+  cloud: 'cloud',
+}
+
 function nodeLabel(node: DiagramNode, t: DiagramText): string {
   // Other kinds say what they are in their role (an artifact, a database node).
   const variant: Partial<Record<NonNullable<DiagramNode['variant']>, string>> = {
     database: t.database,
     queue: t.queue,
   }
+  const name = node.title || node.body
+  // A keyword that only repeats the role («device» on a device) isn't said twice.
+  const said = node.stereotype && node.stereotype !== ROLE_KEYWORDS[node.role]
   const parts = [
-    t.named(t.roles[node.role], node.title || (node.body ?? '')),
-    node.stereotype ? eyebrow(node, t) : null,
+    name ? t.named(t.roles[node.role], name) : t.roles[node.role],
+    said ? eyebrow(node, t) : null,
     node.tone === 'external' ? t.external : null,
     node.technology,
     node.role === 'container' && node.variant ? variant[node.variant] : null,
@@ -136,8 +149,7 @@ const VARIANT_ICONS: Record<NonNullable<DiagramNode['variant']>, LucideIcon> = {
 }
 
 // A deployment node's depth: a second outline up and to the right, behind the box.
-const DEPTH =
-  'shadow-[6px_-6px_0_-1px_var(--color-inset),6px_-6px_0_0_var(--color-border-strong)]'
+const DEPTH = 'shadow-[6px_-6px_0_-1px_var(--color-inset),6px_-6px_0_0_var(--color-border-strong)]'
 
 const TONES = {
   default: 'border-border-strong bg-card text-card-foreground',
@@ -268,7 +280,10 @@ function FrameNode({ data }: NodeProps<FrameNodeType>) {
     <>
       <Ends connectable={data.connectable} />
       <div
-        className={cn('size-full border border-border-strong', FRAMES[node.role] ?? FRAMES.boundary)}
+        className={cn(
+          'size-full border border-border-strong',
+          FRAMES[node.role] ?? FRAMES.boundary,
+        )}
       >
         <div className="flex h-10 items-center gap-2 px-3">
           <p className="truncate text-[12.5px] font-semibold text-foreground">{node.title}</p>
