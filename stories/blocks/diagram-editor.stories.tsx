@@ -10,7 +10,15 @@ import type { UmlSelection } from '@/lib/uml-edit'
 import { setElementFields } from '@/lib/uml-edit-fields'
 import { addSection, moveStep, removeSection, setStep } from '@/lib/uml-edit-sequence'
 
-import { c4ContainerText, classText, fromMermaid, sequenceText } from '../components/uml-data'
+import {
+  activityText,
+  c4ContainerText,
+  classText,
+  deploymentText,
+  fromMermaid,
+  sequenceText,
+  usecaseText,
+} from '../components/uml-data'
 
 const meta = {
   title: 'Blocks/Diagrams/Diagram editor',
@@ -21,7 +29,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams as text: Mermaid (class, sequence, state, ER and C4) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram.',
+          'Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram.',
       },
     },
   },
@@ -56,7 +64,25 @@ export const WithProblems: Story = {
 }
 
 /** Text that isn't a supported diagram type. */
-export const UnknownType: Story = { args: { defaultValue: 'flowchart TD\n  A --> B' } }
+export const UnknownType: Story = {
+  args: { defaultValue: 'pie title Pets\n  "Dogs" : 386\n  "Cats" : 85' },
+}
+
+/** PlantUML: a use case diagram, with the format set from the text. */
+export const PlantUml: Story = { args: { defaultFormat: 'plantuml', defaultValue: usecaseText } }
+
+/** A deployment diagram in PlantUML: nodes holding what's deployed on them. */
+export const Deployment: Story = {
+  args: { defaultFormat: 'plantuml', defaultValue: deploymentText },
+}
+
+/** A Mermaid flowchart, read as an activity diagram: actions, a decision, fork and join. */
+export const Activity: Story = { args: { defaultValue: activityText } }
+
+export const FrenchPlantUml: Story = {
+  args: { defaultFormat: 'plantuml', defaultValue: usecaseText },
+  globals: { locale: 'fr' },
+}
 
 export const French: Story = { globals: { locale: 'fr' } }
 

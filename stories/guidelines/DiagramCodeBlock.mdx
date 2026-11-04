@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/diagram-code-block.stories'
+import guide from './DiagramCodeBlock.md?raw'
+
+<Meta title="Guidelines/Diagrams/Diagram Code Block" />
+
+<Markdown>{guide}</Markdown>
+
+## A Mermaid block
+
+<Canvas of={Stories.Default} />
+
+## A PlantUML block
+
+<Canvas of={Stories.PlantUml} />

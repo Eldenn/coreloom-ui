@@ -1,0 +1,28 @@
+<!-- @dsCard group="Diagrams" height=520 subtitle="Mermaid and PlantUML blocks in an answer, drawn" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;max-width:720px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DiagramCodeBlock || !UI.Markdown || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const fence = "```";
+      const text = "Here is the checkout flow.\n\n" + fence + "mermaid\nsequenceDiagram\n  actor Customer\n  participant Shop\n  participant Bank\n  Customer->>Shop: Place order\n  Shop->>Bank: Charge card\n  Bank-->>Shop: Approved\n  Shop-->>Customer: Receipt\n" + fence + "\n\nAsk me to change any of it.";
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(UI.MarkdownCodeBlocksContext, { value: UI.diagramCodeBlocks }, h(UI.Markdown, null, text))
+      );
+    }
+    render();
+  </script>
+</body>
+</html>

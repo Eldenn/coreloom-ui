@@ -7,13 +7,17 @@ import { addRelation, deleteItems, type UmlSelection } from '@/lib/uml-edit'
 import { renameElement } from '@/lib/uml-edit-fields'
 
 import {
+  activityText,
   c4ContainerText,
   c4ContextText,
   classText,
+  deploymentText,
   erText,
   fromMermaid,
+  fromPlantUml,
   sequenceText,
   stateText,
+  usecaseText,
 } from './uml-data'
 
 const meta = {
@@ -25,7 +29,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship and C4 diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`.',
+          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship, C4, use case, activity and deployment diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or `parsePlantUml`, or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`.',
       },
     },
   },
@@ -57,6 +61,15 @@ export const C4Context: Story = { args: { diagram: fromMermaid(c4ContextText) } 
 
 /** C4 level 2: the containers inside the system's boundary, with their technology. */
 export const C4Container: Story = { args: { diagram: fromMermaid(c4ContainerText), height: 600 } }
+
+/** Use cases (PlantUML): actors, the system's boundary, «include» and «extend». */
+export const UseCase: Story = { args: { diagram: fromPlantUml(usecaseText), height: 560 } }
+
+/** An activity (a Mermaid flowchart): start, actions in partitions, a decision with guards, fork and join. */
+export const Activity: Story = { args: { diagram: fromMermaid(activityText), height: 760 } }
+
+/** Deployment (PlantUML): a cloud, nodes and an execution environment holding an artifact and a component, a device and a database. */
+export const Deployment: Story = { args: { diagram: fromPlantUml(deploymentText), height: 560 } }
 
 /** `direction LR`: the same classes laid out left to right. */
 export const LeftToRight: Story = {
@@ -163,5 +176,10 @@ export const French: Story = {
 
 export const FrenchSequence: Story = {
   args: { diagram: fromMermaid(sequenceText) },
+  globals: { locale: 'fr' },
+}
+
+export const FrenchUseCase: Story = {
+  args: { diagram: fromPlantUml(usecaseText), height: 560 },
   globals: { locale: 'fr' },
 }
