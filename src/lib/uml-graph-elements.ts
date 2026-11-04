@@ -68,7 +68,14 @@ function usecaseNode(e: UseCaseElement, ids: ReadonlySet<string>): DiagramNode {
         ...parent,
       }
     case 'usecase':
-      return { id: e.id, shape: 'ellipse', role: 'usecase', title, ...ellipseSize(title), ...parent }
+      return {
+        id: e.id,
+        shape: 'ellipse',
+        role: 'usecase',
+        title,
+        ...ellipseSize(title),
+        ...parent,
+      }
     case 'system':
       return sizeBox({ id: e.id, shape: 'frame', role: 'subject', title, ...parent })
   }
@@ -117,7 +124,10 @@ function usecaseGraph(d: UseCaseDiagram): DiagramGraph {
 function decisionSize(title: string) {
   if (!title) return { width: 30, height: 30 }
   const width = Math.min(240, Math.max(96, textWidth(title) * 0.9 + 64))
-  return { width: Math.ceil(width), height: Math.max(56, wrappedLines(title, width - 40) * 17 + 30) }
+  return {
+    width: Math.ceil(width),
+    height: Math.max(56, wrappedLines(title, width - 40) * 17 + 30),
+  }
 }
 
 /** Starts, ends, forks and joins: fixed sizes, no text in the drawing. */
@@ -164,18 +174,16 @@ function guard(label: string | undefined) {
 function activityGraph(d: ActivityDiagram): DiagramGraph {
   const ids = new Set(d.elements.filter((e) => e.kind === 'partition').map((e) => e.id))
   const nodes = d.elements.map((n) => activityNode(d, n, ids))
-  const edges = d.relations.map(
-    (r, i): DiagramEdge => ({
-      id: `r${String(i)}`,
-      source: r.from,
-      target: r.to,
-      from: r.from,
-      to: r.to,
-      relation: 'flow',
-      targetMarker: 'arrow',
-      ...guard(r.label),
-    }),
-  )
+  const edges = d.relations.map((r, i): DiagramEdge => ({
+    id: `r${String(i)}`,
+    source: r.from,
+    target: r.to,
+    from: r.from,
+    to: r.to,
+    relation: 'flow',
+    targetMarker: 'arrow',
+    ...guard(r.label),
+  }))
   return graphOf(d, nodes, edges, 'TB')
 }
 

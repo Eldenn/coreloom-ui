@@ -47,15 +47,7 @@ interface UseCaseDiagram {
 
 /** `flowEnd` stops one flow (a circle with a cross); `end` stops the whole activity. */
 type ActivityNodeKind =
-  | 'action'
-  | 'decision'
-  | 'merge'
-  | 'start'
-  | 'end'
-  | 'flowEnd'
-  | 'fork'
-  | 'join'
-  | 'partition'
+  'action' | 'decision' | 'merge' | 'start' | 'end' | 'flowEnd' | 'fork' | 'join' | 'partition'
 
 interface ActivityNode {
   id: string

@@ -480,7 +480,11 @@ function DiagramEditor({
   const deferred = React.useDeferredValue(text)
   const source = text === written ? text : deferred
   const result = React.useMemo(() => parseDiagram(source, format), [source, format])
-  const { diagram, kind, kindName, status, diagnostics, invalid } = readout(result, layout, messages)
+  const { diagram, kind, kindName, status, diagnostics, invalid } = readout(
+    result,
+    layout,
+    messages,
+  )
   const editing = useDiagramEditing({
     diagram,
     text,
