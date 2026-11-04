@@ -402,6 +402,86 @@ function readGraphConfig(startMeta: Record<string, unknown> | undefined): AgentG
     : {}
 }
 
+/** The graph being rebuilt from LangGraph JSON: its nodes, the ids taken, routers by source. */
+interface GraphImport {
+  nodes: WorkflowNode[]
+  ids: Set<string>
+  routerOf: Map<string, WorkflowNode>
+  /** False once a node had no saved position: the graph is laid out again. */
+  laidOut: boolean
+}
+
+function addImportedNode(g: GraphImport, made: { node: WorkflowNode; placed: boolean }) {
+  g.laidOut &&= made.placed
+  g.nodes.push(made.node)
+}
+
+/** The graph's nodes (first of each id); returns START's saved metadata. */
+function importNodes(g: GraphImport, nodes: LangGraphNodeJSON[]) {
+  let startMeta: Record<string, unknown> | undefined
+  for (const n of nodes) {
+    if (g.ids.has(n.id)) continue
+    g.ids.add(n.id)
+    const m = coreloomMeta(n)
+    if (n.id === START) startMeta = m
+    addImportedNode(g, nodeFromMeta(n.id, m, langGraphNodeType(n, m)))
+  }
+  return startMeta
+}
+
+/** Routers saved by toLangGraphJSON, and which nodes lead to each. */
+function importSavedRouters(g: GraphImport, startMeta: Record<string, unknown> | undefined) {
+  const saved: unknown[] = Array.isArray(startMeta?.routers) ? startMeta.routers : []
+  for (const r of saved) {
+    if (!isRecord(r) || typeof r.id !== 'string' || !r.id || g.ids.has(r.id)) continue
+    g.ids.add(r.id)
+    const made = nodeFromMeta(r.id, r, 'router')
+    made.node.data = { ...made.node.data, routes: routesOf(made.node) }
+    addImportedNode(g, made)
+    for (const source of strings(r.sources))
+      if (!g.routerOf.has(source)) g.routerOf.set(source, made.node)
+  }
+}
+
+/** The router after `source`: the saved one, or a new one (which needs a layout). */
+function routerFor(g: GraphImport, source: string) {
+  const saved = g.routerOf.get(source)
+  if (saved) return saved
+  let id = `${source}-route`
+  for (let i = 2; g.ids.has(id); i++) id = `${source}-route-${String(i)}`
+  g.ids.add(id)
+  const router: WorkflowNode = {
+    id,
+    type: 'router',
+    position: { x: 0, y: 0 },
+    data: { routes: [] },
+  }
+  g.laidOut = false
+  g.nodes.push(router)
+  g.routerOf.set(source, router)
+  return router
+}
+
+/** Plain edges connect directly; conditional ones go through their source's router. */
+function importEdges(g: GraphImport, edges: LangGraphEdgeJSON[]): Workflow {
+  let wf: Workflow = { nodes: g.nodes, edges: [] }
+  const has = (id: string) => g.nodes.some((n) => n.id === id)
+  for (const e of edges) {
+    if (!has(e.source) || !has(e.target)) continue
+    if (!e.conditional) {
+      wf = connectNodes(wf, { source: e.source, target: e.target })
+      continue
+    }
+    const router = routerFor(g, e.source)
+    const route = typeof e.data === 'string' && e.data ? e.data : e.target
+    const routes = routesOf(router)
+    if (!routes.includes(route)) router.data = { ...router.data, routes: [...routes, route] }
+    wf = connectNodes({ nodes: g.nodes, edges: wf.edges }, { source: e.source, target: router.id })
+    wf = connectNodes(wf, { source: router.id, sourcePort: route, target: e.target })
+  }
+  return { nodes: g.nodes, edges: wf.edges }
+}
+
 /**
  * Reads LangGraph's `to_json()` output (an object or its text) into a graph and its state.
  * Conditional edges from one node become a Router after it, one output per route. Positions come
@@ -413,70 +493,12 @@ function fromLangGraphJSON(
 ): { workflow: Workflow; state: StateField[]; config: AgentGraphConfig } | null {
   const raw = parseLangGraphJSON(input)
   if (!raw) return null
-
-  const nodes: WorkflowNode[] = []
-  const seenIds = new Set<string>()
-  let laidOut = true
-  let startMeta: Record<string, unknown> | undefined
-  for (const n of raw.nodes) {
-    if (seenIds.has(n.id)) continue
-    seenIds.add(n.id)
-    const m = coreloomMeta(n)
-    if (n.id === START) startMeta = m
-    const { node, placed } = nodeFromMeta(n.id, m, langGraphNodeType(n, m))
-    laidOut &&= placed
-    nodes.push(node)
-  }
-
-  // Routers saved by toLangGraphJSON, and which nodes lead to each.
-  const routerOf = new Map<string, WorkflowNode>()
-  const savedRouters: unknown[] = Array.isArray(startMeta?.routers) ? startMeta.routers : []
-  for (const r of savedRouters) {
-    if (!isRecord(r) || typeof r.id !== 'string' || !r.id || seenIds.has(r.id)) continue
-    seenIds.add(r.id)
-    const { node, placed } = nodeFromMeta(r.id, r, 'router')
-    laidOut &&= placed
-    node.data = { ...node.data, routes: routesOf(node) }
-    nodes.push(node)
-    for (const source of strings(r.sources)) if (!routerOf.has(source)) routerOf.set(source, node)
-  }
-
-  const routerFor = (source: string) => {
-    const saved = routerOf.get(source)
-    if (saved) return saved
-    let id = `${source}-route`
-    for (let i = 2; seenIds.has(id); i++) id = `${source}-route-${String(i)}`
-    seenIds.add(id)
-    const router: WorkflowNode = {
-      id,
-      type: 'router',
-      position: { x: 0, y: 0 },
-      data: { routes: [] },
-    }
-    laidOut = false
-    nodes.push(router)
-    routerOf.set(source, router)
-    return router
-  }
-
-  let wf: Workflow = { nodes, edges: [] }
-  const has = (id: string) => nodes.some((n) => n.id === id)
-  for (const e of raw.edges) {
-    if (!has(e.source) || !has(e.target)) continue
-    if (!e.conditional) {
-      wf = connectNodes(wf, { source: e.source, target: e.target })
-      continue
-    }
-    const router = routerFor(e.source)
-    const route = typeof e.data === 'string' && e.data ? e.data : e.target
-    const routes = routesOf(router)
-    if (!routes.includes(route)) router.data = { ...router.data, routes: [...routes, route] }
-    wf = connectNodes({ nodes, edges: wf.edges }, { source: e.source, target: router.id })
-    wf = connectNodes(wf, { source: router.id, sourcePort: route, target: e.target })
-  }
-  wf = { nodes, edges: wf.edges }
+  const g: GraphImport = { nodes: [], ids: new Set(), routerOf: new Map(), laidOut: true }
+  const startMeta = importNodes(g, raw.nodes)
+  importSavedRouters(g, startMeta)
+  const wf = importEdges(g, raw.edges)
   return {
-    workflow: laidOut ? wf : layoutWorkflow(wf),
+    workflow: g.laidOut ? wf : layoutWorkflow(wf),
     state: readStateFields(startMeta),
     config: readGraphConfig(startMeta),
   }
