@@ -183,6 +183,10 @@
           "type": "registry:lib"
         },
         {
+          "path": "src/lib/uml-graph-base.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/lib/uml-graph.ts",
           "type": "registry:lib"
         },
