@@ -170,7 +170,7 @@ function PhoneInput({
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the draft text from the value while the field isn't focused.
     if (!focused) setText(parsed.national ? formatNational(parsed.national, country) : '')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- parsed and country derive from current and country.code.
   }, [current, country.code])
 
   const commit = (next: string) => {

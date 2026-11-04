@@ -191,7 +191,7 @@ function useDataList<T extends object>({
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- lets parts take a list of any row type; `object` would reject typed rows through the callbacks.
 type DataList<T extends object = any> = ReturnType<typeof useDataList<T>>
 
 /** A facet's button: opens a searchable checklist with counts; shows what's picked. */
@@ -329,7 +329,7 @@ function DataListToolbar({
     return () => {
       clearTimeout(id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searches when the draft changes, not when the list object is rebuilt.
   }, [draft])
   return (
     <div data-slot="data-list-toolbar" className={cn('flex flex-col gap-3', className)}>

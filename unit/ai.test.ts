@@ -13,7 +13,7 @@ import {
 
 // Type-level: the AI SDK's messages go into the blocks as they are (checked by `pnpm typecheck`).
 // A type alias, not an interface: the AI SDK's UITools needs the implicit index signature.
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- the SDK's UITools needs a type alias's implicit index signature.
 type Tools = {
   searchDocs: { input: { query: string }; output: { hits: number } }
 }

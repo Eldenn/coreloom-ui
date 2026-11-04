@@ -12,5 +12,12 @@ export default defineConfig({
     environment: 'node',
     // Same zone as the browser tests, so dates read the same everywhere.
     env: { TZ: 'Europe/Paris' },
+    // `pnpm coverage`: LCOV in coverage/ for crapper (CRAP per function) and any editor plugin.
+    // Components are covered by Playwright, not here: read the scores of pure functions.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      reporter: ['text-summary', 'lcov'],
+    },
   },
 })

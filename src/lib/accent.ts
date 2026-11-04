@@ -94,6 +94,11 @@ const DARK_TEXT_L = 0.2
 // Colour maths: sRGB hex ↔ OKLCH, WCAG 2 luminance and contrast, alpha blending.
 
 type Rgb = readonly [number, number, number]
+
+/** Array.map for a triple: keeps the tuple type, so no cast is needed. */
+function mapRgb(rgb: Rgb, f: (v: number, i: number) => number): Rgb {
+  return [f(rgb[0], 0), f(rgb[1], 1), f(rgb[2], 2)]
+}
 interface Oklch {
   l: number
   c: number
@@ -130,7 +135,7 @@ const toLinear = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055
 const toGamma = (v: number) => (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)
 
 function toOklch(hex: string): Oklch {
-  const [r, g, b] = hexToRgb(hex).map(toLinear) as unknown as Rgb
+  const [r, g, b] = mapRgb(hexToRgb(hex), toLinear)
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
@@ -173,14 +178,14 @@ function maxChroma(l: number, h: number): number {
 function fromOklch(l: number, c: number, h: number): string {
   const L = Math.min(1, Math.max(0, l))
   const C = Math.min(c, maxChroma(L, h))
-  return rgbToHex(oklchToLinear({ l: L, c: C, h }).map(toGamma) as unknown as Rgb)
+  return rgbToHex(mapRgb(oklchToLinear({ l: L, c: C, h }), toGamma))
 }
 
 /** WCAG 2 relative luminance (the 0.03928 threshold, as gen-accents.py and the WCAG text). */
 function luminance(hex: string): number {
-  const [r, g, b] = hexToRgb(hex).map((v) =>
+  const [r, g, b] = mapRgb(hexToRgb(hex), (v) =>
     v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
-  ) as unknown as Rgb
+  )
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
@@ -195,11 +200,11 @@ function contrastRatio(a: string, b: string): number {
 function mix(fg: string, alpha: number, bg: string): string {
   const f = hexToRgb(fg)
   const b = hexToRgb(bg)
-  return rgbToHex(f.map((v, i) => alpha * v + (1 - alpha) * (b[i] ?? 0)) as unknown as Rgb)
+  return rgbToHex(mapRgb(f, (v, i) => alpha * v + (1 - alpha) * (b[i] ?? 0)))
 }
 
 function rgba(hex: string, alpha: number): string {
-  const [r, g, b] = hexToRgb(hex).map((v) => Math.round(v * 255)) as unknown as Rgb
+  const [r, g, b] = mapRgb(hexToRgb(hex), (v) => Math.round(v * 255))
   return `rgba(${r}, ${g}, ${b}, ${num(alpha)})`
 }
 

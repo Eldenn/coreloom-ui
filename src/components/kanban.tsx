@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { initials } from '@/lib/initials'
 import { cn } from '@/lib/utils'
 
 interface KanbanColumn {
@@ -60,14 +61,6 @@ interface KanbanCard {
   }[]
   assignee?: { name: string; avatar?: string }
 }
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((p) => p.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
 
 function CardBody({ card }: { card: KanbanCard }) {
   return (

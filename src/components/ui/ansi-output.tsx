@@ -102,6 +102,61 @@ function safeHref(url: string): string | undefined {
   return /^(https?:\/\/|mailto:)/i.test(url.trim()) ? url.trim() : undefined
 }
 
+/** SGR codes that set or clear one attribute. */
+const SGR_FLAGS: Readonly<Record<number, Partial<AnsiStyle>>> = {
+  1: { bold: true },
+  2: { dim: true },
+  3: { italic: true },
+  4: { underline: true },
+  7: { inverse: true },
+  8: { hidden: true },
+  9: { strike: true },
+  21: { bold: false, dim: false },
+  22: { bold: false, dim: false },
+  23: { italic: false },
+  24: { underline: false },
+  27: { inverse: false },
+  28: { hidden: false },
+  29: { strike: false },
+}
+
+/** A 16-colour SGR code as the colour it sets (39 and 49 reset it), or null when it isn't one. */
+function basicColor(code: number): { key: 'fg' | 'bg'; value: number | undefined } | null {
+  if (code >= 30 && code <= 37) return { key: 'fg', value: code - 30 }
+  if (code >= 40 && code <= 47) return { key: 'bg', value: code - 40 }
+  if (code >= 90 && code <= 97) return { key: 'fg', value: code - 90 + 8 }
+  if (code >= 100 && code <= 107) return { key: 'bg', value: code - 100 + 8 }
+  if (code === 39) return { key: 'fg', value: undefined }
+  if (code === 49) return { key: 'bg', value: undefined }
+  return null
+}
+
+/**
+ * 38 / 48 followed by `5;n` (256 colours) or `2;r;g;b` (true colour), read from `codes` at `i`.
+ * Returns the colour (undefined when out of range) and how many codes it used after `i`.
+ */
+function extendedColor(codes: readonly number[], i: number) {
+  const mode = codes.at(i + 1)
+  if (mode === 5) {
+    const n = codes.at(i + 2)
+    return { value: n !== undefined && n >= 0 && n <= 255 ? n : undefined, used: 2 }
+  }
+  if (mode === 2) {
+    const [r, g, b] = [codes.at(i + 2), codes.at(i + 3), codes.at(i + 4)].map((v) =>
+      Math.max(0, Math.min(255, v ?? 0)),
+    )
+    return { value: `rgb(${String(r)} ${String(g)} ${String(b)})`, used: 4 }
+  }
+  return { value: undefined, used: 1 }
+}
+
+// Setting a colour to undefined removes it, so a reset style compares equal to a fresh one.
+function setColor(style: AnsiStyle, key: 'fg' | 'bg', value: AnsiStyle['fg']) {
+  if (value !== undefined) style[key] = value
+  else if (key === 'fg') delete style.fg
+  else delete style.bg
+}
+
 function applySgr(style: AnsiStyle, params: string): AnsiStyle {
   // 38:2::r:g:b (colon form) reads like 38;2;r;g;b once the empty colour-space id is dropped.
   const codes = (params === '' ? '0' : params.replace(/:(?=:)/g, ''))
@@ -110,40 +165,15 @@ function applySgr(style: AnsiStyle, params: string): AnsiStyle {
   let next: AnsiStyle = { ...style }
   for (let i = 0; i < codes.length; i++) {
     const code = codes[i] ?? 0
+    const color = basicColor(code)
     if (code === 0) next = {}
-    else if (code === 1) next.bold = true
-    else if (code === 2) next.dim = true
-    else if (code === 3) next.italic = true
-    else if (code === 4) next.underline = true
-    else if (code === 7) next.inverse = true
-    else if (code === 8) next.hidden = true
-    else if (code === 9) next.strike = true
-    else if (code === 21 || code === 22) next.bold = next.dim = false
-    else if (code === 23) next.italic = false
-    else if (code === 24) next.underline = false
-    else if (code === 27) next.inverse = false
-    else if (code === 28) next.hidden = false
-    else if (code === 29) next.strike = false
-    else if (code >= 30 && code <= 37) next.fg = code - 30
-    else if (code === 39) delete next.fg
-    else if (code >= 40 && code <= 47) next.bg = code - 40
-    else if (code === 49) delete next.bg
-    else if (code >= 90 && code <= 97) next.fg = code - 90 + 8
-    else if (code >= 100 && code <= 107) next.bg = code - 100 + 8
-    else if (code === 38 || code === 48) {
-      const key = code === 38 ? 'fg' : 'bg'
-      const mode = codes.at(i + 1)
-      if (mode === 5) {
-        const n = codes.at(i + 2)
-        if (n !== undefined && n >= 0 && n <= 255) next[key] = n
-        i += 2
-      } else if (mode === 2) {
-        const [r, g, b] = [codes.at(i + 2), codes.at(i + 3), codes.at(i + 4)].map((v) =>
-          Math.max(0, Math.min(255, v ?? 0)),
-        )
-        next[key] = `rgb(${String(r)} ${String(g)} ${String(b)})`
-        i += 4
-      } else i += 1
+    else if (code in SGR_FLAGS) Object.assign(next, SGR_FLAGS[code])
+    else if (color) {
+      setColor(next, color.key, color.value)
+    } else if (code === 38 || code === 48) {
+      const { value, used } = extendedColor(codes, i)
+      if (value !== undefined) next[code === 38 ? 'fg' : 'bg'] = value
+      i += used
     }
   }
   // Keep the shared empty object when nothing is set, so plain text merges into one span.
@@ -152,6 +182,171 @@ function applySgr(style: AnsiStyle, params: string): AnsiStyle {
 
 /** Longest escape sequence kept waiting for its end before it's dropped (hostile or broken input). */
 const MAX_PENDING = 4096
+
+/** The screen while `writeAnsi` writes: the line under the cursor is edited as cells. */
+interface Writer {
+  lines: AnsiLine[]
+  row: number
+  col: number
+  style: AnsiStyle
+  href: string | undefined
+  /** The line being edited, as cells; written back to `lines` when the cursor leaves it. */
+  cells: Cell[] | null
+}
+
+function editLine(w: Writer) {
+  return (w.cells ??= toCells(w.lines[w.row] ?? []))
+}
+
+function flushLine(w: Writer) {
+  if (w.cells) w.lines[w.row] = toSpans(w.cells)
+  w.cells = null
+}
+
+function moveToRow(w: Writer, row: number) {
+  flushLine(w)
+  w.row = Math.max(0, row)
+  while (w.lines.length <= w.row) w.lines.push([])
+}
+
+/** CSI K: erase to the end of the line (0), to its start (1), or all of it (2). */
+function eraseInLine(w: Writer, params: string) {
+  const line = editLine(w)
+  const mode = params === '' ? 0 : Number(params)
+  if (mode === 0) line.length = Math.min(line.length, w.col)
+  else if (mode === 1)
+    for (let c = 0; c <= w.col && c < line.length; c++) line[c] = { ch: ' ', style: w.style }
+  else line.length = 0
+}
+
+/** CSI J: erase below the cursor (0) or the whole screen (2, 3). */
+function eraseInDisplay(w: Writer, params: string) {
+  const mode = params === '' ? 0 : Number(params)
+  if (mode === 2 || mode === 3) {
+    w.cells = null
+    w.lines.length = 0
+    w.lines.push([])
+    w.row = 0
+    w.col = 0
+  } else if (mode === 0) {
+    const line = editLine(w)
+    line.length = Math.min(line.length, w.col)
+    flushLine(w)
+    w.lines.length = w.row + 1
+  }
+}
+
+/** One CSI sequence: style, erasing and cursor moves. Private modes (`?…`) draw nothing. */
+function applyCsi(w: Writer, final: string, params: string) {
+  if (params.startsWith('?')) return
+  const n = Math.max(1, Number.parseInt(params, 10) || 1)
+  switch (final) {
+    case 'm':
+      w.style = applySgr(w.style, params)
+      return
+    case 'K':
+      eraseInLine(w, params)
+      return
+    case 'J':
+      eraseInDisplay(w, params)
+      return
+    case 'A':
+      moveToRow(w, w.row - n)
+      return
+    case 'B':
+      moveToRow(w, w.row + n)
+      return
+    case 'C':
+      w.col += n
+      return
+    case 'D':
+      w.col = Math.max(0, w.col - n)
+      return
+    case 'G':
+      w.col = n - 1
+      return
+    case 'E':
+    case 'F':
+      moveToRow(w, final === 'E' ? w.row + n : w.row - n)
+      w.col = 0
+  }
+}
+
+/** The CSI sequence at `i`: where it ends, or -1 when its final byte hasn't arrived yet. */
+function readCsi(w: Writer, data: string, i: number) {
+  // CSI: parameters, then one final byte in @–~.
+  let end = i + 2
+  while (end < data.length && !/[@-~]/.test(data[end] ?? '')) end++
+  if (end >= data.length) return -1
+  applyCsi(w, data[end] ?? '', data.slice(i + 2, end))
+  return end + 1
+}
+
+/** The OSC sequence at `i` (up to BEL or ESC \): hyperlinks (8) are kept, titles ignored. */
+function readOsc(w: Writer, data: string, i: number) {
+  const bel = data.indexOf('\x07', i + 2)
+  const st = data.indexOf(`${ESC}\\`, i + 2)
+  if (bel === -1 && st === -1) return -1
+  const atBel = bel !== -1 && (st === -1 || bel < st)
+  const end = atBel ? bel : st
+  const body = data.slice(i + 2, end)
+  if (body.startsWith('8;')) {
+    const url = body.slice(body.indexOf(';', 2) + 1)
+    w.href = url ? safeHref(url) : undefined
+  }
+  return end + (atBel ? 1 : 2)
+}
+
+/** The escape sequence at `i`: the index after it, or -1 when it isn't complete yet. */
+function readEscape(w: Writer, data: string, i: number) {
+  const kind = data.at(i + 1)
+  if (kind === undefined) return -1
+  if (kind === '[') return readCsi(w, data, i)
+  if (kind === ']') return readOsc(w, data, i)
+  // Two- and three-byte escapes (charset selection, keypad modes…): skip them.
+  return i + (kind === '(' || kind === ')' ? 3 : 2)
+}
+
+/** A control character; other ones (bell…) draw nothing. */
+function writeControl(w: Writer, ch: string) {
+  if (ch === '\n') {
+    moveToRow(w, w.row + 1)
+    w.col = 0
+  } else if (ch === '\r') w.col = 0
+  else if (ch === '\b') w.col = Math.max(0, w.col - 1)
+  else if (ch === '\t') {
+    const line = editLine(w)
+    const stop = (Math.floor(w.col / 8) + 1) * 8
+    while (w.col < stop) {
+      line[w.col] ??= { ch: ' ', style: w.style }
+      w.col++
+    }
+  }
+}
+
+const isPrintable = (ch: string) => ch >= ' ' && ch !== '\x7f'
+
+/** The run of printable characters at `i`, written at the cursor; returns the index after it. */
+function writeText(w: Writer, data: string, i: number) {
+  let end = i + 1
+  while (end < data.length && isPrintable(data[end] ?? '')) end++
+  const line = editLine(w)
+  for (const glyph of data.slice(i, end)) {
+    while (line.length < w.col) line.push({ ch: ' ', style: EMPTY_STYLE })
+    line[w.col] = { ch: glyph, style: w.style, href: w.href }
+    w.col++
+  }
+  return end
+}
+
+/** Drops the oldest lines beyond `maxLines`; returns how many went. */
+function trimLines(w: Writer, maxLines: number | undefined) {
+  if (maxLines === undefined || w.lines.length <= maxLines) return 0
+  const extra = w.lines.length - maxLines
+  w.lines.splice(0, extra)
+  w.row = Math.max(0, w.row - extra)
+  return extra
+}
 
 /**
  * Writes a chunk of program output onto the screen and returns the new screen; the old one is not
@@ -165,138 +360,29 @@ function writeAnsi(
 ): AnsiScreen {
   const data = screen.pending + chunk
   if (!data) return screen
-  const lines = screen.lines.slice()
-  let { row, col, style, href } = screen
+  const { row, col, style, href } = screen
+  const w: Writer = { lines: screen.lines.slice(), row, col, style, href, cells: null }
   let pending = ''
-  // The line being edited, as cells; written back to `lines` when the cursor leaves it.
-  let cells: Cell[] | null = null
-  const edit = () => (cells ??= toCells(lines[row] ?? []))
-  const flush = () => {
-    if (cells) lines[row] = toSpans(cells)
-    cells = null
-  }
-  const moveTo = (nextRow: number) => {
-    flush()
-    row = Math.max(0, nextRow)
-    while (lines.length <= row) lines.push([])
-  }
-
   let i = 0
   while (i < data.length) {
     const ch = data[i] ?? ''
     if (ch === ESC) {
-      const kind = data.at(i + 1)
-      if (kind === undefined) {
+      const next = readEscape(w, data, i)
+      if (next === -1) {
         pending = data.slice(i)
         break
       }
-      if (kind === '[') {
-        // CSI: parameters, then one final byte in @–~.
-        let end = i + 2
-        while (end < data.length && !/[@-~]/.test(data[end] ?? '')) end++
-        if (end >= data.length) {
-          pending = data.slice(i)
-          break
-        }
-        const final = data[end]
-        const params = data.slice(i + 2, end)
-        const n = Math.max(1, Number.parseInt(params, 10) || 1)
-        if (params.startsWith('?')) {
-          // Private modes (cursor visibility, alternate screen…): nothing to draw.
-        } else if (final === 'm') style = applySgr(style, params)
-        else if (final === 'K') {
-          const line = edit()
-          const mode = params === '' ? 0 : Number(params)
-          if (mode === 0) line.length = Math.min(line.length, col)
-          else if (mode === 1)
-            for (let c = 0; c <= col && c < line.length; c++) line[c] = { ch: ' ', style }
-          else line.length = 0
-        } else if (final === 'J') {
-          const mode = params === '' ? 0 : Number(params)
-          if (mode === 2 || mode === 3) {
-            cells = null
-            lines.length = 0
-            lines.push([])
-            row = 0
-            col = 0
-          } else if (mode === 0) {
-            edit().length = Math.min(edit().length, col)
-            flush()
-            lines.length = row + 1
-          }
-        } else if (final === 'A') moveTo(row - n)
-        else if (final === 'B') moveTo(row + n)
-        else if (final === 'C') col += n
-        else if (final === 'D') col = Math.max(0, col - n)
-        else if (final === 'G') col = n - 1
-        else if (final === 'E' || final === 'F') {
-          moveTo(final === 'E' ? row + n : row - n)
-          col = 0
-        }
-        i = end + 1
-        continue
-      }
-      if (kind === ']') {
-        // OSC: up to BEL or ESC \. Only hyperlinks (8) matter here; titles are ignored.
-        const bel = data.indexOf('\x07', i + 2)
-        const st = data.indexOf(`${ESC}\\`, i + 2)
-        const end = bel === -1 ? st : st === -1 ? bel : Math.min(bel, st)
-        if (end === -1) {
-          pending = data.slice(i)
-          break
-        }
-        const body = data.slice(i + 2, end)
-        if (body.startsWith('8;')) {
-          const url = body.slice(body.indexOf(';', 2) + 1)
-          href = url ? safeHref(url) : undefined
-        }
-        i = end + (end === bel ? 1 : 2)
-        continue
-      }
-      // Two- and three-byte escapes (charset selection, keypad modes…): skip them.
-      i += kind === '(' || kind === ')' ? 3 : 2
-      continue
+      i = next
+    } else if (isPrintable(ch)) i = writeText(w, data, i)
+    else {
+      writeControl(w, ch)
+      i++
     }
-    if (ch === '\n') {
-      moveTo(row + 1)
-      col = 0
-    } else if (ch === '\r') col = 0
-    else if (ch === '\b') col = Math.max(0, col - 1)
-    else if (ch === '\t') {
-      const line = edit()
-      const stop = (Math.floor(col / 8) + 1) * 8
-      while (col < stop) {
-        line[col] ??= { ch: ' ', style }
-        col++
-      }
-    } else if (ch < ' ' || ch === '\x7f') {
-      // Other control characters (bell…) draw nothing.
-    } else {
-      // A run of printable characters at once.
-      let end = i + 1
-      while (end < data.length && (data[end] ?? '') >= ' ' && data[end] !== '\x7f') end++
-      const line = edit()
-      for (const glyph of data.slice(i, end)) {
-        while (line.length < col) line.push({ ch: ' ', style: EMPTY_STYLE })
-        line[col] = { ch: glyph, style, href }
-        col++
-      }
-      i = end
-      continue
-    }
-    i++
   }
-  flush()
+  flushLine(w)
   if (pending.length > MAX_PENDING) pending = ''
-
-  let dropped = screen.dropped
-  if (maxLines !== undefined && lines.length > maxLines) {
-    const extra = lines.length - maxLines
-    lines.splice(0, extra)
-    dropped += extra
-    row = Math.max(0, row - extra)
-  }
-  return { lines, row, col, style, href, pending, dropped }
+  const dropped = screen.dropped + trimLines(w, maxLines)
+  return { lines: w.lines, row: w.row, col: w.col, style: w.style, href: w.href, pending, dropped }
 }
 
 /** ANSI text → its lines of styled spans (a whole text at once). */
