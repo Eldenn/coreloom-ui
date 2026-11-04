@@ -58,6 +58,21 @@ describe('parseAnsi', () => {
     expect(stripAnsi('a\tb')).toBe('a       b')
     expect(stripAnsi('ding\x07!')).toBe('ding!')
   })
+  it('moves the cursor down, left, to a column and to the next or previous line', () => {
+    expect(text(parseAnsi('ab\x1b[1Bc'))).toEqual(['ab', '  c'])
+    expect(text(parseAnsi('abcd\x1b[2DX'))).toEqual(['abXd'])
+    expect(text(parseAnsi('abcd\x1b[9DX'))).toEqual(['Xbcd'])
+    expect(text(parseAnsi('abcd\x1b[2GX'))).toEqual(['aXcd'])
+    expect(text(parseAnsi('ab\x1b[EX'))).toEqual(['ab', 'X'])
+    expect(text(parseAnsi('ab\ncd\x1b[FX'))).toEqual(['Xb', 'cd'])
+    expect(text(parseAnsi('a\x1b[2Cb'))).toEqual(['a  b'])
+  })
+
+  it('erases the rest of the screen, and ignores private modes', () => {
+    expect(text(parseAnsi('one\ntwo\nthree\x1b[2A\x1b[3D\x1b[J'))).toEqual(['on'])
+    expect(text(parseAnsi('\x1b[?25lhidden cursor\x1b[?25h'))).toEqual(['hidden cursor'])
+    expect(text(parseAnsi('abc\x1b[1K'))).toEqual(['abc'.replace(/./g, ' ')])
+  })
 })
 
 describe('writeAnsi', () => {
