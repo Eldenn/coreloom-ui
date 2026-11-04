@@ -13,5 +13,6 @@ public/guides
 storybook-static
 test-results
 playwright-report
+coverage
 public/starter
 public/404.html

@@ -43,6 +43,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { initials } from '@/lib/initials'
 import { cn } from '@/lib/utils'
 
 type InboxStatus = 'open' | 'pending' | 'closed'
@@ -147,14 +148,6 @@ function formatInboxTime(date: Date | string, now: Date | number, locale: string
     ...(d.getFullYear() !== n.getFullYear() ? { year: 'numeric' } : {}),
   })
 }
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((p) => p.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
 
 function PersonAvatar({ person, size }: { person: InboxPerson; size?: 'sm' | 'default' }) {
   return (

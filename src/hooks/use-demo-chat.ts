@@ -271,8 +271,7 @@ function useDemoChat({
   React.useEffect(() => {
     const pending = timers.current
     return () => {
-      // run is a reply counter, not a DOM node: bumping it here is what ends the reply.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- run is a reply counter, not a DOM node: bumping it here is what ends the reply.
       run.current++
       for (const timer of pending) clearTimeout(timer)
       pending.clear()
