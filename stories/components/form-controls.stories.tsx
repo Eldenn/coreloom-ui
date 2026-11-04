@@ -87,10 +87,12 @@ export const Choices: Story = {
   render: () => (
     <FieldGroup className="max-w-md">
       <Field orientation="horizontal">
-        <Checkbox id="terms" defaultChecked />
+        <Checkbox id="terms" defaultChecked aria-describedby="terms-description" />
         <FieldContent>
           <FieldLabel htmlFor="terms">Deploy on push</FieldLabel>
-          <FieldDescription>Every push to main ships to production.</FieldDescription>
+          <FieldDescription id="terms-description">
+            Every push to main ships to production.
+          </FieldDescription>
         </FieldContent>
       </Field>
       <FieldSet>
