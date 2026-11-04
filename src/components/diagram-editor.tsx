@@ -10,20 +10,17 @@
 // written again. Elements can be dragged; their positions travel in the JSON. Switch formats,
 // start from a template, copy, or download the text or an SVG or PNG image. Everything happens in
 // the browser: the app keeps the text.
-import { CheckIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Drawing } from '@/components/diagram-drawing'
-import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
-import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarMenu,
-  ToolbarSeparator,
-  ToolbarToggleGroup,
-  ToolbarToggleItem,
-} from '@/components/ui/toolbar'
+  canWrite,
+  type DiagramFormat,
+  EXTENSIONS,
+  FileTools,
+  ProblemList,
+} from '@/components/diagram-file-tools'
+import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
 import type { UmlDiagramHandle } from '@/components/ui/uml-diagram'
 import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
@@ -34,7 +31,6 @@ import {
   umlElementIds,
   type UmlLayout,
   type UmlParseResult,
-  type UmlProblem,
   type UmlSpec,
 } from '@/lib/uml'
 import { DIRECTIONS } from '@/lib/uml-arrange'
@@ -42,8 +38,6 @@ import type { UmlImageFormat } from '@/lib/uml-image'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
 import { isPlantUml, parsePlantUml, toPlantUml } from '@/lib/uml-plantuml'
 import { cn } from '@/lib/utils'
-
-type DiagramFormat = 'mermaid' | 'plantuml' | 'json'
 
 interface DiagramEditorProps {
   /** The text (controlled), in `format`. */
@@ -65,8 +59,6 @@ interface DiagramEditorProps {
   autoFocus?: boolean
   className?: string
 }
-
-type EditorText = Messages['diagramEditor']
 
 const DIAGRAM_TEMPLATES: readonly { kind: UmlDiagramKind; text: string }[] = [
   {
@@ -173,16 +165,6 @@ function writeDiagram(diagram: UmlSpec, format: DiagramFormat): string {
   }
 }
 
-/**
- * True when a diagram of this kind reads back the same from text in `format`: Mermaid has no use
- * case or deployment diagrams, and PlantUML's activity syntax can't hold every graph.
- */
-function canWrite(kind: UmlDiagramKind, format: DiagramFormat): boolean {
-  if (format === 'mermaid') return kind !== 'usecase' && kind !== 'deployment'
-  if (format === 'plantuml') return kind !== 'activity'
-  return true
-}
-
 /** The syntax pasted text is written in, when it clearly says: `@startuml`, or a Mermaid header. */
 function sniffFormat(text: string): DiagramFormat | null {
   if (isPlantUml(text)) return 'plantuml'
@@ -220,14 +202,6 @@ function pastedFormat(next: string, previous: string, format: DiagramFormat): Di
   return sniffed && sniffed !== format ? sniffed : null
 }
 
-const FORMATS: readonly [DiagramFormat, string][] = [
-  ['mermaid', 'Mermaid'],
-  ['plantuml', 'PlantUML'],
-  ['json', 'JSON'],
-]
-
-const EXTENSIONS: Record<DiagramFormat, string> = { mermaid: 'mmd', plantuml: 'puml', json: 'json' }
-
 /** Positions only for elements the diagram still has. */
 function withLayout(diagram: UmlSpec, layout: UmlLayout | null): UmlSpec {
   if (diagram.kind === 'sequence' || !layout) return diagram
@@ -235,14 +209,6 @@ function withLayout(diagram: UmlSpec, layout: UmlLayout | null): UmlSpec {
   const kept = Object.fromEntries(Object.entries(layout).filter(([id]) => ids.has(id)))
   const { layout: _old, ...rest } = diagram
   return Object.keys(kept).length ? { ...rest, layout: kept } : rest
-}
-
-function problemText(p: UmlProblem, t: EditorText): string {
-  const what = t.problem[p.code]
-  const where = p.line > 0 ? `${t.line(p.line)} · ` : ''
-  // JSON and schema problems carry the parser's own detail; the rest quote the line.
-  const detail = p.code === 'json' || p.code === 'schema' ? p.text : undefined
-  return `${where}${what}${detail ? ` ${detail}` : ''}`
 }
 
 /** What the editor shows about a reading: the diagram, its name, the status line, the marks. */
@@ -324,131 +290,6 @@ function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T)
     onChange?.(next)
   }
   return [current, set] as const
-}
-
-function FileTools({
-  t,
-  format,
-  onFormat,
-  onTemplate,
-  onCopy,
-  copied,
-  onDownload,
-  drawn,
-  templates,
-  status,
-  kinds,
-  kind,
-}: {
-  t: EditorText
-  format: DiagramFormat
-  onFormat: (f: DiagramFormat) => void
-  onTemplate: (text: string) => void
-  onCopy: () => void
-  copied: boolean
-  onDownload: (what: DiagramFormat | UmlImageFormat) => void
-  /** Images can be made: something is drawn. */
-  drawn: boolean
-  templates: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
-  status: string
-  kinds: Messages['diagram']['kinds']
-  /** The kind drawn now: a format that can't hold it can't be picked. */
-  kind: UmlDiagramKind | null
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1.5">
-      <Toolbar aria-label={t.fileTools} variant="plain" className="flex-wrap">
-        <ToolbarToggleGroup
-          type="single"
-          value={format}
-          aria-label={t.format}
-          onValueChange={(v) => {
-            if (v === 'mermaid' || v === 'plantuml' || v === 'json') onFormat(v)
-          }}
-        >
-          {FORMATS.map(([value, name]) => (
-            <ToolbarToggleItem
-              key={value}
-              value={value}
-              disabled={kind !== null && !canWrite(kind, value)}
-            >
-              {name}
-            </ToolbarToggleItem>
-          ))}
-        </ToolbarToggleGroup>
-        <ToolbarSeparator />
-        <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />}>
-          {templates.map((tpl) => (
-            <DropdownMenuItem
-              key={tpl.label ?? tpl.kind}
-              onSelect={() => {
-                onTemplate(tpl.text)
-              }}
-            >
-              {tpl.label ?? kinds[tpl.kind]}
-            </DropdownMenuItem>
-          ))}
-        </ToolbarMenu>
-        <ToolbarSeparator className="max-sm:hidden" />
-        <ToolbarButton onClick={onCopy}>
-          {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-          <span className="max-sm:sr-only">{copied ? t.copied : t.copy}</span>
-        </ToolbarButton>
-        <ToolbarMenu
-          label={<span className="max-sm:sr-only">{t.download}</span>}
-          icon={<DownloadIcon aria-hidden />}
-          align="end"
-        >
-          <DropdownMenuItem
-            onSelect={() => {
-              onDownload(format)
-            }}
-          >
-            {t.downloadText(EXTENSIONS[format])}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {(['svg', 'png'] as const).map((image) => (
-            <DropdownMenuItem
-              key={image}
-              disabled={!drawn}
-              onSelect={() => {
-                onDownload(image)
-              }}
-            >
-              {image === 'svg' ? t.downloadSvg : t.downloadPng}
-            </DropdownMenuItem>
-          ))}
-        </ToolbarMenu>
-      </Toolbar>
-      <p
-        role="status"
-        className="order-last w-full min-w-0 truncate px-1 text-[12.5px] text-muted-foreground sm:order-none sm:w-auto sm:flex-1 sm:text-right"
-      >
-        {status}
-      </p>
-    </div>
-  )
-}
-
-function ProblemList({ problems, t }: { problems: readonly UmlProblem[]; t: EditorText }) {
-  if (!problems.length) return null
-  return (
-    <ul className="max-h-28 shrink-0 overflow-auto border-t border-border bg-inset px-3 py-2 text-[12.5px]">
-      {problems.map((p, i) => (
-        <li
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- a line can have several problems
-          key={i}
-          className={cn(
-            'truncate',
-            p.severity === 'error' ? 'text-destructive' : 'text-fg-secondary',
-          )}
-          title={p.text}
-        >
-          {problemText(p, t)}
-        </li>
-      ))}
-    </ul>
-  )
 }
 
 function DiagramEditor({
