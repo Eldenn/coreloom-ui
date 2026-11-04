@@ -7,17 +7,14 @@ import {
   type SequenceDiagram,
   type StateDiagram,
   toUmlJson,
-  type UmlDiagram,
+  type UmlSpec,
 } from '@/lib/uml'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
 import { parseMember } from '@/lib/uml-mermaid-class'
 import { macroArgs } from '@/lib/uml-text'
 
 /** Parses text that must be problem-free and returns its diagram. */
-function read<K extends UmlDiagram['kind']>(
-  text: string,
-  kind: K,
-): Extract<UmlDiagram, { kind: K }> {
+function read<K extends UmlSpec['kind']>(text: string, kind: K): Extract<UmlSpec, { kind: K }> {
   const result = parseMermaid(text)
   expect(result.problems).toEqual([])
   const d = result.diagram
@@ -25,10 +22,10 @@ function read<K extends UmlDiagram['kind']>(
   return d
 }
 
-function isKind<K extends UmlDiagram['kind']>(
-  d: UmlDiagram | null,
+function isKind<K extends UmlSpec['kind']>(
+  d: UmlSpec | null,
   kind: K,
-): d is Extract<UmlDiagram, { kind: K }> {
+): d is Extract<UmlSpec, { kind: K }> {
   return d?.kind === kind
 }
 
@@ -37,7 +34,7 @@ function fail(): never {
 }
 
 /** Writing a diagram and reading it back gives the same diagram. */
-function roundTrip(diagram: UmlDiagram) {
+function roundTrip(diagram: UmlSpec) {
   const again = parseMermaid(toMermaid(diagram))
   expect(again.problems).toEqual([])
   expect(again.diagram).toEqual(diagram)

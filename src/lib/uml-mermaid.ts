@@ -3,7 +3,7 @@
 // tolerantly: what it can't read becomes a problem on its line and the rest still draws.
 // `toMermaid` writes a diagram back (positions people dragged stay in the JSON only).
 // No `mermaid` dependency: the parsers are plain functions, and nothing is rendered as HTML.
-import type { UmlDiagram, UmlParseResult } from '@/lib/uml'
+import type { UmlParseResult, UmlSpec } from '@/lib/uml'
 import { c4Level, c4ToMermaid, parseC4Diagram } from '@/lib/uml-mermaid-c4'
 import { classToMermaid, parseClassDiagram } from '@/lib/uml-mermaid-class'
 import { erToMermaid, parseErDiagram } from '@/lib/uml-mermaid-er'
@@ -40,7 +40,7 @@ function parseMermaid(input: string): UmlParseResult {
 }
 
 /** The diagram as Mermaid text. */
-function toMermaid(diagram: UmlDiagram): string {
+function toMermaid(diagram: UmlSpec): string {
   switch (diagram.kind) {
     case 'class':
       return classToMermaid(diagram)

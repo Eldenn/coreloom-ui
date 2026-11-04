@@ -11,9 +11,9 @@ import type {
   ErCardinality,
   ErDiagram,
   StateDiagram,
-  UmlDiagram,
   UmlDirection,
   UmlNote,
+  UmlSpec,
 } from '@/lib/uml'
 
 type DiagramShape =
@@ -131,23 +131,36 @@ function wrappedLines(text: string, width: number): number {
   return text.split('\n').reduce((n, line) => n + Math.max(1, Math.ceil(line.length / perLine)), 0)
 }
 
+const C4_ROLES: ReadonlySet<DiagramRole> = new Set(['person', 'system', 'container', 'component'])
+
+/** The longest line above a title: «stereotype», or a C4 kind with its technology. */
+function eyebrowLength(node: Omit<DiagramNode, 'width' | 'height'>): number {
+  if (node.stereotype) return node.stereotype.length + 2
+  // "[Software System · External]", "[Container: PostgreSQL]".
+  if (C4_ROLES.has(node.role))
+    return 18 + (node.technology?.length ?? 0) + (node.tone === 'external' ? 11 : 0)
+  return 0
+}
+
 function sizeBox(node: Omit<DiagramNode, 'width' | 'height'>, minWidth = MIN_W) {
   const rows = (node.compartments ?? []).flat()
+  // Keys (PK, FK) get one column wide enough for all of them.
+  const prefixed = rows.some((r) => r.prefix)
+  let keyColumn = prefixed ? MONO + 8 : 0
+  if (prefixed && node.role === 'entity') keyColumn = 3.2 * 12 + 8
   const rowWidth = (r: DiagramRow) =>
-    textWidth(r.text, MONO) +
-    (r.prefix ? r.prefix.length * MONO + 10 : 0) +
-    (r.suffix ? r.suffix.length * MONO + 16 : 0)
-  const eyebrow = node.stereotype ?? node.technology ?? ''
+    keyColumn + textWidth(r.text, MONO) + (r.suffix ? r.suffix.length * MONO + 8 : 0)
+  const eyebrow = eyebrowLength(node)
   const width = Math.min(
     MAX_W,
     Math.max(
       minWidth,
       textWidth(node.title) + PAD_X,
-      eyebrow ? textWidth(eyebrow, 6.4) + 70 : 0,
-      ...rows.map((r) => rowWidth(r) + PAD_X),
+      eyebrow ? eyebrow * 6.5 + PAD_X + (node.variant ? 16 : 0) : 0,
+      ...rows.map((r) => rowWidth(r) + PAD_X + 4),
     ),
   )
-  let height = HEAD + (eyebrow || node.role === 'person' ? EYEBROW : 0)
+  let height = HEAD + (eyebrow ? EYEBROW : 0)
   for (const c of node.compartments ?? []) height += Math.max(1, c.length) * ROW + COMPARTMENT_PAD
   if (node.body) height += wrappedLines(node.body, width) * BODY_LINE + 8
   if (node.shape === 'person') height += 22
@@ -441,7 +454,7 @@ function c4Graph(d: C4Diagram): DiagramGraph {
 }
 
 /** The graph a canvas draws for a diagram. Sequence diagrams aren't graphs: null. */
-function toDiagramGraph(diagram: UmlDiagram): DiagramGraph | null {
+function toDiagramGraph(diagram: UmlSpec): DiagramGraph | null {
   switch (diagram.kind) {
     case 'class':
       return classGraph(diagram)

@@ -1,0 +1,26 @@
+<!-- @dsCard group="Diagrams" height=580 subtitle="Class, sequence, state, ER and C4 from one model" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.UmlDiagram || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const text = "classDiagram\n  class Order {\n    <<entity>>\n    +String id\n    +total() Money\n  }\n  class LineItem {\n    +int quantity\n  }\n  class Payment {\n    <<abstract>>\n    +capture()* bool\n  }\n  Customer \"1\" --> \"*\" Order : places\n  Order *-- LineItem\n  Order o-- Payment\n  Payment <|-- CardPayment\n  Payment <|-- BankTransfer";
+      const diagram = UI.parseMermaid(text).diagram;
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.UmlDiagram, { diagram, height: 520 }));
+    }
+    render();
+  </script>
+</body>
+</html>

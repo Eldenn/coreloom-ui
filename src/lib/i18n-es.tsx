@@ -2388,6 +2388,8 @@ export const es: Messages = {
       c4: (from, to) => `${from} usa ${to}`,
     },
     labelled: (relation, label) => `${relation}: ${label}`,
+    named: (role, name) => `${role}: ${name}`,
+    withTechnology: (kind, technology) => `${kind}: ${technology}`,
     cardinality: {
       zeroOrOne: 'cero o uno',
       exactlyOne: 'exactamente uno',

@@ -20,7 +20,8 @@ interface SequenceDiagramViewProps {
   className?: string
 }
 
-type SequenceText = Messages['diagram']['sequence']
+/** The sequence strings, and how a label follows a name ("Shopper to Web app, call: Pay"). */
+type SequenceText = Messages['diagram']['sequence'] & { say: Messages['diagram']['labelled'] }
 
 const DASHED: ReadonlySet<SequenceArrow> = new Set([
   'reply',
@@ -331,10 +332,13 @@ function StepText({
         step.from === step.to
           ? t.self(name(step.from), kind)
           : t.message(name(step.from), name(step.to), kind)
-      return step.text ? `${who}: ${step.text.replace(/\n/g, ' ')}` : who
+      return step.text ? t.say(who, step.text.replace(/\n/g, ' ')) : who
     }
     case 'note':
-      return `${t.note(step.participants.map(name).join(` ${t.and} `))}: ${step.text.replace(/\n/g, ' ')}`
+      return t.say(
+        t.note(step.participants.map(name).join(` ${t.and} `)),
+        step.text.replace(/\n/g, ' '),
+      )
     case 'activation':
       return step.active ? t.activate(name(step.participant)) : t.deactivate(name(step.participant))
     case 'block':
@@ -356,7 +360,7 @@ function StepText({
 
 function SequenceDiagramView({ diagram, maxHeight, label, className }: SequenceDiagramViewProps) {
   const messages = useCoreloomI18n().messages.diagram
-  const t = messages.sequence
+  const t: SequenceText = { ...messages.sequence, say: messages.labelled }
   const markers = `seq${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const layout = layoutSequence(diagram)
   const names = new Map(layout.columns.map((c) => [c.id, c.label]))

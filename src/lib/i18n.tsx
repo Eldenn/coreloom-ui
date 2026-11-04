@@ -2350,6 +2350,8 @@ const en = {
       c4: (from: string, to: string) => `${from} uses ${to}`,
     },
     labelled: (relation: string, label: string) => `${relation}: ${label}`,
+    named: (role: string, name: string) => `${role}: ${name}`,
+    withTechnology: (kind: string, technology: string) => `${kind}: ${technology}`,
     cardinality: {
       zeroOrOne: 'zero or one',
       exactlyOne: 'exactly one',
@@ -4859,6 +4861,8 @@ const fr: Messages = {
       c4: (from, to) => `${from} utilise ${to}`,
     },
     labelled: (relation, label) => `${relation} : ${label}`,
+    named: (role, name) => `${role} : ${name}`,
+    withTechnology: (kind, technology) => `${kind} : ${technology}`,
     cardinality: {
       zeroOrOne: 'zéro ou un',
       exactlyOne: 'exactement un',

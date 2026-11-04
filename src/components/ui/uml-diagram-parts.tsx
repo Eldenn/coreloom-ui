@@ -21,6 +21,7 @@ import { DatabaseIcon, ListOrderedIcon, UserRoundIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
+import type { UmlDirection } from '@/lib/uml'
 import type { DiagramEdge, DiagramMarker, DiagramNode, DiagramRow } from '@/lib/uml-graph'
 import { cn } from '@/lib/utils'
 
@@ -28,7 +29,10 @@ type BoxNodeType = Node<{ node: DiagramNode }, 'box'>
 type PseudoNodeType = Node<{ node: DiagramNode }, 'pseudo'>
 type FrameNodeType = Node<{ node: DiagramNode }, 'frame'>
 type DiagramFlowNode = BoxNodeType | PseudoNodeType | FrameNodeType
-type DiagramFlowEdge = Edge<{ edge: DiagramEdge; markers: string; offset: number }, 'uml'>
+type DiagramFlowEdge = Edge<
+  { edge: DiagramEdge; markers: string; offset: number; flow: UmlDirection },
+  'uml'
+>
 
 type DiagramText = Messages['diagram']
 
@@ -67,7 +71,7 @@ function contents(node: DiagramNode, t: DiagramText): string | null {
 function nodeLabel(node: DiagramNode, t: DiagramText): string {
   const variant = { database: t.database, queue: t.queue }
   const parts = [
-    `${t.roles[node.role]}: ${node.title || (node.body ?? '')}`,
+    t.named(t.roles[node.role], node.title || (node.body ?? '')),
     node.stereotype ? eyebrow(node, t) : null,
     node.tone === 'external' ? t.external : null,
     node.technology,
@@ -261,8 +265,35 @@ function rectOf(node: InternalNode | undefined): Rect | null {
 }
 
 /** The sides a line leaves and enters by: facing each other across the gap between the boxes. */
-function sides(a: Rect, b: Rect): [Position, Position] {
+/** Farther than one layer apart: a line straight across would pass behind the boxes between. */
+const FAR = 110
+
+/**
+ * A line going back against the flow, over more than one layer, goes round the outside: out of
+ * the side facing away from the middle and back in on the same side.
+ */
+function backSides(a: Rect, b: Rect, flow: UmlDirection): [Position, Position] | null {
+  const horizontal = flow === 'LR' || flow === 'RL'
+  const back = {
+    TB: a.y - (b.y + b.height),
+    BT: b.y - (a.y + a.height),
+    LR: a.x - (b.x + b.width),
+    RL: b.x - (a.x + a.width),
+  }[flow]
+  if (back < FAR) return null
+  if (horizontal) {
+    const side = a.y + a.height / 2 <= b.y + b.height / 2 ? Position.Top : Position.Bottom
+    return [side, side]
+  }
+  const side = a.x + a.width / 2 <= b.x + b.width / 2 ? Position.Left : Position.Right
+  return [side, side]
+}
+
+/** The sides a line leaves and enters by: facing each other across the gap between the boxes. */
+function sides(a: Rect, b: Rect, flow: UmlDirection): [Position, Position] {
   const gap = 8
+  const around = backSides(a, b, flow)
+  if (around) return around
   if (b.y >= a.y + a.height + gap) return [Position.Bottom, Position.Top]
   if (a.y >= b.y + b.height + gap) return [Position.Top, Position.Bottom]
   if (b.x >= a.x + a.width) return [Position.Right, Position.Left]
@@ -271,16 +302,26 @@ function sides(a: Rect, b: Rect): [Position, Position] {
   return [Position.Bottom, Position.Top]
 }
 
-function anchor(r: Rect, side: Position, offset: number) {
+/**
+ * Where a line meets a box: on the side facing the other box, slid toward it (up to 30 % of the
+ * side) so lines to different neighbours leave from different points.
+ */
+function anchor(r: Rect, side: Position, offset: number, other: Rect) {
+  const lean = (own: number, theirs: number, size: number) =>
+    Math.max(-size * 0.3, Math.min(size * 0.3, (theirs - own) * 0.5)) + offset
+  const cx = r.x + r.width / 2
+  const cy = r.y + r.height / 2
+  const dx = lean(cx, other.x + other.width / 2, r.width)
+  const dy = lean(cy, other.y + other.height / 2, r.height)
   switch (side) {
     case Position.Top:
-      return { x: r.x + r.width / 2 + offset, y: r.y }
+      return { x: cx + dx, y: r.y }
     case Position.Bottom:
-      return { x: r.x + r.width / 2 + offset, y: r.y + r.height }
+      return { x: cx + dx, y: r.y + r.height }
     case Position.Left:
-      return { x: r.x, y: r.y + r.height / 2 + offset }
+      return { x: r.x, y: cy + dy }
     case Position.Right:
-      return { x: r.x + r.width, y: r.y + r.height / 2 + offset }
+      return { x: r.x + r.width, y: cy + dy }
   }
 }
 
@@ -298,7 +339,19 @@ function endLabelAt(p: { x: number; y: number }, side: Position) {
   }
 }
 
-function geometry(a: Rect, b: Rect, offset: number, self: boolean) {
+function geometry({
+  a,
+  b,
+  offset,
+  self,
+  flow,
+}: {
+  a: Rect
+  b: Rect
+  offset: number
+  self: boolean
+  flow: UmlDirection
+}) {
   if (self) {
     const x = a.x + a.width
     const y = a.y + a.height / 2
@@ -311,9 +364,9 @@ function geometry(a: Rect, b: Rect, offset: number, self: boolean) {
       sides: [Position.Right, Position.Right] as const,
     }
   }
-  const [sourceSide, targetSide] = sides(a, b)
-  const source = anchor(a, sourceSide, offset)
-  const target = anchor(b, targetSide, offset)
+  const [sourceSide, targetSide] = sides(a, b, flow)
+  const source = anchor(a, sourceSide, offset, b)
+  const target = anchor(b, targetSide, offset, a)
   const [path, labelX, labelY] = getSmoothStepPath({
     sourceX: source.x,
     sourceY: source.y,
@@ -340,8 +393,8 @@ function UmlEdge({ source, target, data, selected }: EdgeProps<DiagramFlowEdge>)
   const a = rectOf(useInternalNode(source))
   const b = rectOf(useInternalNode(target))
   if (!a || !b || !data) return null
-  const { edge, markers, offset } = data
-  const g = geometry(a, b, offset, source === target)
+  const { edge, markers, offset, flow } = data
+  const g = geometry({ a, b, offset, self: source === target, flow })
   const at = (p: { x: number; y: number }) => ({
     transform: `translate(-50%, -50%) translate(${String(p.x)}px, ${String(p.y)}px)`,
   })
