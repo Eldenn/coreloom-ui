@@ -5,7 +5,7 @@ A long list — logs, events, search results, a feed — in a scrolling box wher
 **The consumer provides** `items`, `renderItem(item, index)`, `getKey(item)`, the box `height` and an `aria-label` (or `aria-labelledby`), plus optionally:
 
 - `estimateSize` (px before measuring, default 48), `overscan` and `gap`;
-- `onEndReached`, `hasMore` and `loadingMore` to load the next page near the end — TanStack Query's `useInfiniteQuery` maps one to one (`fetchNextPage`, `hasNextPage`, `isFetchingNextPage`);
+- `onEndReached`, `hasMore` and `loadingMore` to load the next page near the end (`endThreshold` items before it, 5 by default) — TanStack Query's `useInfiniteQuery` maps one to one (`fetchNextPage`, `hasNextPage`, `isFetchingNextPage`);
 - `empty` for the empty state.
 
 - The box is a labelled region in the tab order, so keyboard users can scroll it; focus shows the ring. Items are list items with `aria-posinset` and `aria-setsize` (−1 while more can load), so screen readers say "12 of 3,000".
