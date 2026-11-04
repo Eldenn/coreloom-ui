@@ -10,6 +10,7 @@ The product layout as one installable block: sidebar, header, ⌘K palette, them
 - `groups` of navigation (`{ label, items: [{ title, url, icon, isActive?, badge? }] }`, icons from `lucide-react`, as a component `HomeIcon` or an element `<HomeIcon />` — use elements from a Next.js server component) and `secondary` links;
 - `user` (`{ name, email?, role?, avatar? }`) with `menu` entries and `onSignOut`;
 - `breadcrumbs` (`{ label, href? }`), `commands` for the palette (`{ heading, items: [{ label, icon?, shortcut?, onSelect }] }`), `onAskAi(query)` to add "Ask AI: “…”" to the palette, and `headerActions`;
+- the sidebar's shape, as `Sidebar`'s: `collapsible` (`offcanvas`, `icon`, `none`), `side` (`left`, `right`), `variant` (`sidebar`, `floating`, `inset`), and `defaultSidebarOpen` (true);
 - the page as children: start with `<PageHeader title description actions>`, then `StatCard`s, tables, forms.
 
 - The sidebar collapses to an icon rail with Ctrl / ⌘ + B and becomes a sheet below 768px. The header is sticky. Content is centered at `--container-app` with 32px gutters (16px on phones).

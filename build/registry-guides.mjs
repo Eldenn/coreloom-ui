@@ -33,6 +33,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json'))) {
     const full = path.join(dir, file)
     const data = JSON.parse(fs.readFileSync(full, 'utf8'))
+    // Not an item: sizes.json (build/registry-size.mjs) sits next to them.
+    if (typeof data.name !== 'string') continue
     if (file === 'registry.json') write(full, { ...data, items: data.items.map(withGuides) })
     else {
       const item = withGuides(data)

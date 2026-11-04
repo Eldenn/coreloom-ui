@@ -7,7 +7,7 @@ Landing page sections as one installable block: header, hero, features, FAQ, cal
 **The consumer provides**:
 
 - `<SiteHeader brand links actions mobileActions>`. Links move into a sheet on phones.
-- `<Hero announcement title highlight description actions command>`. `highlight` ends the headline in a gradient of the accent text colour (`highlightStyle="solid"` for plain accent text); `command` adds a copyable install line. Children go below, for a product shot. `layout="split"` or `"cover"` with `media` adds a photo: see the Showcase block.
+- `<Hero announcement title highlight description actions command>`. `highlight` ends the headline in a gradient of the accent text colour (`highlightStyle="solid"` for plain accent text); `command` adds a copyable install line. Children go below, for a product shot. `layout="split"` or `"cover"` with `media` adds a photo (`mediaPosition`: `end` by default, or `start`): see the Showcase block. `glow` turns the faint accent top-light on or off (on for the centred layout).
 - `<FeatureGrid eyebrow title features featured>`. Features are `{ icon, title, description, meta? }`, and `featured` picks the glowing card.
 - `<Faq items>` with `{ question, answer }` items.
 - `<CtaSection title description actions>`.
