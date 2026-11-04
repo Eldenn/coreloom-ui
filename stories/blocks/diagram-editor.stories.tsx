@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Share2Icon } from 'lucide-react'
 import * as React from 'react'
 
 import { DiagramEditor } from '@/components/diagram-editor'
 import { DiagramProperties } from '@/components/diagram-properties'
 import { SequenceOutline } from '@/components/diagram-sequence'
+import { Button } from '@/components/ui/button'
 import { useCoreloomI18n } from '@/lib/i18n'
 import { type SequenceStep, toUmlJson, type UmlSpec } from '@/lib/uml'
 import type { UmlSelection } from '@/lib/uml-edit'
@@ -29,7 +31,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram.',
+          'Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram. `view` shows the text and drawing side by side, or one of them; `actions` adds the app’s buttons to the bar; `readOnly` keeps the text as it is.',
       },
     },
   },
@@ -178,3 +180,56 @@ export const SequenceSteps: Story = {
 }
 
 export const Phone: Story = { parameters: { viewport: { defaultViewport: 'mobile1' } } }
+
+/** `defaultView: 'drawing'`: the drawing alone; the switch in the bar brings the text back. */
+export const DrawingView: Story = { args: { defaultView: 'drawing' } }
+
+/** `defaultView: 'text'`: the text alone (image downloads are off until the drawing shows). */
+export const TextView: Story = { args: { defaultView: 'text' } }
+
+/**
+ * `readOnly`, with the app's own button in `actions`: the text can't change, the drawing tools and
+ * properties are off and nothing drags; Copy, Download, zoom and full screen stay.
+ */
+export const ReadOnly: Story = {
+  args: {
+    readOnly: true,
+    actions: (
+      <Button size="sm" variant="outline">
+        <Share2Icon aria-hidden />
+        Share
+      </Button>
+    ),
+  },
+}
+
+/** A read-only sequence diagram: the step list still selects, the step form stays off. */
+export const ReadOnlySequence: Story = { args: { readOnly: true, defaultValue: sequenceText } }
+
+export const FrenchReadOnly: Story = {
+  args: {
+    readOnly: true,
+    defaultView: 'drawing',
+    actions: (
+      <Button size="sm" variant="outline">
+        <Share2Icon aria-hidden />
+        Partager
+      </Button>
+    ),
+  },
+  globals: { locale: 'fr' },
+}
+
+/** Read only at phone width, with an action. */
+export const PhoneReadOnly: Story = {
+  args: {
+    readOnly: true,
+    actions: (
+      <Button size="sm" variant="outline">
+        <Share2Icon aria-hidden />
+        Share
+      </Button>
+    ),
+  },
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+}

@@ -5,7 +5,8 @@
 // elements draggable when `editable`), sequence diagrams as an SVG. Feed it JSON you checked with
 // `parseUmlJson`, or Mermaid text read with `parseMermaid`. Nothing is rendered as HTML. When
 // editable it can also select an area, align the selected boxes, rename in place and take
-// elements dropped from a toolbar; its `ref` turns the drawing into an SVG or PNG image.
+// elements dropped from a toolbar; its `ref` turns the drawing into an SVG or PNG image. The
+// controls can show it full screen; `preview` draws a still thumbnail with one accessible name.
 import '@xyflow/react/dist/base.css'
 
 import {
@@ -33,13 +34,17 @@ import {
 import {
   AlignBar,
   CanvasControls,
+  dropHandlers,
+  type Fullscreen,
+  FullscreenButton,
   RenameField,
-  type RenameTarget,
+  useFullscreen,
+  useRename,
 } from '@/components/ui/uml-diagram-tools'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { SequenceDiagram, UmlLayout, UmlPoint, UmlSpec } from '@/lib/uml'
 import { alignBoxes, type UmlAlignment } from '@/lib/uml-arrange'
-import { UML_DRAG_TYPE, type UmlSelection } from '@/lib/uml-edit'
+import type { UmlSelection } from '@/lib/uml-edit'
 import { type DiagramGraph, toDiagramGraph } from '@/lib/uml-graph'
 import { elementImage, type UmlImageFormat } from '@/lib/uml-image'
 import { type LayoutBox, layoutDiagram } from '@/lib/uml-layout'
@@ -53,8 +58,13 @@ interface UmlDiagramProps {
   onLayoutChange?: (layout: UmlLayout) => void
   /** CSS height of the canvas; the sequence view scrolls past it. Default: 480. */
   height?: number | string
-  /** Zoom, fit and arrange buttons. Default: true. */
+  /** Zoom, fit, arrange and full screen buttons. Default: true. */
   controls?: boolean
+  /**
+   * A still thumbnail: fitted to its box, no controls, nothing to focus, drag or zoom, and one
+   * accessible name (`label`). Default: false.
+   */
+  preview?: boolean
   /** The accessible name. Default: the diagram's kind ("Class diagram"). */
   label?: string
   /** What's selected (controlled): element ids, and relation indexes in the diagram's list. */
@@ -161,92 +171,6 @@ function alignable(
   })
 }
 
-function dropHandlers(
-  onDrop: ((type: string, position: UmlPoint) => void) | undefined,
-  toFlow: (p: UmlPoint) => UmlPoint,
-) {
-  if (!onDrop) return {}
-  return {
-    onDragOver: (event: React.DragEvent) => {
-      if (!event.dataTransfer.types.includes(UML_DRAG_TYPE)) return
-      event.preventDefault()
-      event.dataTransfer.dropEffect = 'copy'
-    },
-    onDrop: (event: React.DragEvent) => {
-      const type = event.dataTransfer.getData(UML_DRAG_TYPE)
-      if (!type) return
-      event.preventDefault()
-      const p = toFlow({ x: event.clientX, y: event.clientY })
-      onDrop(type, { x: Math.round(p.x), y: Math.round(p.y) })
-    },
-  }
-}
-
-/** Renaming in place: which element, where its field goes, and putting focus back after. */
-function useRename(input: {
-  canvas: React.RefObject<HTMLDivElement | null>
-  graph: DiagramGraph | null
-  onRename: ((id: string, name: string) => void) | undefined
-  diagram: GraphDiagram
-}) {
-  const { canvas, graph, onRename, diagram } = input
-  const [target, setTarget] = React.useState<RenameTarget | null>(null)
-  const refocus = React.useRef(false)
-  const nodeEl = (id: string) =>
-    canvas.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(id)}"]`)
-
-  React.useEffect(() => {
-    // The renamed element may have a new id: focus what's selected once React Flow drew it.
-    if (!refocus.current) return
-    refocus.current = false
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => {
-        const el = canvas.current?.querySelector<HTMLElement>('.react-flow__node.selected')
-        ;(el ?? canvas.current)?.focus()
-      })
-    })
-    return () => {
-      cancelAnimationFrame(frame)
-    }
-  }, [diagram, canvas])
-
-  const start = (id: string) => {
-    const node = graph?.nodes.find((n) => n.id === id)
-    const el = nodeEl(id)
-    const host = canvas.current?.getBoundingClientRect()
-    if (!onRename || !node || !el || !host) return
-    const r = el.getBoundingClientRect()
-    const value = node.title ? node.title : (node.body ?? '')
-    setTarget({
-      id,
-      value,
-      left: r.left - host.left,
-      top: r.top - host.top,
-      width: Math.max(160, r.width),
-    })
-  }
-
-  const done = (value: string | null) => {
-    if (!target) return
-    setTarget(null)
-    const next = value?.trim()
-    if (next && next !== target.value) {
-      refocus.current = true
-      onRename?.(target.id, next)
-    } else nodeEl(target.id)?.focus()
-  }
-
-  const onKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key !== 'F2' || !(event.target instanceof Element)) return
-    const id = event.target.closest('.react-flow__node')?.getAttribute('data-id')
-    if (!id) return
-    event.preventDefault()
-    start(id)
-  }
-
-  return { target, start, done, onKeyDown }
-}
-
 /** Positions: those dragged here win over the diagram's own until it hands new ones back. */
 function usePositions(layout: UmlLayout | undefined, graph: DiagramGraph | null) {
   const [dragged, setDragged] = React.useState<UmlLayout | null>(null)
@@ -279,6 +203,7 @@ function useCanvasEffects({
   canvas,
   setExporting,
   ids,
+  refit,
 }: {
   ref: React.Ref<UmlDiagramHandle> | undefined
   canvas: React.RefObject<HTMLDivElement | null>
@@ -286,6 +211,8 @@ function useCanvasEffects({
   setExporting: (on: boolean) => void
   /** The node ids, joined: a change means elements were added or removed. */
   ids: string
+  /** Fit again whenever the box changes size (thumbnails, full screen). */
+  refit: boolean
 }) {
   const flow = useReactFlow()
   React.useImperativeHandle(ref, () => ({
@@ -305,6 +232,20 @@ function useCanvasEffects({
       cancelAnimationFrame(frame)
     }
   }, [ids, flow])
+  React.useEffect(() => {
+    const el = canvas.current
+    if (!refit || !el) return
+    let frame = 0
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => void flow.fitView({ padding: 0.08, maxZoom: 1 }))
+    })
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(frame)
+    }
+  }, [refit, flow, canvas])
 }
 
 /** What React Flow's own live region and descriptions say, in the reader's language. */
@@ -337,6 +278,7 @@ function CanvasPanels({
   onArrange,
   aligning,
   onAlign,
+  fullscreen,
 }: {
   title: string | undefined
   controls: boolean
@@ -347,6 +289,7 @@ function CanvasPanels({
   /** How many selected boxes can be aligned. */
   aligning: number
   onAlign: (how: UmlAlignment) => void
+  fullscreen: Fullscreen | null
 }) {
   return (
     <>
@@ -361,6 +304,7 @@ function CanvasPanels({
           selecting={selecting}
           onSelecting={onSelecting}
           onArrange={onArrange}
+          fullscreen={fullscreen}
         />
       )}
       {aligning > 1 && <AlignBar count={aligning} onAlign={onAlign} />}
@@ -422,12 +366,34 @@ function useCanvasChanges(input: {
   }
 }
 
-/** What the rename field is about, in words ("Class Order"). */
+/** A still thumbnail: nothing to focus, select, drag, pan or zoom, and the page scrolls over it. */
+const STILL = {
+  nodesFocusable: false,
+  edgesFocusable: false,
+  elementsSelectable: false,
+  panOnDrag: false,
+  zoomOnScroll: false,
+  zoomOnPinch: false,
+  zoomOnDoubleClick: false,
+  preventScrolling: false,
+  minZoom: 0.02,
+} as const
+
+/** A thumbnail is still and hidden (its box carries the name); otherwise the canvas is named. */
+function canvasNaming(preview: boolean, label: string, title: string | undefined) {
+  if (preview) return { flow: { ...STILL, 'aria-hidden': true }, title: undefined }
+  return { flow: { 'aria-label': label }, title }
+}
+
+/** A class, state, ER, C4, use case, activity or deployment diagram on a React Flow canvas. */
 function DiagramCanvas({
   diagram,
   editable = false,
   onLayoutChange,
   controls = true,
+  preview,
+  refit,
+  fullscreen,
   label,
   selection: selectionProp,
   onSelectionChange,
@@ -436,7 +402,13 @@ function DiagramCanvas({
   onRename,
   onElementDrop,
   ref,
-}: Omit<UmlDiagramProps, 'diagram'> & { diagram: GraphDiagram }) {
+}: Omit<UmlDiagramProps, 'diagram' | 'preview'> & {
+  diagram: GraphDiagram
+  preview: boolean
+  /** Fit again when the box changes size. */
+  refit: boolean
+  fullscreen: Fullscreen | null
+}) {
   const t = useCoreloomI18n().messages.diagram
   const markers = `uml${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const graph = React.useMemo(() => toDiagramGraph(diagram), [diagram])
@@ -465,7 +437,13 @@ function DiagramCanvas({
 
   const flow = useReactFlow()
   const rename = useRename({ canvas, graph, onRename: editable ? onRename : undefined, diagram })
-  useCanvasEffects({ ref, canvas, setExporting, ids: nodes.map((n) => n.id).join('\u0000') })
+  useCanvasEffects({
+    ref,
+    canvas,
+    setExporting,
+    ids: nodes.map((n) => n.id).join('\u0000'),
+    refit,
+  })
 
   const toAlign = editable ? alignable(selection.elements, boxes, graph) : []
   const align = (how: UmlAlignment) => {
@@ -473,6 +451,7 @@ function DiagramCanvas({
   }
 
   const ariaLabelConfig = a11yConfig(t, editable, Boolean(onRename))
+  const naming = canvasNaming(preview, label ?? t.kinds[diagram.kind], diagram.title)
 
   return (
     <>
@@ -510,15 +489,16 @@ function DiagramCanvas({
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
         ariaLabelConfig={ariaLabelConfig}
-        aria-label={label ?? t.kinds[diagram.kind]}
+        {...naming.flow}
       >
         <ViewportPortal>
           {/* Inside the viewport, so an exported image keeps the arrowheads. */}
           <DiagramMarkers prefix={markers} />
         </ViewportPortal>
         <CanvasPanels
-          title={diagram.title}
+          title={naming.title}
           controls={controls}
+          fullscreen={fullscreen}
           editable={editable}
           selecting={selecting}
           onSelecting={setSelecting}
@@ -554,8 +534,15 @@ function SequencePane({
   className,
   selection,
   onSelectionChange,
+  preview = false,
+  fullscreen,
+  frame,
   ref,
-}: UmlDiagramProps & { diagram: SequenceDiagram }) {
+}: UmlDiagramProps & {
+  diagram: SequenceDiagram
+  fullscreen: Fullscreen | null
+  frame: React.Ref<HTMLDivElement>
+}) {
   const root = React.useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = React.useState(false)
   React.useImperativeHandle(ref, () => ({
@@ -583,35 +570,68 @@ function SequencePane({
         onSelectionChange({ elements, relations: [] })
       }
     : undefined
+  const full = fullscreen?.active ?? false
   return (
-    <SequenceDiagramView
-      ref={root}
-      diagram={diagram}
-      {...(height === undefined ? {} : { maxHeight: height })}
-      {...(label ? { label } : {})}
-      {...(className ? { className } : {})}
-      {...(selection && !exporting ? { selected: selection.elements } : {})}
-      {...(select ? { onSelect: select } : {})}
-    />
+    <div ref={frame} data-slot="uml-diagram" className={cn('relative', className)}>
+      <SequenceDiagramView
+        ref={root}
+        diagram={diagram}
+        {...(height === undefined || full ? {} : { maxHeight: height })}
+        {...(label ? { label } : {})}
+        {...(full ? { className: 'h-full rounded-none border-0' } : {})}
+        {...(selection && !exporting ? { selected: selection.elements } : {})}
+        {...(select && !preview ? { onSelect: select } : {})}
+        fit={preview}
+      />
+      {fullscreen && (
+        <FullscreenButton fullscreen={fullscreen} className="absolute top-2 right-2" />
+      )}
+    </div>
   )
 }
 
-/** A class, state, ER or C4 diagram on a canvas, or a sequence diagram as an SVG. */
+/**
+ * A class, state, ER, C4, use case, activity or deployment diagram on a canvas, or a sequence
+ * diagram as an SVG.
+ */
 function UmlDiagram(props: UmlDiagramProps) {
-  const { diagram, height = 480, className } = props
+  const { diagram, height = 480, className, preview = false, controls = true } = props
+  const frame = React.useRef<HTMLDivElement>(null)
+  const screen = useFullscreen(frame)
+  const kinds = useCoreloomI18n().messages.diagram.kinds
+  const fullscreen = controls && !preview ? screen : null
   if (diagram.kind === 'sequence')
-    return <SequencePane {...props} diagram={diagram} height={height} />
+    return (
+      <SequencePane
+        {...props}
+        diagram={diagram}
+        height={height}
+        fullscreen={fullscreen}
+        frame={frame}
+      />
+    )
   return (
     <div
+      ref={frame}
       data-slot="uml-diagram"
       className={cn(
         'relative overflow-hidden rounded-lg border border-border bg-background',
+        preview && 'pointer-events-none',
         className,
       )}
       style={{ height, '--diagram-edge': 'var(--color-muted-foreground)' } as React.CSSProperties}
+      {...(preview ? { role: 'img', 'aria-label': props.label ?? kinds[diagram.kind] } : {})}
     >
       <ReactFlowProvider>
-        <DiagramCanvas {...props} diagram={diagram} />
+        <DiagramCanvas
+          {...props}
+          diagram={diagram}
+          editable={Boolean(props.editable) && !preview}
+          preview={preview}
+          refit={preview || Boolean(fullscreen?.active)}
+          controls={controls && !preview}
+          fullscreen={fullscreen}
+        />
       </ReactFlowProvider>
     </div>
   )

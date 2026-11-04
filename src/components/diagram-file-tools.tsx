@@ -1,9 +1,19 @@
 'use client'
 
 // Coreloom UI — Diagram file tools. The diagram editor's top bar (format, new diagram, copy,
-// download, and the status line) and the list of problems under the text; and which format can
-// hold which kind of diagram.
-import { CheckIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
+// download, the view switch, the app's actions and the status line) and the list of problems
+// under the text; and which format can hold which kind of diagram.
+import {
+  CheckIcon,
+  CodeIcon,
+  Columns2Icon,
+  CopyIcon,
+  DownloadIcon,
+  FilePlusIcon,
+  type LucideIcon,
+  ShapesIcon,
+} from 'lucide-react'
+import type * as React from 'react'
 
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import {
@@ -22,6 +32,48 @@ import { cn } from '@/lib/utils'
 type DiagramFormat = 'mermaid' | 'plantuml' | 'json'
 
 type EditorText = Messages['diagramEditor']
+
+/** What the editor shows: the text beside the drawing, or one of them. */
+type DiagramEditorView = 'split' | 'drawing' | 'text'
+
+const VIEWS: readonly [DiagramEditorView, LucideIcon][] = [
+  ['split', Columns2Icon],
+  ['drawing', ShapesIcon],
+  ['text', CodeIcon],
+]
+
+function ViewSwitch({
+  view,
+  onView,
+  t,
+}: {
+  view: DiagramEditorView
+  onView: (view: DiagramEditorView) => void
+  t: EditorText
+}) {
+  return (
+    <ToolbarToggleGroup
+      type="single"
+      value={view}
+      aria-label={t.view}
+      onValueChange={(v) => {
+        const next = VIEWS.find(([x]) => x === v)
+        if (next) onView(next[0])
+      }}
+    >
+      {VIEWS.map(([value, Icon]) => (
+        <ToolbarToggleItem
+          key={value}
+          value={value}
+          aria-label={t.views[value]}
+          tooltip={t.views[value]}
+        >
+          <Icon aria-hidden />
+        </ToolbarToggleItem>
+      ))}
+    </ToolbarToggleGroup>
+  )
+}
 
 /**
  * True when a diagram of this kind reads back the same from text in `format`: Mermaid has no use
@@ -62,6 +114,10 @@ function FileTools({
   status,
   kinds,
   kind,
+  readOnly,
+  view,
+  onView,
+  actions,
 }: {
   t: EditorText
   format: DiagramFormat
@@ -70,13 +126,19 @@ function FileTools({
   onCopy: () => void
   copied: boolean
   onDownload: (what: DiagramFormat | UmlImageFormat) => void
-  /** Images can be made: something is drawn. */
+  /** Images can be made: something is drawn (and the drawing is shown). */
   drawn: boolean
   templates: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
   status: string
   kinds: Messages['diagram']['kinds']
   /** The kind drawn now: a format that can't hold it can't be picked. */
   kind: UmlDiagramKind | null
+  /** Nothing here may change the text: the format and New diagram are off. */
+  readOnly: boolean
+  view: DiagramEditorView
+  onView: (view: DiagramEditorView) => void
+  /** The app's own buttons, at the end of the bar. */
+  actions: React.ReactNode
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1.5">
@@ -85,6 +147,7 @@ function FileTools({
           type="single"
           value={format}
           aria-label={t.format}
+          disabled={readOnly}
           onValueChange={(v) => {
             if (v === 'mermaid' || v === 'plantuml' || v === 'json') onFormat(v)
           }}
@@ -100,7 +163,7 @@ function FileTools({
           ))}
         </ToolbarToggleGroup>
         <ToolbarSeparator />
-        <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />}>
+        <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />} disabled={readOnly}>
           {templates.map((tpl) => (
             <DropdownMenuItem
               key={tpl.label ?? tpl.kind}
@@ -133,7 +196,7 @@ function FileTools({
           {(['svg', 'png'] as const).map((image) => (
             <DropdownMenuItem
               key={image}
-              disabled={!drawn}
+              disabled={!drawn || view === 'text'}
               onSelect={() => {
                 onDownload(image)
               }}
@@ -142,13 +205,18 @@ function FileTools({
             </DropdownMenuItem>
           ))}
         </ToolbarMenu>
+        <ToolbarSeparator />
+        <ViewSwitch view={view} onView={onView} t={t} />
       </Toolbar>
       <p
         role="status"
         className="order-last w-full min-w-0 truncate px-1 text-[12.5px] text-muted-foreground sm:order-none sm:w-auto sm:flex-1 sm:text-right"
       >
-        {status}
+        {readOnly ? `${t.readOnly} · ${status}` : status}
       </p>
+      {actions !== undefined && actions !== null && (
+        <div className="flex items-center gap-2">{actions}</div>
+      )}
     </div>
   )
 }
@@ -174,4 +242,4 @@ function ProblemList({ problems, t }: { problems: readonly UmlProblem[]; t: Edit
   )
 }
 
-export { canWrite, type DiagramFormat, EXTENSIONS, FileTools, ProblemList }
+export { canWrite, type DiagramEditorView, type DiagramFormat, EXTENSIONS, FileTools, ProblemList }

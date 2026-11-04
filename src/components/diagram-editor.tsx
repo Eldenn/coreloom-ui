@@ -15,6 +15,7 @@ import * as React from 'react'
 import { Drawing } from '@/components/diagram-drawing'
 import {
   canWrite,
+  type DiagramEditorView,
   type DiagramFormat,
   EXTENSIONS,
   FileTools,
@@ -57,6 +58,18 @@ interface DiagramEditorProps {
   /** File name for Download, without the extension. Default: diagram. */
   fileName?: string
   autoFocus?: boolean
+  /** Text beside the drawing (`split`), the drawing alone or the text alone (controlled). */
+  view?: DiagramEditorView
+  /** Default: split. */
+  defaultView?: DiagramEditorView
+  onViewChange?: (view: DiagramEditorView) => void
+  /** The app's own buttons (Share, say), at the end of the top bar. */
+  actions?: React.ReactNode
+  /**
+   * The text can't be changed: no drawing tools, properties or dragging, and the format and New
+   * diagram are off. Copy, Download, zoom and full screen stay. Default: false.
+   */
+  readOnly?: boolean
   className?: string
 }
 
@@ -225,7 +238,8 @@ function readout(result: UmlParseResult, layout: UmlLayout | null, messages: Mes
     .filter((p) => p.line > 0)
     .map((p) => ({ line: p.line, severity: p.severity, message: t.problem[p.code] }))
   const invalid = result.problems.some((p) => p.severity === 'error')
-  return { diagram, kind: diagram?.kind ?? null, kindName, status, diagnostics, invalid }
+  const drawingLabel = kindName ? `${t.preview}: ${kindName}` : t.preview
+  return { diagram, kind: diagram?.kind ?? null, drawingLabel, status, diagnostics, invalid }
 }
 
 /**
@@ -292,6 +306,78 @@ function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T)
   return [current, set] as const
 }
 
+/** "Copied" for a moment after copying text. */
+function useCopy(text: () => string) {
+  const [copied, setCopied] = React.useState(false)
+  const copy = () => {
+    void navigator.clipboard.writeText(text()).then(() => {
+      setCopied(true)
+      window.setTimeout(() => {
+        setCopied(false)
+      }, 1600)
+    })
+  }
+  return { copied, copy }
+}
+
+const GRID: Record<DiagramEditorView, string> = {
+  split: 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]',
+  drawing: '',
+  text: '',
+}
+
+/** The text, its marks and the problems under it. */
+function TextPane({
+  view,
+  label,
+  problems,
+  format,
+  fileName,
+  invalid,
+  ...editor
+}: React.ComponentProps<typeof CodeEditor> & {
+  view: DiagramEditorView
+  format: DiagramFormat
+  fileName: string
+  /** The text has errors. */
+  invalid: boolean
+  /** Names the text field. */
+  label: React.ReactNode
+  problems: React.ReactNode
+}) {
+  const id = React.useId()
+  const split = view === 'split'
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 min-w-0 flex-col',
+        split && 'border-b border-border lg:border-r lg:border-b-0',
+      )}
+    >
+      <p id={`${id}-source`} className="sr-only">
+        {label}
+      </p>
+      <div
+        className={cn(
+          'min-h-0 lg:h-auto lg:flex-1',
+          split ? 'h-[280px]' : 'h-(--diagram-editor-h)',
+        )}
+      >
+        <CodeEditor
+          {...editor}
+          language={format === 'json' ? 'json' : 'text'}
+          path={`${fileName}.${EXTENSIONS[format]}`}
+          height="100%"
+          className="h-full"
+          aria-labelledby={`${id}-source`}
+          {...(invalid ? { 'aria-invalid': true } : {})}
+        />
+      </div>
+      {problems}
+    </div>
+  )
+}
+
 function DiagramEditor({
   value,
   defaultValue = DIAGRAM_TEMPLATES[0]?.text ?? '',
@@ -304,16 +390,20 @@ function DiagramEditor({
   height = '560px',
   fileName = 'diagram',
   autoFocus = false,
+  view: viewProp,
+  defaultView = 'split',
+  onViewChange,
+  actions,
+  readOnly = false,
   className,
 }: DiagramEditorProps) {
   const { messages } = useCoreloomI18n()
   const t = messages.diagramEditor
   const [text, setText] = useControlled(value, defaultValue, onChange)
   const [format, setFormat] = useControlled(formatProp, defaultFormat, onFormatChange)
+  const [view, setView] = useControlled(viewProp, defaultView, onViewChange)
   // Positions dragged on the canvas; null until someone drags (the JSON's own layout applies).
   const [layout, setLayout] = React.useState<UmlLayout | null>(null)
-  const [copied, setCopied] = React.useState(false)
-  const id = React.useId()
 
   // Text the tools wrote is read at once (the panels follow the new ids); typing is read when
   // there's time.
@@ -321,7 +411,7 @@ function DiagramEditor({
   const deferred = React.useDeferredValue(text)
   const source = text === written ? text : deferred
   const result = React.useMemo(() => parseDiagram(source, format), [source, format])
-  const { diagram, kind, kindName, status, diagnostics, invalid } = readout(
+  const { diagram, kind, drawingLabel, status, diagnostics, invalid } = readout(
     result,
     layout,
     messages,
@@ -375,17 +465,10 @@ function DiagramEditor({
     changeFormat(pastedFormat(next, text, format) ?? format)
   }
 
-  const copy = () => {
-    void navigator.clipboard.writeText(exported()).then(() => {
-      setCopied(true)
-      window.setTimeout(() => {
-        setCopied(false)
-      }, 1600)
-    })
-  }
-
   const image = React.useRef<UmlDiagramHandle>(null)
   const { download, failed } = useDownload({ image, fileName, format, text: exported })
+  const { copied, copy } = useCopy(exported)
+  const notice = failed ? t.imageFailed : editing.notice
 
   return (
     <section
@@ -407,40 +490,42 @@ function DiagramEditor({
         onDownload={download}
         drawn={Boolean(diagram)}
         templates={templates}
-        status={[failed ? t.imageFailed : editing.notice, status].filter(Boolean).join(' · ')}
+        status={[notice, status].filter(Boolean).join(' · ')}
         kinds={messages.diagram.kinds}
         kind={kind}
+        readOnly={readOnly}
+        view={view}
+        onView={setView}
+        actions={actions}
       />
-      <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <div className="flex min-h-0 min-w-0 flex-col border-b border-border lg:border-r lg:border-b-0">
-          <p id={`${id}-source`} className="sr-only">
-            {t.source}
-          </p>
-          <div className="h-[280px] min-h-0 lg:h-auto lg:flex-1">
-            <CodeEditor
-              value={text}
-              onChange={type}
-              language={format === 'json' ? 'json' : 'text'}
-              path={`${fileName}.${EXTENSIONS[format]}`}
-              diagnostics={diagnostics}
-              height="100%"
-              className="h-full"
-              autoFocus={autoFocus}
-              aria-labelledby={`${id}-source`}
-              {...(invalid ? { 'aria-invalid': true } : {})}
-            />
-          </div>
-          <ProblemList problems={result.problems} t={t} />
-        </div>
-        <Drawing
-          diagram={diagram}
-          label={kindName ? `${t.preview}: ${kindName}` : t.preview}
-          locked={result.problems.length > 0}
-          editing={editing}
-          directions={keptDirections(diagram, format)}
-          imageRef={image}
-          onLayoutChange={setLayout}
-        />
+      <div className={cn('grid min-h-0 lg:h-(--diagram-editor-h)', GRID[view])}>
+        {view !== 'drawing' && (
+          <TextPane
+            view={view}
+            label={t.source}
+            value={text}
+            onChange={type}
+            readOnly={readOnly}
+            format={format}
+            fileName={fileName}
+            invalid={invalid}
+            diagnostics={diagnostics}
+            autoFocus={autoFocus}
+            problems={<ProblemList problems={result.problems} t={t} />}
+          />
+        )}
+        {view !== 'text' && (
+          <Drawing
+            diagram={diagram}
+            label={drawingLabel}
+            locked={result.problems.length > 0}
+            readOnly={readOnly}
+            editing={editing}
+            directions={keptDirections(diagram, format)}
+            imageRef={image}
+            onLayoutChange={setLayout}
+          />
+        )}
       </div>
     </section>
   )
@@ -451,6 +536,7 @@ export {
   DIAGRAM_TEMPLATES,
   DiagramEditor,
   type DiagramEditorProps,
+  type DiagramEditorView,
   type DiagramFormat,
   parseDiagram,
   writeDiagram,

@@ -29,7 +29,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship, C4, use case, activity and deployment diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or `parsePlantUml`, or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`.',
+          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship, C4, use case, activity and deployment diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or `parsePlantUml`, or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`. The controls show it full screen (Escape leaves); `preview` draws a still thumbnail for galleries.',
       },
     },
   },
@@ -37,6 +37,7 @@ const meta = {
   argTypes: {
     editable: { control: 'boolean' },
     controls: { control: 'boolean' },
+    preview: { control: 'boolean' },
     height: { control: 'number' },
     diagram: { control: 'object' },
   },
@@ -164,6 +165,31 @@ export const SequenceSelection: Story = {
   },
 }
 
+/**
+ * `preview`: still thumbnails fitted to their box, as in a gallery. Nothing inside takes focus or
+ * moves; each one is a single image named by `label`.
+ */
+export const Preview: Story = {
+  render: function Render() {
+    const thumbnails: { label: string; diagram: UmlSpec }[] = [
+      { label: 'Orders: classes', diagram: fromMermaid(classText) },
+      { label: 'Checkout: sequence', diagram: fromMermaid(sequenceText) },
+      { label: 'Review: states', diagram: fromMermaid(stateText) },
+      { label: 'Shop: deployment', diagram: fromPlantUml(deploymentText) },
+    ]
+    return (
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {thumbnails.map(({ label, diagram }) => (
+          <li key={label} className="grid gap-2">
+            <UmlDiagram diagram={diagram} preview label={label} height={160} />
+            <p className="text-[13px] text-fg-secondary">{label}</p>
+          </li>
+        ))}
+      </ul>
+    )
+  },
+}
+
 /** Nothing to draw. */
 export const Empty: Story = {
   args: { diagram: { kind: 'class', classes: [], relations: [] }, height: 240 },
@@ -176,6 +202,12 @@ export const French: Story = {
 
 export const FrenchSequence: Story = {
   args: { diagram: fromMermaid(sequenceText) },
+  globals: { locale: 'fr' },
+}
+
+/** A thumbnail in French: its accessible name is the kind of diagram when there's no `label`. */
+export const FrenchPreview: Story = {
+  args: { diagram: fromMermaid(classText), preview: true, height: 200 },
   globals: { locale: 'fr' },
 }
 

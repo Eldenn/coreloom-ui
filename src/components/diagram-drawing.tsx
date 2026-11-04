@@ -3,7 +3,8 @@
 // Coreloom UI — Diagram drawing. The right half of the diagram editor: the drawing tools, the
 // drawing itself, and the side panel (the properties of what's selected; for a sequence diagram,
 // its participants and steps too). Keyboard shortcuts on the drawing: Ctrl or ⌘ with Z / Y (undo,
-// redo), C, X, V and D (copy, cut, paste, duplicate).
+// redo), C, X, V and D (copy, cut, paste, duplicate). Read only, the tools and properties are
+// off and nothing can be dragged; selecting, zoom and full screen stay.
 import * as React from 'react'
 
 import { DiagramProperties } from '@/components/diagram-properties'
@@ -102,7 +103,8 @@ function SidePanel({
 function Drawing({
   diagram,
   label,
-  locked,
+  locked: problems,
+  readOnly,
   editing,
   directions,
   imageRef,
@@ -110,7 +112,10 @@ function Drawing({
 }: {
   diagram: UmlSpec | null
   label: string
+  /** The text has problems: the tools would lose what couldn't be read. */
   locked: boolean
+  /** Nothing may change: no tools, no properties, no dragging. */
+  readOnly: boolean
   editing: Editing
   /** Positions dragged while the text has problems: kept, but not written to the text. */
   onLayoutChange: (layout: UmlLayout) => void
@@ -119,6 +124,7 @@ function Drawing({
   imageRef: React.Ref<UmlDiagramHandle>
 }) {
   const empty = useCoreloomI18n().messages.diagram.empty
+  const locked = problems || readOnly
   const pane = React.useRef<HTMLDivElement>(null)
   const remove = () => {
     editing.remove()
@@ -142,15 +148,16 @@ function Drawing({
       }
   return (
     // The keys are shortcuts for tools in the toolbar, which stay the way to reach them.
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- shortcut only
+
     <div
       ref={pane}
       className="flex min-h-0 min-w-0 flex-col"
-      onKeyDown={shortcutKeys(editing, locked)}
+      {...(readOnly ? {} : { onKeyDown: shortcutKeys(editing, locked) })}
     >
       <DiagramTools
         diagram={diagram}
-        locked={locked}
+        locked={problems}
+        readOnly={readOnly}
         selected={editing.selection.elements}
         canDelete={editing.canDelete}
         canCopy={editing.canCopy}
@@ -176,8 +183,8 @@ function Drawing({
             <UmlDiagram
               ref={imageRef}
               diagram={diagram}
-              editable
-              onLayoutChange={locked ? onLayoutChange : editing.move}
+              editable={!readOnly}
+              onLayoutChange={problems ? onLayoutChange : editing.move}
               selection={editing.selection}
               onSelectionChange={editing.select}
               {...editable}

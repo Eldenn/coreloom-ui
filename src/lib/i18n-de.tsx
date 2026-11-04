@@ -2365,6 +2365,8 @@ export const de: Messages = {
   diagram: {
     label: 'Diagramm',
     empty: 'Noch nichts zu zeichnen.',
+    fullscreen: 'Vollbild',
+    exitFullscreen: 'Vollbild beenden',
     kinds: {
       class: 'Klassendiagramm',
       sequence: 'Sequenzdiagramm',
@@ -2516,6 +2518,9 @@ export const de: Messages = {
     source: 'Quelltext',
     preview: 'Vorschau',
     fileTools: 'Text und Datei',
+    view: 'Ansicht',
+    views: { split: 'Text und Zeichnung', drawing: 'Zeichnung', text: 'Text' },
+    readOnly: 'Schreibgeschützt',
     format: 'Format',
     newDiagram: 'Neues Diagramm',
     copy: 'Kopieren',

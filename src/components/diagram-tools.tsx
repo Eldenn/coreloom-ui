@@ -137,6 +137,8 @@ interface DiagramToolsProps {
   diagram: UmlSpec | null
   /** The text has problems: the tools would write it again and lose what couldn't be read. */
   locked: boolean
+  /** Nothing may change: every tool is off, without the "fix the text" note. Default: false. */
+  readOnly?: boolean
   /** Prefills the connect form: the first two selected elements. */
   selected: readonly string[]
   canDelete: boolean
@@ -461,6 +463,7 @@ function ClipboardTools({
 function DiagramTools({
   diagram,
   locked,
+  readOnly = false,
   selected,
   canDelete,
   canCopy,
@@ -481,7 +484,7 @@ function DiagramTools({
   onRedo,
 }: DiagramToolsProps) {
   const t = useCoreloomI18n().messages.diagramTools
-  const disabled = locked || !diagram
+  const disabled = locked || readOnly || !diagram
   const undoRef = React.useRef<HTMLButtonElement>(null)
   const redoRef = React.useRef<HTMLButtonElement>(null)
   /** After Undo or Redo: if that button just got disabled, focus the other one. */
@@ -546,7 +549,7 @@ function DiagramTools({
           ref={undoRef}
           aria-label={t.undo}
           tooltip={t.undo}
-          disabled={!canUndo}
+          disabled={readOnly || !canUndo}
           onClick={() => {
             onUndo()
             keepFocus('undo')
@@ -558,7 +561,7 @@ function DiagramTools({
           ref={redoRef}
           aria-label={t.redo}
           tooltip={t.redo}
-          disabled={!canRedo}
+          disabled={readOnly || !canRedo}
           onClick={() => {
             onRedo()
             keepFocus('redo')
@@ -567,7 +570,9 @@ function DiagramTools({
           <Redo2Icon aria-hidden />
         </ToolbarButton>
       </Toolbar>
-      {locked && diagram && <p className="text-[12px] text-muted-foreground">{t.needsFix}</p>}
+      {locked && !readOnly && diagram && (
+        <p className="text-[12px] text-muted-foreground">{t.needsFix}</p>
+      )}
     </div>
   )
 }
