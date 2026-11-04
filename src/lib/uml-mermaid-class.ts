@@ -73,10 +73,11 @@ function parseMember(input: string): ClassMember {
     text = text.slice(1).trim()
   }
   const classifier = match(/\)\s*([$*])/, text) ?? match(/([$*])$/, text)
-  if (classifier) {
-    if (classifier[1] === '$') member.static = true
+  const [whole = '', mark] = classifier ?? []
+  if (whole) {
+    if (mark === '$') member.static = true
     else member.abstract = true
-    text = text.replace(classifier[0], classifier[0].startsWith(')') ? ')' : '').trim()
+    text = text.replace(whole, whole.startsWith(')') ? ')' : '').trim()
   }
   member.text = text
   return member
