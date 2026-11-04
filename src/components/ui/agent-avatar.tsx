@@ -345,6 +345,22 @@ function Dots({ state }: { state: AgentAvatarState }) {
   )
 }
 
+// error turns red and offline grey, whatever the tone.
+const STATE_COLOURS: Partial<Record<AgentAvatarState, 'danger' | 'muted'>> = {
+  error: 'danger',
+  offline: 'muted',
+}
+const SHELL_MOTIONS: Partial<Record<AgentAvatarState, string>> = {
+  error: 'animate-agent-shake',
+  done: 'animate-agent-pop',
+}
+const HALO_MOTIONS: Partial<Record<AgentAvatarState, string>> = {
+  thinking: 'animate-agent-halo',
+  speaking: 'animate-agent-halo',
+  listening: 'animate-agent-halo [animation-duration:2.6s]',
+  error: 'animate-agent-flash',
+}
+
 function AgentAvatar({
   name,
   state = 'idle',
@@ -395,18 +411,9 @@ function AgentAvatar({
       ? (look?.shape ?? 'square')
       : (shape ?? (variant === 'dots' ? 'circle' : 'square'))
   const drawn = outline === 'square' || outline === 'circle' ? undefined : OUTLINES[outline]
-  const colour =
-    state === 'error' ? 'danger' : state === 'offline' ? 'muted' : (tone ?? look?.tone ?? 'primary')
-  const shell =
-    state === 'error' ? 'animate-agent-shake' : state === 'done' ? 'animate-agent-pop' : ''
-  const halo =
-    state === 'thinking' || state === 'speaking'
-      ? 'animate-agent-halo'
-      : state === 'listening'
-        ? 'animate-agent-halo [animation-duration:2.6s]'
-        : state === 'error'
-          ? 'animate-agent-flash'
-          : ''
+  const colour = STATE_COLOURS[state] ?? tone ?? look?.tone ?? 'primary'
+  const shell = SHELL_MOTIONS[state] ?? ''
+  const halo = HALO_MOTIONS[state] ?? ''
   return (
     <span
       data-slot="agent-avatar"
