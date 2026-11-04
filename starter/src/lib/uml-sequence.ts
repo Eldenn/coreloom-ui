@@ -8,6 +8,7 @@ import type {
   SequenceParticipant,
   SequenceStep,
 } from '@/lib/uml'
+import { stepId } from '@/lib/uml-edit-sequence'
 
 interface SequenceColumn {
   id: string
@@ -32,6 +33,8 @@ type SequenceItem =
       number?: number
       fromId: string
       toId: string
+      /** The step it draws, as `step:<path>` (see `stepId` in uml-edit-sequence.ts). */
+      id: string
     }
   | {
       type: 'note'
@@ -41,6 +44,7 @@ type SequenceItem =
       height: number
       text: string
       who: string[]
+      id: string
     }
   | {
       type: 'block'
@@ -52,6 +56,7 @@ type SequenceItem =
       /** The first section's label, then each further section's divider. */
       sections: { label: string; y: number }[]
       depth: number
+      id: string
     }
   | { type: 'activation'; participant: string; x: number; y1: number; y2: number }
 
@@ -199,7 +204,7 @@ function endActivation(w: Walk, id: string, y: number) {
   })
 }
 
-function placeMessage(w: Walk, m: Extract<SequenceStep, { type: 'message' }>) {
+function placeMessage(w: Walk, m: Extract<SequenceStep, { type: 'message' }>, id: string) {
   const self = m.from === m.to
   const extra = (lineCount(m.text) - 1) * LINE
   w.y += extra
@@ -214,6 +219,7 @@ function placeMessage(w: Walk, m: Extract<SequenceStep, { type: 'message' }>) {
     arrow: m.arrow,
     fromId: m.from,
     toId: m.to,
+    id,
     ...(w.autonumber ? { number: ++w.number } : {}),
   })
   if (m.activate) startActivation(w, m.to, y)
@@ -221,7 +227,7 @@ function placeMessage(w: Walk, m: Extract<SequenceStep, { type: 'message' }>) {
   w.y += self ? SELF_H : MESSAGE_H
 }
 
-function placeNote(w: Walk, n: Extract<SequenceStep, { type: 'note' }>) {
+function placeNote(w: Walk, n: Extract<SequenceStep, { type: 'note' }>, id: string) {
   const xs = n.participants.map((id) => w.x.get(id) ?? 0)
   const width = textWidth(n.text) + 2 * NOTE_PAD
   const height = lineCount(n.text) * LINE + 2 * NOTE_PAD - 4
@@ -240,6 +246,7 @@ function placeNote(w: Walk, n: Extract<SequenceStep, { type: 'note' }>) {
     height,
     text: n.text,
     who: n.participants,
+    id,
   })
   w.y += height + 20
 }
@@ -255,7 +262,12 @@ function blockRange(w: Walk, steps: readonly SequenceStep[]): [number, number] {
   return [Math.min(...xs), Math.max(...xs)]
 }
 
-function placeBlock(w: Walk, b: Extract<SequenceStep, { type: 'block' }>, depth: number) {
+function placeBlock(
+  w: Walk,
+  b: Extract<SequenceStep, { type: 'block' }>,
+  depth: number,
+  path: readonly number[],
+) {
   const top = w.y + 4
   const sections: { label: string; y: number }[] = []
   w.y += BLOCK_HEAD
@@ -264,7 +276,7 @@ function placeBlock(w: Walk, b: Extract<SequenceStep, { type: 'block' }>, depth:
       sections.push({ label: section.label, y: w.y })
       w.y += SECTION_H
     } else sections.push({ label: section.label, y: top })
-    placeSteps(w, section.steps, depth + 1)
+    placeSteps(w, section.steps, depth + 1, [...path, i])
   })
   w.y += BLOCK_END
   const [lo, hi] = blockRange(
@@ -284,25 +296,32 @@ function placeBlock(w: Walk, b: Extract<SequenceStep, { type: 'block' }>, depth:
     height: w.y - top,
     sections,
     depth,
+    id: stepId(path),
   })
   w.y += 8
 }
 
-function placeSteps(w: Walk, steps: readonly SequenceStep[], depth: number) {
-  for (const step of steps) {
+function placeSteps(
+  w: Walk,
+  steps: readonly SequenceStep[],
+  depth: number,
+  prefix: readonly number[],
+) {
+  for (const [i, step] of steps.entries()) {
+    const path = [...prefix, i]
     switch (step.type) {
       case 'message':
-        placeMessage(w, step)
+        placeMessage(w, step, stepId(path))
         break
       case 'note':
-        placeNote(w, step)
+        placeNote(w, step, stepId(path))
         break
       case 'activation':
         if (step.active) startActivation(w, step.participant, w.y + 4)
         else endActivation(w, step.participant, w.y + 4)
         break
       case 'block':
-        placeBlock(w, step, depth)
+        placeBlock(w, step, depth, path)
         break
     }
   }
@@ -321,7 +340,7 @@ function layoutSequence(d: SequenceDiagram): SequenceLayout {
     active: new Map(),
     autonumber: Boolean(d.autonumber),
   }
-  placeSteps(w, d.steps, 0)
+  placeSteps(w, d.steps, 0, [])
   const bottom = w.y + 12
   for (const [id, open] of w.active)
     for (let i = open.length; i > 0; i--) endActivation(w, id, bottom - 8)

@@ -2,18 +2,18 @@
 
 // Coreloom UI — Diagram editor. Software diagrams as text: Mermaid (class, sequence, state, ER and
 // C4) or Coreloom's UML JSON on the left, the drawing on the right, problems marked on their line.
-// The drawing has its own tools: add elements, connect them (or drag from one to another), delete,
-// change what's selected in the properties panel, undo. Each change is made on the model and the
-// text is written again. Elements can be dragged; their positions travel in the JSON. Switch
-// formats, start from a template, copy or download. Everything happens in the browser: the app
-// keeps the text.
+// The drawing has its own tools: add elements (or drag them in), connect them, rename in place,
+// copy, paste, duplicate, delete, align and arrange, change what's selected in the properties
+// panel (a sequence diagram's steps too), undo. Each change is made on the model and the text is
+// written again. Elements can be dragged; their positions travel in the JSON. Switch formats,
+// start from a template, copy, or download the text or an SVG or PNG image. Everything happens in
+// the browser: the app keeps the text.
 import { CheckIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
 import * as React from 'react'
 
-import { DiagramProperties } from '@/components/diagram-properties'
-import { DiagramTools } from '@/components/diagram-tools'
+import { Drawing } from '@/components/diagram-drawing'
 import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import {
   Toolbar,
   ToolbarButton,
@@ -22,7 +22,7 @@ import {
   ToolbarToggleGroup,
   ToolbarToggleItem,
 } from '@/components/ui/toolbar'
-import { UmlDiagram } from '@/components/ui/uml-diagram'
+import type { UmlDiagramHandle } from '@/components/ui/uml-diagram'
 import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import {
@@ -35,6 +35,8 @@ import {
   type UmlProblem,
   type UmlSpec,
 } from '@/lib/uml'
+import { DIRECTIONS } from '@/lib/uml-arrange'
+import type { UmlImageFormat } from '@/lib/uml-image'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
 import { cn } from '@/lib/utils'
 
@@ -153,6 +155,55 @@ function readout(result: UmlParseResult, layout: UmlLayout | null, messages: Mes
   return { diagram, kindName, status, diagnostics, invalid }
 }
 
+/** The directions the text can keep: Mermaid's C4 has none (only JSON keeps one). */
+function keptDirections(diagram: UmlSpec | null, format: DiagramFormat) {
+  return diagram?.kind === 'c4' && format === 'mermaid' ? [] : DIRECTIONS
+}
+
+/** Hands a URL to the browser as a file download. */
+function save(url: string, name: string) {
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  a.click()
+}
+
+/** Download as text, or as an image of the drawing; `failed` when an image couldn't be made. */
+function useDownload({
+  image,
+  fileName,
+  format,
+  text,
+}: {
+  image: React.RefObject<UmlDiagramHandle | null>
+  fileName: string
+  format: DiagramFormat
+  /** The text to save, read when asked. */
+  text: () => string
+}) {
+  const [failed, setFailed] = React.useState(false)
+  const download = (what: DiagramFormat | UmlImageFormat) => {
+    if (what === 'svg' || what === 'png') {
+      setFailed(false)
+      image.current
+        ?.toImage(what)
+        .then((url) => {
+          save(url, `${fileName}.${what}`)
+        })
+        .catch(() => {
+          setFailed(true)
+        })
+      return
+    }
+    const ext = format === 'json' ? 'json' : 'mmd'
+    const blob = new Blob([text()], { type: format === 'json' ? 'application/json' : 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    save(url, `${fileName}.${ext}`)
+    URL.revokeObjectURL(url)
+  }
+  return { download, failed }
+}
+
 function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T) => void) {
   const [own, setOwn] = React.useState(initial)
   const current = value ?? own
@@ -171,6 +222,7 @@ function FileTools({
   onCopy,
   copied,
   onDownload,
+  drawn,
   templates,
   status,
   kinds,
@@ -181,7 +233,9 @@ function FileTools({
   onTemplate: (text: string) => void
   onCopy: () => void
   copied: boolean
-  onDownload: () => void
+  onDownload: (what: DiagramFormat | UmlImageFormat) => void
+  /** Images can be made: something is drawn. */
+  drawn: boolean
   templates: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
   status: string
   kinds: Messages['diagram']['kinds']
@@ -218,10 +272,31 @@ function FileTools({
           {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
           <span className="max-sm:sr-only">{copied ? t.copied : t.copy}</span>
         </ToolbarButton>
-        <ToolbarButton onClick={onDownload}>
-          <DownloadIcon aria-hidden />
-          <span className="max-sm:sr-only">{t.download}</span>
-        </ToolbarButton>
+        <ToolbarMenu
+          label={<span className="max-sm:sr-only">{t.download}</span>}
+          icon={<DownloadIcon aria-hidden />}
+          align="end"
+        >
+          <DropdownMenuItem
+            onSelect={() => {
+              onDownload(format)
+            }}
+          >
+            {t.downloadText(format === 'json' ? 'json' : 'mmd')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {(['svg', 'png'] as const).map((image) => (
+            <DropdownMenuItem
+              key={image}
+              disabled={!drawn}
+              onSelect={() => {
+                onDownload(image)
+              }}
+            >
+              {image === 'svg' ? t.downloadSvg : t.downloadPng}
+            </DropdownMenuItem>
+          ))}
+        </ToolbarMenu>
       </Toolbar>
       <p
         role="status"
@@ -251,98 +326,6 @@ function ProblemList({ problems, t }: { problems: readonly UmlProblem[]; t: Edit
         </li>
       ))}
     </ul>
-  )
-}
-
-type Editing = ReturnType<typeof useDiagramEditing>
-
-/** Ctrl or ⌘ + Z (and + Shift, or Y) on the drawing undoes and redoes the tools' changes. */
-function undoKeys(editing: Editing) {
-  return (event: React.KeyboardEvent) => {
-    const target = event.target as HTMLElement
-    if (target.closest('input, textarea, select, [contenteditable="true"]')) return
-    if (!(event.metaKey || event.ctrlKey)) return
-    const key = event.key.toLowerCase()
-    if (key === 'z' && !event.shiftKey) editing.undo()
-    else if (key === 'y' || (key === 'z' && event.shiftKey)) editing.redo()
-    else return
-    event.preventDefault()
-  }
-}
-
-function Drawing({
-  diagram,
-  label,
-  locked,
-  editing,
-  onLayoutChange,
-}: {
-  diagram: UmlSpec | null
-  label: string
-  locked: boolean
-  editing: Editing
-  onLayoutChange: (layout: UmlLayout) => void
-}) {
-  const empty = useCoreloomI18n().messages.diagram.empty
-  const pane = React.useRef<HTMLDivElement>(null)
-  const remove = () => {
-    editing.remove()
-    // The Delete button is about to be disabled: keep focus on the drawing.
-    requestAnimationFrame(() => {
-      pane.current?.querySelector<HTMLElement>('[role="application"], [role="region"]')?.focus()
-    })
-  }
-  return (
-    // The keys are a shortcut for the Undo and Redo tools, which stay the way to reach them.
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- shortcut only
-    <div ref={pane} className="flex min-h-0 min-w-0 flex-col" onKeyDown={undoKeys(editing)}>
-      <DiagramTools
-        diagram={diagram}
-        locked={locked}
-        selected={editing.selection.elements}
-        canDelete={editing.canDelete}
-        canUndo={editing.canUndo}
-        canRedo={editing.canRedo}
-        onAdd={editing.add}
-        onConnect={editing.connect}
-        onDelete={remove}
-        onUndo={editing.undo}
-        onRedo={editing.redo}
-      />
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="h-[340px] min-h-0 min-w-0 p-3 lg:h-auto lg:flex-1">
-          {diagram ? (
-            <UmlDiagram
-              diagram={diagram}
-              editable
-              onLayoutChange={onLayoutChange}
-              selection={editing.selection}
-              onSelectionChange={editing.select}
-              {...(locked ? {} : { onConnect: editing.connectDragged, onDelete: editing.remove })}
-              height="100%"
-              label={label}
-              className="h-full"
-            />
-          ) : (
-            <p className="grid h-full place-items-center rounded-lg border border-dashed border-border text-[13px] text-muted-foreground">
-              {empty}
-            </p>
-          )}
-        </div>
-        {diagram && diagram.kind !== 'sequence' && (
-          <DiagramProperties
-            diagram={diagram}
-            selection={editing.selection}
-            locked={locked}
-            onElementChange={editing.changeElement}
-            onRelationChange={editing.changeRelation}
-            onReverse={editing.reverse}
-            nameRef={editing.nameRef}
-            className="border-t border-border lg:w-60 lg:shrink-0 lg:border-t-0 lg:border-l"
-          />
-        )}
-      </div>
-    </div>
   )
 }
 
@@ -423,17 +406,8 @@ function DiagramEditor({
     })
   }
 
-  const download = () => {
-    const blob = new Blob([exported()], {
-      type: format === 'json' ? 'application/json' : 'text/plain',
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${fileName}.${format === 'json' ? 'json' : 'mmd'}`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  const image = React.useRef<UmlDiagramHandle>(null)
+  const { download, failed } = useDownload({ image, fileName, format, text: exported })
 
   return (
     <section
@@ -453,8 +427,9 @@ function DiagramEditor({
         onCopy={copy}
         copied={copied}
         onDownload={download}
+        drawn={Boolean(diagram)}
         templates={templates}
-        status={editing.notice ? `${editing.notice} · ${status}` : status}
+        status={[failed ? t.imageFailed : editing.notice, status].filter(Boolean).join(' · ')}
         kinds={messages.diagram.kinds}
       />
       <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
@@ -486,6 +461,8 @@ function DiagramEditor({
           label={kindName ? `${t.preview}: ${kindName}` : t.preview}
           locked={result.problems.length > 0}
           editing={editing}
+          directions={keptDirections(diagram, format)}
+          imageRef={image}
           onLayoutChange={setLayout}
         />
       </div>

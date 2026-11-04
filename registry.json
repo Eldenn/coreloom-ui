@@ -147,7 +147,7 @@
       "name": "uml",
       "type": "registry:lib",
       "title": "UML model and Mermaid",
-      "description": "The typed model of class, sequence, state, entity–relationship and C4 diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (tolerant: problems by line), editing functions (add, connect, rename, change properties, delete) and the layout UmlDiagram draws with. No mermaid dependency.",
+      "description": "The typed model of class, sequence, state, entity–relationship and C4 diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (tolerant: problems by line), editing functions (add, connect, rename, change properties, delete; sequence steps; copy and paste; align, distribute and direction) and the layout UmlDiagram draws with. No mermaid dependency.",
       "dependencies": ["zod@^4"],
       "files": [
         {
@@ -200,6 +200,18 @@
         },
         {
           "path": "src/lib/uml-edit-fields.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-edit-sequence.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-edit-clipboard.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-arrange.ts",
           "type": "registry:lib"
         }
       ]
@@ -3105,14 +3117,16 @@
       "name": "uml-diagram",
       "type": "registry:ui",
       "title": "UmlDiagram",
-      "description": "Software diagrams from the UML model: class, state, ER and C4 on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; with `editable`, draggable, and selection, drag-to-connect and Delete for apps that edit the model), sequence diagrams as an SVG with the steps as a list for screen readers.",
-      "dependencies": ["@xyflow/react@^12", "lucide-react"],
+      "description": "Software diagrams from the UML model: class, state, ER and C4 on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; with `editable`, draggable, and selection, box selection, align and distribute, drag-to-connect, Delete, F2 or double-click rename and drops from a toolbar for apps that edit the model), sequence diagrams as an SVG with the steps as a list for screen readers; SVG and PNG images through a ref.",
+      "dependencies": ["@xyflow/react@^12", "html-to-image@^1.11", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
         "@coreloom/utils",
         "@coreloom/i18n",
         "@coreloom/uml",
-        "@coreloom/button"
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/toolbar"
       ],
       "files": [
         {
@@ -3124,8 +3138,20 @@
           "type": "registry:ui"
         },
         {
+          "path": "src/components/ui/uml-diagram-flow.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/uml-diagram-tools.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "src/components/ui/sequence-diagram.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "src/lib/uml-image.ts",
+          "type": "registry:lib"
         }
       ]
     },
@@ -4246,7 +4272,7 @@
       "name": "diagram-editor",
       "type": "registry:block",
       "title": "Diagram editor",
-      "description": "Software diagrams as text: Mermaid (class, sequence, state, ER, C4) or UML JSON beside the drawing, with drawing tools (add elements, connect, delete, undo, redo) and a properties panel that change the model and rewrite the text; problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy and download.",
+      "description": "Software diagrams as text: Mermaid (class, sequence, state, ER, C4) or UML JSON beside the drawing, with drawing tools (add or drag elements, connect, delete, copy, paste, duplicate, layout direction, undo, redo) and a properties panel (class members line by line, sequence participants, messages, notes, activations and blocks) that change the model and rewrite the text; problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy, and download as text, SVG or PNG.",
       "categories": ["application"],
       "dependencies": ["lucide-react"],
       "registryDependencies": [
@@ -4277,6 +4303,26 @@
         },
         {
           "path": "src/components/diagram-properties.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-drawing.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-commands.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-fields.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-members.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-sequence.tsx",
           "type": "registry:component"
         },
         {

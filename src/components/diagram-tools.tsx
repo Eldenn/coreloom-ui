@@ -1,25 +1,36 @@
 'use client'
 
 // Coreloom UI — Diagram tools. The drawing toolbar of the diagram editor: add the elements this
-// kind of diagram holds, connect two of them, delete what's selected, undo and redo. It only says
-// what was asked; the editor changes the diagram (with the functions in uml-edit.ts).
+// kind of diagram holds (or drag them onto the drawing), connect two of them, delete, copy, paste
+// and duplicate what's selected, arrange the layout or turn it, undo and redo. It only says what
+// was asked; the editor changes the diagram (with the functions in uml-edit*.ts).
 import {
   AppWindowIcon,
   BoxIcon,
+  CircleDashedIcon,
   CircleDotIcon,
+  ClipboardPasteIcon,
+  Columns2Icon,
   ContainerIcon,
+  CopyIcon,
+  CopyPlusIcon,
   DatabaseIcon,
   DiamondIcon,
   FrameIcon,
+  GitBranchIcon,
   GlobeIcon,
+  LayoutGridIcon,
   ListIcon,
   ListOrderedIcon,
   type LucideIcon,
   MergeIcon,
+  OctagonXIcon,
   PlusIcon,
   PuzzleIcon,
   RectangleHorizontalIcon,
   Redo2Icon,
+  RepeatIcon,
+  ShieldAlertIcon,
   SplineIcon,
   SplitIcon,
   SquareDashedIcon,
@@ -34,20 +45,28 @@ import {
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Toolbar, ToolbarButton, ToolbarMenu, ToolbarSeparator } from '@/components/ui/toolbar'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
-import type { UmlSpec } from '@/lib/uml'
+import type { UmlDirection, UmlSpec } from '@/lib/uml'
+import { DIRECTIONS } from '@/lib/uml-arrange'
 import {
   type AddRelationInput,
   elementTypes,
   relationEnds,
   relationTypes,
   START_END,
+  UML_DRAG_TYPE,
   type UmlElementType,
   type UmlRelationType,
 } from '@/lib/uml-edit'
@@ -76,10 +95,16 @@ const ICONS: Record<UmlElementType, LucideIcon> = {
   queue: ListOrderedIcon,
   component: PuzzleIcon,
   boundary: FrameIcon,
+  loop: RepeatIcon,
+  alt: GitBranchIcon,
+  opt: CircleDashedIcon,
+  par: Columns2Icon,
+  critical: ShieldAlertIcon,
+  break: OctagonXIcon,
 }
 
 /** How many element tools sit in the bar itself on wide screens; all of them are under Add. */
-const QUICK = 3
+const QUICK = 4
 
 interface DiagramToolsProps {
   /** The diagram being edited; null when the text can't be drawn. */
@@ -89,11 +114,22 @@ interface DiagramToolsProps {
   /** Prefills the connect form: the first two selected elements. */
   selected: readonly string[]
   canDelete: boolean
+  canCopy: boolean
+  canPaste: boolean
   canUndo: boolean
   canRedo: boolean
+  /** The way the diagram flows, for the Layout menu; null hides it (sequence diagrams). */
+  direction: UmlDirection | null
+  /** The directions the current format can keep (Mermaid has none for C4). Default: all. */
+  directions?: readonly UmlDirection[]
   onAdd: (type: UmlElementType) => void
   onConnect: (input: AddRelationInput) => void
   onDelete: () => void
+  onCopy: () => void
+  onPaste: () => void
+  onDuplicate: () => void
+  onArrange: () => void
+  onDirection: (direction: UmlDirection) => void
   onUndo: () => void
   onRedo: () => void
 }
@@ -144,9 +180,14 @@ function ElementTools({
           <ToolbarButton
             key={type}
             aria-label={`${t.add}: ${t.elements[type]}`}
-            tooltip={t.elements[type]}
+            tooltip={t.dragHint(t.elements[type])}
             disabled={disabled}
             className="max-sm:hidden"
+            draggable={!disabled}
+            onDragStart={(event) => {
+              event.dataTransfer.setData(UML_DRAG_TYPE, type)
+              event.dataTransfer.effectAllowed = 'copy'
+            }}
             onClick={() => {
               onAdd(type)
             }}
@@ -307,16 +348,109 @@ function ConnectTool({
   )
 }
 
+function LayoutMenu({
+  direction,
+  directions = DIRECTIONS,
+  disabled,
+  onArrange,
+  onDirection,
+  t,
+}: {
+  direction: UmlDirection
+  directions?: readonly UmlDirection[] | undefined
+  disabled: boolean
+  onArrange: () => void
+  onDirection: (direction: UmlDirection) => void
+  t: ToolsText
+}) {
+  return (
+    <ToolbarMenu
+      label={<span className="max-sm:sr-only">{t.layout}</span>}
+      icon={<LayoutGridIcon aria-hidden />}
+      disabled={disabled}
+    >
+      <DropdownMenuItem onSelect={onArrange}>
+        <LayoutGridIcon aria-hidden />
+        {t.arrange}
+      </DropdownMenuItem>
+      {directions.length > 1 && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel>{t.flow}</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={direction}
+            onValueChange={(v) => {
+              const next = directions.find((d) => d === v)
+              if (next) onDirection(next)
+            }}
+          >
+            {directions.map((d) => (
+              <DropdownMenuRadioItem key={d} value={d}>
+                {t.directions[d]}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </>
+      )}
+    </ToolbarMenu>
+  )
+}
+
+function ClipboardTools({
+  disabled,
+  canCopy,
+  canPaste,
+  onCopy,
+  onPaste,
+  onDuplicate,
+  t,
+}: {
+  disabled: boolean
+  canCopy: boolean
+  canPaste: boolean
+  onCopy: () => void
+  onPaste: () => void
+  onDuplicate: () => void
+  t: ToolsText
+}) {
+  const tools = [
+    { label: t.copy, icon: CopyIcon, on: canCopy, run: onCopy, keys: 'C' },
+    { label: t.paste, icon: ClipboardPasteIcon, on: canPaste, run: onPaste, keys: 'V' },
+    { label: t.duplicate, icon: CopyPlusIcon, on: canCopy, run: onDuplicate, keys: 'D' },
+  ]
+  return tools.map(({ label, icon: Icon, on, run, keys }) => (
+    <ToolbarButton
+      key={label}
+      aria-label={label}
+      aria-keyshortcuts={`Control+${keys} Meta+${keys}`}
+      tooltip={label}
+      disabled={disabled || !on}
+      onClick={run}
+    >
+      <Icon aria-hidden />
+    </ToolbarButton>
+  ))
+}
+
 function DiagramTools({
   diagram,
   locked,
   selected,
   canDelete,
+  canCopy,
+  canPaste,
   canUndo,
   canRedo,
+  direction,
+  directions,
   onAdd,
   onConnect,
   onDelete,
+  onCopy,
+  onPaste,
+  onDuplicate,
+  onArrange,
+  onDirection,
   onUndo,
   onRedo,
 }: DiagramToolsProps) {
@@ -358,6 +492,29 @@ function DiagramTools({
         >
           <Trash2Icon aria-hidden />
         </ToolbarButton>
+        <ToolbarSeparator />
+        <ClipboardTools
+          disabled={disabled}
+          canCopy={canCopy}
+          canPaste={canPaste}
+          onCopy={onCopy}
+          onPaste={onPaste}
+          onDuplicate={onDuplicate}
+          t={t}
+        />
+        {direction && (
+          <>
+            <ToolbarSeparator />
+            <LayoutMenu
+              direction={direction}
+              directions={directions}
+              disabled={disabled}
+              onArrange={onArrange}
+              onDirection={onDirection}
+              t={t}
+            />
+          </>
+        )}
         <ToolbarSeparator />
         <ToolbarButton
           ref={undoRef}

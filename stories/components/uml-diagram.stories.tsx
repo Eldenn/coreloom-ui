@@ -4,6 +4,7 @@ import * as React from 'react'
 import { UmlDiagram } from '@/components/ui/uml-diagram'
 import type { UmlLayout, UmlSpec } from '@/lib/uml'
 import { addRelation, deleteItems, type UmlSelection } from '@/lib/uml-edit'
+import { renameElement } from '@/lib/uml-edit-fields'
 
 import {
   c4ContainerText,
@@ -96,6 +97,55 @@ export const Connecting: Story = {
           setDiagram((d) => deleteItems(d, picked))
           setSelection({ elements: [], relations: [] })
         }}
+      />
+    )
+  },
+}
+
+/**
+ * Editing on the canvas: F2 or a double-click renames the selected class, "Select an area" (or
+ * Shift-drag) picks several, and the bar at the bottom lines them up or spaces them evenly.
+ */
+export const EditingOnCanvas: Story = {
+  render: function Render(args) {
+    const [diagram, setDiagram] = React.useState<UmlSpec>(() => fromMermaid(classText))
+    const [selection, setSelection] = React.useState<UmlSelection>({
+      elements: ['Payment', 'CardPayment', 'BankTransfer'],
+      relations: [],
+    })
+    return (
+      <UmlDiagram
+        {...args}
+        diagram={diagram}
+        editable
+        selection={selection}
+        onSelectionChange={setSelection}
+        onLayoutChange={(layout) => {
+          setDiagram((d) => (d.kind === 'sequence' ? d : { ...d, layout }))
+        }}
+        onRename={(id, name) => {
+          const renamed = renameElement(diagram, id, name)
+          setDiagram(renamed.diagram)
+          setSelection({ elements: [renamed.id], relations: [] })
+        }}
+      />
+    )
+  },
+}
+
+/** A sequence diagram with a step selected: a click picks a participant, message, note or block. */
+export const SequenceSelection: Story = {
+  render: function Render(args) {
+    const [selection, setSelection] = React.useState<UmlSelection>({
+      elements: ['step:1'],
+      relations: [],
+    })
+    return (
+      <UmlDiagram
+        {...args}
+        diagram={fromMermaid(sequenceText)}
+        selection={selection}
+        onSelectionChange={setSelection}
       />
     )
   },

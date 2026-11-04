@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as React from 'react'
 
 import { DiagramEditor } from '@/components/diagram-editor'
-import { toUmlJson } from '@/lib/uml'
+import { DiagramProperties } from '@/components/diagram-properties'
+import { SequenceOutline } from '@/components/diagram-sequence'
+import { useCoreloomI18n } from '@/lib/i18n'
+import { type SequenceStep, toUmlJson, type UmlSpec } from '@/lib/uml'
+import type { UmlSelection } from '@/lib/uml-edit'
+import { setElementFields } from '@/lib/uml-edit-fields'
+import { addSection, moveStep, removeSection, setStep } from '@/lib/uml-edit-sequence'
 
 import { c4ContainerText, classText, fromMermaid, sequenceText } from '../components/uml-data'
 
@@ -52,5 +59,96 @@ export const WithProblems: Story = {
 export const UnknownType: Story = { args: { defaultValue: 'flowchart TD\n  A --> B' } }
 
 export const French: Story = { globals: { locale: 'fr' } }
+
+export const FrenchSequence: Story = {
+  args: { defaultValue: sequenceText },
+  globals: { locale: 'fr' },
+}
+
+const NOTHING: UmlSelection = { elements: [], relations: [] }
+
+/**
+ * The properties panel on its own, with a class selected: its members one per row, each with a
+ * menu for visibility, static, abstract, moving and removing.
+ */
+export const ClassProperties: Story = {
+  render: function Render() {
+    const [diagram, setDiagram] = React.useState<UmlSpec>(() => fromMermaid(classText))
+    const [selection, setSelection] = React.useState<UmlSelection>({
+      elements: ['Order'],
+      relations: [],
+    })
+    return (
+      <DiagramProperties
+        diagram={diagram}
+        selection={selection}
+        locked={false}
+        onElementChange={(id, fields) => {
+          const changed = setElementFields(diagram, id, fields)
+          setDiagram(changed.diagram)
+          setSelection({ elements: [changed.id], relations: [] })
+        }}
+        onRelationChange={() => {
+          setSelection(NOTHING)
+        }}
+        onReverse={() => {
+          setSelection(NOTHING)
+        }}
+        className="max-w-xs"
+      />
+    )
+  },
+}
+
+/** A sequence diagram's participants and steps as a list, and the selected message's form. */
+export const SequenceSteps: Story = {
+  render: function Render() {
+    const t = useCoreloomI18n().messages.diagramTools
+    const buttons = React.useRef(new Map<string, HTMLButtonElement>())
+    const [diagram, setDiagram] = React.useState(() => {
+      const d = fromMermaid(sequenceText)
+      if (d.kind !== 'sequence') throw new Error('Expected a sequence diagram')
+      return d
+    })
+    const [selected, setSelected] = React.useState<string[]>(['step:1'])
+    const steps = {
+      onChange: (id: string, step: SequenceStep) => {
+        setDiagram((d) => setStep(d, id, step))
+      },
+      onMove: (id: string, delta: -1 | 1) => {
+        const moved = moveStep(diagram, id, delta)
+        setDiagram(moved.diagram)
+        setSelected([moved.id])
+      },
+      onAddSection: (id: string) => {
+        setDiagram((d) => addSection(d, id))
+      },
+      onRemoveSection: (id: string, index: number) => {
+        setDiagram((d) => removeSection(d, id, index))
+      },
+    }
+    return (
+      <div className="flex max-w-xs flex-col gap-4">
+        <SequenceOutline
+          diagram={diagram}
+          selected={selected}
+          onSelect={setSelected}
+          buttons={buttons}
+          t={t}
+        />
+        <DiagramProperties
+          diagram={diagram}
+          selection={{ elements: selected, relations: [] }}
+          locked={false}
+          onElementChange={() => undefined}
+          onRelationChange={() => undefined}
+          onReverse={() => undefined}
+          steps={steps}
+          className="p-0"
+        />
+      </div>
+    )
+  },
+}
 
 export const Phone: Story = { parameters: { viewport: { defaultViewport: 'mobile1' } } }
