@@ -93,6 +93,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:build
+      # r/sizes.json: what each item costs an app.
+      - run: pnpm registry:size
       - run: pnpm storybook:build
       # The tokens in the DTCG format, at /coreloom-ui/tokens/ (Figma, Style Dictionary, native apps).
       - run: pnpm tokens:dtcg
