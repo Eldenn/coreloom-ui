@@ -46,6 +46,11 @@ const NODE_TYPE = {
   choice: 'pseudo',
   bar: 'pseudo',
   frame: 'frame',
+  actor: 'actor',
+  ellipse: 'ellipse',
+  decision: 'decision',
+  flowEnd: 'pseudo',
+  node3d: 'box',
 } as const
 
 function flowNodes(input: {

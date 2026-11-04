@@ -1,8 +1,23 @@
 // Coreloom UI — UML model. The typed shape of the software diagrams Coreloom draws (class,
-// sequence, state, entity–relationship and C4), as plain JSON an app can store, diff or ask a model
-// to write. `parseUmlJson` checks text from outside once, where it comes in; Mermaid text goes
-// through `parseMermaid` in uml-mermaid.ts and lands in the same shape.
+// sequence, state, entity–relationship and C4 here; use case, activity and deployment in
+// uml-elements.ts), as plain JSON an app can store, diff or ask a model to write. `parseUmlJson`
+// checks text from outside once, where it comes in; Mermaid and PlantUML text go through
+// `parseMermaid` (uml-mermaid.ts) and `parsePlantUml` (uml-plantuml.ts) and land in the same shape.
 import { z } from 'zod'
+
+import {
+  type ActivityDiagram,
+  activitySchema,
+  type DeploymentDiagram,
+  deploymentSchema,
+  direction,
+  id,
+  layout,
+  notes,
+  text,
+  type UseCaseDiagram,
+  usecaseSchema,
+} from '@/lib/uml-elements'
 
 /** Where the layout flows: top to bottom, bottom to top, left to right, right to left. */
 type UmlDirection = 'TB' | 'BT' | 'LR' | 'RL'
@@ -254,7 +269,15 @@ interface C4Diagram {
   layout?: UmlLayout
 }
 
-type UmlSpec = ClassDiagram | SequenceDiagram | StateDiagram | ErDiagram | C4Diagram
+type UmlSpec =
+  | ClassDiagram
+  | SequenceDiagram
+  | StateDiagram
+  | ErDiagram
+  | C4Diagram
+  | UseCaseDiagram
+  | ActivityDiagram
+  | DeploymentDiagram
 type UmlDiagramKind = UmlSpec['kind']
 
 /**
@@ -275,12 +298,6 @@ type UmlParseResult =
   { diagram: UmlSpec; problems: UmlProblem[] } | { diagram: null; problems: UmlProblem[] }
 
 // ── JSON ────────────────────────────────────────────────────────────────────────────────────────
-
-const id = z.string().min(1)
-const text = z.string()
-const direction = z.enum(['TB', 'BT', 'LR', 'RL']).optional()
-const layout = z.record(z.string(), z.object({ x: z.number(), y: z.number() })).optional()
-const notes = z.array(z.object({ text, for: id.optional() })).optional()
 
 const member = z.object({
   text,
@@ -472,6 +489,9 @@ const diagramSchema = z.discriminatedUnion('kind', [
   stateSchema,
   erSchema,
   c4Schema,
+  usecaseSchema,
+  activitySchema,
+  deploymentSchema,
 ])
 
 /** Reads a diagram from JSON text (pasted, imported, stored), checking every field once. */
@@ -524,10 +544,15 @@ function umlElementIds(diagram: UmlSpec): string[] {
       return diagram.elements.map((e) => e.id)
     case 'sequence':
       return diagram.participants.map((p) => p.id)
+    case 'usecase':
+    case 'activity':
+    case 'deployment':
+      return diagram.elements.map((e) => e.id)
   }
 }
 
 export {
+  type ActivityDiagram,
   type C4Boundary,
   type C4Diagram,
   type C4Element,
@@ -539,6 +564,7 @@ export {
   type ClassRelation,
   type ClassRelationKind,
   type ClassVisibility,
+  type DeploymentDiagram,
   type ErAttribute,
   type ErCardinality,
   type ErDiagram,
@@ -567,4 +593,5 @@ export {
   type UmlProblem,
   type UmlSpec,
   type UmlState,
+  type UseCaseDiagram,
 }

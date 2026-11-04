@@ -10,17 +10,24 @@ import {
   EdgeLabelRenderer,
   type EdgeProps,
   getSmoothStepPath,
-  Handle,
   type InternalNode,
   type Node,
   type NodeProps,
   Position,
-  useConnection,
   useInternalNode,
 } from '@xyflow/react'
-import { DatabaseIcon, ListOrderedIcon, UserRoundIcon } from 'lucide-react'
+import {
+  CloudIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  ListOrderedIcon,
+  type LucideIcon,
+  PuzzleIcon,
+  UserRoundIcon,
+} from 'lucide-react'
 import * as React from 'react'
 
+import { ActorNode, DecisionNode, EllipseNode, Ends } from '@/components/ui/uml-diagram-nodes'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { UmlDirection } from '@/lib/uml'
 import type { DiagramEdge, DiagramMarker, DiagramNode, DiagramRow } from '@/lib/uml-graph'
@@ -34,7 +41,13 @@ interface NodeData extends Record<string, unknown> {
 type BoxNodeType = Node<NodeData, 'box'>
 type PseudoNodeType = Node<NodeData, 'pseudo'>
 type FrameNodeType = Node<NodeData, 'frame'>
-type DiagramFlowNode = BoxNodeType | PseudoNodeType | FrameNodeType
+type DiagramFlowNode =
+  | BoxNodeType
+  | PseudoNodeType
+  | FrameNodeType
+  | Node<NodeData, 'actor'>
+  | Node<NodeData, 'ellipse'>
+  | Node<NodeData, 'decision'>
 type DiagramFlowEdge = Edge<
   { edge: DiagramEdge; markers: string; offset: number; flow: UmlDirection },
   'uml'
@@ -75,62 +88,21 @@ function contents(node: DiagramNode, t: DiagramText): string | null {
 }
 
 function nodeLabel(node: DiagramNode, t: DiagramText): string {
-  const variant = { database: t.database, queue: t.queue }
+  // Other kinds say what they are in their role (an artifact, a database node).
+  const variant: Partial<Record<NonNullable<DiagramNode['variant']>, string>> = {
+    database: t.database,
+    queue: t.queue,
+  }
   const parts = [
     t.named(t.roles[node.role], node.title || (node.body ?? '')),
     node.stereotype ? eyebrow(node, t) : null,
     node.tone === 'external' ? t.external : null,
     node.technology,
-    node.variant ? variant[node.variant] : null,
+    node.role === 'container' && node.variant ? variant[node.variant] : null,
     contents(node, t),
     node.title ? node.body : null,
   ]
   return parts.filter(Boolean).join(', ')
-}
-
-/**
- * The ends React Flow needs to draw an edge; the line itself picks the sides. When the node is
- * connectable, a dot at the bottom starts a new line, and while one is being drawn the whole node
- * is a place to drop it.
- */
-function Ends({ connectable = false }: { connectable?: boolean | undefined }) {
-  const connecting = useConnection((c) => c.inProgress)
-  if (!connectable) {
-    return (
-      <>
-        <Handle
-          type="target"
-          position={Position.Top}
-          isConnectable={false}
-          className="!opacity-0"
-        />
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          isConnectable={false}
-          className="!opacity-0"
-        />
-      </>
-    )
-  }
-  return (
-    <>
-      <Handle
-        type="target"
-        position={Position.Top}
-        isConnectableStart={false}
-        className={cn(
-          '!opacity-0',
-          connecting && '!inset-0 !size-full !transform-none !rounded-[inherit] !border-0',
-        )}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!size-3 !border-2 !border-background !bg-primary opacity-0 transition-opacity duration-fast [.react-flow__node.selected_&]:opacity-100 [.react-flow__node:focus-visible_&]:opacity-100 [.react-flow__node:hover_&]:opacity-100"
-      />
-    </>
-  )
 }
 
 function Row({ row, keyed }: { row: DiagramRow; keyed: boolean }) {
@@ -155,6 +127,18 @@ function Row({ row, keyed }: { row: DiagramRow; keyed: boolean }) {
   )
 }
 
+const VARIANT_ICONS: Record<NonNullable<DiagramNode['variant']>, LucideIcon> = {
+  database: DatabaseIcon,
+  queue: ListOrderedIcon,
+  artifact: FileTextIcon,
+  component: PuzzleIcon,
+  cloud: CloudIcon,
+}
+
+// A deployment node's depth: a second outline up and to the right, behind the box.
+const DEPTH =
+  'shadow-[6px_-6px_0_-1px_var(--color-inset),6px_-6px_0_0_var(--color-border-strong)]'
+
 const TONES = {
   default: 'border-border-strong bg-card text-card-foreground',
   primary: 'border-primary/50 bg-primary-subtle text-foreground',
@@ -165,7 +149,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
   const t = useCoreloomI18n().messages.diagram
   const top = eyebrow(node, t)
   const keyed = node.role === 'entity' && Boolean(node.compartments?.[0]?.some((r) => r.prefix))
-  const Icon = node.variant === 'database' ? DatabaseIcon : ListOrderedIcon
+  const Icon = node.variant ? VARIANT_ICONS[node.variant] : ListOrderedIcon
   if (node.shape === 'note') {
     return (
       <div className="size-full overflow-hidden rounded-sm border border-border-strong bg-warning-subtle px-3 py-3 text-[12px] leading-[17px] whitespace-pre-line text-foreground">
@@ -178,6 +162,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
       className={cn(
         'flex size-full flex-col overflow-hidden border',
         node.shape === 'rounded' ? 'rounded-xl' : 'rounded-md',
+        node.shape === 'node3d' && ['rounded-none', DEPTH],
         TONES[node.tone ?? 'default'],
       )}
     >
@@ -252,8 +237,27 @@ function PseudoNode({ data }: NodeProps<PseudoNodeType>) {
         </div>
       )}
       {node.shape === 'bar' && <div className="size-full rounded-sm bg-foreground" />}
+      {node.shape === 'flowEnd' && (
+        <svg aria-hidden viewBox="0 0 22 22" className="size-full fill-card stroke-foreground">
+          <circle cx="11" cy="11" r="10" strokeWidth={1.5} />
+          <path d="M4 4 L18 18 M18 4 L4 18" strokeWidth={1.5} />
+        </svg>
+      )}
     </>
   )
+}
+
+/** Composite states and deployment nodes are solid, a use case's system plain; the rest dashed. */
+const FRAMES: Partial<Record<DiagramNode['role'], string>> = {
+  composite: 'rounded-xl bg-card/60',
+  boundary: 'rounded-lg border-dashed bg-inset/50',
+  namespace: 'rounded-lg border-dashed bg-inset/50',
+  subject: 'rounded-md bg-inset/40',
+  partition: 'rounded-md bg-inset/40',
+  node: cn('bg-inset/40', DEPTH),
+  device: cn('bg-inset/40', DEPTH),
+  environment: cn('bg-inset/40', DEPTH),
+  cloud: 'rounded-[28px] bg-inset/40',
 }
 
 function FrameNode({ data }: NodeProps<FrameNodeType>) {
@@ -264,12 +268,7 @@ function FrameNode({ data }: NodeProps<FrameNodeType>) {
     <>
       <Ends connectable={data.connectable} />
       <div
-        className={cn(
-          'size-full border',
-          node.role === 'composite'
-            ? 'rounded-xl border-border-strong bg-card/60'
-            : 'rounded-lg border-dashed border-border-strong bg-inset/50',
-        )}
+        className={cn('size-full border border-border-strong', FRAMES[node.role] ?? FRAMES.boundary)}
       >
         <div className="flex h-10 items-center gap-2 px-3">
           <p className="truncate text-[12.5px] font-semibold text-foreground">{node.title}</p>
@@ -546,7 +545,14 @@ function DiagramMarkers({ prefix }: { prefix: string }) {
   )
 }
 
-const NODE_TYPES = { box: BoxNode, pseudo: PseudoNode, frame: FrameNode }
+const NODE_TYPES = {
+  box: BoxNode,
+  pseudo: PseudoNode,
+  frame: FrameNode,
+  actor: ActorNode,
+  ellipse: EllipseNode,
+  decision: DecisionNode,
+}
 const EDGE_TYPES = { uml: UmlEdge }
 
 export {

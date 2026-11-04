@@ -11,7 +11,20 @@ import type {
 } from '@/lib/uml'
 
 type DiagramShape =
-  'box' | 'rounded' | 'person' | 'start' | 'end' | 'choice' | 'bar' | 'note' | 'frame'
+  | 'box'
+  | 'rounded'
+  | 'person'
+  | 'start'
+  | 'end'
+  | 'choice'
+  | 'bar'
+  | 'note'
+  | 'frame'
+  | 'actor'
+  | 'ellipse'
+  | 'decision'
+  | 'flowEnd'
+  | 'node3d'
 
 /** The look of a box: plain, the system in focus (C4), or something outside it. */
 type DiagramTone = 'default' | 'primary' | 'external'
@@ -53,6 +66,20 @@ type DiagramRole =
   | 'entity'
   | C4ElementKind
   | 'boundary'
+  | 'actor'
+  | 'usecase'
+  | 'subject'
+  | 'action'
+  | 'decision'
+  | 'merge'
+  | 'flowEnd'
+  | 'partition'
+  | 'node'
+  | 'device'
+  | 'environment'
+  | 'artifact'
+  | 'database'
+  | 'cloud'
 
 interface DiagramNode {
   id: string
@@ -65,7 +92,7 @@ interface DiagramNode {
   /** C4: the technology, after the kind: [Container: React]. */
   technology?: string
   /** C4: drawn as a database or a queue. */
-  variant?: 'database' | 'queue'
+  variant?: 'database' | 'queue' | 'artifact' | 'component' | 'cloud'
   italicTitle?: boolean
   body?: string
   compartments?: DiagramRow[][]
@@ -75,7 +102,17 @@ interface DiagramNode {
 }
 
 /** What a line means, for the words a screen reader hears. */
-type DiagramRelation = ClassRelationKind | 'note' | 'transition' | 'er' | 'c4'
+type DiagramRelation =
+  | ClassRelationKind
+  | 'note'
+  | 'transition'
+  | 'er'
+  | 'c4'
+  | 'include'
+  | 'extend'
+  | 'generalization'
+  | 'flow'
+  | 'deploy'
 
 interface DiagramEdge {
   id: string

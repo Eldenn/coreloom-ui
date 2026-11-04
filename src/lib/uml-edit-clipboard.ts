@@ -14,6 +14,7 @@ import type {
   UmlSpec,
 } from '@/lib/uml'
 import { NAMESPACE, START_END, takenIds, type UmlSelection, uniqueId } from '@/lib/uml-edit'
+import { copyIn, isElementDiagram, pasteIn } from '@/lib/uml-edit-elements'
 import { insertAt, stepAt, stepId, stepPath } from '@/lib/uml-edit-sequence'
 
 /** What was copied: a diagram of the same kind, and the class namespaces copied whole. */
@@ -157,6 +158,10 @@ function copySequence(d: SequenceDiagram, picked: ReadonlySet<string>): UmlClip 
 /** What's selected, as a clip to paste; null when nothing in it can be copied. */
 function copyItems(diagram: UmlSpec, selection: UmlSelection): UmlClip | null {
   const picked = new Set(selection.elements)
+  if (isElementDiagram(diagram)) {
+    const clip = copyIn(diagram, picked)
+    return clip ? { diagram: clip } : null
+  }
   switch (diagram.kind) {
     case 'class':
       return copyClass(diagram, picked)
@@ -374,6 +379,11 @@ function pasteItems(diagram: UmlSpec, clip: UmlClip, near?: string): PasteResult
   if (diagram.kind === 'er' && c.kind === 'er') return pasteEr(diagram, c)
   if (diagram.kind === 'c4' && c.kind === 'c4') return pasteC4(diagram, c)
   if (diagram.kind === 'sequence' && c.kind === 'sequence') return pasteSequence(diagram, c, near)
+  if (isElementDiagram(diagram) && isElementDiagram(c)) {
+    const pasted = pasteIn(diagram, c, (ids) => freshIds(ids, takenIds(diagram)))
+    if (pasted)
+      return { diagram: pasted.diagram, selection: { elements: pasted.ids, relations: [] } }
+  }
   return nothing
 }
 

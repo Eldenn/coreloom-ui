@@ -398,9 +398,9 @@ describe('parseMermaid · headers and hostile input', () => {
       diagram: null,
       problems: [{ line: 0, severity: 'error', code: 'empty' }],
     })
-    expect(parseMermaid('flowchart TD\n  A --> B')).toEqual({
+    expect(parseMermaid('pie title Pets\n  "Dogs" : 386')).toEqual({
       diagram: null,
-      problems: [{ line: 1, severity: 'error', code: 'header', text: 'flowchart TD' }],
+      problems: [{ line: 1, severity: 'error', code: 'header', text: 'pie title Pets' }],
     })
   })
 

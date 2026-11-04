@@ -25,6 +25,7 @@ import {
   noteNodes,
   sizeBox,
 } from '@/lib/uml-graph-base'
+import { elementGraph } from '@/lib/uml-graph-elements'
 
 // ── Class ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,10 @@ function toDiagramGraph(diagram: UmlSpec): DiagramGraph | null {
       return erGraph(diagram)
     case 'c4':
       return c4Graph(diagram)
+    case 'usecase':
+    case 'activity':
+    case 'deployment':
+      return elementGraph(diagram)
     case 'sequence':
       return null
   }
