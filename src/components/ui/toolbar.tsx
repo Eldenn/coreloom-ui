@@ -3,7 +3,7 @@
 // Coreloom UI — Toolbar. A row of tools for one thing on screen: text formatting above an editor,
 // zoom and layout above a canvas, actions above a table. It is one Tab stop, and the arrow keys
 // move between its tools (Home and End to the ends). Buttons, toggles (one or several on),
-// links, separators, and a "More" menu for the tools that don't fit.
+// links, separators, menus ("Add ▾"), and a "More" menu for the tools that don't fit.
 //
 //   <Toolbar aria-label="Formatting">
 //     <ToolbarToggleGroup type="multiple" aria-label="Style">
@@ -12,7 +12,7 @@
 //     <ToolbarSeparator />
 //     <ToolbarButton><LinkIcon /> Link</ToolbarButton>
 //   </Toolbar>
-import { MoreHorizontalIcon } from 'lucide-react'
+import { ChevronDownIcon, MoreHorizontalIcon } from 'lucide-react'
 import { Toolbar as ToolbarPrimitive } from 'radix-ui'
 import * as React from 'react'
 
@@ -26,7 +26,7 @@ import { useCoreloomI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const toolClass =
-  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 font-sans text-[13px] font-medium whitespace-nowrap text-fg-secondary outline-none transition-colors duration-fast select-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:text-faint-foreground has-[>svg:only-child]:w-8 has-[>svg:only-child]:px-0 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2.5 font-sans text-[13px] font-medium whitespace-nowrap text-fg-secondary outline-none transition-colors duration-fast select-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:text-faint-foreground has-[>svg:only-child]:min-w-8 has-[>svg:only-child]:px-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
 
 function Toolbar({
   className,
@@ -186,10 +186,60 @@ function ToolbarOverflow({
   )
 }
 
+/**
+ * A tool that opens a menu, named by its text: "Add ▾", "Insert ▾". Put DropdownMenuItem elements
+ * in it. It's one of the toolbar's arrow-key stops, and opens with Enter, Space or the down arrow.
+ */
+function ToolbarMenu({
+  label,
+  icon,
+  tooltip,
+  children,
+  className,
+  align = 'start',
+  disabled,
+  onCloseAutoFocus,
+  'aria-label': ariaLabel,
+}: {
+  /** The text on the button. Hide it at small widths with a `max-sm:sr-only` span if needed. */
+  label: React.ReactNode
+  icon?: React.ReactNode
+  tooltip?: React.ReactNode
+  children: React.ReactNode
+  className?: string
+  align?: 'start' | 'center' | 'end'
+  disabled?: boolean
+  /** Call `event.preventDefault()` to keep focus where a chosen item put it. */
+  onCloseAutoFocus?: (event: Event) => void
+  'aria-label'?: string
+}) {
+  return (
+    <DropdownMenu>
+      <WithTooltip tooltip={tooltip}>
+        <ToolbarPrimitive.Button asChild disabled={disabled}>
+          <DropdownMenuTrigger
+            data-slot="toolbar-menu"
+            aria-label={ariaLabel}
+            className={cn(toolClass, 'data-[state=open]:bg-accent', className)}
+          >
+            {icon}
+            {label}
+            <ChevronDownIcon aria-hidden className="size-3.5 text-muted-foreground" />
+          </DropdownMenuTrigger>
+        </ToolbarPrimitive.Button>
+      </WithTooltip>
+      <DropdownMenuContent align={align} onCloseAutoFocus={onCloseAutoFocus}>
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export {
   Toolbar,
   ToolbarButton,
   ToolbarLink,
+  ToolbarMenu,
   ToolbarOverflow,
   ToolbarSeparator,
   ToolbarSpacer,

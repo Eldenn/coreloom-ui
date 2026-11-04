@@ -212,6 +212,8 @@ const COMPONENTS = [
   'AgentTeams',
   'AgentBuilder',
   'WorkflowBuilder',
+  'UmlDiagram',
+  'DiagramEditor',
   'FormBuilder',
   'Ide',
   'Gantt',
