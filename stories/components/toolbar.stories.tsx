@@ -4,13 +4,20 @@ import {
   AlignLeftIcon,
   AlignRightIcon,
   BoldIcon,
+  BoxIcon,
+  CircleDotIcon,
   CodeIcon,
   ItalicIcon,
   LinkIcon,
   ListIcon,
   ListOrderedIcon,
+  PlusIcon,
+  Redo2Icon,
+  SplineIcon,
   StrikethroughIcon,
+  Trash2Icon,
   UnderlineIcon,
+  Undo2Icon,
   ZoomInIcon,
   ZoomOutIcon,
 } from 'lucide-react'
@@ -20,6 +27,7 @@ import {
   Toolbar,
   ToolbarButton,
   ToolbarLink,
+  ToolbarMenu,
   ToolbarOverflow,
   ToolbarSeparator,
   ToolbarSpacer,
@@ -36,7 +44,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A row of tools that is one Tab stop: the arrow keys move between them. The consumer provides an `aria-label` and the tools: `ToolbarButton`, `ToolbarToggleGroup` with `ToolbarToggleItem` (`type="single"` or `"multiple"`), `ToolbarLink`, `ToolbarSeparator`, `ToolbarSpacer`, and `ToolbarOverflow` holding DropdownMenuItem elements. `tooltip` names icon-only tools on hover.',
+          'A row of tools that is one Tab stop: the arrow keys move between them. The consumer provides an `aria-label` and the tools: `ToolbarButton`, `ToolbarToggleGroup` with `ToolbarToggleItem` (`type="single"` or `"multiple"`), `ToolbarLink`, `ToolbarSeparator`, `ToolbarSpacer`, `ToolbarMenu` (a named menu such as Add ▾) and `ToolbarOverflow` holding DropdownMenuItem elements. `tooltip` names icon-only tools on hover.',
       },
     },
   },
@@ -111,6 +119,39 @@ export const Canvas: Story = {
       <ToolbarButton>Fit</ToolbarButton>
       <ToolbarSpacer />
       <ToolbarLink href="#help">Help</ToolbarLink>
+    </Toolbar>
+  ),
+}
+
+/** An editor's drawing tools: a named Add menu, quick tools, and actions on the selection. */
+export const WithMenus: Story = {
+  render: () => (
+    <Toolbar aria-label="Drawing tools" className="max-w-xl">
+      <ToolbarMenu label="Add" icon={<PlusIcon />}>
+        <DropdownMenuItem>
+          <BoxIcon /> Class
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <CircleDotIcon /> Interface
+        </DropdownMenuItem>
+      </ToolbarMenu>
+      <ToolbarButton aria-label="Add: Class" tooltip="Class">
+        <BoxIcon />
+      </ToolbarButton>
+      <ToolbarSeparator />
+      <ToolbarButton>
+        <SplineIcon /> Connect
+      </ToolbarButton>
+      <ToolbarButton aria-label="Delete" tooltip="Delete" disabled>
+        <Trash2Icon />
+      </ToolbarButton>
+      <ToolbarSeparator />
+      <ToolbarButton aria-label="Undo" tooltip="Undo">
+        <Undo2Icon />
+      </ToolbarButton>
+      <ToolbarButton aria-label="Redo" tooltip="Redo" disabled>
+        <Redo2Icon />
+      </ToolbarButton>
     </Toolbar>
   ),
 }
