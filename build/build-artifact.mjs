@@ -213,6 +213,7 @@ const COMPONENTS = [
   'AgentBuilder',
   'WorkflowBuilder',
   'UmlDiagram',
+  'DiagramCodeBlock',
   'DiagramEditor',
   'FormBuilder',
   'Ide',

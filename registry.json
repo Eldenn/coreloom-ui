@@ -146,12 +146,16 @@
     {
       "name": "uml",
       "type": "registry:lib",
-      "title": "UML model and Mermaid",
-      "description": "The typed model of class, sequence, state, entity–relationship and C4 diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (tolerant: problems by line), editing functions (add, connect, rename, change properties, delete; sequence steps; copy and paste; align, distribute and direction) and the layout UmlDiagram draws with. No mermaid dependency.",
+      "title": "UML model, Mermaid and PlantUML",
+      "description": "The typed model of class, sequence, state, entity–relationship, C4, use case, activity and deployment diagrams, parseUmlJson to check JSON from outside, parseMermaid / toMermaid for the matching Mermaid subset (flowcharts read as activity diagrams) and parsePlantUml / toPlantUml for PlantUML (tolerant: problems by line), editing functions (add, connect, rename, change properties, delete; sequence steps; copy and paste; align, distribute and direction) and the layout UmlDiagram draws with. No mermaid or plantuml dependency.",
       "dependencies": ["zod@^4"],
       "files": [
         {
           "path": "src/lib/uml.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-elements.ts",
           "type": "registry:lib"
         },
         {
@@ -183,11 +187,35 @@
           "type": "registry:lib"
         },
         {
+          "path": "src/lib/uml-mermaid-flowchart.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-plantuml.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-plantuml-activity.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-plantuml-elements.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-plantuml-write.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/lib/uml-graph-base.ts",
           "type": "registry:lib"
         },
         {
           "path": "src/lib/uml-graph.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-graph-elements.ts",
           "type": "registry:lib"
         },
         {
@@ -212,6 +240,10 @@
         },
         {
           "path": "src/lib/uml-edit-clipboard.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/lib/uml-edit-elements.ts",
           "type": "registry:lib"
         },
         {
@@ -2840,7 +2872,7 @@
       "name": "markdown",
       "type": "registry:ui",
       "title": "Markdown",
-      "description": "Model output (or any Markdown) in Coreloom type: GitHub-flavoured tables, task lists, code blocks with copy; raw HTML is dropped. A caret while streaming.",
+      "description": "Model output (or any Markdown) in Coreloom type: GitHub-flavoured tables, task lists, code blocks with copy; raw HTML is dropped; fenced code in a registered language goes to the app's renderer (diagrams with DiagramCodeBlock). A caret while streaming.",
       "dependencies": ["react-markdown@^10", "remark-gfm@^4", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -3121,7 +3153,7 @@
       "name": "uml-diagram",
       "type": "registry:ui",
       "title": "UmlDiagram",
-      "description": "Software diagrams from the UML model: class, state, ER and C4 on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; with `editable`, draggable, and selection, box selection, align and distribute, drag-to-connect, Delete, F2 or double-click rename and drops from a toolbar for apps that edit the model), sequence diagrams as an SVG with the steps as a list for screen readers; SVG and PNG images through a ref.",
+      "description": "Software diagrams from the UML model: class, state, ER, C4, use case, activity and deployment on a React Flow canvas laid out automatically (UML markers, crow's feet, frames, multiplicities; zoom, fit; with `editable`, draggable, and selection, box selection, align and distribute, drag-to-connect, Delete, F2 or double-click rename and drops from a toolbar for apps that edit the model), sequence diagrams as an SVG with the steps as a list for screen readers; SVG and PNG images through a ref.",
       "dependencies": ["@xyflow/react@^12", "html-to-image@^1.11", "lucide-react"],
       "registryDependencies": [
         "@coreloom/theme",
@@ -3142,6 +3174,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "src/components/ui/uml-diagram-nodes.tsx",
+          "type": "registry:ui"
+        },
+        {
           "path": "src/components/ui/uml-diagram-flow.ts",
           "type": "registry:ui"
         },
@@ -3156,6 +3192,28 @@
         {
           "path": "src/lib/uml-image.ts",
           "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "diagram-code-block",
+      "type": "registry:ui",
+      "title": "DiagramCodeBlock",
+      "description": "Draws ```mermaid and ```plantuml blocks of a Markdown answer as diagrams with UmlDiagram (class, sequence, state, ER, C4, use case, activity, deployment), with a Diagram / Source switch; the plain code block while streaming or when the text can't be read. Register it once around a chat with MarkdownCodeBlocksContext.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/markdown",
+        "@coreloom/segmented-control",
+        "@coreloom/uml",
+        "@coreloom/uml-diagram"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/diagram-code-block.tsx",
+          "type": "registry:ui"
         }
       ]
     },
@@ -3377,13 +3435,14 @@
       "name": "everything",
       "type": "registry:item",
       "title": "Coreloom UI — everything",
-      "description": "Every Coreloom UI component in one install: `all`, `charts`, `editors`, `node-editor` and `uml-diagram`.",
+      "description": "Every Coreloom UI component in one install: `all`, `charts`, `editors`, `node-editor`, `uml-diagram` and `diagram-code-block`.",
       "registryDependencies": [
         "@coreloom/all",
         "@coreloom/charts",
         "@coreloom/editors",
         "@coreloom/node-editor",
-        "@coreloom/uml-diagram"
+        "@coreloom/uml-diagram",
+        "@coreloom/diagram-code-block"
       ],
       "dependencies": []
     },
@@ -4276,7 +4335,7 @@
       "name": "diagram-editor",
       "type": "registry:block",
       "title": "Diagram editor",
-      "description": "Software diagrams as text: Mermaid (class, sequence, state, ER, C4) or UML JSON beside the drawing, with drawing tools (add or drag elements, connect, delete, copy, paste, duplicate, layout direction, undo, redo) and a properties panel (class members line by line, sequence participants, messages, notes, activations and blocks) that change the model and rewrite the text; problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy, and download as text, SVG or PNG.",
+      "description": "Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or UML JSON beside the drawing, with drawing tools (add or drag elements, connect, delete, copy, paste, duplicate, layout direction, undo, redo) and a properties panel (class members line by line, sequence participants, messages, notes, activations and blocks) that change the model and rewrite the text; problems marked on their line, draggable elements whose positions go in the JSON, format switch, templates, copy, and download as text, SVG or PNG.",
       "categories": ["application"],
       "dependencies": ["lucide-react"],
       "registryDependencies": [
