@@ -18,6 +18,7 @@
     "test:visual": "playwright test visual",
     "test:update": "playwright test visual --update-snapshots",
     "artifact:build": "mkdir -p dist/lib && node build/build-artifact.mjs dist/bundle.js && node build/build-libs.mjs dist/lib && tailwindcss -i build/artifact.css -o dist/tailwind.css --minify && cat build/extras.css src/styles/accents.css src/styles/surfaces.css dist/components.css dist/tailwind.css > dist/bundle.css",
+    "registry:size": "node build/registry-size.mjs",
     "starter:sync": "node build/sync-starter.mjs",
     "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js . --cache --cache-location node_modules/.cache/eslint/ --max-warnings 0",
     "lint:fix": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js . --cache --cache-location node_modules/.cache/eslint/ --fix",

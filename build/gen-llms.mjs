@@ -104,7 +104,8 @@ Add the namespace to the app's \`components.json\`, then add items by name:
 \`\`\`
 
 \`\`\`bash
-pnpm dlx shadcn@latest add @coreloom/all          # theme, fonts, utils, every component
+pnpm dlx shadcn@latest add @coreloom/all          # theme, fonts, utils, every light component
+pnpm dlx shadcn@latest add @coreloom/charts       # Recharts charts; editors (Tiptap, CodeMirror); node-editor; or everything
 pnpm dlx shadcn@latest add @coreloom/button @coreloom/ai-chat
 \`\`\`
 
