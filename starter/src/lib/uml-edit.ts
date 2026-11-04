@@ -20,7 +20,18 @@ import type {
   UmlNote,
   UmlSpec,
 } from '@/lib/uml'
+import {
+  addTo,
+  deleteIn,
+  type ElementTypeOfKinds,
+  elementTypesOf,
+  isElementDiagram,
+  relateIn,
+  type RelationTypeOfKinds,
+  relationTypesOf,
+} from '@/lib/uml-edit-elements'
 import { insertBlock, insertNote, keepSteps, stepOf } from '@/lib/uml-edit-sequence'
+import type { ElementDiagram } from '@/lib/uml-elements'
 
 /** What a toolbar can add, depending on the diagram's kind (see `elementTypes`). */
 type UmlElementType =
@@ -46,6 +57,7 @@ type UmlElementType =
   | 'component'
   | 'boundary'
   | SequenceBlockKind
+  | ElementTypeOfKinds
 
 /** The lines a toolbar can draw between two elements, depending on the kind (`relationTypes`). */
 type UmlRelationType =
@@ -59,6 +71,7 @@ type UmlRelationType =
   | 'sync'
   | 'reply'
   | 'async'
+  | RelationTypeOfKinds
 
 /** Which elements and relations are picked: element ids, and indexes in the relation list. */
 interface UmlSelection {
@@ -99,6 +112,7 @@ const C4_ELEMENTS: Record<C4Level, readonly UmlElementType[]> = {
 
 /** The elements a diagram of this kind can hold, in the order a toolbar lists them. */
 function elementTypes(diagram: UmlSpec): readonly UmlElementType[] {
+  if (isElementDiagram(diagram)) return elementTypesOf(diagram)
   switch (diagram.kind) {
     case 'class':
       return ['class', 'interface', 'abstract', 'enumeration', 'note']
@@ -115,6 +129,7 @@ function elementTypes(diagram: UmlSpec): readonly UmlElementType[] {
 
 /** The relations a diagram of this kind can draw; the first is the usual one. */
 function relationTypes(diagram: UmlSpec): readonly UmlRelationType[] {
+  if (isElementDiagram(diagram)) return relationTypesOf(diagram)
   switch (diagram.kind) {
     case 'class':
       return [
@@ -155,6 +170,7 @@ function uniqueId(base: string, taken: ReadonlySet<string>): string {
 
 /** Every id in use, frames included, so a new element never takes one. */
 function takenIds(diagram: UmlSpec): Set<string> {
+  if (isElementDiagram(diagram)) return new Set(diagram.elements.map((e) => e.id))
   switch (diagram.kind) {
     case 'class':
       return new Set([
@@ -307,8 +323,26 @@ function addToC4(d: C4Diagram, input: AddElementInput): EditResult {
   return { diagram: { ...d, elements: [...d.elements, element] }, id }
 }
 
+function addToElements(d: ElementDiagram, input: AddElementInput): EditResult {
+  if (input.type === 'note') {
+    const { notes, id } = withNote(d.notes, input.name, input.near, takenIds(d))
+    return { diagram: { ...d, notes }, id }
+  }
+  const name = input.name.trim()
+  const id = uniqueId(toIdentifier(name), takenIds(d))
+  const near = input.near ? { near: input.near } : {}
+  const next = addTo(d, {
+    type: input.type,
+    id,
+    ...(name && name !== id ? { label: name } : {}),
+    ...near,
+  })
+  return next ? { diagram: next, id } : { diagram: d, id: '' }
+}
+
 /** Adds an element of `type` with a fresh id; gives the new diagram and that id. */
 function addElement(diagram: UmlSpec, input: AddElementInput): EditResult {
+  if (isElementDiagram(diagram)) return addToElements(diagram, input)
   switch (diagram.kind) {
     case 'class':
       return addToClass(diagram, input)
@@ -357,6 +391,10 @@ function endpoints(diagram: UmlSpec): Set<string> {
   const ids = new Set(
     diagram.kind === 'c4' ? diagram.elements.map((e) => e.id) : [...takenIds(diagram)],
   )
+  // A use case's system and an activity's partitions are frames, not ends.
+  if (isElementDiagram(diagram))
+    for (const e of diagram.elements)
+      if (e.kind === 'system' || e.kind === 'partition') ids.delete(e.id)
   if (diagram.kind === 'class')
     for (const c of diagram.classes) if (c.namespace) ids.delete(c.namespace)
   return ids
@@ -366,6 +404,7 @@ function endpoints(diagram: UmlSpec): Set<string> {
 function withRelation(diagram: UmlSpec, input: AddRelationInput & { label: string }): UmlSpec {
   const { from, to, type, label } = input
   const labelled = label ? { label } : {}
+  if (isElementDiagram(diagram)) return relateIn(diagram, { from, to, type, label })
   switch (diagram.kind) {
     case 'class': {
       const kind = isClassKind(type) ? type : 'association'
@@ -395,6 +434,7 @@ function relationEnds(diagram: UmlSpec): { id: string; name: string }[] {
   const ends = endpoints(diagram)
   const named = (list: readonly { id: string; label?: string }[]) =>
     list.filter((x) => ends.has(x.id)).map((x) => ({ id: x.id, name: x.label ?? x.id }))
+  if (isElementDiagram(diagram)) return named(diagram.elements)
   switch (diagram.kind) {
     case 'class':
       return named(diagram.classes)
@@ -525,6 +565,7 @@ function deleteFromC4(d: C4Diagram, removed: Set<string>, rel: Set<number>): C4D
 function deleteItems(diagram: UmlSpec, selection: UmlSelection): UmlSpec {
   const removed = new Set(selection.elements)
   const rel = new Set(selection.relations)
+  if (isElementDiagram(diagram)) return deleteIn(diagram, removed, rel)
   switch (diagram.kind) {
     case 'class':
       return deleteFromClass(diagram, removed, rel)

@@ -151,6 +151,12 @@ function erAttributeText(a: ErAttribute): string {
   return `${a.type.replace(/\s+/g, '_')} ${a.name.replace(/\s+/g, '_')}${keys}${comment}`
 }
 
+/** A relation's crow's feet and line, `||--o{` (PlantUML writes them the same way). */
+function erRelationMarks(r: ErRelation): string {
+  const line = r.identifying === false ? '..' : '--'
+  return `${LEFT_OF[r.fromCardinality]}${line}${RIGHT_OF[r.toCardinality]}`
+}
+
 /** The diagram as Mermaid `erDiagram` text. */
 function erToMermaid(diagram: ErDiagram): string {
   const out = [...titleBlock(diagram.title), 'erDiagram']
@@ -163,12 +169,9 @@ function erToMermaid(diagram: ErDiagram): string {
     }
     out.push(`  ${head} {`, ...e.attributes.map((a) => `    ${erAttributeText(a)}`), '  }')
   }
-  for (const r of diagram.relations) {
-    const line = r.identifying === false ? '..' : '--'
-    const marks = `${LEFT_OF[r.fromCardinality]}${line}${RIGHT_OF[r.toCardinality]}`
-    out.push(`  ${r.from} ${marks} ${r.to} : ${quote(r.label)}`)
-  }
+  for (const r of diagram.relations)
+    out.push(`  ${r.from} ${erRelationMarks(r)} ${r.to} : ${quote(r.label)}`)
   return out.join('\n')
 }
 
-export { erAttributeText, erToMermaid, parseErAttribute, parseErDiagram }
+export { erAttributeText, erRelationMarks, erToMermaid, parseErAttribute, parseErDiagram }

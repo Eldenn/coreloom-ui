@@ -5,7 +5,9 @@
 // (tables, task lists, strikethrough). Raw HTML in the text is dropped, never rendered, so output
 // from a model can't inject markup. Safe to re-render on every streamed token. Given the message's
 // `sources`, the model's markers ("[1]", "[1][2]") become InlineCitation pills that show the source.
-// Footnotes ([^1]) are labelled in the reader's language and jump within the answer.
+// Footnotes ([^1]) are labelled in the reader's language and jump within the answer. Fenced code
+// in a language the app registers (`MarkdownCodeBlocksContext`, or the `codeBlocks` prop) is drawn by
+// that renderer instead: Mermaid and PlantUML as diagrams with DiagramCodeBlock, for example.
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import * as React from 'react'
 import ReactMarkdown, { type Components, type Options } from 'react-markdown'
@@ -22,6 +24,33 @@ import { cn } from '@/lib/utils'
 // The sources the citations point at, read by the `sup` renderer (a context, so the renderers stay the
 // same objects from one streamed token to the next and nothing remounts).
 const SourcesContext = React.createContext<readonly CitationSource[]>([])
+
+/** What a code block renderer gets: the code, its language, and the plain code block to fall back on. */
+interface MarkdownCodeBlockProps {
+  code: string
+  /** As written after the fence, in lower case: `mermaid`, `plantuml`. */
+  language: string
+  /** The answer is still being written: the block may be incomplete. */
+  streaming: boolean
+  /** The usual code block (with its copy button), to show instead or beside. */
+  children: React.ReactNode
+}
+
+type MarkdownCodeRenderers = Readonly<
+  Partial<Record<string, React.ComponentType<MarkdownCodeBlockProps>>>
+>
+
+/**
+ * Renderers for fenced code, by language, for every Markdown inside (a whole chat at once):
+ * `<MarkdownCodeBlocksContext value={diagramCodeBlocks}>`.
+ */
+const MarkdownCodeBlocksContext = React.createContext<MarkdownCodeRenderers>({})
+
+/** The renderers and the streaming flag, read by each code block. */
+const BlockContext = React.createContext<{ renderers: MarkdownCodeRenderers; streaming: boolean }>({
+  renderers: {},
+  streaming: false,
+})
 
 interface Position {
   start: { offset?: number }
@@ -202,6 +231,34 @@ function CodeScroll({ code }: { code: string }) {
   )
 }
 
+/** A fenced block: the app's renderer for its language when there is one, else the code. */
+function CodeBlock({ code, language }: { code: string; language: string | undefined }) {
+  const t = useCoreloomI18n().messages.ai.code
+  const { renderers, streaming } = React.use(BlockContext)
+  const plain = (
+    <figure
+      data-slot="markdown-code"
+      className="my-3 overflow-hidden rounded-md border border-border bg-inset"
+    >
+      <figcaption className="flex h-9 items-center justify-between border-b border-border-subtle pr-1 pl-3">
+        <span className="font-mono text-[11.5px] text-muted-foreground">
+          {language ? t.language(language) : ' '}
+        </span>
+        <CodeCopy code={code} />
+      </figcaption>
+      <CodeScroll code={code} />
+    </figure>
+  )
+  const lang = language?.toLowerCase()
+  const Renderer = lang ? renderers[lang] : undefined
+  if (!Renderer || !lang) return plain
+  return (
+    <Renderer code={code} language={lang} streaming={streaming}>
+      {plain}
+    </Renderer>
+  )
+}
+
 function textOf(node: React.ReactNode): string {
   if (typeof node === 'string' || typeof node === 'number') return String(node)
   if (Array.isArray(node)) return node.map(textOf).join('')
@@ -334,20 +391,7 @@ function useComponents(): Components {
         }>
         const lang = /language-([\w-]+)/.exec(child.props.className ?? '')?.[1]
         const code = textOf(child.props.children).replace(/\n$/, '')
-        return (
-          <figure
-            data-slot="markdown-code"
-            className="my-3 overflow-hidden rounded-md border border-border bg-inset"
-          >
-            <figcaption className="flex h-9 items-center justify-between border-b border-border-subtle pr-1 pl-3">
-              <span className="font-mono text-[11.5px] text-muted-foreground">
-                {lang ? t.language(lang) : ' '}
-              </span>
-              <CodeCopy code={code} />
-            </figcaption>
-            <CodeScroll code={code} />
-          </figure>
-        )
+        return <CodeBlock code={code} language={lang} />
       },
       code: ({ node: _n, className, ...p }) => (
         <code
@@ -367,6 +411,7 @@ function Markdown({
   children,
   streaming = false,
   sources,
+  codeBlocks,
   className,
 }: {
   /** The Markdown text. */
@@ -375,8 +420,13 @@ function Markdown({
   streaming?: boolean
   /** The message's sources, in order (AI SDK `source-url` / `source-document` parts): "[1]" in the text cites the first. */
   sources?: readonly CitationSource[]
+  /** Renderers for fenced code by language; added to (and winning over) `MarkdownCodeBlocksContext`. */
+  codeBlocks?: MarkdownCodeRenderers
   className?: string
 }) {
+  const inherited = React.use(MarkdownCodeBlocksContext)
+  const renderers = React.useMemo(() => ({ ...inherited, ...codeBlocks }), [inherited, codeBlocks])
+  const block = React.useMemo(() => ({ renderers, streaming }), [renderers, streaming])
   const components = useComponents()
   const t = useCoreloomI18n().messages.ai.chat
   const prefix = `${React.useId()}-`
@@ -419,18 +469,25 @@ function Markdown({
       )}
     >
       <SourcesContext value={sources ?? []}>
-        <ReactMarkdown
-          remarkPlugins={remarkPlugins}
-          rehypePlugins={rehypePlugins}
-          remarkRehypeOptions={remarkRehypeOptions}
-          components={components}
-          skipHtml
-        >
-          {children}
-        </ReactMarkdown>
+        <BlockContext value={block}>
+          <ReactMarkdown
+            remarkPlugins={remarkPlugins}
+            rehypePlugins={rehypePlugins}
+            remarkRehypeOptions={remarkRehypeOptions}
+            components={components}
+            skipHtml
+          >
+            {children}
+          </ReactMarkdown>
+        </BlockContext>
       </SourcesContext>
     </div>
   )
 }
 
-export { Markdown }
+export {
+  Markdown,
+  type MarkdownCodeBlockProps,
+  MarkdownCodeBlocksContext,
+  type MarkdownCodeRenderers,
+}
