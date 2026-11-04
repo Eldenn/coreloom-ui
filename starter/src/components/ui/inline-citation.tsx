@@ -99,6 +99,36 @@ function InlineCitation({
   const contentRef = React.useRef<HTMLDivElement>(null)
   // Focus goes back to the citation only when it was in the card (Escape); a peek closing never moves it.
   const returnFocus = React.useRef(false)
+  // Enter on the citation moves focus into the card, to its link. Radix does it when the card mounts,
+  // but the card may be reopened while still fading out (tab away and back fast), which doesn't mount
+  // it again, and a card just mounted isn't placed yet: Radix then finds the link hidden and focuses
+  // the card itself (and the portal only renders it a frame later). So it's done here, for a few
+  // frames, until the link has it.
+  const focusCard = React.useRef(false)
+  const [focusRequest, setFocusRequest] = React.useState(0)
+  React.useEffect(() => {
+    if (!open || !focusCard.current) return
+    let frame = 0
+    let tries = 0
+    const moveIn = () => {
+      const card = contentRef.current
+      const target = card?.querySelector<HTMLElement>('a[href]') ?? card
+      if (!openRef.current || !focusCard.current) return
+      const at = document.activeElement
+      // Focus is already where it should be, or the user moved it on inside the card.
+      if (card && (at === target || (at !== card && card.contains(at)))) {
+        focusCard.current = false
+        return
+      }
+      target?.focus()
+      if (++tries > 10) focusCard.current = false
+      else frame = requestAnimationFrame(moveIn)
+    }
+    moveIn()
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [open, focusRequest])
   React.useEffect(
     () => () => {
       clearTimeout(timer.current)
@@ -110,6 +140,7 @@ function InlineCitation({
     clearTimeout(timer.current)
     returnFocus.current = !!contentRef.current?.contains(document.activeElement)
     mode.current = 'peek'
+    focusCard.current = false
     setOpen(false)
   }
 
@@ -172,12 +203,9 @@ function InlineCitation({
             return
           }
           mode.current = 'pinned'
-          if (openRef.current) {
-            if (byKeyboard.current)
-              (
-                contentRef.current?.querySelector<HTMLElement>('a[href]') ?? contentRef.current
-              )?.focus()
-          } else setOpen(true)
+          focusCard.current = byKeyboard.current
+          if (byKeyboard.current) setFocusRequest((n) => n + 1)
+          if (!openRef.current) setOpen(true)
         }}
         className={cn(
           'mx-[0.15em] inline-flex h-[1.45em] min-w-[1.45em] cursor-pointer items-center justify-center rounded-full border border-border bg-card px-[0.35em] align-[0.3em] font-mono text-[11px] leading-none font-semibold text-fg-secondary outline-none',
