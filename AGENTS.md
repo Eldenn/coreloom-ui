@@ -145,7 +145,7 @@ Every change goes in this order: make it work, then make it right, then leave a 
 ### Leave a clean trail
 
 - Refactor commits are separate from behaviour commits. Each message says why, what changed, and
-  how you checked it.
+  how you checked it, in the Conventional Commits format (see **Git**).
 - The PR description is the log: what was done, in order, and why.
 
 ## Code style
@@ -307,6 +307,25 @@ a `<Canvas of={Stories.X} />`. `tests/docs.spec.ts` checks every page renders.
 
 - Small, focused commits with messages that say what changed and why. Don't commit `public/`,
   `dist/`, `test-results/`, local screenshots or `node_modules`.
+- **Commit messages follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**:
+  `<type>(<scope>): <description>`, then an optional body and footers, each after a blank line.
+  - `type`: `feat` (a new item, prop or behaviour), `fix` (a bug), `docs` (guides, README, AGENTS.md),
+    `style` (formatting only), `refactor` (no behaviour change), `perf`, `test` (specs, Vitest,
+    visual baselines), `build` (registry, build scripts, dependencies), `ci` (workflows), `chore`
+    (anything else, such as a starter sync or a release), `revert`.
+  - `scope`: the registry item or area, in kebab-case: `feat(model-picker): …`, `fix(node-editor): …`,
+    `chore(starter): …`. Leave it out when the change spans many areas.
+  - `description`: imperative, lower case, no final period, about 72 characters at most
+    (`feat(timeline): add a compact variant`).
+  - A breaking change for someone who installed an item adds `!` after the type or scope and a
+    `BREAKING CHANGE: <what to do>` footer; its changeset has an **Upgrading** section too.
+  - Pull request titles follow the same format, since they become the merge or squash commit.
+- **The repository owner is the only author.** Commits are authored and committed under the owner's
+  name and email. No `Co-Authored-By` naming an AI assistant, no session or tool trailers (such as
+  `Claude-Session:`), no "Generated with …" footer. Commit messages, pull request titles and bodies,
+  changesets and code comments don't mention that an AI assistant or coding agent wrote or helped
+  with the change. (Product content is not concerned: model names in demo data, or docs on using the
+  registry from an assistant, stay.)
 - Don't bump `version`, edit `CHANGELOG.md` or run `version-packages` — releases go through the
   Version Packages PR that Changesets opens (see README → Release).
 
