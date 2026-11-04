@@ -13,8 +13,88 @@ registry attached, so a project can pin one by pointing the namespace there in
 `components.json` (dependencies between items resolve through the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.10.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.11.0/{name}.json" }
 ```
+
+## [0.11.0] - 2026-11-04
+
+### Added
+
+- `renderIcon` and the `IconLike` type (`@coreloom/render-icon`), and `initials` (`@coreloom/initials`): the helpers that AppSidebar, NavUser, CommandMenu, FeatureGrid and SettingsLayout (icons), and Team, Kanban, Inbox, AuditLog and CommentThread (avatar initials) each carried their own copy of. Those blocks now install them; nothing changes in how they render.
+- `@coreloom/charts` (Chart, RadarChart, ScatterChart, TreemapChart and SankeyChart, the charts drawn with Recharts), `@coreloom/editors` (RichTextEditor and CodeEditor) and `@coreloom/everything` (`all`, `charts`, `editors` and `node-editor`).
+- What each item costs an app, gzipped and without React, published at `r/sizes.json` with its npm packages.
+- `Logo` (`@coreloom/logo`): your logo as an inline SVG or an image (with a light version), named for screen readers, optionally linked home, with entrance animations: `fade`, `stagger` (its groups one after the other), `draw` (outlines trace, then fill), `assemble`, `wipe`, `shine` and `pulse`, played on mount, in view or on hover. `logoParts` and `assembleOffset` are exported for your own effects.
+- `LogoLoader` (`@coreloom/logo-loader`): the logo as a loading screen (busy status), that fades away into the content.
+- `LogoCloud` (`@coreloom/logo-cloud`): customer or partner logos in a grid or a marquee, muted until hovered.
+- Motion tokens in the theme: `--duration-fast` / `-base` / `-slow` / `-reveal` (120, 180, 320 and
+  600 ms) with the `duration-fast`, `duration-base`, `duration-slow` and `duration-reveal`
+  utilities, and `--ease-in-out` next to `--ease-out` and `--ease-spring`.
+- `Reveal` and `Stagger` (`@coreloom/reveal`): content that fades, slides, scales or comes into
+  focus as it scrolls into view, once, item by item for `Stagger`; `useInView` and
+  `useReducedMotion` are exported.
+- `WordReveal`, `Typewriter`, `ShimmerText` and `GradientText` (`@coreloom/text-effects`): words
+  arriving one by one, typed phrases with a caret, a shimmer for "Thinking…" labels, the accent
+  gradient on text. Screen readers get the whole text once.
+- `Marquee` (`@coreloom/marquee`): logos or quotes scrolling without end, with faded edges, a
+  pause button, and a stop on hover and focus.
+- `Spotlight` and `BorderGlow` (`@coreloom/spotlight`): a light that follows the pointer across a
+  card, and a light running along its border.
+- `useViewTransition` and `startViewTransition` (`@coreloom/view-transition`): fade, slide,
+  slide-back or scale between views with the View Transitions API.
+- Everything stands still for people who ask for reduced motion, page transitions included.
+- `StatusButton` (`@coreloom/status-button`): a button that shows its action, with a spinner,
+  a drawn check on success and a shake on error, each announced.
+- `DrawIcon`, `MorphIcon` and `MenuToggleIcon` (`@coreloom/animated-icon`): icons that draw
+  themselves, turn into one another, or fold into a cross.
+- `AnimatedList` (`@coreloom/animated-list`), `AnimatedHeight` (`@coreloom/animated-height`)
+  and `TabsIndicator` (`@coreloom/tabs-indicator`): items that slide in and out, a box that
+  follows its content's height, a highlight that slides between tabs.
+- `Ping` and `PingDot` (`@coreloom/ping`), `fireConfetti` (`@coreloom/confetti`),
+  `PageProgress` (`@coreloom/page-progress`) and `TypingIndicator`
+  (`@coreloom/typing-indicator`).
+- `AnimatedBackground` (`@coreloom/animated-background`), `TiltCard` (`@coreloom/tilt-card`),
+  `ScrollProgress` and `Parallax` (`@coreloom/scroll-effects`, CSS scroll-driven), and
+  `ScrambleText` in `@coreloom/text-effects`.
+- `Reveal` and `Stagger` take mask effects for images: `wipe-up`, `wipe-down`, `wipe-left`,
+  `wipe-right` and `circle`.
+- **UML diagrams.** `@coreloom/uml` is the typed model of class, sequence, state, entity–relationship and C4 diagrams, with `parseUmlJson` (checks JSON from outside), and `parseMermaid` / `toMermaid` for the matching Mermaid subset (`classDiagram`, `sequenceDiagram`, `stateDiagram-v2`, `erDiagram`, `C4Context`, `C4Container`, `C4Component`), tolerant: what can't be read comes back as a problem on its line. No `mermaid` dependency; nothing is rendered as HTML.
+- **UmlDiagram** (`@coreloom/uml-diagram`): draws class, state, ER and C4 diagrams on React Flow, laid out automatically in layers with UML markers, crow's feet, frames (namespaces, composite states, C4 boundaries) and multiplicities; zoom and fit; `editable` lets people drag elements and `onLayoutChange` gives their positions. Sequence diagrams render as an SVG (activations, notes, loop/alt/opt/par blocks, autonumber) with the steps as a list for screen readers. Also in `@coreloom/everything` (React Flow keeps it out of `all`).
+- **Diagram editor** block (`@coreloom/diagram-editor`): Mermaid or UML JSON beside the drawing, problems marked on their line, format switch, templates, copy and download.
+- **Sequence diagram editing** in `@coreloom/diagram-editor`: the side panel lists participants and steps (the keyboard path to what a click on the drawing selects), and the selected step's form changes a message (ends, text, arrow, activations), a note (text, place, participants), an activation, or a block (loop, alt, opt, par, critical, break: kind, condition, sections). Add holds notes and blocks (a block wraps the selected step), Connect adds a message after the selected step, Move up / Move down reorder steps, and a participant can be an actor. The functions are in `@coreloom/uml` (`uml-edit-sequence`): `insertMessage`, `insertNote`, `insertBlock`, `setStep`, `moveStep`, `addSection`, `removeSection`, `stepId`.
+- **Editing on the drawing.** UmlDiagram: `onRename` (F2 or a double click opens a name field over the element), `onElementDrop` (an element type dragged onto the canvas, with `UML_DRAG_TYPE`), "Select an area" for box selection, and an align bar (left, centre, right, top, middle, bottom, space evenly) for two or more selected elements. In the diagram editor, the quick Add buttons can be dragged onto the drawing.
+- **Copy, Paste, Duplicate** (Ctrl/⌘ with C, X, V, D) in the diagram editor: elements come with what they hold and the lines between them, under fresh names. `copyItems`, `pasteItems`, `duplicateItems` in `@coreloom/uml`.
+- **Layout** menu in the diagram editor: arrange automatically, and turn the flow (top to bottom, left to right, bottom to top, right to left). Dragged positions can now be undone. `alignBoxes`, `setDirection`, `clearLayout` in `@coreloom/uml`.
+- **SVG and PNG images.** UmlDiagram takes a `ref` whose `toImage('svg' | 'png')` gives the whole drawing as a data URL; the diagram editor's Download menu offers text, SVG and PNG. `@coreloom/uml-diagram` now depends on `html-to-image`.
+- **Class members line by line** in the properties panel: one field per member, typed as in Mermaid, with a menu for visibility, static, abstract, moving and removing; Add attribute and Add method. `memberFromText` in `@coreloom/uml`.
+- **Diagram editor tools.** The drawing in `@coreloom/diagram-editor` has its own toolbar: **Add** (the elements this kind of diagram holds: classes, interfaces, notes, states, entities, participants, C4 people, systems, containers, databases, boundaries…), **Connect** (a form for the kind, both ends and a label, filled from the selection), **Delete**, **Undo** and **Redo**. A **Properties** panel changes what's selected: name, stereotype, members, attributes, description, technology; a relation's kind, label, multiplicities or ER ends, and its direction. Each change is made on the model and the Mermaid or JSON text is written again. The tools are off while the text has problems.
+- **UML editing functions** in `@coreloom/uml`: `addElement`, `addRelation`, `deleteItems`, `renameElement`, `setElementFields`, `setRelationFields`, `reverseRelation` (and `elementTypes`, `relationTypes` to list what a diagram can hold). Plain functions that return a new diagram, for your own forms or an assistant's tool calls.
+- **UmlDiagram**: `selection` / `onSelectionChange`, `onConnect` (with `editable`, drag the dot under an element onto another) and `onDelete` (the Delete key). Selected elements show a ring.
+- **ToolbarMenu** in `@coreloom/toolbar`: a menu named by its text ("Add ▾"), one of the toolbar's arrow-key stops.
+
+### Changed
+
+- `@coreloom/all` no longer installs the components built on Recharts, Tiptap, CodeMirror and React Flow: it now adds about 460 KB of gzipped JavaScript instead of about 1 MB. The light charts (Sparkline, DonutChart, BarList, Gauge, Heatmap, FunnelChart) stay in it.
+- Guides now name every prop their component takes: Sidebar `side` and `variant`, AppShell's sidebar shape, QuotaBar's number options, Popconfirm `onCancel` and `defaultOpen`, FormRenderer's `renderField` / `renderSection` / `showHidden`, RichTextEditor `suggestion` and `onReviewEnd`, and a dozen more.
+- Components use the duration utilities instead of fixed values (`duration-base` for
+  `duration-180`, and so on); nothing moves differently.
+- `UmlElementFields.members` (in `uml-edit-fields`) is a `ClassMember[]` instead of a text with one member per line.
+- The diagram editor's top bar is a Toolbar (one Tab stop, arrow keys between the format, New diagram, Copy and Download); on phones Copy and Download show their icon only.
+
+### Fixed
+
+- **Rich text editor** and **Settings section**: the link field and the "type to confirm" field take their id from `React.useId()` instead of a fixed string, so two instances on one page no longer share a label target.
+- The Checkbox, Radio, Switch story links the checkbox to its description (`aria-describedby`), as an app should.
+- **Toolbar**: a tool with an icon and text no longer shrinks to an icon's width and overlaps the next one.
+
+### Upgrading
+
+- To keep installing everything with one command, use `pnpm dlx shadcn@latest add @coreloom/everything` instead of `@coreloom/all`, or add `@coreloom/charts`, `@coreloom/editors` or `@coreloom/node-editor` next to `all` for the parts you use. Files already installed are not touched.
+- Re-add `@coreloom/theme` to get the logo keyframes and rules in `theme.css`.
+- Add the theme again (`pnpm dlx shadcn@latest add @coreloom/theme`): the duration utilities and
+  the keyframes of the new components live in `theme.css`, and updated components need them.
+- Add the theme again (`pnpm dlx shadcn@latest add @coreloom/theme`): the new keyframes and the
+  TabsIndicator rules live in `theme.css`.
+- If you call `setElementFields` with `members`, pass the members as `ClassMember` objects (`parseMember(line)` from `@/lib/uml-mermaid-class` reads one line as Mermaid writes it).
 
 ## [0.10.0] - 2026-11-03
 
@@ -782,6 +862,7 @@ Gauge: the number, label and status now sit on the ring's center and stay inside
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[0.11.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.11.0
 [0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
 [0.8.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.8.0
