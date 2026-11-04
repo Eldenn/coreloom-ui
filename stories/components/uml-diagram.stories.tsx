@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
 import { UmlDiagram } from '@/components/ui/uml-diagram'
-import type { UmlLayout } from '@/lib/uml'
+import type { UmlLayout, UmlSpec } from '@/lib/uml'
+import { addRelation, deleteItems, type UmlSelection } from '@/lib/uml-edit'
 
 import {
   c4ContainerText,
@@ -23,7 +24,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship and C4 diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`.',
+          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship and C4 diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`.',
       },
     },
   },
@@ -69,6 +70,33 @@ export const Editable: Story = {
     if (diagram.kind === 'sequence') return <UmlDiagram {...args} diagram={diagram} />
     return (
       <UmlDiagram {...args} diagram={{ ...diagram, layout }} editable onLayoutChange={setLayout} />
+    )
+  },
+}
+
+/**
+ * Drag the dot under a class onto another to connect them; select and press Delete to remove.
+ * The app keeps the diagram and changes it with `addRelation` and `deleteItems`.
+ */
+export const Connecting: Story = {
+  render: function Render(args) {
+    const [diagram, setDiagram] = React.useState<UmlSpec>(() => fromMermaid(classText))
+    const [selection, setSelection] = React.useState<UmlSelection>({ elements: [], relations: [] })
+    return (
+      <UmlDiagram
+        {...args}
+        diagram={diagram}
+        editable
+        selection={selection}
+        onSelectionChange={setSelection}
+        onConnect={(from, to) => {
+          setDiagram((d) => addRelation(d, { type: 'association', from, to }))
+        }}
+        onDelete={(picked) => {
+          setDiagram((d) => deleteItems(d, picked))
+          setSelection({ elements: [], relations: [] })
+        }}
+      />
     )
   },
 }

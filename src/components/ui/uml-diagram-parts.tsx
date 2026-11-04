@@ -15,6 +15,7 @@ import {
   type Node,
   type NodeProps,
   Position,
+  useConnection,
   useInternalNode,
 } from '@xyflow/react'
 import { DatabaseIcon, ListOrderedIcon, UserRoundIcon } from 'lucide-react'
@@ -25,9 +26,14 @@ import type { UmlDirection } from '@/lib/uml'
 import type { DiagramEdge, DiagramMarker, DiagramNode, DiagramRow } from '@/lib/uml-graph'
 import { cn } from '@/lib/utils'
 
-type BoxNodeType = Node<{ node: DiagramNode }, 'box'>
-type PseudoNodeType = Node<{ node: DiagramNode }, 'pseudo'>
-type FrameNodeType = Node<{ node: DiagramNode }, 'frame'>
+/** `connectable`: the node shows a dot to drag a new line from. */
+interface NodeData extends Record<string, unknown> {
+  node: DiagramNode
+  connectable?: boolean
+}
+type BoxNodeType = Node<NodeData, 'box'>
+type PseudoNodeType = Node<NodeData, 'pseudo'>
+type FrameNodeType = Node<NodeData, 'frame'>
 type DiagramFlowNode = BoxNodeType | PseudoNodeType | FrameNodeType
 type DiagramFlowEdge = Edge<
   { edge: DiagramEdge; markers: string; offset: number; flow: UmlDirection },
@@ -82,16 +88,46 @@ function nodeLabel(node: DiagramNode, t: DiagramText): string {
   return parts.filter(Boolean).join(', ')
 }
 
-/** Invisible ends React Flow needs to draw an edge; the line itself picks the sides. */
-function Ends() {
+/**
+ * The ends React Flow needs to draw an edge; the line itself picks the sides. When the node is
+ * connectable, a dot at the bottom starts a new line, and while one is being drawn the whole node
+ * is a place to drop it.
+ */
+function Ends({ connectable = false }: { connectable?: boolean | undefined }) {
+  const connecting = useConnection((c) => c.inProgress)
+  if (!connectable) {
+    return (
+      <>
+        <Handle
+          type="target"
+          position={Position.Top}
+          isConnectable={false}
+          className="!opacity-0"
+        />
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          isConnectable={false}
+          className="!opacity-0"
+        />
+      </>
+    )
+  }
   return (
     <>
-      <Handle type="target" position={Position.Top} isConnectable={false} className="!opacity-0" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        isConnectableStart={false}
+        className={cn(
+          '!opacity-0',
+          connecting && '!inset-0 !size-full !transform-none !rounded-[inherit] !border-0',
+        )}
+      />
       <Handle
         type="source"
         position={Position.Bottom}
-        isConnectable={false}
-        className="!opacity-0"
+        className="!size-3 !border-2 !border-background !bg-primary opacity-0 transition-opacity duration-fast [.react-flow__node.selected_&]:opacity-100 [.react-flow__node:focus-visible_&]:opacity-100 [.react-flow__node:hover_&]:opacity-100"
       />
     </>
   )
@@ -193,7 +229,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
 function BoxNode({ data }: NodeProps<BoxNodeType>) {
   return (
     <>
-      <Ends />
+      <Ends connectable={data.connectable} />
       <BoxShape node={data.node} />
     </>
   )
@@ -203,7 +239,7 @@ function PseudoNode({ data }: NodeProps<PseudoNodeType>) {
   const { node } = data
   return (
     <>
-      <Ends />
+      <Ends connectable={data.connectable} />
       {node.shape === 'start' && <div className="size-full rounded-full bg-foreground" />}
       {node.shape === 'end' && (
         <div className="size-full rounded-full border-2 border-foreground p-[3px]">
@@ -226,7 +262,7 @@ function FrameNode({ data }: NodeProps<FrameNodeType>) {
   const top = eyebrow(node, t)
   return (
     <>
-      <Ends />
+      <Ends connectable={data.connectable} />
       <div
         className={cn(
           'size-full border',

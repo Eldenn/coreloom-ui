@@ -6,7 +6,16 @@
 // `parseUmlJson`, or Mermaid text read with `parseMermaid`. Nothing is rendered as HTML.
 import '@xyflow/react/dist/base.css'
 
-import { type NodeChange, Panel, ReactFlow, ReactFlowProvider, useReactFlow } from '@xyflow/react'
+import {
+  type Connection,
+  ConnectionMode,
+  type EdgeChange,
+  type NodeChange,
+  Panel,
+  ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
+} from '@xyflow/react'
 import { LayoutGridIcon, MaximizeIcon, ZoomInIcon, ZoomOutIcon } from 'lucide-react'
 import * as React from 'react'
 
@@ -22,10 +31,12 @@ import {
 } from '@/components/ui/uml-diagram-parts'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { SequenceDiagram, UmlLayout, UmlSpec } from '@/lib/uml'
+import type { UmlSelection } from '@/lib/uml-edit'
 import {
   type DiagramEdge,
   type DiagramGraph,
   type DiagramNode,
+  relationIndexOf,
   toDiagramGraph,
 } from '@/lib/uml-graph'
 import { type LayoutBox, layoutDiagram } from '@/lib/uml-layout'
@@ -43,8 +54,20 @@ interface UmlDiagramProps {
   controls?: boolean
   /** The accessible name. Default: the diagram's kind ("Class diagram"). */
   label?: string
+  /** What's selected (controlled): element ids, and relation indexes in the diagram's list. */
+  selection?: UmlSelection
+  onSelectionChange?: (selection: UmlSelection) => void
+  /**
+   * With `editable`, each element shows a dot to drag onto another one; this gets both ends, and
+   * the app adds the relation to its diagram (`addRelation`).
+   */
+  onConnect?: (from: string, to: string) => void
+  /** Delete or Backspace on the canvas, with what's selected; the app removes it (`deleteItems`). */
+  onDelete?: (selection: UmlSelection) => void
   className?: string
 }
+
+const NOTHING: UmlSelection = { elements: [], relations: [] }
 
 type DiagramText = Messages['diagram']
 
@@ -82,10 +105,11 @@ function flowNodes(input: {
   graph: DiagramGraph
   boxes: Map<string, LayoutBox>
   editable: boolean
+  connectable: boolean
   selected: ReadonlySet<string>
   t: DiagramText
 }): DiagramFlowNode[] {
-  const { graph, boxes, editable, selected, t } = input
+  const { graph, boxes, editable, connectable, selected, t } = input
   return byDepth(graph.nodes).map((node) => {
     const box = boxes.get(node.id) ?? { x: 0, y: 0, width: node.width, height: node.height }
     return {
@@ -96,11 +120,12 @@ function flowNodes(input: {
       height: box.height,
       style: { width: box.width, height: box.height },
       ...(node.parent && boxes.has(node.parent) ? { parentId: node.parent } : {}),
-      data: { node },
+      data: { node, connectable },
       ariaLabel: nodeLabel(node, t),
       draggable: editable,
       selected: selected.has(node.id),
-      className: 'rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+      className:
+        'rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring [&.selected]:ring-2 [&.selected]:ring-primary',
     }
   })
 }
@@ -119,7 +144,13 @@ function edgeLabel(edge: DiagramEdge, names: Map<string, string>, t: DiagramText
   return text
 }
 
-function flowEdges(graph: DiagramGraph, markers: string, t: DiagramText): DiagramFlowEdge[] {
+function flowEdges(input: {
+  graph: DiagramGraph
+  markers: string
+  selected: ReadonlySet<number>
+  t: DiagramText
+}): DiagramFlowEdge[] {
+  const { graph, markers, selected, t } = input
   const names = new Map(graph.nodes.map((n) => [n.id, n.title || t.roles[n.role]]))
   const valid = graph.edges.filter((e) => names.has(e.source) && names.has(e.target))
   // Lines between the same two boxes fan out instead of lying on top of each other.
@@ -132,8 +163,10 @@ function flowEdges(graph: DiagramGraph, markers: string, t: DiagramText): Diagra
     const i = seen.get(key) ?? 0
     seen.set(key, i + 1)
     const offset = (i - ((counts.get(key) ?? 1) - 1) / 2) * 16
+    const index = relationIndexOf(edge.id)
     return {
       id: edge.id,
+      selected: index !== null && selected.has(index),
       source: edge.source,
       target: edge.target,
       type: 'uml',
@@ -190,19 +223,71 @@ function movedLayout(changes: NodeChange<DiagramFlowNode>[], current: UmlLayout)
   return next
 }
 
+/** The selection after React Flow's select changes to nodes or edges; null when none changed. */
+function nextSelection(
+  current: UmlSelection,
+  changes: (NodeChange<DiagramFlowNode> | EdgeChange<DiagramFlowEdge>)[],
+  kind: 'elements' | 'relations',
+): UmlSelection | null {
+  const picks = changes.filter((c) => c.type === 'select')
+  if (!picks.length) return null
+  if (kind === 'elements') {
+    const out = new Set(current.elements)
+    for (const c of picks) {
+      if (c.selected) out.add(c.id)
+      else out.delete(c.id)
+    }
+    return { ...current, elements: [...out] }
+  }
+  const out = new Set(current.relations)
+  for (const c of picks) {
+    const index = relationIndexOf(c.id)
+    if (index === null) continue
+    if (c.selected) out.add(index)
+    else out.delete(index)
+  }
+  return { ...current, relations: [...out].sort((a, b) => a - b) }
+}
+
+/** The selection, controlled or not; both of React Flow's change streams update it in turn. */
+function useSelection(
+  controlled: UmlSelection | undefined,
+  onChange: ((selection: UmlSelection) => void) | undefined,
+) {
+  const [own, setOwn] = React.useState<UmlSelection>(NOTHING)
+  const current = controlled ?? own
+  // Node and edge changes for one click arrive one after the other, before a render.
+  const latest = React.useRef(current)
+  React.useEffect(() => {
+    latest.current = current
+  }, [current])
+  const update = (next: UmlSelection | null) => {
+    if (!next) return
+    latest.current = next
+    setOwn(next)
+    onChange?.(next)
+  }
+  return { selection: current, latest, update }
+}
+
 function DiagramCanvas({
   diagram,
   editable = false,
   onLayoutChange,
   controls = true,
   label,
+  selection: selectionProp,
+  onSelectionChange,
+  onConnect,
+  onDelete,
 }: Omit<UmlDiagramProps, 'diagram'> & { diagram: GraphDiagram }) {
   const t = useCoreloomI18n().messages.diagram
   const markers = `uml${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const graph = React.useMemo(() => toDiagramGraph(diagram), [diagram])
   // Positions dragged here win over the diagram's own until it hands new ones back.
   const [dragged, setDragged] = React.useState<UmlLayout | null>(null)
-  const [selected, setSelected] = React.useState<ReadonlySet<string>>(() => new Set())
+  const { selection, latest, update } = useSelection(selectionProp, onSelectionChange)
+  const connectable = editable && Boolean(onConnect)
   const fixed = React.useMemo(() => dragged ?? diagram.layout ?? {}, [dragged, diagram.layout])
   const boxes = React.useMemo(
     () =>
@@ -216,8 +301,10 @@ function DiagramCanvas({
         : new Map<string, LayoutBox>(),
     [graph, fixed],
   )
-  const nodes = graph ? flowNodes({ graph, boxes, editable, selected, t }) : []
-  const edges = graph ? flowEdges(graph, markers, t) : []
+  const selected = new Set(selection.elements)
+  const nodes = graph ? flowNodes({ graph, boxes, editable, connectable, selected, t }) : []
+  const pickedLines = new Set(selection.relations)
+  const edges = graph ? flowEdges({ graph, markers, selected: pickedLines, t }) : []
 
   const flow = useReactFlow()
   const ids = nodes.map((n) => n.id).join('\u0000')
@@ -236,17 +323,28 @@ function DiagramCanvas({
       const done = changes.some((c) => c.type === 'position' && !c.dragging)
       if (done) onLayoutChange?.(next)
     }
-    const picks = changes.filter((c) => c.type === 'select')
-    if (picks.length) {
-      setSelected((prev) => {
-        const out = new Set(prev)
-        for (const c of picks) {
-          if (c.selected) out.add(c.id)
-          else out.delete(c.id)
-        }
-        return out
+    update(nextSelection(latest.current, changes, 'elements'))
+  }
+
+  const onEdgesChange = (changes: EdgeChange<DiagramFlowEdge>[]) => {
+    update(nextSelection(latest.current, changes, 'relations'))
+  }
+
+  const connect = (c: Connection) => {
+    if (c.source && c.target) onConnect?.(c.source, c.target)
+  }
+
+  const canvas = React.useRef<HTMLDivElement>(null)
+  const remove = () => {
+    if (latest.current.elements.length || latest.current.relations.length) {
+      onDelete?.(latest.current)
+      // The focused element is about to go: keep focus on the canvas, not the page.
+      requestAnimationFrame(() => {
+        if (!canvas.current?.contains(document.activeElement)) canvas.current?.focus()
       })
     }
+    // React Flow's own deletion is off: the diagram changes when the app hands a new one back.
+    return Promise.resolve(false)
   }
 
   const arrange = () => {
@@ -273,17 +371,23 @@ function DiagramCanvas({
     <>
       <DiagramMarkers prefix={markers} />
       <ReactFlow<DiagramFlowNode, DiagramFlowEdge>
+        ref={canvas}
+        tabIndex={-1}
         nodes={nodes}
         edges={edges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={connect}
+        onBeforeDelete={remove}
         nodesDraggable={editable}
-        nodesConnectable={false}
+        nodesConnectable={connectable}
+        connectionMode={ConnectionMode.Loose}
         nodesFocusable
         edgesFocusable
         elementsSelectable
-        deleteKeyCode={null}
+        deleteKeyCode={onDelete ? ['Delete', 'Backspace'] : null}
         // A selected frame must stay behind what it holds.
         elevateNodesOnSelect={false}
         fitView

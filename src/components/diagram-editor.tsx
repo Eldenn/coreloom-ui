@@ -2,21 +2,28 @@
 
 // Coreloom UI — Diagram editor. Software diagrams as text: Mermaid (class, sequence, state, ER and
 // C4) or Coreloom's UML JSON on the left, the drawing on the right, problems marked on their line.
-// Elements can be dragged; their positions travel in the JSON. Switch formats, start from a
-// template, copy or download. Everything happens in the browser: the app keeps the text.
-import { CheckIcon, ChevronDownIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
+// The drawing has its own tools: add elements, connect them (or drag from one to another), delete,
+// change what's selected in the properties panel, undo. Each change is made on the model and the
+// text is written again. Elements can be dragged; their positions travel in the JSON. Switch
+// formats, start from a template, copy or download. Everything happens in the browser: the app
+// keeps the text.
+import { CheckIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
 import * as React from 'react'
 
-import { Button } from '@/components/ui/button'
+import { DiagramProperties } from '@/components/diagram-properties'
+import { DiagramTools } from '@/components/diagram-tools'
 import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+  Toolbar,
+  ToolbarButton,
+  ToolbarMenu,
+  ToolbarSeparator,
+  ToolbarToggleGroup,
+  ToolbarToggleItem,
+} from '@/components/ui/toolbar'
 import { UmlDiagram } from '@/components/ui/uml-diagram'
+import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import {
   parseUmlJson,
@@ -156,7 +163,7 @@ function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T)
   return [current, set] as const
 }
 
-function Toolbar({
+function FileTools({
   t,
   format,
   onFormat,
@@ -180,29 +187,21 @@ function Toolbar({
   kinds: Messages['diagram']['kinds']
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-      <ToggleGroup
-        type="single"
-        variant="outline"
-        size="sm"
-        value={format}
-        aria-label={t.format}
-        onValueChange={(v) => {
-          if (v === 'mermaid' || v === 'json') onFormat(v)
-        }}
-      >
-        <ToggleGroupItem value="mermaid">Mermaid</ToggleGroupItem>
-        <ToggleGroupItem value="json">JSON</ToggleGroupItem>
-      </ToggleGroup>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button type="button" variant="outline" size="sm">
-            <FilePlusIcon aria-hidden />
-            {t.newDiagram}
-            <ChevronDownIcon aria-hidden />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1.5">
+      <Toolbar aria-label={t.fileTools} variant="plain" className="flex-wrap">
+        <ToolbarToggleGroup
+          type="single"
+          value={format}
+          aria-label={t.format}
+          onValueChange={(v) => {
+            if (v === 'mermaid' || v === 'json') onFormat(v)
+          }}
+        >
+          <ToolbarToggleItem value="mermaid">Mermaid</ToolbarToggleItem>
+          <ToolbarToggleItem value="json">JSON</ToolbarToggleItem>
+        </ToolbarToggleGroup>
+        <ToolbarSeparator />
+        <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />}>
           {templates.map((tpl) => (
             <DropdownMenuItem
               key={tpl.label ?? tpl.kind}
@@ -213,22 +212,136 @@ function Toolbar({
               {tpl.label ?? kinds[tpl.kind]}
             </DropdownMenuItem>
           ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </ToolbarMenu>
+        <ToolbarSeparator className="max-sm:hidden" />
+        <ToolbarButton onClick={onCopy}>
+          {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+          <span className="max-sm:sr-only">{copied ? t.copied : t.copy}</span>
+        </ToolbarButton>
+        <ToolbarButton onClick={onDownload}>
+          <DownloadIcon aria-hidden />
+          <span className="max-sm:sr-only">{t.download}</span>
+        </ToolbarButton>
+      </Toolbar>
       <p
         role="status"
-        className="order-last w-full min-w-0 truncate text-[12.5px] text-muted-foreground sm:order-none sm:w-auto sm:flex-1"
+        className="order-last w-full min-w-0 truncate px-1 text-[12.5px] text-muted-foreground sm:order-none sm:w-auto sm:flex-1 sm:text-right"
       >
         {status}
       </p>
-      <Button type="button" variant="ghost" size="sm" onClick={onCopy}>
-        {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-        {copied ? t.copied : t.copy}
-      </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={onDownload}>
-        <DownloadIcon aria-hidden />
-        {t.download}
-      </Button>
+    </div>
+  )
+}
+
+function ProblemList({ problems, t }: { problems: readonly UmlProblem[]; t: EditorText }) {
+  if (!problems.length) return null
+  return (
+    <ul className="max-h-28 shrink-0 overflow-auto border-t border-border bg-inset px-3 py-2 text-[12.5px]">
+      {problems.map((p, i) => (
+        <li
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- a line can have several problems
+          key={i}
+          className={cn(
+            'truncate',
+            p.severity === 'error' ? 'text-destructive' : 'text-fg-secondary',
+          )}
+          title={p.text}
+        >
+          {problemText(p, t)}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+type Editing = ReturnType<typeof useDiagramEditing>
+
+/** Ctrl or ⌘ + Z (and + Shift, or Y) on the drawing undoes and redoes the tools' changes. */
+function undoKeys(editing: Editing) {
+  return (event: React.KeyboardEvent) => {
+    const target = event.target as HTMLElement
+    if (target.closest('input, textarea, select, [contenteditable="true"]')) return
+    if (!(event.metaKey || event.ctrlKey)) return
+    const key = event.key.toLowerCase()
+    if (key === 'z' && !event.shiftKey) editing.undo()
+    else if (key === 'y' || (key === 'z' && event.shiftKey)) editing.redo()
+    else return
+    event.preventDefault()
+  }
+}
+
+function Drawing({
+  diagram,
+  label,
+  locked,
+  editing,
+  onLayoutChange,
+}: {
+  diagram: UmlSpec | null
+  label: string
+  locked: boolean
+  editing: Editing
+  onLayoutChange: (layout: UmlLayout) => void
+}) {
+  const empty = useCoreloomI18n().messages.diagram.empty
+  const pane = React.useRef<HTMLDivElement>(null)
+  const remove = () => {
+    editing.remove()
+    // The Delete button is about to be disabled: keep focus on the drawing.
+    requestAnimationFrame(() => {
+      pane.current?.querySelector<HTMLElement>('[role="application"], [role="region"]')?.focus()
+    })
+  }
+  return (
+    // The keys are a shortcut for the Undo and Redo tools, which stay the way to reach them.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- shortcut only
+    <div ref={pane} className="flex min-h-0 min-w-0 flex-col" onKeyDown={undoKeys(editing)}>
+      <DiagramTools
+        diagram={diagram}
+        locked={locked}
+        selected={editing.selection.elements}
+        canDelete={editing.canDelete}
+        canUndo={editing.canUndo}
+        canRedo={editing.canRedo}
+        onAdd={editing.add}
+        onConnect={editing.connect}
+        onDelete={remove}
+        onUndo={editing.undo}
+        onRedo={editing.redo}
+      />
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <div className="h-[340px] min-h-0 min-w-0 p-3 lg:h-auto lg:flex-1">
+          {diagram ? (
+            <UmlDiagram
+              diagram={diagram}
+              editable
+              onLayoutChange={onLayoutChange}
+              selection={editing.selection}
+              onSelectionChange={editing.select}
+              {...(locked ? {} : { onConnect: editing.connectDragged, onDelete: editing.remove })}
+              height="100%"
+              label={label}
+              className="h-full"
+            />
+          ) : (
+            <p className="grid h-full place-items-center rounded-lg border border-dashed border-border text-[13px] text-muted-foreground">
+              {empty}
+            </p>
+          )}
+        </div>
+        {diagram && diagram.kind !== 'sequence' && (
+          <DiagramProperties
+            diagram={diagram}
+            selection={editing.selection}
+            locked={locked}
+            onElementChange={editing.changeElement}
+            onRelationChange={editing.changeRelation}
+            onReverse={editing.reverse}
+            nameRef={editing.nameRef}
+            className="border-t border-border lg:w-60 lg:shrink-0 lg:border-t-0 lg:border-l"
+          />
+        )}
+      </div>
     </div>
   )
 }
@@ -256,9 +369,25 @@ function DiagramEditor({
   const [copied, setCopied] = React.useState(false)
   const id = React.useId()
 
+  // Text the tools wrote is read at once (the panels follow the new ids); typing is read when
+  // there's time.
+  const [written, setWritten] = React.useState<string | null>(null)
   const deferred = React.useDeferredValue(text)
-  const result = React.useMemo(() => parseDiagram(deferred, format), [deferred, format])
+  const source = text === written ? text : deferred
+  const result = React.useMemo(() => parseDiagram(source, format), [source, format])
   const { diagram, kindName, status, diagnostics, invalid } = readout(result, layout, messages)
+  const editing = useDiagramEditing({
+    diagram,
+    text,
+    layout,
+    write: (d) => writeDiagram(d, format),
+    setText: (next) => {
+      setWritten(next)
+      setText(next)
+    },
+    setLayout,
+    t: messages.diagramTools,
+  })
 
   const reported = React.useRef<UmlParseResult | null>(null)
   React.useEffect(() => {
@@ -272,12 +401,14 @@ function DiagramEditor({
 
   const switchFormat = (next: DiagramFormat) => {
     if (next === format) return
+    editing.reset()
     // Convert what could be read; text that couldn't stays as it is.
     if (diagram) setText(writeDiagram(diagram, next))
     setFormat(next)
   }
 
   const applyTemplate = (mermaid: string) => {
+    editing.reset()
     setLayout(null)
     const read = parseMermaid(mermaid).diagram
     setText(format === 'json' && read ? toUmlJson(read) : mermaid)
@@ -314,7 +445,7 @@ function DiagramEditor({
       )}
       style={{ '--diagram-editor-h': height } as React.CSSProperties}
     >
-      <Toolbar
+      <FileTools
         t={t}
         format={format}
         onFormat={switchFormat}
@@ -323,10 +454,10 @@ function DiagramEditor({
         copied={copied}
         onDownload={download}
         templates={templates}
-        status={status}
+        status={editing.notice ? `${editing.notice} · ${status}` : status}
         kinds={messages.diagram.kinds}
       />
-      <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-2">
+      <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="flex min-h-0 min-w-0 flex-col border-b border-border lg:border-r lg:border-b-0">
           <p id={`${id}-source`} className="sr-only">
             {t.source}
@@ -334,7 +465,10 @@ function DiagramEditor({
           <div className="h-[280px] min-h-0 lg:h-auto lg:flex-1">
             <CodeEditor
               value={text}
-              onChange={setText}
+              onChange={(next) => {
+                editing.reset()
+                setText(next)
+              }}
               language={format === 'json' ? 'json' : 'text'}
               path={`${fileName}.${format}`}
               diagnostics={diagnostics}
@@ -345,40 +479,15 @@ function DiagramEditor({
               {...(invalid ? { 'aria-invalid': true } : {})}
             />
           </div>
-          {result.problems.length > 0 && (
-            <ul className="max-h-28 shrink-0 overflow-auto border-t border-border bg-inset px-3 py-2 text-[12.5px]">
-              {result.problems.map((p, i) => (
-                <li
-                  // eslint-disable-next-line @eslint-react/no-array-index-key -- a line can have several problems
-                  key={i}
-                  className={cn(
-                    'truncate',
-                    p.severity === 'error' ? 'text-destructive' : 'text-fg-secondary',
-                  )}
-                  title={p.text}
-                >
-                  {problemText(p, t)}
-                </li>
-              ))}
-            </ul>
-          )}
+          <ProblemList problems={result.problems} t={t} />
         </div>
-        <div className="h-[380px] min-h-0 min-w-0 p-3 lg:h-auto">
-          {diagram ? (
-            <UmlDiagram
-              diagram={diagram}
-              editable
-              onLayoutChange={setLayout}
-              height="100%"
-              label={kindName ? `${t.preview}: ${kindName}` : t.preview}
-              className="h-full"
-            />
-          ) : (
-            <p className="grid h-full place-items-center rounded-lg border border-dashed border-border text-[13px] text-muted-foreground">
-              {messages.diagram.empty}
-            </p>
-          )}
-        </div>
+        <Drawing
+          diagram={diagram}
+          label={kindName ? `${t.preview}: ${kindName}` : t.preview}
+          locked={result.problems.length > 0}
+          editing={editing}
+          onLayoutChange={setLayout}
+        />
       </div>
     </section>
   )

@@ -469,6 +469,15 @@ function toDiagramGraph(diagram: UmlSpec): DiagramGraph | null {
   }
 }
 
+/**
+ * Which relation an edge draws: its index in the diagram's relations (or transitions), or null for
+ * a note's line. Edge ids are made here, so this is the one place that reads them back.
+ */
+function relationIndexOf(edgeId: string): number | null {
+  const m = /^[rtec](\d+)$/.exec(edgeId)
+  return m?.[1] === undefined ? null : Number(m[1])
+}
+
 export {
   type DiagramEdge,
   type DiagramGraph,
@@ -479,5 +488,6 @@ export {
   type DiagramRow,
   type DiagramShape,
   type DiagramTone,
+  relationIndexOf,
   toDiagramGraph,
 }
