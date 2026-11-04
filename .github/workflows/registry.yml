@@ -39,6 +39,8 @@ jobs:
       - run: pnpm registry:build
       # What each item costs an app (gzip): fails when one outgrows build/registry-sizes.json.
       - run: pnpm registry:size --check
+      # Every prop a guide names exists, and every prop a component declares is in its guide.
+      - run: pnpm docs:check
       # The starter carries copies of the registry items: fail if they drifted, then build it.
       - run: node build/sync-starter.mjs --check
       - run: pnpm --dir starter build
