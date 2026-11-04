@@ -2,7 +2,7 @@
 
 A row of tools for one thing on screen: formatting above an editor, zoom and layout above a canvas, view options above a table.
 
-**The consumer provides** an `aria-label` and the tools: `ToolbarButton`, `ToolbarToggleGroup` with `ToolbarToggleItem` (`type="single"` for one choice, `"multiple"` for on/off styles), `ToolbarLink`, `ToolbarSeparator`, `ToolbarSpacer` and `ToolbarOverflow` (a More menu holding DropdownMenuItem elements). `tooltip` names a tool on hover; `variant="plain"` drops the border.
+**The consumer provides** an `aria-label` and the tools: `ToolbarButton`, `ToolbarToggleGroup` with `ToolbarToggleItem` (`type="single"` for one choice, `"multiple"` for on/off styles), `ToolbarLink`, `ToolbarSeparator`, `ToolbarSpacer`, `ToolbarMenu` (a menu named by its text, such as Add ▾) and `ToolbarOverflow` (a More menu holding DropdownMenuItem elements). `tooltip` names a tool on hover; `variant="plain"` drops the border.
 
 - The whole toolbar is one Tab stop: the arrow keys move between its tools, Home and End go to the ends. Don't put text fields in it.
 - Icon-only tools need an `aria-label`, and a `tooltip` with the same words helps everyone else.
