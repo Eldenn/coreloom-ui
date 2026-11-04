@@ -86,12 +86,12 @@ function Logo({
   const box = React.useRef<HTMLSpanElement>(null)
   const inView = useInView(box)
   const reduced = useReducedMotion()
-  // Each hover replays the entrance: a new run number restarts the CSS animations.
-  const [run, setRun] = React.useState(0)
+  // A hover logo stays still until the first hover; later hovers restart it in place (replay).
+  const [hovered, setHovered] = React.useState(false)
   const playing =
     animation !== 'none' &&
     !reduced &&
-    (trigger === 'mount' || (trigger === 'in-view' && inView) || (trigger === 'hover' && run > 0))
+    (trigger === 'mount' || (trigger === 'in-view' && inView) || (trigger === 'hover' && hovered))
   const total = duration ?? (animation === 'draw' ? 1800 : animation === 'pulse' ? 2400 : 900)
 
   // Index the parts of an inline SVG, and measure outlines for the draw effect.
@@ -116,13 +116,12 @@ function Logo({
       const length = typeof shape.getTotalLength === 'function' ? shape.getTotalLength() : 0
       shape.style.setProperty('--logo-len', String(Math.ceil(length)))
     })
-  }, [parts, children, run])
+  }, [parts, children])
 
   const name = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': true }
   const content = (
     <span
       ref={box}
-      key={run}
       data-slot="logo"
       data-animation={playing ? animation : 'none'}
       data-tint={tint || undefined}
@@ -146,8 +145,20 @@ function Logo({
       )}
     </span>
   )
+  // Replays on the same element: remounting it (a new key) would swap the node under the pointer
+  // between mousedown and mouseup, and the first click on a linked logo would be lost.
   const replay = () => {
-    if (trigger === 'hover' && !reduced) setRun((n) => n + 1)
+    if (trigger !== 'hover' || reduced) return
+    if (!hovered) {
+      setHovered(true)
+      return
+    }
+    const el = box.current
+    if (!el || animation === 'none') return
+    // Dropping the effect for one style pass restarts every CSS animation under it.
+    el.dataset.animation = 'none'
+    void el.getBoundingClientRect()
+    el.dataset.animation = animation
   }
 
   if (href) {
