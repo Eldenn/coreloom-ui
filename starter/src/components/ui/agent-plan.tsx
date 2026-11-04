@@ -62,7 +62,10 @@ function AgentPlan({
    * The agent working the plan, as an animated AgentAvatar in place of the list icon: it thinks on
    * a step, smiles when every step is done and frowns on a failure. `{ seed: agent.id }`.
    */
-  avatar?: Pick<React.ComponentProps<typeof AgentAvatar>, 'variant' | 'seed' | 'tone' | 'eyes'>
+  avatar?: Pick<
+    React.ComponentProps<typeof AgentAvatar>,
+    'variant' | 'seed' | 'tone' | 'eyes' | 'shape'
+  >
   className?: string
 }) {
   const t = useCoreloomI18n().messages.ai.plan

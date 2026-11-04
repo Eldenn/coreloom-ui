@@ -4,7 +4,17 @@ import * as React from 'react'
 import { AgentAvatar, type AgentAvatarState } from '@/components/ui/agent-avatar'
 import { Button } from '@/components/ui/button'
 
-const STATES: AgentAvatarState[] = ['idle', 'thinking', 'speaking', 'done', 'error', 'offline']
+const STATES: AgentAvatarState[] = [
+  'idle',
+  'thinking',
+  'speaking',
+  'listening',
+  'done',
+  'error',
+  'offline',
+]
+
+const SHAPES = ['square', 'circle', 'hexagon', 'diamond', 'shield', 'blob'] as const
 
 const meta = {
   title: 'Components/AI/Agent avatar',
@@ -20,13 +30,15 @@ const meta = {
       options: [undefined, 'primary', 'neutral', 'teal', 'violet', 'orange', 'blue', 'pink'],
     },
     eyes: { control: 'inline-radio', options: [undefined, 'round', 'tall', 'square'] },
+    shape: { control: 'select', options: [undefined, ...SHAPES, 'seed'] },
+    animated: { control: 'boolean' },
   },
   parameters: {
     layout: 'padded',
     docs: {
       description: {
         component:
-          'A small animated face for an AI agent. The consumer provides its `name` (said with the state to screen readers), a `state` (`idle`, `thinking`, `speaking`, `done`, `error`, `offline`), and a `seed` (the agent’s id) for a stable colour and eyes; optionally `variant` (`face` or `dots`), `tone`, `eyes`, `size` and `decorative`.',
+          'A small animated face for an AI agent. The consumer provides its `name` (said with the state to screen readers), a `state` (`idle`, `thinking`, `speaking`, `listening`, `done`, `error`, `offline`), and a `seed` (the agent’s id) for a stable colour and eyes; optionally `variant` (`face` or `dots`), `shape` (`square`, `circle`, `hexagon`, `diamond`, `shield`, `blob`, or `seed` to let the seed pick), `tone`, `eyes`, `size`, `animated` and `decorative`.',
       },
     },
   },
@@ -39,7 +51,7 @@ export const Default: Story = {}
 /** Every state, in both variants. */
 export const States: Story = {
   render: () => (
-    <div className="grid w-fit grid-cols-[auto_repeat(6,minmax(0,1fr))] items-center gap-x-6 gap-y-4">
+    <div className="grid w-fit grid-cols-[auto_repeat(7,minmax(0,1fr))] items-center gap-x-6 gap-y-4">
       <span />
       {STATES.map((s) => (
         <span key={s} className="text-center font-mono text-[11px] text-muted-foreground">
@@ -75,6 +87,74 @@ export const Team: Story = {
         {agents.map((a) => (
           <li key={a} className="flex flex-col items-center gap-1.5">
             <AgentAvatar name={a} seed={a} size="lg" decorative />
+            <span className="text-[12.5px] text-fg-secondary">{a}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  },
+}
+
+/** Still: `animated={false}` shows each state without moving, for long lists. */
+export const Still: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-3">
+      {STATES.map((s) => (
+        <AgentAvatar key={s} name="Writer" seed="writer" state={s} size="lg" animated={false} />
+      ))}
+    </div>
+  ),
+}
+
+/** Six outlines, in both variants; `shape="seed"` lets each agent keep its own. */
+export const Shapes: Story = {
+  render: () => (
+    <div className="flex flex-col gap-5">
+      {(['face', 'dots'] as const).map((variant) => (
+        <div key={variant} className="flex flex-wrap items-end gap-5">
+          {SHAPES.map((shape, i) => (
+            <span key={shape} className="flex flex-col items-center gap-1.5">
+              <AgentAvatar
+                name={shape}
+                seed={['researcher', 'writer', 'billing', 'support', 'reviewer', 'supervisor'][i]}
+                variant={variant}
+                shape={shape}
+                state={variant === 'dots' ? 'thinking' : 'idle'}
+                size="lg"
+              />
+              <span className="font-mono text-[11px] text-muted-foreground">{shape}</span>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  ),
+}
+
+/** Every state on a drawn outline: the halo, the flash and the colours follow the shape. */
+export const ShapeStates: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      {(['hexagon', 'shield', 'blob'] as const).map((shape) => (
+        <div key={shape} className="flex flex-wrap gap-3">
+          {STATES.map((s) => (
+            <AgentAvatar key={s} name="Writer" seed="writer" shape={shape} state={s} size="lg" />
+          ))}
+        </div>
+      ))}
+    </div>
+  ),
+}
+
+/** `shape="seed"`: the seed picks the outline too, so a team is told apart by shape as well as colour. */
+export const SeededShapes: Story = {
+  render: () => {
+    const agents = ['Supervisor', 'Researcher', 'Writer', 'Billing', 'Support', 'Reviewer']
+    return (
+      <ul className="m-0 flex list-none flex-wrap gap-5 p-0">
+        {agents.map((a) => (
+          <li key={a} className="flex flex-col items-center gap-1.5">
+            <AgentAvatar name={a} seed={a} shape="seed" size="lg" decorative />
             <span className="text-[12.5px] text-fg-secondary">{a}</span>
           </li>
         ))}
