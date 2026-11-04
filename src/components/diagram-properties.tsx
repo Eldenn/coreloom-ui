@@ -2,18 +2,19 @@
 
 // Coreloom UI — Diagram properties. The diagram editor's panel for what's selected: an element's
 // name, stereotype, members, attributes, description or technology; a relation's kind, label and
-// ends. A text field applies when it loses focus (or on Enter); a choice applies at once.
+// ends; a sequence step's fields. A text field applies when it loses focus (or on Enter); a
+// choice applies at once.
 import { ArrowLeftRightIcon } from 'lucide-react'
 import * as React from 'react'
 
+import { Choice, TextField, useDrafts } from '@/components/diagram-fields'
+import { MemberList } from '@/components/diagram-members'
+import { StepForm, type StepFormProps } from '@/components/diagram-sequence'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { NativeSelect } from '@/components/ui/native-select'
-import { Textarea } from '@/components/ui/textarea'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
-import type { ErCardinality, UmlSpec } from '@/lib/uml'
+import type { ErCardinality, SequenceStep, UmlSpec } from '@/lib/uml'
 import { relationEnds, relationTypes, START_END, type UmlRelationType } from '@/lib/uml-edit'
 import {
   elementFields,
@@ -21,6 +22,7 @@ import {
   type UmlElementFields,
   type UmlRelationFields,
 } from '@/lib/uml-edit-fields'
+import { stepOf } from '@/lib/uml-edit-sequence'
 import { cn } from '@/lib/utils'
 
 type PropertiesText = Messages['diagramTools']
@@ -29,6 +31,7 @@ type PropertiesText = Messages['diagramTools']
 type Target =
   | { kind: 'element'; id: string; fields: UmlElementFields }
   | { kind: 'relation'; index: number; fields: UmlRelationFields; from: string; to: string }
+  | { kind: 'step'; id: string; step: SequenceStep }
   | { kind: 'none' }
   | { kind: 'several'; count: number }
 
@@ -40,6 +43,8 @@ interface DiagramPropertiesProps {
   onElementChange: (id: string, fields: UmlElementFields) => void
   onRelationChange: (index: number, fields: UmlRelationFields) => void
   onReverse: (index: number) => void
+  /** What a sequence step's form does: change it, move it, add or remove a block's section. */
+  steps?: Pick<StepFormProps, 'onChange' | 'onMove' | 'onAddSection' | 'onRemoveSection'>
   /** The name field, so the editor can focus it after adding an element. */
   nameRef?: React.Ref<HTMLInputElement>
   className?: string
@@ -58,6 +63,8 @@ function targetOf(diagram: UmlSpec, selection: DiagramPropertiesProps['selection
   if (count > 1) return { kind: 'several', count }
   const id = selection.elements.at(0)
   if (id !== undefined) {
+    const step = diagram.kind === 'sequence' ? stepOf(diagram, id) : undefined
+    if (step) return { kind: 'step', id, step }
     const fields = elementFields(diagram, id)
     return fields ? { kind: 'element', id, fields } : { kind: 'none' }
   }
@@ -67,90 +74,6 @@ function targetOf(diagram: UmlSpec, selection: DiagramPropertiesProps['selection
   if (!fields) return { kind: 'none' }
   const [from, to] = relationEndsOf(diagram, index)
   return { kind: 'relation', index, fields, from, to }
-}
-
-/** Edits not yet applied, by field; what isn't here shows the diagram's value. */
-function useDrafts<T extends object>(key: string) {
-  const [drafts, setDrafts] = React.useState<Partial<T>>({})
-  const [owner, setOwner] = React.useState(key)
-  if (owner !== key) {
-    // Another element: drop the drafts of the previous one.
-    setOwner(key)
-    setDrafts({})
-  }
-  const set = <K extends keyof T>(k: K, value: T[K]) => {
-    setDrafts((d) => ({ ...d, [k]: value }))
-  }
-  const take = () => {
-    const out = drafts
-    setDrafts({})
-    return out
-  }
-  return { drafts, set, take }
-}
-
-function TextField({
-  label,
-  value,
-  hint,
-  multiline = false,
-  disabled,
-  onChange,
-  onCommit,
-  inputRef,
-}: {
-  label: string
-  value: string
-  hint?: string
-  multiline?: boolean
-  disabled: boolean
-  onChange: (value: string) => void
-  onCommit: () => void
-  inputRef?: React.Ref<HTMLInputElement> | undefined
-}) {
-  const id = React.useId()
-  const described = hint ? { 'aria-describedby': `${id}-hint` } : {}
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {multiline ? (
-        <Textarea
-          id={id}
-          value={value}
-          readOnly={disabled}
-          rows={4}
-          spellCheck={false}
-          className="min-h-20 font-mono text-[12px]"
-          onChange={(e) => {
-            onChange(e.target.value)
-          }}
-          onBlur={onCommit}
-          {...described}
-        />
-      ) : (
-        <Input
-          id={id}
-          ref={inputRef}
-          value={value}
-          readOnly={disabled}
-          className="h-8 text-[13px]"
-          onChange={(e) => {
-            onChange(e.target.value)
-          }}
-          onBlur={onCommit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onCommit()
-          }}
-          {...described}
-        />
-      )}
-      {hint && (
-        <p id={`${id}-hint`} className="text-[12px] text-muted-foreground">
-          {hint}
-        </p>
-      )}
-    </div>
-  )
 }
 
 function ElementForm({
@@ -175,9 +98,21 @@ function ElementForm({
   }
   const note = /^note:\d+$/.test(id)
   const p = t.properties
-  const text = (
-    k: 'name' | 'stereotype' | 'members' | 'attributes' | 'description' | 'technology',
-  ) => value(k) ?? ''
+  const text = (k: 'name' | 'stereotype' | 'attributes' | 'description' | 'technology') =>
+    value(k) ?? ''
+  const check = (k: 'external' | 'actor', label: string) =>
+    fields[k] !== undefined && (
+      <Label className="flex items-center gap-2 font-normal">
+        <Checkbox
+          checked={fields[k]}
+          disabled={locked}
+          onCheckedChange={(checked) => {
+            onChange(id, { ...fields, ...drafts, [k]: checked === true })
+          }}
+        />
+        {label}
+      </Label>
+    )
   return (
     <>
       <TextField
@@ -203,7 +138,17 @@ function ElementForm({
           onCommit={commit}
         />
       )}
-      {(['members', 'attributes', 'description'] as const).map(
+      {fields.members && (
+        <MemberList
+          members={fields.members}
+          disabled={locked}
+          p={{ ...p, moveUp: t.steps.moveUp, moveDown: t.steps.moveDown }}
+          onChange={(members) => {
+            onChange(id, { ...fields, ...drafts, members })
+          }}
+        />
+      )}
+      {(['attributes', 'description'] as const).map(
         (k) =>
           fields[k] !== undefined && (
             <TextField
@@ -211,7 +156,8 @@ function ElementForm({
               label={p[k]}
               value={text(k)}
               multiline
-              {...(k === 'description' ? {} : { hint: p[`${k}Hint`] })}
+              mono={k === 'attributes'}
+              {...(k === 'attributes' ? { hint: p.attributesHint } : {})}
               disabled={locked}
               onChange={(v) => {
                 set(k, v)
@@ -231,60 +177,13 @@ function ElementForm({
           onCommit={commit}
         />
       )}
-      {fields.external !== undefined && (
-        <Label className="flex items-center gap-2 font-normal">
-          <Checkbox
-            checked={fields.external}
-            disabled={locked}
-            onCheckedChange={(checked) => {
-              onChange(id, { ...fields, ...drafts, external: checked === true })
-            }}
-          />
-          {p.external}
-        </Label>
-      )}
+      {check('external', p.external)}
+      {check('actor', p.actor)}
     </>
   )
 }
 
 const ER_ENDS: readonly ErCardinality[] = ['zeroOrOne', 'exactlyOne', 'zeroOrMore', 'oneOrMore']
-
-function Choice<T extends string>({
-  label,
-  value,
-  options,
-  disabled,
-  onChange,
-}: {
-  label: string
-  value: T
-  options: readonly { value: T; label: string }[]
-  disabled: boolean
-  onChange: (value: T) => void
-}) {
-  const id = React.useId()
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <NativeSelect
-        id={id}
-        size="sm"
-        value={value}
-        disabled={disabled}
-        onChange={(e) => {
-          const next = options.find((o) => o.value === e.target.value)
-          if (next) onChange(next.value)
-        }}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </NativeSelect>
-    </div>
-  )
-}
 
 function RelationForm({
   target,
@@ -394,6 +293,7 @@ function DiagramProperties({
   onElementChange,
   onRelationChange,
   onReverse,
+  steps,
   nameRef,
   className,
 }: DiagramPropertiesProps) {
@@ -426,6 +326,16 @@ function DiagramProperties({
           onChange={onElementChange}
           nameRef={nameRef}
           t={t}
+        />
+      )}
+      {target.kind === 'step' && diagram.kind === 'sequence' && steps && (
+        <StepForm
+          diagram={diagram}
+          id={target.id}
+          step={target.step}
+          locked={locked}
+          t={t}
+          {...steps}
         />
       )}
       {target.kind === 'relation' && (

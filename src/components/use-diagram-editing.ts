@@ -1,32 +1,30 @@
 'use client'
 
 // Coreloom UI — useDiagramEditing. What the diagram editor's tools do: each change is made on the
-// model (uml-edit.ts), written back as text in the current format, and kept so it can be undone.
+// model (uml-edit*.ts), written back as text in the current format, and kept so it can be undone.
 // Typing in the text starts a new history: the text editor has its own undo.
 import * as React from 'react'
 
+import {
+  clipboardCommands,
+  editCommands,
+  layoutCommands,
+  relationCount,
+  stepCommands,
+} from '@/components/diagram-commands'
 import type { Messages } from '@/lib/i18n'
-import { toUmlJson, type UmlLayout, type UmlSpec } from '@/lib/uml'
+import { toUmlJson, type UmlLayout, type UmlPoint, type UmlSpec } from '@/lib/uml'
 import {
   addElement,
-  addRelation,
-  type AddRelationInput,
   canDelete,
-  deleteItems,
-  relationTypes,
   takenIds,
   type UmlElementType,
   type UmlRelationType,
   type UmlSelection,
 } from '@/lib/uml-edit'
-import {
-  elementFields,
-  reverseRelation,
-  setElementFields,
-  setRelationFields,
-  type UmlElementFields,
-  type UmlRelationFields,
-} from '@/lib/uml-edit-fields'
+import type { UmlClip } from '@/lib/uml-edit-clipboard'
+import { elementFields } from '@/lib/uml-edit-fields'
+import { stepOf } from '@/lib/uml-edit-sequence'
 
 const NOTHING: UmlSelection = { elements: [], relations: [] }
 
@@ -45,21 +43,12 @@ const EMPTY: History = { past: [], future: [] }
 /** Enough to undo a working session; older steps are dropped. */
 const DEPTH = 100
 
-function relationCount(d: UmlSpec): number {
-  switch (d.kind) {
-    case 'state':
-      return d.transitions.length
-    case 'sequence':
-      return 0
-    default:
-      return d.relations.length
-  }
-}
-
 /** The part of a selection the diagram still has (after a text edit, say). */
 function present(d: UmlSpec, selection: UmlSelection): UmlSelection {
   const ids = takenIds(d)
-  const elements = selection.elements.filter((id) => ids.has(id) || elementFields(d, id))
+  const has = (id: string) =>
+    ids.has(id) || elementFields(d, id) !== null || (d.kind === 'sequence' && stepOf(d, id))
+  const elements = selection.elements.filter(has)
   const relations = selection.relations.filter((i) => i < relationCount(d))
   if (
     elements.length === selection.elements.length &&
@@ -68,6 +57,9 @@ function present(d: UmlSpec, selection: UmlSelection): UmlSelection {
     return selection
   return { elements, relations }
 }
+
+/** Where a dropped element lands: its top left a little up and left of the pointer. */
+const DROP_OFFSET = { x: 60, y: 20 }
 
 function useDiagramEditing({
   diagram,
@@ -92,17 +84,27 @@ function useDiagramEditing({
   const [history, setHistory] = React.useState<History>(EMPTY)
   const [notice, setNotice] = React.useState<string | null>(null)
   const [lastType, setLastType] = React.useState<UmlRelationType | null>(null)
+  const [clip, setClip] = React.useState<UmlClip | null>(null)
   const nameRef = React.useRef<HTMLInputElement>(null)
-  // An element just added: its name field takes focus once the panel shows it.
-  const focusName = React.useRef<string | null>(null)
+  // The sequence step list's buttons, by step id.
+  const stepButtons = React.useRef(new Map<string, HTMLButtonElement>())
+  // An element or step just added: its name field (or its button) takes focus once shown.
+  const focusNext = React.useRef<string | null>(null)
   const selection = diagram ? present(diagram, selected) : NOTHING
 
   React.useEffect(() => {
-    const id = focusName.current
-    if (!id || !diagram || !elementFields(diagram, id)) return
-    focusName.current = null
-    // After a menu that closed has given focus back to its button.
+    const id = focusNext.current
+    if (!id || !diagram) return
+    const step = diagram.kind === 'sequence' && stepOf(diagram, id)
+    if (!step && !elementFields(diagram, id)) return
+    // After a menu that closed has given focus back to its button. Cleared only once done: a
+    // render in between cancels this timer and the next one takes over.
     const timer = window.setTimeout(() => {
+      focusNext.current = null
+      if (step) {
+        stepButtons.current.get(id)?.focus()
+        return
+      }
       nameRef.current?.focus()
       nameRef.current?.select()
     }, 0)
@@ -135,60 +137,27 @@ function useDiagramEditing({
     setNotice(direction === 'undo' ? t.undone : t.redone)
   }
 
-  const add = (type: UmlElementType) => {
+  /** Adds an element of `type`; dropped on the canvas, it lands where it was dropped. */
+  const add = (type: UmlElementType, at?: UmlPoint) => {
     if (!diagram) return
     const name = t.elements[type]
     const result = addElement(diagram, { type, name, near: selection.elements.at(0) })
-    if (diagram.kind !== 'sequence') focusName.current = result.id
-    apply(result.diagram, t.added(name), { elements: [result.id], relations: [] })
+    let next = result.diagram
+    if (at && next.kind !== 'sequence') {
+      const place = { x: at.x - DROP_OFFSET.x, y: at.y - DROP_OFFSET.y }
+      next = { ...next, layout: { ...next.layout, [result.id]: place } }
+    }
+    focusNext.current = result.id
+    apply(next, t.added(name), { elements: [result.id], relations: [] })
   }
 
-  const connect = (input: AddRelationInput) => {
-    if (!diagram) return
-    const next = addRelation(diagram, input)
-    setLastType(input.type)
-    const index = relationCount(next) - 1
-    apply(next, t.connected, index >= 0 ? { elements: [], relations: [index] } : NOTHING)
-  }
-
-  /** A line dragged on the canvas: the kind used last, or the usual one. */
-  const connectDragged = (from: string, to: string) => {
-    if (!diagram) return
-    const type = lastType ?? relationTypes(diagram).at(0) ?? 'association'
-    connect({ type, from, to })
-  }
-
-  const remove = (what: UmlSelection = selection) => {
-    if (!diagram || !canDelete(diagram, what)) return
-    const count = what.elements.length + what.relations.length
-    apply(deleteItems(diagram, what), t.deleted(count), NOTHING)
-  }
-
-  const changeElement = (id: string, fields: UmlElementFields) => {
-    if (!diagram) return
-    const result = setElementFields(diagram, id, fields)
-    apply(result.diagram, t.changed, { elements: [result.id], relations: [] })
-  }
-
-  const changeRelation = (index: number, fields: UmlRelationFields) => {
-    if (diagram) apply(setRelationFields(diagram, index, fields), t.changed, selection)
-  }
-
-  const reverse = (index: number) => {
-    if (diagram) apply(reverseRelation(diagram, index), t.changed, selection)
-  }
-
-  /** The person typed, switched format or started again: the tools' history no longer applies. */
-  const reset = () => {
-    setHistory(EMPTY)
-    setNotice(null)
-  }
-
+  const input = { diagram, selection, apply, t }
   return {
     selection,
     select: setSelected,
     notice,
     nameRef,
+    stepButtons,
     canUndo: history.past.length > 0,
     canRedo: history.future.length > 0,
     canDelete: diagram ? canDelete(diagram, selection) : false,
@@ -199,13 +168,15 @@ function useDiagramEditing({
       step('redo')
     },
     add,
-    connect,
-    connectDragged,
-    remove,
-    changeElement,
-    changeRelation,
-    reverse,
-    reset,
+    ...editCommands(input, lastType, setLastType),
+    ...stepCommands(input),
+    ...clipboardCommands(input, clip, setClip, setNotice),
+    ...layoutCommands(input),
+    /** The person typed, switched format or started again: the tools' history no longer applies. */
+    reset: () => {
+      setHistory(EMPTY)
+      setNotice(null)
+    },
   }
 }
 

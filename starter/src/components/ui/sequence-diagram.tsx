@@ -3,7 +3,8 @@
 // Coreloom UI — SequenceDiagramView. A sequence diagram as an SVG: participants and actors at the
 // top and bottom, lifelines, messages with their arrows (and numbers with autonumber), activation
 // bars, notes, and loop / alt / opt / par / critical / break frames. Screen readers get the same
-// steps as an ordered list. UmlDiagram uses it for `kind: 'sequence'`.
+// steps as an ordered list. With `onSelect`, a click picks a participant or a step (an editor
+// gives keyboard users another way to them). UmlDiagram uses it for `kind: 'sequence'`.
 import * as React from 'react'
 
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
@@ -17,8 +18,15 @@ interface SequenceDiagramViewProps {
   maxHeight?: number | string
   /** The accessible name. Default: "Sequence diagram". */
   label?: string
+  /** Participant ids and step ids (`step:2`, see uml-edit-sequence.ts) drawn as selected. */
+  selected?: readonly string[]
+  /** A click on a participant or a step (null: on nothing); `additive` with Ctrl, ⌘ or Shift. */
+  onSelect?: (id: string | null, additive: boolean) => void
+  ref?: React.Ref<HTMLDivElement>
   className?: string
 }
+
+const PICKED = 'stroke-primary [stroke-width:2px]'
 
 /** The sequence strings, and how a label follows a name ("Shopper to Web app, call: Pay"). */
 type SequenceText = Messages['diagram']['sequence'] & { say: Messages['diagram']['labelled'] }
@@ -69,11 +77,27 @@ function Lines({
   )
 }
 
-function Participant({ col, y, actor }: { col: SequenceColumn; y: number; actor: boolean }) {
+function Participant({
+  col,
+  y,
+  actor,
+  picked,
+}: {
+  col: SequenceColumn
+  y: number
+  actor: boolean
+  picked: boolean
+}) {
   if (col.kind === 'actor') {
     const cx = col.x
     return (
-      <g className="stroke-fg-secondary" fill="none" strokeWidth={1.5}>
+      <g
+        data-id={col.id}
+        className={picked ? 'stroke-primary' : 'stroke-fg-secondary'}
+        fill="none"
+        strokeWidth={1.5}
+      >
+        <rect x={cx - 30} y={y} width={60} height={60} className="fill-transparent stroke-none" />
         <circle cx={cx} cy={y + 9} r={6} />
         <path
           d={`M${String(cx)} ${String(y + 15)} V${String(y + 30)} M${String(cx - 9)} ${String(y + 20)} H${String(cx + 9)} M${String(cx)} ${String(y + 30)} L${String(cx - 8)} ${String(y + 40)} M${String(cx)} ${String(y + 30)} L${String(cx + 8)} ${String(y + 40)}`}
@@ -92,14 +116,14 @@ function Participant({ col, y, actor }: { col: SequenceColumn; y: number; actor:
   }
   const top = actor ? y + 10 : y
   return (
-    <g>
+    <g data-id={col.id}>
       <rect
         x={col.x - col.width / 2}
         y={top}
         width={col.width}
         height={40}
         rx={6}
-        className="fill-card stroke-border-strong"
+        className={cn('fill-card stroke-border-strong', picked && PICKED)}
       />
       <text
         x={col.x}
@@ -116,22 +140,33 @@ function Participant({ col, y, actor }: { col: SequenceColumn; y: number; actor:
 function Message({
   item,
   markers,
+  picked,
 }: {
   item: Extract<SequenceItem, { type: 'message' }>
   markers: string
+  picked: boolean
 }) {
   const head = HEAD[item.arrow]
   const style = {
-    stroke: 'var(--diagram-edge)',
-    strokeWidth: 1.25,
+    stroke: picked ? 'var(--color-primary)' : 'var(--diagram-edge)',
+    strokeWidth: picked ? 2 : 1.25,
     fill: 'none',
     ...(DASHED.has(item.arrow) ? { strokeDasharray: '5 4' } : {}),
   }
   const end = head ? `url(#${markers}-${head})` : undefined
   const left = Math.min(item.from, item.to)
   const mid = item.self ? item.from + 12 : left + Math.abs(item.to - item.from) / 2
+  const right = Math.max(item.from, item.to)
   return (
-    <g>
+    <g data-id={item.id}>
+      {/* A band to click on, wider than the line. */}
+      <rect
+        x={left}
+        y={item.y - 24}
+        width={Math.max(right - left, item.self ? 48 : 0)}
+        height={item.self ? 52 : 32}
+        className="fill-transparent"
+      />
       {item.self ? (
         <path
           d={`M${String(item.from)} ${String(item.y)} H${String(item.from + 40)} V${String(item.y + 22)} H${String(item.from + 2)}`}
@@ -166,18 +201,26 @@ function Message({
   )
 }
 
-function Block({ item, t }: { item: Extract<SequenceItem, { type: 'block' }>; t: SequenceText }) {
+function Block({
+  item,
+  t,
+  picked,
+}: {
+  item: Extract<SequenceItem, { type: 'block' }>
+  t: SequenceText
+  picked: boolean
+}) {
   const name = t.blocks[item.kind]
   const tab = name.length * 6.6 + 18
   return (
-    <g>
+    <g data-id={item.id}>
       <rect
         x={item.x}
         y={item.y}
         width={item.width}
         height={item.height}
         rx={4}
-        className="fill-inset/40 stroke-border-strong"
+        className={cn('fill-inset/40 stroke-border-strong', picked && PICKED)}
       />
       <path
         d={`M${String(item.x)} ${String(item.y + 20)} H${String(item.x + tab)} L${String(item.x + tab + 8)} ${String(item.y + 12)} V${String(item.y)}`}
@@ -210,20 +253,31 @@ function Block({ item, t }: { item: Extract<SequenceItem, { type: 'block' }>; t:
   )
 }
 
-function Item({ item, markers, t }: { item: SequenceItem; markers: string; t: SequenceText }) {
+function Item({
+  item,
+  markers,
+  t,
+  selected,
+}: {
+  item: SequenceItem
+  markers: string
+  t: SequenceText
+  selected: ReadonlySet<string>
+}) {
+  const picked = 'id' in item && selected.has(item.id)
   switch (item.type) {
     case 'message':
-      return <Message item={item} markers={markers} />
+      return <Message item={item} markers={markers} picked={picked} />
     case 'note':
       return (
-        <g>
+        <g data-id={item.id}>
           <rect
             x={item.x}
             y={item.y}
             width={item.width}
             height={item.height}
             rx={3}
-            className="fill-warning-subtle stroke-border-strong"
+            className={cn('fill-warning-subtle stroke-border-strong', picked && PICKED)}
           />
           <Lines
             text={item.text}
@@ -244,7 +298,7 @@ function Item({ item, markers, t }: { item: SequenceItem; markers: string; t: Se
         />
       )
     case 'block':
-      return <Block item={item} t={t} />
+      return <Block item={item} t={t} picked={picked} />
   }
 }
 
@@ -358,15 +412,32 @@ function StepText({
   }
 }
 
-function SequenceDiagramView({ diagram, maxHeight, label, className }: SequenceDiagramViewProps) {
+/** The participant or step under a click, from the `data-id` the drawing carries. */
+function pickedAt(event: React.MouseEvent): string | null {
+  return event.target instanceof Element
+    ? (event.target.closest('[data-id]')?.getAttribute('data-id') ?? null)
+    : null
+}
+
+function SequenceDiagramView({
+  diagram,
+  maxHeight,
+  label,
+  selected = [],
+  onSelect,
+  ref,
+  className,
+}: SequenceDiagramViewProps) {
   const messages = useCoreloomI18n().messages.diagram
   const t: SequenceText = { ...messages.sequence, say: messages.labelled }
   const markers = `seq${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const layout = layoutSequence(diagram)
   const names = new Map(layout.columns.map((c) => [c.id, c.label]))
   const actor = layout.columns.some((c) => c.kind === 'actor')
+  const picked = new Set(selected)
   return (
     <div
+      ref={ref}
       data-slot="sequence-diagram"
       role="region"
       aria-label={label ?? messages.kinds.sequence}
@@ -385,12 +456,20 @@ function SequenceDiagramView({ diagram, maxHeight, label, className }: SequenceD
         <p className="px-4 pt-3 text-[13px] font-semibold text-foreground">{diagram.title}</p>
       )}
       {layout.columns.length ? (
+        // A click is a shortcut to what the editor's step list picks with the keyboard.
         <svg
           aria-hidden
           width={layout.width}
           height={layout.height}
-          className="block"
+          className={cn('block', onSelect && '[&_[data-id]]:cursor-pointer')}
           style={{ minWidth: layout.width }}
+          {...(onSelect
+            ? {
+                onClick: (e: React.MouseEvent) => {
+                  onSelect(pickedAt(e), e.ctrlKey || e.metaKey || e.shiftKey)
+                },
+              }
+            : {})}
         >
           <Markers prefix={markers} />
           {layout.columns.map((c) => (
@@ -406,12 +485,12 @@ function SequenceDiagramView({ diagram, maxHeight, label, className }: SequenceD
           ))}
           {layout.items.map((item, i) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- drawn in order; no ids
-            <Item key={i} item={item} markers={markers} t={t} />
+            <Item key={i} item={item} markers={markers} t={t} selected={picked} />
           ))}
           {layout.columns.map((c) => (
             <React.Fragment key={c.id}>
-              <Participant col={c} y={0} actor={actor} />
-              <Participant col={c} y={layout.bottom} actor={actor} />
+              <Participant col={c} y={0} actor={actor} picked={picked.has(c.id)} />
+              <Participant col={c} y={layout.bottom} actor={actor} picked={picked.has(c.id)} />
             </React.Fragment>
           ))}
         </svg>

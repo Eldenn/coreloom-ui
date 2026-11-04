@@ -11,6 +11,7 @@ import type {
   ErCardinality,
   ErDiagram,
   SequenceArrow,
+  SequenceBlockKind,
   SequenceDiagram,
   SequenceStep,
   StateDiagram,
@@ -19,6 +20,7 @@ import type {
   UmlNote,
   UmlSpec,
 } from '@/lib/uml'
+import { insertBlock, insertNote, keepSteps, stepOf } from '@/lib/uml-edit-sequence'
 
 /** What a toolbar can add, depending on the diagram's kind (see `elementTypes`). */
 type UmlElementType =
@@ -43,6 +45,7 @@ type UmlElementType =
   | 'queue'
   | 'component'
   | 'boundary'
+  | SequenceBlockKind
 
 /** The lines a toolbar can draw between two elements, depending on the kind (`relationTypes`). */
 type UmlRelationType =
@@ -65,6 +68,11 @@ interface UmlSelection {
 
 /** In a state diagram, `[*]` as a transition's `from` is the start, as its `to` the end. */
 const START_END = '[*]'
+
+/** The drag-and-drop type a toolbar button sets to an element type, for a canvas to drop. */
+const UML_DRAG_TYPE = 'application/x-coreloom-uml-element'
+
+const BLOCKS: readonly SequenceBlockKind[] = ['loop', 'alt', 'opt', 'par', 'critical', 'break']
 
 const C4_ELEMENTS: Record<C4Level, readonly UmlElementType[]> = {
   context: ['person', 'externalPerson', 'system', 'externalSystem', 'boundary'],
@@ -99,7 +107,7 @@ function elementTypes(diagram: UmlSpec): readonly UmlElementType[] {
     case 'er':
       return ['entity']
     case 'sequence':
-      return ['participant', 'actor']
+      return ['participant', 'actor', 'note', ...BLOCKS]
     case 'c4':
       return C4_ELEMENTS[diagram.level]
   }
@@ -184,7 +192,8 @@ interface AddElementInput {
   name: string
   /**
    * The element selected when adding: the new one joins its namespace, composite state or
-   * boundary (or goes inside it, when it's a frame). A note is pinned to it.
+   * boundary (or goes inside it, when it's a frame). A note is pinned to it. In a sequence
+   * diagram, a note or block goes after the selected step (a block goes round it).
    */
   near?: string
 }
@@ -255,7 +264,14 @@ function addToEr(d: ErDiagram, input: AddElementInput): EditResult {
   return { diagram: { ...d, entities: [...d.entities, entity] }, id }
 }
 
+function isBlock(type: UmlElementType): type is SequenceBlockKind {
+  return (BLOCKS as readonly string[]).includes(type)
+}
+
+/** Participants go at the end; a note or a block goes by the selected step (uml-edit-sequence). */
 function addToSequence(d: SequenceDiagram, input: AddElementInput): EditResult {
+  if (input.type === 'note') return insertNote(d, input.name, input.near)
+  if (isBlock(input.type)) return insertBlock(d, input.type, input.near)
   const id = uniqueId(toIdentifier(input.name, 'Participant'), takenIds(d))
   const participant = { id, ...(input.type === 'actor' ? { kind: 'actor' as const } : {}) }
   return { diagram: { ...d, participants: [...d.participants, participant] }, id }
@@ -501,35 +517,10 @@ function deleteFromC4(d: C4Diagram, removed: Set<string>, rel: Set<number>): C4D
   )
 }
 
-/** Steps without the removed participants: their messages, activations and notes go too. */
-function keepSteps(steps: readonly SequenceStep[], removed: ReadonlySet<string>): SequenceStep[] {
-  const out: SequenceStep[] = []
-  for (const step of steps) {
-    switch (step.type) {
-      case 'message':
-        if (!removed.has(step.from) && !removed.has(step.to)) out.push(step)
-        break
-      case 'activation':
-        if (!removed.has(step.participant)) out.push(step)
-        break
-      case 'note': {
-        const participants = step.participants.filter((p) => !removed.has(p))
-        if (participants.length) out.push({ ...step, participants })
-        break
-      }
-      case 'block':
-        out.push({
-          ...step,
-          sections: step.sections.map((s) => ({ ...s, steps: keepSteps(s.steps, removed) })),
-        })
-    }
-  }
-  return out
-}
-
 /**
  * Removes elements and relations, with the lines that touch a removed element. What a removed
  * frame (namespace, composite state, boundary) held moves up a level instead of going with it.
+ * In a sequence diagram, steps are picked by id (`step:2`) and a removed block takes its steps.
  */
 function deleteItems(diagram: UmlSpec, selection: UmlSelection): UmlSpec {
   const removed = new Set(selection.elements)
@@ -553,6 +544,8 @@ function deleteItems(diagram: UmlSpec, selection: UmlSelection): UmlSpec {
 /** True when the selection holds something `deleteItems` would remove. */
 function canDelete(diagram: UmlSpec, selection: UmlSelection): boolean {
   if (selection.relations.length && diagram.kind !== 'sequence') return true
+  if (diagram.kind === 'sequence' && selection.elements.some((id) => stepOf(diagram, id)))
+    return true
   const ids = takenIds(diagram)
   return selection.elements.some(
     (id) => ids.has(id) || id.startsWith(NAMESPACE) || noteIndex(id) !== null,
@@ -575,6 +568,7 @@ export {
   START_END,
   takenIds,
   toIdentifier,
+  UML_DRAG_TYPE,
   type UmlElementType,
   type UmlRelationType,
   type UmlSelection,

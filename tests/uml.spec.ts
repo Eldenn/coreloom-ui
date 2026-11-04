@@ -150,3 +150,133 @@ test.describe('Diagram editor tools (Blocks/Diagrams/Diagram editor)', () => {
     ).toBeVisible()
   })
 })
+
+test.describe('Diagram editor on the drawing (Blocks/Diagrams/Diagram editor)', () => {
+  const source = (page: Page) => page.getByRole('textbox', { name: 'Source' })
+
+  test('renames a class with F2 and keeps focus on it', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('group', { name: /^Class: Order,/ }).click()
+    await page.keyboard.press('F2')
+    const field = page.getByRole('textbox', { name: 'Rename Order' })
+    await expect(field).toBeFocused()
+    await field.fill('Purchase')
+    await field.press('Enter')
+    await expect(source(page)).toContainText('class Purchase')
+    await expect(page.getByRole('group', { name: /^Class: Purchase,/ })).toBeFocused()
+  })
+
+  test('copies, pastes and duplicates with the keys and the toolbar', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('group', { name: /^Class: Customer/ }).click()
+    await page.keyboard.press('ControlOrMeta+C')
+    await expect(page.getByRole('status')).toHaveText('1 item copied · Class diagram, 7 elements')
+    await page.keyboard.press('ControlOrMeta+V')
+    await expect(page.getByRole('status')).toHaveText('1 item pasted · Class diagram, 8 elements')
+    await page.getByRole('button', { name: 'Duplicate' }).click()
+    await expect(page.getByRole('status')).toHaveText('1 item pasted · Class diagram, 9 elements')
+    await expect(page.getByRole('group', { name: /^Class: Customer/ })).toHaveCount(3)
+    await page.keyboard.press('ControlOrMeta+Z')
+    await expect(page.getByRole('group', { name: /^Class: Customer/ })).toHaveCount(2)
+  })
+
+  test('adds a class by dropping a toolbar button on the drawing', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    const drawing = page.getByRole('application', { name: /^Preview/ })
+    await page
+      .getByRole('button', { name: 'Add: Interface' })
+      .dragTo(drawing, { targetPosition: { x: 120, y: 120 } })
+    await expect(page.getByRole('status')).toHaveText('Interface added · Class diagram, 8 elements')
+    await expect(page.getByRole('textbox', { name: 'Name' })).toBeFocused()
+  })
+
+  test('edits a class’s members line by line', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('group', { name: /^Class: Customer/ }).click()
+    await page.getByRole('button', { name: 'Attribute', exact: true }).click()
+    const added = page.getByRole('textbox', { name: 'Member 3' })
+    await expect(added).toBeFocused()
+    await added.fill('-int visits$')
+    await added.press('Enter')
+    await expect(source(page)).toContainText('-int visits$')
+    await page.getByRole('button', { name: /More for int visits/ }).click()
+    await page.getByRole('menuitemradio', { name: 'Public (+)' }).click()
+    await expect(source(page)).toContainText('+int visits$')
+  })
+
+  test('turns the layout left to right', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('button', { name: 'Layout' }).click()
+    await page.getByRole('menuitemradio', { name: 'Left to right' }).click()
+    await expect(source(page)).toContainText('direction LR')
+    await expect(page.getByRole('status')).toHaveText(
+      'Arranged automatically · Class diagram, 7 elements',
+    )
+  })
+
+  test('downloads the drawing as a PNG image', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--default')
+    await page.getByRole('button', { name: 'Download' }).click()
+    const [file] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('menuitem', { name: 'PNG image' }).click(),
+    ])
+    expect(file.suggestedFilename()).toBe('diagram.png')
+  })
+})
+
+test.describe('Diagram editor, sequence steps (Blocks/Diagrams/Diagram editor)', () => {
+  test('selects a step from the list or the drawing and edits it', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--sequence')
+    const steps = page.getByRole('group', { name: 'Steps' })
+    const pay = steps.getByRole('button', { name: 'Web app to API, call: POST /orders/42/pay' })
+    await pay.click()
+    await expect(pay).toHaveAttribute('aria-pressed', 'true')
+    const text = page.getByRole('textbox', { name: 'Text' })
+    await text.fill('POST /orders/42/charge')
+    await text.press('Enter')
+    await expect(page.getByRole('textbox', { name: 'Source' })).toContainText(
+      'W->>+API: POST /orders/42/charge',
+    )
+    await page.getByRole('button', { name: 'Move up' }).click()
+    await expect(steps.getByRole('button').first()).toHaveText(
+      'Web app to API, call: POST /orders/42/charge',
+    )
+    await expect(page.getByRole('button', { name: 'Move up' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Move down' })).toBeFocused()
+  })
+
+  test('wraps the selected step in a loop', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--sequence')
+    const steps = page.getByRole('group', { name: 'Steps' })
+    await steps.getByRole('button', { name: 'Shopper to Web app, call: Pay' }).click()
+    const tools = page.getByRole('toolbar', { name: 'Drawing tools' })
+    await tools.getByRole('button', { name: 'Add', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Loop' }).click()
+    await expect(page.getByRole('textbox', { name: 'Source' })).toContainText('loop')
+    await expect(steps.getByRole('button', { name: /^Loop/ })).toBeFocused()
+    await expect(page.getByRole('textbox', { name: 'Condition' })).toBeVisible()
+  })
+
+  test('a click on a message in the drawing selects it in the list', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-editor--sequence')
+    const region = page.getByRole('region', { name: /^Preview/ })
+    await region.locator('[data-id="step:0"]').first().click()
+    await expect(
+      page
+        .getByRole('group', { name: 'Steps' })
+        .getByRole('button', { name: 'Shopper to Web app, call: Pay' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+  })
+})
+
+test.describe('UML diagram editing on the canvas (Components/Diagrams/UML diagram)', () => {
+  test('lines up the selected classes along their top edges', async ({ page }) => {
+    await open(page, 'components-diagrams-uml-diagram--editing-on-canvas')
+    await page.getByRole('button', { name: 'Align top edges' }).click()
+    const top = async (name: RegExp) =>
+      (await page.getByRole('group', { name }).boundingBox())?.y ?? 0
+    await expect.poll(() => top(/^Class: CardPayment/)).toBeCloseTo(await top(/^Class: Payment/))
+    await expect.poll(() => top(/^Class: BankTransfer/)).toBeCloseTo(await top(/^Class: Payment/))
+  })
+})
