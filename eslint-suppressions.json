@@ -960,17 +960,6 @@
       "count": 1
     }
   },
-  "starter/src/components/ui/ansi-output.tsx": {
-    "complexity": {
-      "count": 2
-    },
-    "max-depth": {
-      "count": 3
-    },
-    "no-nested-ternary": {
-      "count": 1
-    }
-  },
   "starter/src/components/ui/character-count.tsx": {
     "no-nested-ternary": {
       "count": 4
@@ -1078,7 +1067,7 @@
   },
   "starter/src/components/ui/form-renderer.tsx": {
     "complexity": {
-      "count": 7
+      "count": 1
     },
     "max-lines": {
       "count": 1
@@ -1087,7 +1076,7 @@
       "count": 1
     },
     "no-nested-ternary": {
-      "count": 7
+      "count": 1
     }
   },
   "starter/src/components/ui/form.tsx": {
