@@ -35,7 +35,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Screenshots unchanged."
           else
-            git commit -m "Update visual baselines"
+            git commit -m "test(visual): update baselines"
             # Someone may have pushed while the screenshots were taken (they take minutes): put
             # this commit on top. It only touches tests/__screenshots__, so it can't conflict
             # with code; if the code changed what renders, run the workflow again.

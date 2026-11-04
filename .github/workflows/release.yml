@@ -47,8 +47,8 @@ jobs:
       - uses: changesets/action@v2
         with:
           version-script: pnpm version-packages
-          commit-message: Version Packages
-          pr-title: Version Packages
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
           # A pull request opened with the workflow's own token doesn't start CI on it; a
           # CHANGESETS_TOKEN secret (fine-grained token or GitHub App) makes CI run there too.
           github-token: ${{ secrets.CHANGESETS_TOKEN || github.token }}
