@@ -24,7 +24,7 @@ import {
   toIdentifier,
   type UmlRelationType,
 } from '@/lib/uml-edit'
-import { memberText, parseMember } from '@/lib/uml-mermaid-class'
+import { parseMember } from '@/lib/uml-mermaid-class'
 import { erAttributeText, parseErAttribute } from '@/lib/uml-mermaid-er'
 
 /** The fields an element has; a field that's absent doesn't apply to it. */
@@ -32,8 +32,8 @@ interface UmlElementFields {
   name: string
   /** Classes: `interface`, `abstract`…, empty for none. */
   stereotype?: string
-  /** Classes: attributes and methods, one per line as in Mermaid (`+String name`, `+place() void`). */
-  members?: string
+  /** Classes: attributes and methods in order; a member with `(` in its text is a method. */
+  members?: ClassMember[]
   /** Entities: attributes, one per line (`string email UK "comment"`). */
   attributes?: string
   /** States and C4 elements. */
@@ -42,6 +42,8 @@ interface UmlElementFields {
   technology?: string
   /** C4 people and systems: outside what the diagram is about. */
   external?: boolean
+  /** Sequence participants: drawn as a person. */
+  actor?: boolean
 }
 
 /** The fields of a relation; a field that's absent doesn't apply to it. */
@@ -251,7 +253,7 @@ function classFields(d: ClassDiagram, id: string): UmlElementFields | null {
   if (id.startsWith(NAMESPACE)) return { name: id.slice(NAMESPACE.length) }
   const c = d.classes.find((x) => x.id === id)
   if (!c) return null
-  const members = [...(c.attributes ?? []), ...(c.methods ?? [])].map(memberText).join('\n')
+  const members = [...(c.attributes ?? []), ...(c.methods ?? [])]
   return { name: c.label ?? c.id, stereotype: c.stereotype ?? '', members }
 }
 
@@ -297,7 +299,7 @@ function elementFields(diagram: UmlSpec, id: string): UmlElementFields | null {
       return erFields(diagram, id)
     case 'sequence': {
       const p = diagram.participants.find((x) => x.id === id)
-      return p ? { name: p.label ?? p.id } : null
+      return p ? { name: p.label ?? p.id, actor: p.kind === 'actor' } : null
     }
     case 'c4':
       return c4Fields(diagram, id)
@@ -318,7 +320,7 @@ const optional = <K extends string>(key: K, value: string | undefined) =>
 function applyFields(d: UmlSpec, id: string, f: UmlElementFields): UmlSpec {
   switch (d.kind) {
     case 'class': {
-      const members = f.members === undefined ? undefined : lines(f.members).map(parseMember)
+      const members = f.members?.filter((m) => m.text.trim())
       const classes = d.classes.map((c) => {
         if (c.id !== id) return c
         const { stereotype: _s, attributes: _a, methods: _m, ...rest } = c
@@ -366,9 +368,26 @@ function applyFields(d: UmlSpec, id: string, f: UmlElementFields): UmlSpec {
       })
       return { ...d, elements }
     }
-    case 'sequence':
-      return d
+    case 'sequence': {
+      if (f.actor === undefined) return d
+      const participants = d.participants.map((p) => {
+        if (p.id !== id) return p
+        const { kind: _k, ...rest } = p
+        return f.actor ? { ...rest, kind: 'actor' as const } : rest
+      })
+      return { ...d, participants }
+    }
   }
+}
+
+/**
+ * A member as typed in one field: a leading `+ - # ~` sets the visibility and a trailing `$` or
+ * `*` makes it static or abstract, as in Mermaid; otherwise `current`'s flags stay.
+ */
+function memberFromText(text: string, current: ClassMember): ClassMember {
+  const read = parseMember(text)
+  const visibility = read.visibility ?? current.visibility
+  return { ...current, ...read, ...(visibility ? { visibility } : {}) }
 }
 
 /** Changes an element's fields (its name last, since renaming may change its id). */
@@ -531,6 +550,7 @@ function reverseRelation(diagram: UmlSpec, index: number): UmlSpec {
 
 export {
   elementFields,
+  memberFromText,
   relationFields,
   renameElement,
   reverseRelation,

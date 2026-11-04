@@ -13,6 +13,7 @@ import {
 } from '@/lib/uml-edit'
 import {
   elementFields,
+  memberFromText,
   relationFields,
   renameElement,
   reverseRelation,
@@ -350,18 +351,47 @@ describe('element fields', () => {
     expect(elementFields(shop(), 'Order')).toEqual({
       name: 'Order',
       stereotype: '',
-      members: '+String id\n+place() void',
+      members: [
+        { text: 'String id', visibility: 'public' },
+        { text: 'place() void', visibility: 'public' },
+      ],
     })
     const { diagram } = setElementFields(shop(), 'Order', {
       name: 'Order',
       stereotype: 'entity',
-      members: '+String id\n\n-total() Money$\n#int count',
+      members: [
+        { text: 'String id', visibility: 'public' },
+        { text: '  ' },
+        { text: 'total() Money', visibility: 'private', static: true },
+        { text: 'int count', visibility: 'protected' },
+      ],
     })
     const order = diagram.kind === 'class' ? diagram.classes.find((c) => c.id === 'Order') : null
     expect(order?.stereotype).toBe('entity')
     expect(order?.attributes?.map((m) => m.text)).toEqual(['String id', 'int count'])
     expect(order?.methods).toEqual([{ text: 'total() Money', visibility: 'private', static: true }])
     roundTrips(diagram)
+  })
+
+  it('reads a member typed the Mermaid way, keeping what it doesn’t say', () => {
+    expect(memberFromText('-total() Money$', { text: '' })).toEqual({
+      text: 'total() Money',
+      visibility: 'private',
+      static: true,
+    })
+    expect(memberFromText('String name', { text: 'x', visibility: 'protected' })).toEqual({
+      text: 'String name',
+      visibility: 'protected',
+    })
+  })
+
+  it('turns a participant into an actor and back', () => {
+    const seq = read('sequenceDiagram\n  participant A\n  participant B\n  A->>B: hi', 'sequence')
+    expect(elementFields(seq, 'A')).toEqual({ name: 'A', actor: false })
+    const actor = setElementFields(seq, 'A', { name: 'A', actor: true }).diagram
+    expect(toMermaid(actor)).toContain('actor A')
+    const back = setElementFields(actor, 'A', { name: 'A', actor: false }).diagram
+    expect(toMermaid(back)).toContain('participant A')
   })
 
   it('reads and writes entity attributes loosely, and C4 details', () => {
