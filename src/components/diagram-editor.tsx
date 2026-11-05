@@ -7,7 +7,7 @@
 // The drawing has its own tools: add elements (or drag them in), connect them, rename in place,
 // copy, paste, duplicate, delete, align and arrange, change what's selected in the properties
 // panel (a sequence diagram's steps too), undo. Each change is made on the model and the text is
-// written again. Elements can be dragged; their positions travel in the JSON. Switch formats,
+// written again. Elements can be dragged; their positions travel in the text (the JSON's layout, a comment line in Mermaid and PlantUML). Switch formats,
 // start from a template, copy, or download the text or an SVG or PNG image. Everything happens in
 // the browser: the app keeps the text.
 import * as React from 'react'
