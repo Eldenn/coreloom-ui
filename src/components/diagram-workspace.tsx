@@ -76,6 +76,8 @@ const KINDS: readonly UmlDiagramKind[] = [
   'er',
   'c4',
   'deployment',
+  'component',
+  'package',
 ]
 
 /** "Order flow (v2)" → "order-flow-v2", for the editor's download names. */

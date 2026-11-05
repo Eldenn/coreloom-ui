@@ -1,9 +1,9 @@
 'use client'
 
 // Coreloom UI — DiagramCodeBlock. Draws a ```mermaid or ```plantuml block of a Markdown answer as a
-// diagram (class, sequence, state, ER, C4, use case, activity, deployment), with a switch back to
-// its source. While the answer is still streaming, and whenever the text can't be read whole, the
-// plain code block shows instead. Register it once around a chat:
+// diagram (class, sequence, state, ER, C4, use case, activity, deployment, component, package),
+// with a switch back to its source. While the answer is still streaming, and whenever the text
+// can't be read whole, the plain code block shows instead. Register it once around a chat:
 // `<MarkdownCodeBlocksContext value={diagramCodeBlocks}>`.
 import * as React from 'react'
 

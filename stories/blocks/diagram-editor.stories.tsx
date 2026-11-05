@@ -16,8 +16,10 @@ import {
   activityText,
   c4ContainerText,
   classText,
+  componentText,
   deploymentText,
   fromMermaid,
+  packageText,
   sequenceText,
   usecaseText,
 } from '../components/uml-data'
@@ -80,6 +82,16 @@ export const Deployment: Story = {
 
 /** A Mermaid flowchart, read as an activity diagram: actions, a decision, fork and join. */
 export const Activity: Story = { args: { defaultValue: activityText } }
+
+/** A component diagram in PlantUML: Mermaid has none, so its format is off. */
+export const Component: Story = {
+  args: { defaultFormat: 'plantuml', defaultValue: componentText },
+}
+
+/** A package diagram in PlantUML. */
+export const Package: Story = {
+  args: { defaultFormat: 'plantuml', defaultValue: packageText },
+}
 
 export const FrenchPlantUml: Story = {
   args: { defaultFormat: 'plantuml', defaultValue: usecaseText },

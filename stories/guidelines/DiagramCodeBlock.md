@@ -1,6 +1,6 @@
 # Diagram Code Block
 
-Draws the `mermaid and `plantuml blocks of a Markdown answer as diagrams with UML Diagram: class, sequence, state, entity–relationship, C4, use case, activity (Mermaid flowcharts too) and deployment. A switch above the drawing goes back to the source, which keeps its Copy button. Everything is read in the browser, with no `mermaid` or PlantUML dependency.
+Draws the `mermaid and `plantuml blocks of a Markdown answer as diagrams with UML Diagram: class, sequence, state, entity–relationship, C4, use case, activity (Mermaid flowcharts too), deployment, component and package. A switch above the drawing goes back to the source, which keeps its Copy button. Everything is read in the browser, with no `mermaid` or PlantUML dependency.
 
 **The consumer provides** nothing per block: register the renderers once around a chat with `<MarkdownCodeBlocksContext value={diagramCodeBlocks}>` (from `@/components/ui/markdown`), or pass `codeBlocks={diagramCodeBlocks}` to one `Markdown`. `diagramCodeBlocks` maps the fence languages mermaid, plantuml and puml to `DiagramCodeBlock`, which takes Markdown's code block props (`code`, `language`, `streaming`, `children`: the plain code block) and `height` (340). Add your own languages the same way: `{ ...diagramCodeBlocks, uml: DiagramCodeBlock }` (a language named uml).
 

@@ -1,6 +1,6 @@
 // Coreloom UI — UML diagrams as boxes and lines. Turns a class, state, ER or C4 diagram into one
-// neutral graph (uml-graph-base.ts) that a single canvas draws; use case, activity and deployment
-// diagrams go through uml-graph-elements.ts. Edges point the way the layout flows: parents, wholes
+// neutral graph (uml-graph-base.ts) that a single canvas draws; use case, activity, deployment,
+// component and package diagrams go through uml-graph-elements.ts. Edges point the way the layout flows: parents, wholes
 // and callers come first.
 import type {
   C4Diagram,
@@ -293,6 +293,8 @@ function toDiagramGraph(diagram: UmlSpec): DiagramGraph | null {
     case 'usecase':
     case 'activity':
     case 'deployment':
+    case 'component':
+    case 'package':
       return elementGraph(diagram)
     case 'sequence':
       return null
