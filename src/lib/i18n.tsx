@@ -2454,6 +2454,19 @@ const en = {
       failed: 'This diagram couldn’t be drawn, so here is its text.',
     },
   },
+  saveStatus: {
+    saved: 'Saved',
+    saving: 'Saving…',
+    unsaved: 'Unsaved changes',
+    error: 'Couldn’t save',
+    retry: 'Retry',
+  },
+  diagramCard: {
+    visibility: { private: 'Private', public: 'Public', protected: 'Protected' },
+    diagrams: (n: number) => (n === 1 ? '1 diagram' : `${n} diagrams`),
+    updated: 'Updated',
+    actions: (title: string) => `Actions for ${title}`,
+  },
   diagramEditor: {
     label: 'Diagram editor',
     source: 'Source',
@@ -5190,6 +5203,19 @@ const fr: Messages = {
       view: 'Afficher en',
       failed: 'Ce diagramme n’a pas pu être dessiné : voici son texte.',
     },
+  },
+  saveStatus: {
+    saved: 'Enregistré',
+    saving: 'Enregistrement…',
+    unsaved: 'Modifications non enregistrées',
+    error: 'Enregistrement impossible',
+    retry: 'Réessayer',
+  },
+  diagramCard: {
+    visibility: { private: 'Privé', public: 'Public', protected: 'Protégé' },
+    diagrams: (n: number) => (n <= 1 ? `${n} diagramme` : `${n} diagrammes`),
+    updated: 'Modifié',
+    actions: (title: string) => `Actions pour « ${title} »`,
   },
   diagramEditor: {
     label: 'Éditeur de diagramme',

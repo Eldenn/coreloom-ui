@@ -2057,6 +2057,26 @@
       ]
     },
     {
+      "name": "save-status",
+      "type": "registry:ui",
+      "title": "SaveStatus",
+      "description": "Where an autosaving document stands: \"Saved · 2 minutes ago\", \"Saving…\", \"Unsaved changes\" or \"Couldn't save\" with Retry; one polite status message, not one per save.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/relative-time"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/save-status.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "timeline",
       "type": "registry:ui",
       "title": "Timeline",
@@ -3359,6 +3379,7 @@
         "@coreloom/recurrence-input",
         "@coreloom/timezone-select",
         "@coreloom/relative-time",
+        "@coreloom/save-status",
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
@@ -4394,6 +4415,32 @@
         },
         {
           "path": "src/components/use-diagram-editing.ts",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "diagram-card",
+      "type": "registry:block",
+      "title": "Diagram card",
+      "description": "A gallery card for a diagram document: a thumbnail (UmlDiagram preview or an image URL, a neutral drawing when there's neither), the title as a link over the whole card, a visibility badge (private, public, protected), the number of diagrams, when it changed, and a … menu of actions.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/link",
+        "@coreloom/uml",
+        "@coreloom/uml-diagram",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/relative-time"
+      ],
+      "files": [
+        {
+          "path": "src/components/diagram-card.tsx",
           "type": "registry:component"
         }
       ]

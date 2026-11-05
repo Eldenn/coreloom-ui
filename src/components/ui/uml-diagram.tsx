@@ -526,6 +526,15 @@ function DiagramCanvas({
   )
 }
 
+/**
+ * Where the app's classes go: on the frame, except for a thumbnail, whose box is the drawing
+ * itself (its border and background are the ones to change). Full screen drops the border.
+ */
+function sequenceClasses(preview: boolean, full: boolean, className: string | undefined) {
+  if (preview) return { outer: 'h-full', inner: className }
+  return { outer: className, inner: full ? 'h-full rounded-none border-0' : undefined }
+}
+
 /** A sequence diagram, with the same `ref` as the canvas: its SVG as an image. */
 function SequencePane({
   diagram,
@@ -571,14 +580,15 @@ function SequencePane({
       }
     : undefined
   const full = fullscreen?.active ?? false
+  const classes = sequenceClasses(preview, full, className)
   return (
-    <div ref={frame} data-slot="uml-diagram" className={cn('relative', className)}>
+    <div ref={frame} data-slot="uml-diagram" className={cn('relative', classes.outer)}>
       <SequenceDiagramView
         ref={root}
         diagram={diagram}
         {...(height === undefined || full ? {} : { maxHeight: height })}
         {...(label ? { label } : {})}
-        {...(full ? { className: 'h-full rounded-none border-0' } : {})}
+        {...(classes.inner ? { className: classes.inner } : {})}
         {...(selection && !exporting ? { selected: selection.elements } : {})}
         {...(select && !preview ? { onSelect: select } : {})}
         fit={preview}

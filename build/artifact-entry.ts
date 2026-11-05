@@ -1,4 +1,5 @@
 // Entry for the design-system artifact: every component part on one global.
+export * from '@/components/diagram-card'
 export * from '@/components/diagram-editor'
 export * from '@/components/ui/accordion'
 export * from '@/components/ui/agent-avatar'
@@ -101,6 +102,7 @@ export * from '@/components/ui/resizable'
 export * from '@/components/ui/rich-text-editor'
 export * from '@/components/ui/rich-text-field'
 export * from '@/components/ui/sankey-chart'
+export * from '@/components/ui/save-status'
 export * from '@/components/ui/scale-input'
 export * from '@/components/ui/scatter-chart'
 export * from '@/components/ui/scroll-area'

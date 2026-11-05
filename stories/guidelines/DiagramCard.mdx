@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/diagram-card.stories'
+import guide from './DiagramCard.md?raw'
+
+<Meta title="Guidelines/Diagrams/Diagram card" />
+
+<Markdown>{guide}</Markdown>
+
+## A gallery
+
+<Canvas of={Stories.Gallery} />

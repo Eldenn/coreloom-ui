@@ -215,6 +215,8 @@ const COMPONENTS = [
   'UmlDiagram',
   'DiagramCodeBlock',
   'DiagramEditor',
+  'SaveStatus',
+  'DiagramCard',
   'FormBuilder',
   'Ide',
   'Gantt',
