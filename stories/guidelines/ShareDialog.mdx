@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/share-dialog.stories'
+import guide from './ShareDialog.md?raw'
+
+<Meta title="Guidelines/Sharing/Share dialog" />
+
+<Markdown>{guide}</Markdown>
+
+## Protected
+
+<Canvas of={Stories.Protected} />

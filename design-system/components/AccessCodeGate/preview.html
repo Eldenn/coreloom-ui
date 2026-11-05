@@ -1,0 +1,40 @@
+<!-- @dsCard group="Blocks" height=480 subtitle="AccessCodeGate · code boxes, attempts left, lock" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:flex;justify-content:center}
+  #root > *{width:100%;max-width:400px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AccessCodeGate || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AccessCodeGate } = UI;
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      function Demo() {
+        const [left, setLeft] = React.useState(3);
+        const [error, setError] = React.useState();
+        return h(AccessCodeGate, {
+          title: 'Checkout', attemptsLeft: left, error,
+          onSubmit: async (code) => {
+            await wait(600);
+            if (code === 'H7KM3QPX') { setError(undefined); return; }
+            setLeft(Math.max(1, left - 1));
+            setError('That code didn’t work.');
+          },
+        });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

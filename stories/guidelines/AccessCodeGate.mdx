@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/access-code-gate.stories'
+import guide from './AccessCodeGate.md?raw'
+
+<Meta title="Guidelines/Sharing/Access code gate" />
+
+<Markdown>{guide}</Markdown>
+
+## Locked
+
+<Canvas of={Stories.Locked} />

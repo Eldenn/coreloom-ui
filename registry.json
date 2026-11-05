@@ -4446,6 +4446,61 @@
       ]
     },
     {
+      "name": "share-dialog",
+      "type": "registry:block",
+      "title": "Share dialog",
+      "description": "A dialog to choose who can open a document (private, public with the link, protected with the link and a code), applied through an async call with a spinner and a revert on error; the link with Copy and Regenerate, the code hidden in SecretValue with Generate a new code (both asked first), and Copy link and code.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert",
+        "@coreloom/button",
+        "@coreloom/choice-card",
+        "@coreloom/copy-button",
+        "@coreloom/dialog",
+        "@coreloom/input",
+        "@coreloom/label",
+        "@coreloom/popconfirm",
+        "@coreloom/secret-value",
+        "@coreloom/sonner",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/share-dialog.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "access-code-gate",
+      "type": "registry:block",
+      "title": "Access code gate",
+      "description": "The screen in front of a protected link: one box per character of the access code (8 by default, letters upper-cased, characters outside the alphabet ignored), sent by itself when full, pasted codes, attempts left, and a countdown while locked. Goes in AuthLayout.",
+      "categories": ["authentication"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/countdown",
+        "@coreloom/input-otp",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/access-code-gate.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "form-builder",
       "type": "registry:block",
       "title": "Form builder",
