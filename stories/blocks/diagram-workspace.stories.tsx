@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Share2Icon } from 'lucide-react'
+import { NetworkIcon, Share2Icon } from 'lucide-react'
 import * as React from 'react'
 
+import { AppShell } from '@/components/app-shell'
 import { DIAGRAM_TEMPLATES } from '@/components/diagram-editor'
 import { DiagramWorkspace, type DiagramWorkspaceItem } from '@/components/diagram-workspace'
 import { Button } from '@/components/ui/button'
@@ -32,10 +33,12 @@ function Demo({
   views = VIEWS,
   failSaves = false,
   initialState = 'saved',
+  height,
 }: {
   views?: DiagramWorkspaceItem[]
   failSaves?: boolean
   initialState?: SaveState
+  height?: string
 }) {
   const kinds = useCoreloomI18n().messages.diagram.kinds
   const [title, setTitle] = React.useState('Checkout architecture')
@@ -93,6 +96,7 @@ function Demo({
       savedAt={savedAt}
       onRetrySave={changed}
       actions={share}
+      height={height}
     />
   )
 }
@@ -119,7 +123,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar. On a phone, the list of views is in a side sheet.',
+          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
       },
     },
   },
@@ -147,6 +151,27 @@ export const SaveFailed: Story = {
 export const French: Story = {
   globals: { locale: 'fr' },
   render: () => <Demo />,
+}
+
+/** The whole page: AppShell at full width, and the workspace down to the bottom of the window. */
+export const FullPage: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <AppShell
+      fullWidth
+      workspaces={[{ name: 'Coreloom' }]}
+      groups={[
+        {
+          label: 'Workspace',
+          items: [{ title: 'Architectures', url: '#', icon: NetworkIcon, isActive: true }],
+        },
+      ]}
+      user={{ name: 'Matthieu C.', email: 'matthieu@coreloom.dev' }}
+      breadcrumbs={[{ label: 'Architectures', href: '#' }, { label: 'Checkout architecture' }]}
+    >
+      <Demo height="calc(100svh - 7.5rem)" />
+    </AppShell>
+  ),
 }
 
 export const Phone: Story = {

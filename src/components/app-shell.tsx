@@ -2,7 +2,8 @@
 
 // Coreloom UI — AppShell (app-shell block). The whole product layout in one component:
 // sidebar, sticky header with breadcrumb, ⌘K palette and theme toggle, and your page
-// centered at --container-app. Pass data; edit this file when the layout itself must change.
+// centered at --container-app (or across the whole width, for editors and canvases). Pass data;
+// edit this file when the layout itself must change.
 import * as React from 'react'
 
 import { AppHeader, type Crumb } from '@/components/app-header'
@@ -11,6 +12,7 @@ import { CommandMenu, type CommandMenuGroup } from '@/components/command-menu'
 import { ThemeMenu } from '@/components/theme-toggle'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 function AppShell({
   children,
@@ -19,6 +21,7 @@ function AppShell({
   onAskAi,
   headerActions,
   defaultSidebarOpen = true,
+  fullWidth = false,
   ...sidebar
 }: React.ComponentProps<typeof AppSidebar> & {
   children: React.ReactNode
@@ -30,6 +33,11 @@ function AppShell({
   /** Extra header buttons, placed before the theme toggle (notifications, help…). */
   headerActions?: React.ReactNode
   defaultSidebarOpen?: boolean
+  /**
+   * The page uses the whole width next to the sidebar instead of stopping at --container-app:
+   * for editors, canvases and wide tables. The gutters stay.
+   */
+  fullWidth?: boolean
 }) {
   const t = useCoreloomI18n().messages
   return (
@@ -48,7 +56,12 @@ function AppShell({
             </>
           }
         />
-        <div className="mx-auto flex w-full max-w-(--container-app) flex-1 flex-col gap-6 px-4 py-8 md:px-8">
+        <div
+          className={cn(
+            'mx-auto flex w-full flex-1 flex-col gap-6 px-4 py-8 md:px-8',
+            !fullWidth && 'max-w-(--container-app)',
+          )}
+        >
           {children}
         </div>
       </SidebarInset>
