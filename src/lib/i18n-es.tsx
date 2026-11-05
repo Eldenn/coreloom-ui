@@ -2340,6 +2340,8 @@ export const es: Messages = {
   diagram: {
     label: 'Diagrama',
     empty: 'Todavía no hay nada que dibujar.',
+    fullscreen: 'Pantalla completa',
+    exitFullscreen: 'Salir de pantalla completa',
     kinds: {
       class: 'Diagrama de clases',
       sequence: 'Diagrama de secuencia',
@@ -2495,6 +2497,9 @@ export const es: Messages = {
     source: 'Código',
     preview: 'Vista previa',
     fileTools: 'Texto y archivo',
+    view: 'Vista',
+    views: { split: 'Texto y dibujo', drawing: 'Dibujo', text: 'Texto' },
+    readOnly: 'Solo lectura',
     format: 'Formato',
     newDiagram: 'Nuevo diagrama',
     copy: 'Copiar',

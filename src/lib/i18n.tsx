@@ -2306,6 +2306,8 @@ const en = {
   diagram: {
     label: 'Diagram',
     empty: 'Nothing to draw yet.',
+    fullscreen: 'Full screen',
+    exitFullscreen: 'Exit full screen',
     kinds: {
       class: 'Class diagram',
       sequence: 'Sequence diagram',
@@ -2457,6 +2459,9 @@ const en = {
     source: 'Source',
     preview: 'Preview',
     fileTools: 'Text and file',
+    view: 'View',
+    views: { split: 'Text and drawing', drawing: 'Drawing', text: 'Text' },
+    readOnly: 'Read only',
     format: 'Format',
     newDiagram: 'New diagram',
     copy: 'Copy',
@@ -5038,6 +5043,8 @@ const fr: Messages = {
   diagram: {
     label: 'Diagramme',
     empty: 'Rien à dessiner pour l’instant.',
+    fullscreen: 'Plein écran',
+    exitFullscreen: 'Quitter le plein écran',
     kinds: {
       class: 'Diagramme de classes',
       sequence: 'Diagramme de séquence',
@@ -5189,6 +5196,9 @@ const fr: Messages = {
     source: 'Source',
     preview: 'Aperçu',
     fileTools: 'Texte et fichier',
+    view: 'Affichage',
+    views: { split: 'Texte et dessin', drawing: 'Dessin', text: 'Texte' },
+    readOnly: 'Lecture seule',
     format: 'Format',
     newDiagram: 'Nouveau diagramme',
     copy: 'Copier',

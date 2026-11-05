@@ -10,20 +10,18 @@
 // written again. Elements can be dragged; their positions travel in the JSON. Switch formats,
 // start from a template, copy, or download the text or an SVG or PNG image. Everything happens in
 // the browser: the app keeps the text.
-import { CheckIcon, CopyIcon, DownloadIcon, FilePlusIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { Drawing } from '@/components/diagram-drawing'
-import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
-import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarMenu,
-  ToolbarSeparator,
-  ToolbarToggleGroup,
-  ToolbarToggleItem,
-} from '@/components/ui/toolbar'
+  canWrite,
+  type DiagramEditorView,
+  type DiagramFormat,
+  EXTENSIONS,
+  FileTools,
+  ProblemList,
+} from '@/components/diagram-file-tools'
+import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
 import type { UmlDiagramHandle } from '@/components/ui/uml-diagram'
 import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
@@ -34,7 +32,6 @@ import {
   umlElementIds,
   type UmlLayout,
   type UmlParseResult,
-  type UmlProblem,
   type UmlSpec,
 } from '@/lib/uml'
 import { DIRECTIONS } from '@/lib/uml-arrange'
@@ -42,8 +39,6 @@ import type { UmlImageFormat } from '@/lib/uml-image'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
 import { isPlantUml, parsePlantUml, toPlantUml } from '@/lib/uml-plantuml'
 import { cn } from '@/lib/utils'
-
-type DiagramFormat = 'mermaid' | 'plantuml' | 'json'
 
 interface DiagramEditorProps {
   /** The text (controlled), in `format`. */
@@ -63,10 +58,20 @@ interface DiagramEditorProps {
   /** File name for Download, without the extension. Default: diagram. */
   fileName?: string
   autoFocus?: boolean
+  /** Text beside the drawing (`split`), the drawing alone or the text alone (controlled). */
+  view?: DiagramEditorView
+  /** Default: split. */
+  defaultView?: DiagramEditorView
+  onViewChange?: (view: DiagramEditorView) => void
+  /** The app's own buttons (Share, say), at the end of the top bar. */
+  actions?: React.ReactNode
+  /**
+   * The text can't be changed: no drawing tools, properties or dragging, and the format and New
+   * diagram are off. Copy, Download, zoom and full screen stay. Default: false.
+   */
+  readOnly?: boolean
   className?: string
 }
-
-type EditorText = Messages['diagramEditor']
 
 const DIAGRAM_TEMPLATES: readonly { kind: UmlDiagramKind; text: string }[] = [
   {
@@ -173,16 +178,6 @@ function writeDiagram(diagram: UmlSpec, format: DiagramFormat): string {
   }
 }
 
-/**
- * True when a diagram of this kind reads back the same from text in `format`: Mermaid has no use
- * case or deployment diagrams, and PlantUML's activity syntax can't hold every graph.
- */
-function canWrite(kind: UmlDiagramKind, format: DiagramFormat): boolean {
-  if (format === 'mermaid') return kind !== 'usecase' && kind !== 'deployment'
-  if (format === 'plantuml') return kind !== 'activity'
-  return true
-}
-
 /** The syntax pasted text is written in, when it clearly says: `@startuml`, or a Mermaid header. */
 function sniffFormat(text: string): DiagramFormat | null {
   if (isPlantUml(text)) return 'plantuml'
@@ -220,14 +215,6 @@ function pastedFormat(next: string, previous: string, format: DiagramFormat): Di
   return sniffed && sniffed !== format ? sniffed : null
 }
 
-const FORMATS: readonly [DiagramFormat, string][] = [
-  ['mermaid', 'Mermaid'],
-  ['plantuml', 'PlantUML'],
-  ['json', 'JSON'],
-]
-
-const EXTENSIONS: Record<DiagramFormat, string> = { mermaid: 'mmd', plantuml: 'puml', json: 'json' }
-
 /** Positions only for elements the diagram still has. */
 function withLayout(diagram: UmlSpec, layout: UmlLayout | null): UmlSpec {
   if (diagram.kind === 'sequence' || !layout) return diagram
@@ -235,14 +222,6 @@ function withLayout(diagram: UmlSpec, layout: UmlLayout | null): UmlSpec {
   const kept = Object.fromEntries(Object.entries(layout).filter(([id]) => ids.has(id)))
   const { layout: _old, ...rest } = diagram
   return Object.keys(kept).length ? { ...rest, layout: kept } : rest
-}
-
-function problemText(p: UmlProblem, t: EditorText): string {
-  const what = t.problem[p.code]
-  const where = p.line > 0 ? `${t.line(p.line)} · ` : ''
-  // JSON and schema problems carry the parser's own detail; the rest quote the line.
-  const detail = p.code === 'json' || p.code === 'schema' ? p.text : undefined
-  return `${where}${what}${detail ? ` ${detail}` : ''}`
 }
 
 /** What the editor shows about a reading: the diagram, its name, the status line, the marks. */
@@ -259,7 +238,8 @@ function readout(result: UmlParseResult, layout: UmlLayout | null, messages: Mes
     .filter((p) => p.line > 0)
     .map((p) => ({ line: p.line, severity: p.severity, message: t.problem[p.code] }))
   const invalid = result.problems.some((p) => p.severity === 'error')
-  return { diagram, kind: diagram?.kind ?? null, kindName, status, diagnostics, invalid }
+  const drawingLabel = kindName ? `${t.preview}: ${kindName}` : t.preview
+  return { diagram, kind: diagram?.kind ?? null, drawingLabel, status, diagnostics, invalid }
 }
 
 /**
@@ -326,128 +306,75 @@ function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T)
   return [current, set] as const
 }
 
-function FileTools({
-  t,
-  format,
-  onFormat,
-  onTemplate,
-  onCopy,
-  copied,
-  onDownload,
-  drawn,
-  templates,
-  status,
-  kinds,
-  kind,
-}: {
-  t: EditorText
-  format: DiagramFormat
-  onFormat: (f: DiagramFormat) => void
-  onTemplate: (text: string) => void
-  onCopy: () => void
-  copied: boolean
-  onDownload: (what: DiagramFormat | UmlImageFormat) => void
-  /** Images can be made: something is drawn. */
-  drawn: boolean
-  templates: readonly { kind: UmlDiagramKind; label?: string; text: string }[]
-  status: string
-  kinds: Messages['diagram']['kinds']
-  /** The kind drawn now: a format that can't hold it can't be picked. */
-  kind: UmlDiagramKind | null
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1.5">
-      <Toolbar aria-label={t.fileTools} variant="plain" className="flex-wrap">
-        <ToolbarToggleGroup
-          type="single"
-          value={format}
-          aria-label={t.format}
-          onValueChange={(v) => {
-            if (v === 'mermaid' || v === 'plantuml' || v === 'json') onFormat(v)
-          }}
-        >
-          {FORMATS.map(([value, name]) => (
-            <ToolbarToggleItem
-              key={value}
-              value={value}
-              disabled={kind !== null && !canWrite(kind, value)}
-            >
-              {name}
-            </ToolbarToggleItem>
-          ))}
-        </ToolbarToggleGroup>
-        <ToolbarSeparator />
-        <ToolbarMenu label={t.newDiagram} icon={<FilePlusIcon aria-hidden />}>
-          {templates.map((tpl) => (
-            <DropdownMenuItem
-              key={tpl.label ?? tpl.kind}
-              onSelect={() => {
-                onTemplate(tpl.text)
-              }}
-            >
-              {tpl.label ?? kinds[tpl.kind]}
-            </DropdownMenuItem>
-          ))}
-        </ToolbarMenu>
-        <ToolbarSeparator className="max-sm:hidden" />
-        <ToolbarButton onClick={onCopy}>
-          {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-          <span className="max-sm:sr-only">{copied ? t.copied : t.copy}</span>
-        </ToolbarButton>
-        <ToolbarMenu
-          label={<span className="max-sm:sr-only">{t.download}</span>}
-          icon={<DownloadIcon aria-hidden />}
-          align="end"
-        >
-          <DropdownMenuItem
-            onSelect={() => {
-              onDownload(format)
-            }}
-          >
-            {t.downloadText(EXTENSIONS[format])}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {(['svg', 'png'] as const).map((image) => (
-            <DropdownMenuItem
-              key={image}
-              disabled={!drawn}
-              onSelect={() => {
-                onDownload(image)
-              }}
-            >
-              {image === 'svg' ? t.downloadSvg : t.downloadPng}
-            </DropdownMenuItem>
-          ))}
-        </ToolbarMenu>
-      </Toolbar>
-      <p
-        role="status"
-        className="order-last w-full min-w-0 truncate px-1 text-[12.5px] text-muted-foreground sm:order-none sm:w-auto sm:flex-1 sm:text-right"
-      >
-        {status}
-      </p>
-    </div>
-  )
+/** "Copied" for a moment after copying text. */
+function useCopy(text: () => string) {
+  const [copied, setCopied] = React.useState(false)
+  const copy = () => {
+    void navigator.clipboard.writeText(text()).then(() => {
+      setCopied(true)
+      window.setTimeout(() => {
+        setCopied(false)
+      }, 1600)
+    })
+  }
+  return { copied, copy }
 }
 
-function ProblemList({ problems, t }: { problems: readonly UmlProblem[]; t: EditorText }) {
-  if (!problems.length) return null
+const GRID: Record<DiagramEditorView, string> = {
+  split: 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]',
+  drawing: '',
+  text: '',
+}
+
+/** The text, its marks and the problems under it. */
+function TextPane({
+  view,
+  label,
+  problems,
+  format,
+  fileName,
+  invalid,
+  ...editor
+}: React.ComponentProps<typeof CodeEditor> & {
+  view: DiagramEditorView
+  format: DiagramFormat
+  fileName: string
+  /** The text has errors. */
+  invalid: boolean
+  /** Names the text field. */
+  label: React.ReactNode
+  problems: React.ReactNode
+}) {
+  const id = React.useId()
+  const split = view === 'split'
   return (
-    <ul className="max-h-28 shrink-0 overflow-auto border-t border-border bg-inset px-3 py-2 text-[12.5px]">
-      {problems.map((p, i) => (
-        <li
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- a line can have several problems
-          key={i}
-          className={cn(
-            'truncate',
-            p.severity === 'error' ? 'text-destructive' : 'text-fg-secondary',
-          )}
-          title={p.text}
-        >
-          {problemText(p, t)}
-        </li>
-      ))}
-    </ul>
+    <div
+      className={cn(
+        'flex min-h-0 min-w-0 flex-col',
+        split && 'border-b border-border lg:border-r lg:border-b-0',
+      )}
+    >
+      <p id={`${id}-source`} className="sr-only">
+        {label}
+      </p>
+      <div
+        className={cn(
+          'min-h-0 lg:h-auto lg:flex-1',
+          split ? 'h-[280px]' : 'h-(--diagram-editor-h)',
+        )}
+      >
+        <CodeEditor
+          {...editor}
+          language={format === 'json' ? 'json' : 'text'}
+          path={`${fileName}.${EXTENSIONS[format]}`}
+          height="100%"
+          className="h-full"
+          aria-labelledby={`${id}-source`}
+          {...(invalid ? { 'aria-invalid': true } : {})}
+        />
+      </div>
+      {problems}
+    </div>
   )
 }
 
@@ -463,16 +390,20 @@ function DiagramEditor({
   height = '560px',
   fileName = 'diagram',
   autoFocus = false,
+  view: viewProp,
+  defaultView = 'split',
+  onViewChange,
+  actions,
+  readOnly = false,
   className,
 }: DiagramEditorProps) {
   const { messages } = useCoreloomI18n()
   const t = messages.diagramEditor
   const [text, setText] = useControlled(value, defaultValue, onChange)
   const [format, setFormat] = useControlled(formatProp, defaultFormat, onFormatChange)
+  const [view, setView] = useControlled(viewProp, defaultView, onViewChange)
   // Positions dragged on the canvas; null until someone drags (the JSON's own layout applies).
   const [layout, setLayout] = React.useState<UmlLayout | null>(null)
-  const [copied, setCopied] = React.useState(false)
-  const id = React.useId()
 
   // Text the tools wrote is read at once (the panels follow the new ids); typing is read when
   // there's time.
@@ -480,7 +411,7 @@ function DiagramEditor({
   const deferred = React.useDeferredValue(text)
   const source = text === written ? text : deferred
   const result = React.useMemo(() => parseDiagram(source, format), [source, format])
-  const { diagram, kind, kindName, status, diagnostics, invalid } = readout(
+  const { diagram, kind, drawingLabel, status, diagnostics, invalid } = readout(
     result,
     layout,
     messages,
@@ -534,17 +465,10 @@ function DiagramEditor({
     changeFormat(pastedFormat(next, text, format) ?? format)
   }
 
-  const copy = () => {
-    void navigator.clipboard.writeText(exported()).then(() => {
-      setCopied(true)
-      window.setTimeout(() => {
-        setCopied(false)
-      }, 1600)
-    })
-  }
-
   const image = React.useRef<UmlDiagramHandle>(null)
   const { download, failed } = useDownload({ image, fileName, format, text: exported })
+  const { copied, copy } = useCopy(exported)
+  const notice = failed ? t.imageFailed : editing.notice
 
   return (
     <section
@@ -566,40 +490,42 @@ function DiagramEditor({
         onDownload={download}
         drawn={Boolean(diagram)}
         templates={templates}
-        status={[failed ? t.imageFailed : editing.notice, status].filter(Boolean).join(' · ')}
+        status={[notice, status].filter(Boolean).join(' · ')}
         kinds={messages.diagram.kinds}
         kind={kind}
+        readOnly={readOnly}
+        view={view}
+        onView={setView}
+        actions={actions}
       />
-      <div className="grid min-h-0 lg:h-(--diagram-editor-h) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <div className="flex min-h-0 min-w-0 flex-col border-b border-border lg:border-r lg:border-b-0">
-          <p id={`${id}-source`} className="sr-only">
-            {t.source}
-          </p>
-          <div className="h-[280px] min-h-0 lg:h-auto lg:flex-1">
-            <CodeEditor
-              value={text}
-              onChange={type}
-              language={format === 'json' ? 'json' : 'text'}
-              path={`${fileName}.${EXTENSIONS[format]}`}
-              diagnostics={diagnostics}
-              height="100%"
-              className="h-full"
-              autoFocus={autoFocus}
-              aria-labelledby={`${id}-source`}
-              {...(invalid ? { 'aria-invalid': true } : {})}
-            />
-          </div>
-          <ProblemList problems={result.problems} t={t} />
-        </div>
-        <Drawing
-          diagram={diagram}
-          label={kindName ? `${t.preview}: ${kindName}` : t.preview}
-          locked={result.problems.length > 0}
-          editing={editing}
-          directions={keptDirections(diagram, format)}
-          imageRef={image}
-          onLayoutChange={setLayout}
-        />
+      <div className={cn('grid min-h-0 lg:h-(--diagram-editor-h)', GRID[view])}>
+        {view !== 'drawing' && (
+          <TextPane
+            view={view}
+            label={t.source}
+            value={text}
+            onChange={type}
+            readOnly={readOnly}
+            format={format}
+            fileName={fileName}
+            invalid={invalid}
+            diagnostics={diagnostics}
+            autoFocus={autoFocus}
+            problems={<ProblemList problems={result.problems} t={t} />}
+          />
+        )}
+        {view !== 'text' && (
+          <Drawing
+            diagram={diagram}
+            label={drawingLabel}
+            locked={result.problems.length > 0}
+            readOnly={readOnly}
+            editing={editing}
+            directions={keptDirections(diagram, format)}
+            imageRef={image}
+            onLayoutChange={setLayout}
+          />
+        )}
       </div>
     </section>
   )
@@ -610,6 +536,7 @@ export {
   DIAGRAM_TEMPLATES,
   DiagramEditor,
   type DiagramEditorProps,
+  type DiagramEditorView,
   type DiagramFormat,
   parseDiagram,
   writeDiagram,

@@ -535,6 +535,9 @@ test.describe('rich text editor', () => {
     await page.keyboard.type('## Plan')
     await page.keyboard.press('Enter')
     await page.getByRole('button', { name: 'Bold' }).click()
+    // The toolbar hands focus back to the text; typing before that loses the stored mark.
+    await expect(editor).toBeFocused()
+    await expect(page.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true')
     await page.keyboard.type('bold')
     await expect(page.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true')
     await expect(editor.locator('h2')).toHaveText('Plan')

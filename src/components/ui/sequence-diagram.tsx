@@ -4,12 +4,18 @@
 // top and bottom, lifelines, messages with their arrows (and numbers with autonumber), activation
 // bars, notes, and loop / alt / opt / par / critical / break frames. Screen readers get the same
 // steps as an ordered list. With `onSelect`, a click picks a participant or a step (an editor
-// gives keyboard users another way to them). UmlDiagram uses it for `kind: 'sequence'`.
+// gives keyboard users another way to them). With `fit`, a still picture scaled to its box (a
+// thumbnail) with one accessible name. UmlDiagram uses it for `kind: 'sequence'`.
 import * as React from 'react'
 
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { SequenceArrow, SequenceDiagram, SequenceStep } from '@/lib/uml'
-import { layoutSequence, type SequenceColumn, type SequenceItem } from '@/lib/uml-sequence'
+import {
+  layoutSequence,
+  type SequenceColumn,
+  type SequenceItem,
+  type SequenceLayout,
+} from '@/lib/uml-sequence'
 import { cn } from '@/lib/utils'
 
 interface SequenceDiagramViewProps {
@@ -22,6 +28,11 @@ interface SequenceDiagramViewProps {
   selected?: readonly string[]
   /** A click on a participant or a step (null: on nothing); `additive` with Ctrl, ⌘ or Shift. */
   onSelect?: (id: string | null, additive: boolean) => void
+  /**
+   * A still picture scaled into its box (`maxHeight` is then its height): not focusable, one
+   * accessible name, no step list. Default: false.
+   */
+  fit?: boolean
   ref?: React.Ref<HTMLDivElement>
   className?: string
 }
@@ -419,28 +430,109 @@ function pickedAt(event: React.MouseEvent): string | null {
     : null
 }
 
+/** The drawing itself: lifelines, steps, and the participants at both ends. */
+function SequenceSvg({
+  layout,
+  selected,
+  onSelect,
+  fit,
+  t,
+}: {
+  layout: SequenceLayout
+  selected: readonly string[]
+  onSelect: SequenceDiagramViewProps['onSelect']
+  fit: boolean
+  t: SequenceText
+}) {
+  const markers = `seq${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const actor = layout.columns.some((c) => c.kind === 'actor')
+  const picked = new Set(selected)
+  const size = fit
+    ? {
+        viewBox: `0 0 ${String(layout.width)} ${String(layout.height)}`,
+        width: '100%',
+        height: '100%',
+      }
+    : { width: layout.width, height: layout.height, style: { minWidth: layout.width } }
+  return (
+    // A click is a shortcut to what the editor's step list picks with the keyboard.
+    <svg
+      aria-hidden
+      {...size}
+      className={cn('block', onSelect && '[&_[data-id]]:cursor-pointer')}
+      {...(onSelect
+        ? {
+            onClick: (e: React.MouseEvent) => {
+              onSelect(pickedAt(e), e.ctrlKey || e.metaKey || e.shiftKey)
+            },
+          }
+        : {})}
+    >
+      <Markers prefix={markers} />
+      {layout.columns.map((c) => (
+        <line
+          key={c.id}
+          x1={c.x}
+          x2={c.x}
+          y1={layout.top}
+          y2={layout.bottom}
+          strokeDasharray="4 4"
+          className="stroke-border-strong"
+        />
+      ))}
+      {layout.items.map((item, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- drawn in order; no ids
+        <Item key={i} item={item} markers={markers} t={t} selected={picked} />
+      ))}
+      {layout.columns.map((c) => (
+        <React.Fragment key={c.id}>
+          <Participant col={c} y={0} actor={actor} picked={picked.has(c.id)} />
+          <Participant col={c} y={layout.bottom} actor={actor} picked={picked.has(c.id)} />
+        </React.Fragment>
+      ))}
+    </svg>
+  )
+}
+
 function SequenceDiagramView({
   diagram,
   maxHeight,
   label,
   selected = [],
   onSelect,
+  fit = false,
   ref,
   className,
 }: SequenceDiagramViewProps) {
   const messages = useCoreloomI18n().messages.diagram
   const t: SequenceText = { ...messages.sequence, say: messages.labelled }
-  const markers = `seq${React.useId().replace(/[^a-zA-Z0-9]/g, '')}`
   const layout = layoutSequence(diagram)
   const names = new Map(layout.columns.map((c) => [c.id, c.label]))
-  const actor = layout.columns.some((c) => c.kind === 'actor')
-  const picked = new Set(selected)
+  const name = label ?? messages.kinds.sequence
+  const drawn = layout.columns.length > 0
+  const style = { maxHeight, '--diagram-edge': 'var(--color-muted-foreground)' }
+  if (fit)
+    return (
+      <div
+        ref={ref}
+        data-slot="sequence-diagram"
+        role="img"
+        aria-label={name}
+        className={cn(
+          'overflow-hidden rounded-lg border border-border bg-background p-2',
+          className,
+        )}
+        style={{ ...style, height: maxHeight }}
+      >
+        {drawn && <SequenceSvg layout={layout} selected={[]} onSelect={undefined} fit t={t} />}
+      </div>
+    )
   return (
     <div
       ref={ref}
       data-slot="sequence-diagram"
       role="region"
-      aria-label={label ?? messages.kinds.sequence}
+      aria-label={name}
       // A focusable region, so keyboard users can scroll a wide diagram.
       // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable content must be reachable
       tabIndex={0}
@@ -448,52 +540,13 @@ function SequenceDiagramView({
         'overflow-auto rounded-lg border border-border bg-background outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
         className,
       )}
-      style={
-        { maxHeight, '--diagram-edge': 'var(--color-muted-foreground)' } as React.CSSProperties
-      }
+      style={style}
     >
       {diagram.title && (
         <p className="px-4 pt-3 text-[13px] font-semibold text-foreground">{diagram.title}</p>
       )}
-      {layout.columns.length ? (
-        // A click is a shortcut to what the editor's step list picks with the keyboard.
-        <svg
-          aria-hidden
-          width={layout.width}
-          height={layout.height}
-          className={cn('block', onSelect && '[&_[data-id]]:cursor-pointer')}
-          style={{ minWidth: layout.width }}
-          {...(onSelect
-            ? {
-                onClick: (e: React.MouseEvent) => {
-                  onSelect(pickedAt(e), e.ctrlKey || e.metaKey || e.shiftKey)
-                },
-              }
-            : {})}
-        >
-          <Markers prefix={markers} />
-          {layout.columns.map((c) => (
-            <line
-              key={c.id}
-              x1={c.x}
-              x2={c.x}
-              y1={layout.top}
-              y2={layout.bottom}
-              strokeDasharray="4 4"
-              className="stroke-border-strong"
-            />
-          ))}
-          {layout.items.map((item, i) => (
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- drawn in order; no ids
-            <Item key={i} item={item} markers={markers} t={t} selected={picked} />
-          ))}
-          {layout.columns.map((c) => (
-            <React.Fragment key={c.id}>
-              <Participant col={c} y={0} actor={actor} picked={picked.has(c.id)} />
-              <Participant col={c} y={layout.bottom} actor={actor} picked={picked.has(c.id)} />
-            </React.Fragment>
-          ))}
-        </svg>
+      {drawn ? (
+        <SequenceSvg layout={layout} selected={selected} onSelect={onSelect} fit={false} t={t} />
       ) : (
         <p className="p-6 text-center text-[13px] text-muted-foreground">{messages.empty}</p>
       )}

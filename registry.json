@@ -4361,6 +4361,10 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/diagram-file-tools.tsx",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/diagram-tools.tsx",
           "type": "registry:component"
         },
