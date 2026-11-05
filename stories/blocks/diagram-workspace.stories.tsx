@@ -4,7 +4,11 @@ import * as React from 'react'
 
 import { AppShell } from '@/components/app-shell'
 import { DIAGRAM_TEMPLATES } from '@/components/diagram-editor'
-import { DiagramWorkspace, type DiagramWorkspaceItem } from '@/components/diagram-workspace'
+import {
+  DiagramWorkspace,
+  type DiagramWorkspaceImport,
+  type DiagramWorkspaceItem,
+} from '@/components/diagram-workspace'
 import { Button } from '@/components/ui/button'
 import type { SaveState } from '@/components/ui/save-status'
 import { useCoreloomI18n } from '@/lib/i18n'
@@ -63,6 +67,13 @@ function Demo({
     setActiveId(id)
     changed()
   }
+  // A file picked with "Import a file…": a new view, opened.
+  const importView = (view: DiagramWorkspaceImport) => {
+    const id = `file-${String(diagrams.length + 1)}`
+    setDiagrams([...diagrams, { id, title: view.title, value: view.value, format: view.format }])
+    setActiveId(id)
+    changed()
+  }
   return (
     <DiagramWorkspace
       title={title}
@@ -78,6 +89,7 @@ function Demo({
         changed()
       }}
       onAdd={add}
+      onImport={importView}
       onRename={(id, next) => {
         setDiagrams((all) => all.map((d) => (d.id === id ? { ...d, title: next } : d)))
         changed()
@@ -123,7 +135,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
+          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onImport({ title, value, result, format })` (a file picked in the Add menu, read in the browser; without it there is no import), `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
       },
     },
   },
@@ -131,7 +143,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Add, rename, reorder or delete views; edit one; it "saves" 800 ms later. */
+/** Add views (or import one from a file), rename, reorder or delete them; edit one; it "saves" 800 ms later. */
 export const Default: Story = {
   render: () => <Demo />,
 }

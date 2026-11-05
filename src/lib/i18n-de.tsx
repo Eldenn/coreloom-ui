@@ -2604,6 +2604,7 @@ export const de: Messages = {
     reorder: 'Neu ordnen',
     reorderDone: 'Fertig',
     order: 'Reihenfolge der Ansichten',
+    importFile: 'Datei importieren…',
   },
   diagramEditor: {
     label: 'Diagrammeditor',
@@ -2615,6 +2616,10 @@ export const de: Messages = {
     readOnly: 'Schreibgeschützt',
     format: 'Format',
     newDiagram: 'Neues Diagramm',
+    importFile: 'Importieren',
+    imported: (name: string) => `${name} importiert`,
+    importFailed: (name: string) => `${name} lässt sich nicht als Text lesen.`,
+    importTooLarge: (name: string) => `${name} ist zu groß: höchstens 1 MB.`,
     copy: 'Kopieren',
     copied: 'Kopiert',
     download: 'Herunterladen',

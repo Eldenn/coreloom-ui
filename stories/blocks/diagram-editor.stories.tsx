@@ -33,7 +33,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram. `view` shows the text and drawing side by side, or one of them; `actions` adds the app’s buttons to the bar; `readOnly` keeps the text as it is.',
+          'Software diagrams as text: Mermaid, PlantUML (class, sequence, state, ER, C4, use case, activity, deployment) or Coreloom’s UML JSON on the left, the drawing on the right, problems marked on their line. Drag elements to place them (the positions go in the JSON); switch formats, start from a template, import a file (read in the browser), copy or download. Wire `value`/`onChange` to store the text, and `onDiagramChange` for the parsed diagram. `view` shows the text and drawing side by side, or one of them; `actions` adds the app’s buttons to the bar; `readOnly` keeps the text as it is.',
       },
     },
   },
