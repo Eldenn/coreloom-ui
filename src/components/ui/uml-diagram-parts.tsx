@@ -26,7 +26,6 @@ import {
   PuzzleIcon,
   UserRoundIcon,
 } from 'lucide-react'
-import * as React from 'react'
 
 import { DiagramMarkers } from '@/components/ui/uml-diagram-markers'
 import {
