@@ -1,7 +1,7 @@
 'use client'
 
 // Coreloom UI — UmlDiagram. Draws a software diagram from Coreloom's UML model: class, state,
-// entity–relationship and C4 diagrams on a React Flow canvas (laid out automatically, zoomable,
+// entity–relationship, C4 and the other box-and-line diagrams on a React Flow canvas (laid out automatically, zoomable,
 // elements draggable when `editable`), sequence diagrams as an SVG. Feed it JSON you checked with
 // `parseUmlJson`, or Mermaid text read with `parseMermaid`. Nothing is rendered as HTML. When
 // editable it can also select an area, align the selected boxes, rename in place and take
@@ -385,7 +385,7 @@ function canvasNaming(preview: boolean, label: string, title: string | undefined
   return { flow: { 'aria-label': label }, title }
 }
 
-/** A class, state, ER, C4, use case, activity or deployment diagram on a React Flow canvas. */
+/** Any diagram but a sequence one (class to package) on a React Flow canvas. */
 function DiagramCanvas({
   diagram,
   editable = false,
@@ -601,8 +601,8 @@ function SequencePane({
 }
 
 /**
- * A class, state, ER, C4, use case, activity or deployment diagram on a canvas, or a sequence
- * diagram as an SVG.
+ * A class, state, ER, C4, use case, activity, deployment, component or package diagram on a
+ * canvas, or a sequence diagram as an SVG.
  */
 function UmlDiagram(props: UmlDiagramProps) {
   const { diagram, height = 480, className, preview = false, controls = true } = props

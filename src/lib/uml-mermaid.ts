@@ -7,7 +7,13 @@
 // keep them whole; `isMermaidSpec` says which kinds round-trip).
 // No `mermaid` dependency: the parsers are plain functions, and nothing is rendered as HTML.
 import type { UmlParseResult, UmlSpec } from '@/lib/uml'
-import type { ActivityDiagram, DeploymentDiagram, UseCaseDiagram } from '@/lib/uml-elements'
+import type {
+  ActivityDiagram,
+  ComponentDiagram,
+  DeploymentDiagram,
+  PackageDiagram,
+  UseCaseDiagram,
+} from '@/lib/uml-elements'
 import { c4Level, c4ToMermaid, parseC4Diagram } from '@/lib/uml-mermaid-c4'
 import { classToMermaid, parseClassDiagram } from '@/lib/uml-mermaid-class'
 import { erToMermaid, parseErDiagram } from '@/lib/uml-mermaid-er'
@@ -45,15 +51,25 @@ function parseMermaid(input: string): UmlParseResult {
   }
 }
 
-/** The diagrams Mermaid can write: every kind but use case and deployment. */
-type MermaidSpec = Exclude<UmlSpec, UseCaseDiagram | DeploymentDiagram>
+/** Kinds Mermaid has no diagram for. */
+type FlowchartOnly = UseCaseDiagram | DeploymentDiagram | ComponentDiagram | PackageDiagram
+
+/** The diagrams Mermaid can write: every kind but use case, deployment, component and package. */
+type MermaidSpec = Exclude<UmlSpec, FlowchartOnly>
+
+const FLOWCHART_ONLY: ReadonlySet<UmlSpec['kind']> = new Set([
+  'usecase',
+  'deployment',
+  'component',
+  'package',
+])
 
 function isMermaidSpec(diagram: UmlSpec): diagram is MermaidSpec {
-  return diagram.kind !== 'usecase' && diagram.kind !== 'deployment'
+  return !FLOWCHART_ONLY.has(diagram.kind)
 }
 
-/** A use case or deployment diagram as the flowchart that draws like it: frames, boxes, links. */
-function asFlowchart(d: UseCaseDiagram | DeploymentDiagram): ActivityDiagram {
+/** A diagram Mermaid lacks as the flowchart that draws like it: frames, boxes, links. */
+function asFlowchart(d: FlowchartOnly): ActivityDiagram {
   const holders = new Set(d.elements.flatMap((e) => (e.parent ? [e.parent] : [])))
   return {
     kind: 'activity',
@@ -61,7 +77,8 @@ function asFlowchart(d: UseCaseDiagram | DeploymentDiagram): ActivityDiagram {
     direction: d.direction ?? (d.kind === 'usecase' ? 'LR' : 'TB'),
     elements: d.elements.map((e) => ({
       id: e.id,
-      kind: e.kind === 'system' || holders.has(e.id) ? 'partition' : 'action',
+      kind:
+        e.kind === 'system' || e.kind === 'package' || holders.has(e.id) ? 'partition' : 'action',
       label: e.label ?? e.id,
       ...(e.parent ? { parent: e.parent } : {}),
     })),
@@ -74,8 +91,8 @@ function asFlowchart(d: UseCaseDiagram | DeploymentDiagram): ActivityDiagram {
 }
 
 /**
- * The diagram as Mermaid text. Use case and deployment diagrams, which Mermaid lacks, come out as
- * a flowchart (see `isMermaidSpec`).
+ * The diagram as Mermaid text. Use case, deployment, component and package diagrams, which Mermaid
+ * lacks, come out as a flowchart (see `isMermaidSpec`).
  */
 function toMermaid(diagram: UmlSpec): string {
   switch (diagram.kind) {
@@ -93,6 +110,8 @@ function toMermaid(diagram: UmlSpec): string {
       return activityToMermaid(diagram)
     case 'usecase':
     case 'deployment':
+    case 'component':
+    case 'package':
       return activityToMermaid(asFlowchart(diagram))
   }
 }

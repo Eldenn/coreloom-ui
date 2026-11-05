@@ -197,6 +197,46 @@ api -- db : JDBC
 worker ..> db
 @enduml`
 
+export const componentText = `@startuml
+component "Web shop" as shop
+component "Checkout" as checkout <<subsystem>> {
+  portin "orders" as orders
+  component "Cart" as cart
+  component "Pricing" as pricing
+}
+interface "Payments" as payments
+component "Payment service" as pay <<service>>
+component "Audit log" as audit
+shop -(0)- orders
+orders --> cart : <<delegate>>
+cart ..> pricing
+pay -- payments
+checkout -( payments
+checkout ..> audit
+@enduml`
+
+export const packageText = `@startuml
+package "Web" as web {
+  class "OrderController" as controller
+  class "CartController" as cartController
+}
+package "Domain" as domain <<model>> {
+  class "Order" as order
+  interface "OrderRepository" as repository
+  package "Pricing" as pricing {
+  }
+}
+package "Persistence" as persistence {
+  class "SqlOrderRepository" as sqlRepository
+}
+package "Shared kernel" as kernel {
+}
+web ..> domain : <<import>>
+persistence ..> domain : <<import>>
+domain ..> kernel : <<merge>>
+controller ..> order
+@enduml`
+
 /** Reads one of the texts above; they're known to parse. */
 export function fromMermaid(text: string): UmlSpec {
   const { diagram } = parseMermaid(text)

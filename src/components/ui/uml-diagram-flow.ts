@@ -51,6 +51,9 @@ const NODE_TYPE = {
   decision: 'decision',
   flowEnd: 'pseudo',
   node3d: 'box',
+  lollipop: 'lollipop',
+  port: 'port',
+  folder: 'folder',
 } as const
 
 function flowNodes(input: {

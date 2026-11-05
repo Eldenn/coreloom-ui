@@ -1,9 +1,9 @@
 'use client'
 
 // Coreloom UI — Diagram editor. Software diagrams as text: Mermaid (class, sequence, state, ER, C4
-// and flowcharts as activity diagrams), PlantUML (those, use case and deployment diagrams) or
-// Coreloom's UML JSON on the left, the drawing on the right, problems marked on their line. Pasting
-// text in the other syntax switches to it.
+// and flowcharts as activity diagrams), PlantUML (those, use case, deployment, component and
+// package diagrams) or Coreloom's UML JSON on the left, the drawing on the right, problems marked
+// on their line. Pasting text in the other syntax switches to it.
 // The drawing has its own tools: add elements (or drag them in), connect them, rename in place,
 // copy, paste, duplicate, delete, align and arrange, change what's selected in the properties
 // panel (a sequence diagram's steps too), undo. Each change is made on the model and the text is
@@ -150,6 +150,36 @@ node "Web server" as web {
 }
 database "PostgreSQL" as db
 web -- db : JDBC
+@enduml`,
+  },
+  {
+    kind: 'component',
+    text: `@startuml
+left to right direction
+component "Checkout" as checkout {
+  port "api" as api
+  component "Cart" as cart
+}
+interface "Payments" as payments
+component "Payment service" as pay
+api --> cart : <<delegate>>
+pay -- payments
+checkout -( payments
+@enduml`,
+  },
+  {
+    kind: 'package',
+    text: `@startuml
+package "Web" as web {
+  class "OrderController" as controller
+}
+package "Domain" as domain {
+  class "Order" as order
+}
+package "Persistence" as persistence {
+}
+web ..> domain : <<import>>
+persistence ..> domain
 @enduml`,
   },
 ]

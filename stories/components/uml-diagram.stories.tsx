@@ -11,10 +11,12 @@ import {
   c4ContainerText,
   c4ContextText,
   classText,
+  componentText,
   deploymentText,
   erText,
   fromMermaid,
   fromPlantUml,
+  packageText,
   sequenceText,
   stateText,
   usecaseText,
@@ -29,7 +31,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship, C4, use case, activity and deployment diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or `parsePlantUml`, or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`. The controls show it full screen (Escape leaves); `preview` draws a still thumbnail for galleries.',
+          'Software diagrams from Coreloom’s UML model: class, state, entity–relationship, C4, use case, activity, deployment, component and package diagrams on a canvas laid out automatically (zoom, fit, focus each element and relation from the keyboard), sequence diagrams as an SVG with the steps as a list for screen readers. Pass a `diagram` read with `parseMermaid` or `parsePlantUml`, or checked with `parseUmlJson`; with `editable`, elements can be dragged and `onLayoutChange` gets their positions to store in `layout`. `selection` / `onSelectionChange`, `onConnect` (drag from an element’s dot to another) and `onDelete` (Delete key) let an app edit the diagram with the functions in `@/lib/uml-edit`. The controls show it full screen (Escape leaves); `preview` draws a still thumbnail for galleries.',
       },
     },
   },
@@ -71,6 +73,12 @@ export const Activity: Story = { args: { diagram: fromMermaid(activityText), hei
 
 /** Deployment (PlantUML): a cloud, nodes and an execution environment holding an artifact and a component, a device and a database. */
 export const Deployment: Story = { args: { diagram: fromPlantUml(deploymentText), height: 560 } }
+
+/** Component (PlantUML): a subsystem holding parts, with a port that delegates to one; an interface provided as a lollipop and required through a socket; an assembly connector; dependencies. */
+export const Component: Story = { args: { diagram: fromPlantUml(componentText), height: 560 } }
+
+/** Package (PlantUML): packages as folders holding classes, an interface and a nested package; «import», «merge» and a plain dependency. */
+export const Package: Story = { args: { diagram: fromPlantUml(packageText), height: 640 } }
 
 /** `direction LR`: the same classes laid out left to right. */
 export const LeftToRight: Story = {
@@ -213,5 +221,10 @@ export const FrenchPreview: Story = {
 
 export const FrenchUseCase: Story = {
   args: { diagram: fromPlantUml(usecaseText), height: 560 },
+  globals: { locale: 'fr' },
+}
+
+export const FrenchComponent: Story = {
+  args: { diagram: fromPlantUml(componentText), height: 560 },
   globals: { locale: 'fr' },
 }

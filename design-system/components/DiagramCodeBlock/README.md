@@ -1,6 +1,6 @@
 # Diagram Code Block
 
-Draws the ```mermaid and ```plantuml blocks of a Markdown answer as diagrams (class, sequence, state, ER, C4, use case, activity, deployment) with UML Diagram, and a Diagram / Source switch. While the answer streams, and when the text can't be read, the plain code block shows.
+Draws the ```mermaid and ```plantuml blocks of a Markdown answer as diagrams (class, sequence, state, ER, C4, use case, activity, deployment, component, package) with UML Diagram, and a Diagram / Source switch. While the answer streams, and when the text can't be read, the plain code block shows.
 
 **Register it once around a chat:** `<MarkdownCodeBlocksContext value={diagramCodeBlocks}>`, or pass `codeBlocks={diagramCodeBlocks}` to one `Markdown`. `DiagramCodeBlock` takes Markdown's code block props (`code`, `language`, `streaming`, `children`) and `height` (340).
 

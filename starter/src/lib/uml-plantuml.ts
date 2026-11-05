@@ -1,6 +1,6 @@
 // Coreloom UI — PlantUML text for UML diagrams. `parsePlantUml` reads `@startuml` text: it tells
 // which diagram it is from the lines (class, sequence, state, entity–relationship, C4 with the
-// C4-PlantUML macros, use case, activity or deployment) and reads it into Coreloom's model,
+// C4-PlantUML macros, use case, activity, deployment, component or package) and reads it into Coreloom's model,
 // tolerantly, with problems by line. Class, state, sequence and ER lines are close to Mermaid's,
 // so they're turned into Mermaid lines (same line numbers) and read by the Mermaid parsers.
 // `toPlantUml` writes any diagram back. No PlantUML dependency, nothing rendered as HTML.
@@ -12,6 +12,7 @@ import { parseSequenceDiagram } from '@/lib/uml-mermaid-sequence'
 import { parseStateDiagram } from '@/lib/uml-mermaid-state'
 import { ACTIVITY_LINE, parsePlantActivity } from '@/lib/uml-plantuml-activity'
 import { parsePlantDeployment, parsePlantUseCase } from '@/lib/uml-plantuml-elements'
+import { parsePlantComponent, parsePlantPackage } from '@/lib/uml-plantuml-structure'
 import { toPlantUml } from '@/lib/uml-plantuml-write'
 import { type Groups, match, problem, type SourceLine, unquote } from '@/lib/uml-text'
 
@@ -37,7 +38,16 @@ function plantLines(input: string): SourceLine[] {
 }
 
 type PlantKind =
-  'class' | 'state' | 'sequence' | 'er' | 'c4' | 'usecase' | 'activity' | 'deployment'
+  | 'class'
+  | 'state'
+  | 'sequence'
+  | 'er'
+  | 'c4'
+  | 'usecase'
+  | 'activity'
+  | 'deployment'
+  | 'component'
+  | 'package'
 
 /** Lines that only one kind of diagram has, to tell which one the text is. */
 const SIGNS: Record<PlantKind, RegExp> = {
@@ -47,6 +57,9 @@ const SIGNS: Record<PlantKind, RegExp> = {
   state: /^state\s|\[\*\]/,
   activity: ACTIVITY_LINE,
   usecase: /^(usecase\s|\(.+\)|:.+:)|\s\(.+\)(\s|$)|^rectangle\s.*\{$/,
+  component:
+    /^(component|interface|port|portin|portout)\s|^\[.+\]|^\(\)|-\(0?\)?-*\s|-0\)-|\s\)-+\s/,
+  package: /^package\s|<<\s*(import|merge)\s*>>/,
   deployment:
     /^(node|artifact|cloud|component|database|frame|folder|storage|file|device|queue|stack)\s|^\[.+\]/,
   sequence:
@@ -56,12 +69,29 @@ const ORDER: readonly PlantKind[] = [
   'c4',
   'er',
   'class',
+  'package',
   'state',
   'activity',
   'usecase',
+  'component',
   'deployment',
   'sequence',
 ]
+
+/** Lines only a class diagram has: a class's members in braces, inheritance and its kin. */
+const CLASS_ONLY =
+  /^((abstract\s+)?class|interface|enum)\s.*\{$|<\|--|--\|>|\*--|--\*|o--|--o|\.\.\|>/
+const PACKAGE_ONLY = /<<\s*(import|merge)\s*>>/
+
+/**
+ * Packages are in class diagrams too: the text is a package diagram when it imports or merges
+ * one, or has packages and nothing that only a class diagram has.
+ */
+function classOrPackage(lines: readonly SourceLine[]): 'class' | 'package' {
+  if (lines.some((l) => PACKAGE_ONLY.test(l.text))) return 'package'
+  const packaged = lines.some((l) => /^package\s/i.test(l.text))
+  return packaged && !lines.some((l) => CLASS_ONLY.test(l.text)) ? 'package' : 'class'
+}
 
 /** The kind with the most lines that are its own; ties go to the first in `ORDER`. */
 function detect(lines: readonly SourceLine[]): PlantKind | null {
@@ -74,7 +104,7 @@ function detect(lines: readonly SourceLine[]): PlantKind | null {
       most = n
     }
   }
-  return best
+  return best === 'class' || best === 'package' ? classOrPackage(lines) : best
 }
 
 const SKIP = /^(skinparam|hide|show|scale|caption|legend|endlegend|footer|header|!|newpage)/i
@@ -297,6 +327,10 @@ function readKind(kind: PlantKind, lines: readonly SourceLine[]): UmlParseResult
       return parsePlantActivity(lines)
     case 'deployment':
       return parsePlantDeployment(lines)
+    case 'component':
+      return parsePlantComponent(lines)
+    case 'package':
+      return parsePlantPackage(lines)
   }
 }
 
