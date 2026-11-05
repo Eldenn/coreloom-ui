@@ -2513,6 +2513,19 @@ export const de: Messages = {
       failed: 'Dieses Diagramm konnte nicht gezeichnet werden, hier ist sein Text.',
     },
   },
+  saveStatus: {
+    saved: 'Gespeichert',
+    saving: 'Wird gespeichert…',
+    unsaved: 'Ungespeicherte Änderungen',
+    error: 'Speichern fehlgeschlagen',
+    retry: 'Erneut versuchen',
+  },
+  diagramCard: {
+    visibility: { private: 'Privat', public: 'Öffentlich', protected: 'Geschützt' },
+    diagrams: (n: number) => (n === 1 ? '1 Diagramm' : `${n} Diagramme`),
+    updated: 'Geändert',
+    actions: (title: string) => `Aktionen für „${title}“`,
+  },
   diagramEditor: {
     label: 'Diagrammeditor',
     source: 'Quelltext',

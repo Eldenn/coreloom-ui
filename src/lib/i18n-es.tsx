@@ -2492,6 +2492,19 @@ export const es: Messages = {
       failed: 'No se ha podido dibujar este diagrama; aquí está su texto.',
     },
   },
+  saveStatus: {
+    saved: 'Guardado',
+    saving: 'Guardando…',
+    unsaved: 'Cambios sin guardar',
+    error: 'No se pudo guardar',
+    retry: 'Reintentar',
+  },
+  diagramCard: {
+    visibility: { private: 'Privado', public: 'Público', protected: 'Protegido' },
+    diagrams: (n: number) => (n === 1 ? '1 diagrama' : `${n} diagramas`),
+    updated: 'Modificado',
+    actions: (title: string) => `Acciones de «${title}»`,
+  },
   diagramEditor: {
     label: 'Editor de diagramas',
     source: 'Código',
