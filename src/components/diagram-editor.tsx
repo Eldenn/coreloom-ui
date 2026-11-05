@@ -276,6 +276,11 @@ function keptDirections(diagram: UmlSpec | null, format: DiagramFormat) {
   return diagram?.kind === 'c4' ? [] : DIRECTIONS
 }
 
+/** A Mermaid flowchart has no notes: an activity diagram's notes live in PlantUML and JSON only. */
+function keepsNotes(diagram: UmlSpec | null, format: DiagramFormat) {
+  return !(format === 'mermaid' && diagram?.kind === 'activity')
+}
+
 /** Hands a URL to the browser as a file download. */
 function save(url: string, name: string) {
   const a = document.createElement('a')
@@ -567,6 +572,7 @@ function DiagramEditor({
             readOnly={readOnly}
             editing={editing}
             directions={keptDirections(diagram, format)}
+            notes={keepsNotes(diagram, format)}
             imageRef={image}
             onLayoutChange={setLayout}
           />
