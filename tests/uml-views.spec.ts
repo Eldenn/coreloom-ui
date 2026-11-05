@@ -37,6 +37,33 @@ test.describe('UML diagram preview and full screen (Components/Diagrams/UML diag
     await expect(page.getByRole('button', { name: 'Full screen' })).toBeFocused()
   })
 
+  test('leaving full screen shows the whole diagram again', async ({ page }) => {
+    await open(page, 'components-diagrams-uml-diagram--class')
+    const frame = page.locator('[data-slot="uml-diagram"]')
+    const nodes = frame.locator('.react-flow__node')
+    // Every element's box lies inside the diagram's own box.
+    const allInside = () =>
+      frame.evaluate((el) => {
+        const box = el.getBoundingClientRect()
+        return [...el.querySelectorAll('.react-flow__node')].every((node) => {
+          const r = node.getBoundingClientRect()
+          return (
+            r.left >= box.left - 1 &&
+            r.right <= box.right + 1 &&
+            r.top >= box.top - 1 &&
+            r.bottom <= box.bottom + 1
+          )
+        })
+      })
+    await expect(nodes.first()).toBeVisible()
+    await expect.poll(allInside).toBe(true)
+    await page.getByRole('button', { name: 'Full screen' }).click()
+    await expect.poll(() => page.evaluate(() => document.fullscreenElement)).not.toBeNull()
+    await page.getByRole('button', { name: 'Exit full screen' }).click()
+    await expect.poll(() => page.evaluate(() => document.fullscreenElement)).toBeNull()
+    await expect.poll(allInside).toBe(true)
+  })
+
   test('a sequence diagram has its own full screen button', async ({ page }) => {
     await open(page, 'components-diagrams-uml-diagram--sequence')
     await page.getByRole('button', { name: 'Full screen' }).click()
