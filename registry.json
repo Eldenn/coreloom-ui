@@ -4394,6 +4394,10 @@
           "type": "registry:component"
         },
         {
+          "path": "src/components/diagram-import.ts",
+          "type": "registry:component"
+        },
+        {
           "path": "src/components/diagram-tools.tsx",
           "type": "registry:component"
         },

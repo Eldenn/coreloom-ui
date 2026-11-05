@@ -2583,6 +2583,7 @@ export const es: Messages = {
     reorder: 'Reordenar',
     reorderDone: 'Listo',
     order: 'Orden de las vistas',
+    importFile: 'Importar un archivo…',
   },
   diagramEditor: {
     label: 'Editor de diagramas',
@@ -2594,6 +2595,10 @@ export const es: Messages = {
     readOnly: 'Solo lectura',
     format: 'Formato',
     newDiagram: 'Nuevo diagrama',
+    importFile: 'Importar',
+    imported: (name: string) => `${name} importado`,
+    importFailed: (name: string) => `${name} no se puede leer como texto.`,
+    importTooLarge: (name: string) => `${name} es demasiado grande: 1 MB como máximo.`,
     copy: 'Copiar',
     copied: 'Copiado',
     download: 'Descargar',
