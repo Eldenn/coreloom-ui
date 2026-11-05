@@ -219,6 +219,8 @@ const COMPONENTS = [
   'DiagramCard',
   'ShareDialog',
   'AccessCodeGate',
+  'DiagramViewer',
+  'DiagramWorkspace',
   'FormBuilder',
   'Ide',
   'Gantt',

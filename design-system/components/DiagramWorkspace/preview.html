@@ -1,0 +1,46 @@
+<!-- @dsCard group="Blocks" height=760 subtitle="DiagramWorkspace · views, editor, save state" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DiagramWorkspace || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DiagramWorkspace, DIAGRAM_TEMPLATES } = UI;
+      const template = (kind) => (DIAGRAM_TEMPLATES.find((t) => t.kind === kind) || { text: '' }).text;
+      function Demo() {
+        const [title, setTitle] = React.useState('Checkout architecture');
+        const [diagrams, setDiagrams] = React.useState([
+          { id: 'a', title: 'Orders', value: template('class'), format: 'mermaid' },
+          { id: 'b', title: 'Sign in', value: template('sequence'), format: 'mermaid' },
+        ]);
+        const [activeId, setActiveId] = React.useState('a');
+        const [saveState, setSaveState] = React.useState('saved');
+        const changed = () => { setSaveState('saving'); setTimeout(() => setSaveState('saved'), 800); };
+        return h(DiagramWorkspace, {
+          title, onTitleChange: (t) => { setTitle(t); changed(); },
+          diagrams, activeId, onActiveChange: setActiveId,
+          onDiagramChange: (id, value, _r, format) => { setDiagrams((all) => all.map((d) => d.id === id ? { ...d, value, format } : d)); changed(); },
+          onAdd: (kind) => { const id = String(Date.now()); const text = template(kind); setDiagrams([...diagrams, { id, title: 'New view', value: text, format: text.startsWith('@startuml') ? 'plantuml' : 'mermaid' }]); setActiveId(id); changed(); },
+          onRename: (id, t) => { setDiagrams((all) => all.map((d) => d.id === id ? { ...d, title: t } : d)); changed(); },
+          onReorder: (ids) => { setDiagrams((all) => ids.map((id) => all.find((d) => d.id === id))); changed(); },
+          onDelete: (id) => { const rest = diagrams.filter((d) => d.id !== id); setDiagrams(rest); if (id === activeId) setActiveId(rest[0].id); changed(); },
+          saveState, savedAt: new Date(),
+        });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>
