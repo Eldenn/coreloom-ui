@@ -1,0 +1,41 @@
+<!-- @dsCard group="Blocks" height=620 subtitle="ShareDialog · private, public, protected, link, code" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ShareDialog || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ShareDialog, Button } = UI;
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      function Demo() {
+        const [open, setOpen] = React.useState(true);
+        const [visibility, setVisibility] = React.useState('protected');
+        const [n, setN] = React.useState(0);
+        return h(React.Fragment, null,
+          h(Button, { variant: 'secondary', onClick: () => setOpen(true) }, 'Share'),
+          h(ShareDialog, {
+            open, onOpenChange: setOpen, title: 'Checkout', visibility,
+            onVisibilityChange: async (v) => { await wait(600); setVisibility(v); },
+            link: 'https://uml.coreloom.dev/s/' + ['k7Qp2Rw9', 'Vn4xT8bM'][n % 2],
+            code: ['H7KM-3QPX', 'R2WN-8DTF'][n % 2],
+            onRegenerateLink: async () => { await wait(600); setN(n + 1); },
+            onRegenerateCode: async () => { await wait(600); setN(n + 1); },
+          }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

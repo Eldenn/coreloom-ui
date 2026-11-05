@@ -1,6 +1,8 @@
 // Entry for the design-system artifact: every component part on one global.
+export * from '@/components/access-code-gate'
 export * from '@/components/diagram-card'
 export * from '@/components/diagram-editor'
+export * from '@/components/share-dialog'
 export * from '@/components/ui/accordion'
 export * from '@/components/ui/agent-avatar'
 export * from '@/components/ui/agent-graph'
