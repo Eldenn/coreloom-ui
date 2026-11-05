@@ -4501,6 +4501,60 @@
       ]
     },
     {
+      "name": "diagram-viewer",
+      "type": "registry:block",
+      "title": "Diagram viewer",
+      "description": "A document of several UML diagrams to read: title, description and date, the views in tabs (a side list past six, a menu on a phone), the diagram with zoom and full screen, SVG and PNG downloads, and arrows or Page Up / Page Down to change view. No editing tools.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/uml",
+        "@coreloom/uml-diagram",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/relative-time",
+        "@coreloom/select",
+        "@coreloom/tabs"
+      ],
+      "files": [
+        {
+          "path": "src/components/diagram-viewer.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "diagram-workspace",
+      "type": "registry:block",
+      "title": "Diagram workspace",
+      "description": "The editor of a document with several diagrams: its name in place (EditableText), the save state (SaveStatus), the list of views (add a chosen kind, rename, reorder with SortableList, delete after a confirmation, never the last one), and a controlled DiagramEditor for the open view. On a phone the list moves into a Sheet.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/uml",
+        "@coreloom/diagram-editor",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/editable-text",
+        "@coreloom/popconfirm",
+        "@coreloom/save-status",
+        "@coreloom/sheet",
+        "@coreloom/sortable-list"
+      ],
+      "files": [
+        {
+          "path": "src/components/diagram-workspace.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "form-builder",
       "type": "registry:block",
       "title": "Form builder",

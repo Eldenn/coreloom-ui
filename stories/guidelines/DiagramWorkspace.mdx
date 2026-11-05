@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/diagram-workspace.stories'
+import guide from './DiagramWorkspace.md?raw'
+
+<Meta title="Guidelines/Diagrams/Diagram workspace" />
+
+<Markdown>{guide}</Markdown>
+
+## A document
+
+<Canvas of={Stories.Default} />

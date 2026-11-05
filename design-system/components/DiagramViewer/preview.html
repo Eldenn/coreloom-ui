@@ -1,0 +1,32 @@
+<!-- @dsCard group="Blocks" height=720 subtitle="DiagramViewer · views in tabs, zoom, full screen, downloads" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.DiagramViewer || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { DiagramViewer, parseMermaid } = UI;
+      const read = (text) => parseMermaid(text).diagram;
+      const diagrams = [
+        { id: 'classes', title: 'Orders', diagram: read("classDiagram\n  class Order\n  class LineItem\n  class Payment\n  Order *-- LineItem\n  Order o-- Payment") },
+        { id: 'checkout', title: 'Checkout', diagram: read("sequenceDiagram\n  actor User\n  participant App\n  User->>App: Pay\n  App-->>User: Receipt") },
+        { id: 'states', title: 'Order states', diagram: read("stateDiagram-v2\n  [*] --> Draft\n  Draft --> Paid : pay\n  Paid --> [*]") },
+      ];
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(DiagramViewer, { title: 'Checkout architecture', description: 'From the cart to the warehouse.', updatedAt: new Date(Date.now() - 2 * 3600000), diagrams }));
+    }
+    render();
+  </script>
+</body>
+</html>
