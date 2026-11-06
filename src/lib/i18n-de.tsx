@@ -2605,6 +2605,7 @@ export const de: Messages = {
     reorderDone: 'Fertig',
     order: 'Reihenfolge der Ansichten',
     importFile: 'Datei importieren…',
+    dropFiles: 'Lass Diagrammdateien hier los, um sie als Ansichten hinzuzufügen',
   },
   diagramEditor: {
     label: 'Diagrammeditor',

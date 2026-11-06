@@ -2546,6 +2546,7 @@ const en = {
     reorderDone: 'Done',
     order: 'Order of the views',
     importFile: 'Import a file…',
+    dropFiles: 'Drop diagram files to add them as views',
   },
   diagramEditor: {
     label: 'Diagram editor',
@@ -5389,6 +5390,7 @@ const fr: Messages = {
     reorderDone: 'Terminé',
     order: 'Ordre des vues',
     importFile: 'Importer un fichier…',
+    dropFiles: 'Déposez des fichiers de diagramme pour les ajouter comme vues',
   },
   diagramEditor: {
     label: 'Éditeur de diagramme',

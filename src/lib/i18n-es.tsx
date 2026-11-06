@@ -2584,6 +2584,7 @@ export const es: Messages = {
     reorderDone: 'Listo',
     order: 'Orden de las vistas',
     importFile: 'Importar un archivo…',
+    dropFiles: 'Suelta archivos de diagrama para añadirlos como vistas',
   },
   diagramEditor: {
     label: 'Editor de diagramas',
