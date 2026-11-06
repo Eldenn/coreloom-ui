@@ -67,10 +67,14 @@ function Demo({
     setActiveId(id)
     changed()
   }
-  // A file picked with "Import a file…": a new view, opened.
+  // A file picked with "Import a file…" or dropped on the workspace: a new view, opened. Several
+  // dropped files arrive one call each, in the same event: the updates build on each other.
+  const imported = React.useRef(0)
   const importView = (view: DiagramWorkspaceImport) => {
-    const id = `file-${String(diagrams.length + 1)}`
-    setDiagrams([...diagrams, { id, title: view.title, value: view.value, format: view.format }])
+    imported.current += 1
+    const id = `file-${String(imported.current)}`
+    const { title: name, value, format } = view
+    setDiagrams((all) => [...all, { id, title: name, value, format }])
     setActiveId(id)
     changed()
   }
@@ -135,7 +139,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onImport({ title, value, result, format })` (a file picked in the Add menu, read in the browser; without it there is no import), `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
+          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onImport({ title, value, result, format })` (a file picked in the Add menu or dropped on the workspace, read in the browser; without it there is no import), `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
       },
     },
   },
@@ -143,7 +147,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Add views (or import one from a file), rename, reorder or delete them; edit one; it "saves" 800 ms later. */
+/** Add views (or import files: pick one in the Add menu, or drop them on the workspace), rename, reorder or delete them; edit one; it "saves" 800 ms later. */
 export const Default: Story = {
   render: () => <Demo />,
 }
