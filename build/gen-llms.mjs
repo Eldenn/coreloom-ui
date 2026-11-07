@@ -8,7 +8,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const SITE = 'https://eldenn.github.io/coreloom-ui'
+// SITE_URL: the copy being built (build/build-site.sh sets it to …/next for main's).
+const SITE = process.env.SITE_URL ?? 'https://eldenn.github.io/coreloom-ui'
 const root = path.resolve(import.meta.dirname, '..')
 const out = path.resolve(process.argv[2] ?? path.join(root, 'public'))
 const guidesDir = path.join(root, 'stories/guidelines')

@@ -85,16 +85,25 @@ What an item costs an app (its JavaScript and npm packages, gzipped, React exclu
 built on large libraries (Recharts, Tiptap, CodeMirror, React Flow): add `charts`, `editors` or
 `node-editor` when you need them.
 
-### Pin a release
+### Releases, pinning and `next`
 
-The namespace above follows `main`. To stay on one version, point it at a release:
+The namespace above serves the **latest release**: it only changes when a new version is published, and
+each one says what to do under **Upgrading** in the [changelog](./CHANGELOG.md). Storybook, the guides
+and `llms.txt` at the same address match it.
+
+To try what the next release holds, `main` is published under `/next/` (registry, Storybook and starter):
+
+```bash
+pnpm dlx shadcn@latest add https://eldenn.github.io/coreloom-ui/next/r/dialog.json
+```
+
+To stay on one version, point the namespace at its GitHub release:
 
 ```json
 "registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/vX.Y.Z/{name}.json" }
 ```
 
-Each release in the [changelog](./CHANGELOG.md) says what to do under **Upgrading**. Review with
-`shadcn add … --diff` before `--overwrite`: installed files are yours.
+Review with `shadcn add … --diff` before `--overwrite`: installed files are yours.
 
 ### With AI assistants
 
@@ -230,8 +239,9 @@ starter:
 - **Interactions, guidelines and starter:** keyboard and pointer behaviour, every Guidelines page, and the
   starter end to end.
 
-`main` deploys to GitHub Pages only when everything passes: Storybook, the registry (`/r/`), the design
-tokens in the DTCG format (`/tokens/`) and the starter demo (`/starter/`).
+`main` deploys to GitHub Pages only when everything passes. `build/build-site.sh` builds Storybook, the
+registry (`/r/`), the design tokens in the DTCG format (`/tokens/`), `llms.txt` and the starter demo
+(`/starter/`) twice: from the latest release at the root, and from `main` under `/next/`.
 
 ### Release
 

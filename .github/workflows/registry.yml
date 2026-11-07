@@ -1,7 +1,8 @@
-# Tests every push and pull request, then builds the shadcn registry (public/r/*.json), Storybook
-# (public/storybook), the DTCG tokens (public/tokens) and the starter demo (public/starter) and publishes
-# them to GitHub Pages from main: https://eldenn.github.io/coreloom-ui/ (Storybook), …/r/ (registry),
-# …/tokens/ (design tokens), …/starter/ (demo app).
+# Tests every push and pull request, then publishes to GitHub Pages from main:
+#   https://eldenn.github.io/coreloom-ui/        the latest release: Storybook, the registry (r/),
+#                                                the design tokens (tokens/), llms.txt, the starter demo
+#   https://eldenn.github.io/coreloom-ui/next/   the same, built from main (what the next release holds)
+# build/build-site.sh builds one copy. The root only changes when a release changes package.json's version.
 # Consumers: pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
 name: Registry & Storybook
 
@@ -86,29 +87,36 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # the history, to find the commit that set the released version
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm registry:build
-      # r/sizes.json: what each item costs an app.
-      - run: pnpm registry:size
-      - run: pnpm storybook:build
-      # The tokens in the DTCG format, at /coreloom-ui/tokens/ (Figma, Style Dictionary, native apps).
-      - run: pnpm tokens:dtcg
-      # What AI assistants read (https://llmstxt.org): /coreloom-ui/llms.txt, llms-full.txt, guides/.
-      - run: pnpm llms
-      # The starter as a live demo at /coreloom-ui/starter/. GitHub Pages serves 404.html for any
-      # unknown path, so deep links (/coreloom-ui/starter/projects) still boot the app.
-      - run: pnpm --dir starter install --frozen-lockfile
-      - run: pnpm --dir starter exec vite build --base /coreloom-ui/starter/ --outDir ../public/starter --emptyOutDir
-      - run: cp public/starter/index.html public/404.html
+      # The site's root serves the latest release, so the @coreloom namespace, Storybook and the
+      # guides never change without a release; main is served under /next/ to try what's coming.
+      # The release is the last commit that changed package.json's version (the Version Packages
+      # commit, as in release.yml): it is right even while the release workflow is still tagging it.
+      - name: Find the released commit
+        id: release
+        run: |
+          ref="$(git log -1 --format=%H -G'"version":' -- package.json)"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Root: v$(node -p "require('./package.json').version") at $ref; /next/: $GITHUB_SHA"
+      - name: Build main under /next/
+        run: build/build-site.sh . site/next /coreloom-ui/next/
+      - name: Build the release at the root
+        run: |
+          git worktree add ../release "${{ steps.release.outputs.ref }}"
+          build/build-site.sh ../release site /coreloom-ui/
+      # GitHub Pages serves 404.html for any unknown path, so deep links into the starter demo
+      # (/coreloom-ui/starter/projects) still boot the app.
+      - run: cp site/starter/index.html site/404.html
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: public
+          path: site
 
   deploy:
     needs: build

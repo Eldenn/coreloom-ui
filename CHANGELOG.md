@@ -8,9 +8,10 @@ Installed components are your code: `shadcn add` won't touch them unless you pas
 `--overwrite`. Read the release before overwriting, and diff with `git` afterwards.
 
 The `@coreloom` namespace (`https://eldenn.github.io/coreloom-ui/r/{name}.json`) serves the
-latest `main`. Every release is also tagged `vX.Y.Z` and published on GitHub Releases with its
-registry attached, so a project can pin one by pointing the namespace there in
-`components.json` (dependencies between items resolve through the same namespace):
+latest release, and `main` is published under `/next/`. Every release is also tagged `vX.Y.Z`
+and published on GitHub Releases with its registry attached, so a project can pin one by
+pointing the namespace there in `components.json` (dependencies between items resolve through
+the same namespace):
 
 ```json
 "registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.10.0/{name}.json" }
