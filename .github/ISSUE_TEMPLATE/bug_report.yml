@@ -1,0 +1,46 @@
+name: Bug report
+description: Something in a component, block, the theme or the starter doesn't work as it should.
+labels: [bug]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: Item
+      description: The registry item, as you installed it.
+      placeholder: '@coreloom/select'
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release you installed from (vX.Y.Z), or "next" if you install from /next/.
+      placeholder: v0.10.0
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: A link (StackBlitz, a story, a repository) or the steps. The smaller, the faster it gets fixed.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Framework (Vite, Next.js…), React and Tailwind versions, browser and OS.
+      placeholder: Next.js 16, React 19.3, Tailwind 4.2, Firefox 150 on macOS
+  - type: checkboxes
+    id: modified
+    attributes:
+      label: Installed files
+      options:
+        - label: I haven't changed the installed files, or the bug also happens with a fresh `shadcn add --overwrite`.

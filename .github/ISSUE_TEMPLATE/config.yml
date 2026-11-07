@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/Eldenn/coreloom-ui/discussions
+    about: Ask how to use an item, or share an idea before it becomes a request.
+  - name: Security vulnerability
+    url: https://github.com/Eldenn/coreloom-ui/security/advisories/new
+    about: Report it privately, never in a public issue.
+  - name: Documentation
+    url: https://eldenn.github.io/coreloom-ui/
+    about: Storybook, with a guide for every component and block.
