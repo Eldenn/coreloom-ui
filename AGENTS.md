@@ -324,12 +324,13 @@ a `<Canvas of={Stories.X} />`. `tests/docs.spec.ts` checks every page renders.
   hyphens, no tool or agent name: `feat/uml-diagrams`, `fix/gauge-center-text`,
   `chore/starter-sync`. `main` and `changeset-release/main` (opened by the release workflow) are
   the only exceptions.
-- **The repository owner is the only author.** Commits are authored and committed under the owner's
-  name and email. No `Co-Authored-By` naming an AI assistant, no session or tool trailers (such as
-  `Claude-Session:`), no "Generated with …" footer. Commit messages, pull request titles and bodies,
-  changesets and code comments don't mention that an AI assistant or coding agent wrote or helped
-  with the change. (Product content is not concerned: model names in demo data, or docs on using the
-  registry from an assistant, stay.)
+- **Agents commit as the person who runs them.** A coding agent's commits are authored and committed
+  under the name and email of the person it works for, never its own. No `Co-Authored-By` naming an
+  AI assistant, no session or tool trailers (such as `Claude-Session:`), no "Generated with …"
+  footer. Commit messages, pull request titles and bodies, changesets and code comments don't
+  mention that an AI assistant or coding agent wrote or helped with the change. (Product content is
+  not concerned: model names in demo data, or docs on using the registry from an assistant, stay.)
+  Outside contributors author their own commits: see `CONTRIBUTING.md`.
 - Don't bump `version`, edit `CHANGELOG.md` or run `version-packages` — releases go through the
   Version Packages PR that Changesets opens (see README → Release).
 

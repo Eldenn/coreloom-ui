@@ -1,0 +1,27 @@
+name: Component or feature request
+description: A new component, block, prop or behaviour.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you need
+      description: The problem you are solving and where it shows up in your app, rather than the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: The API you have in mind (props, states), or a link to a design or another library that does it well.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried
+      description: Existing Coreloom items or workarounds you considered, and why they don't fit.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to open the pull request myself.

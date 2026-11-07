@@ -267,7 +267,15 @@ pushed with the workflow's own token don't run CI; to have CI on the Version Pac
 GitHub App's) with Contents and Pull requests read and write on this repository. The workflow uses it
 both to check out (the branch is pushed with the checkout's credentials) and to open the pull request.
 
+## Contributing
+
+Bug reports, fixes and new components are welcome: [`CONTRIBUTING.md`](./CONTRIBUTING.md) says how to
+set up, what CI checks and how to write a changeset. Everyone taking part follows the
+[Code of Conduct](./CODE_OF_CONDUCT.md). Report vulnerabilities privately, as
+[`SECURITY.md`](./SECURITY.md) explains.
+
 ## License
 
-MIT, see [`LICENSE`](./LICENSE). The components are derived from shadcn/ui (MIT, © 2023 shadcn). The
-Coreloom logo isn't covered by the license: see [`brand/logo/README.md`](./brand/logo/README.md).
+MIT, see [`LICENSE`](./LICENSE). The components are derived from shadcn/ui (MIT, © 2023 shadcn): see
+[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md). The Coreloom logo isn't covered by the license:
+see [`brand/logo/README.md`](./brand/logo/README.md).
