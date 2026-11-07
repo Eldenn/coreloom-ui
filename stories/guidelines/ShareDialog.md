@@ -1,5 +1,7 @@
 # Share Dialog
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The window where someone decides who can open a document: only them, anyone with the link, or the link and a code. It shows the link to copy, the code (hidden until asked), and can make a new link or a new code. The app makes, stores and checks links and codes; the dialog shows them and calls back.
 
 **The consumer provides** `open` and `onOpenChange`, `title` (the document's name, in the dialog's title and the copied message), `visibility` (`private`, `public` or `protected`) and `onVisibilityChange(visibility) => Promise<void>`, and optionally `link` (shown when public or protected), `code` (shown when protected), `onRegenerateLink` and `onRegenerateCode` (`() => Promise<void>`; no button without them), `pending` (the app is loading the settings: the choices are off, `false` by default), `error` (a problem to show at the top) and `className`.

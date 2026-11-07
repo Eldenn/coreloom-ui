@@ -1,5 +1,7 @@
 # TerminalConsole
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Several terminals in one place, as in an IDE's panel: a tab per terminal, New terminal, a side by side split and Close. Use it for a project's consoles (a shell, a dev server, a remote machine), or under an IDE.
 
 **The consumer provides** `createSession(profile)` (returns `{ title, terminal, id? }`, the terminal from `createTerminal`), and optionally `defaultSessions`, `profiles` (`{ id, label }`: with more than one, New terminal opens a menu of them), `onCloseSession(session)` (stop its process), `defaultSplit` and `actions`.

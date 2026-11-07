@@ -1,5 +1,7 @@
 # PipelineRun
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 One run of a CI pipeline or a deploy, as GitHub Actions or GitLab show it: the run's status and duration, its jobs, each job's steps, and each step's log. Use it for a build page, a deploy's progress, a scheduled job's history.
 
 **The consumer provides** `title`, `status` and `jobs` (`{ id, name, status, durationMs?, steps: [{ id, name, status, durationMs?, log? }] }`, the log as text with ANSI colours or as LogViewer entries), and optionally `meta` (branch, commit, author), `durationMs`, `onRerun`, `onCancel`, `onRerunJob(job)`, `defaultJob`, `logHeight` (300), `timeZone` and `actions`. Statuses: `queued`, `running`, `success`, `failed`, `cancelled`, `skipped`.

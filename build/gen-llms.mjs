@@ -85,6 +85,9 @@ export function guidesFor(item) {
   return [...new Set(named)].filter(exists)
 }
 
+/** Whether an item may still change in a minor release (`meta.stability` in registry.json). */
+export const isExperimental = (item) => item.meta?.stability === 'experimental'
+
 export const guideUrl = (guide) => `${SITE}/guides/${guide}.md`
 const readGuide = (guide) => fs.readFileSync(path.join(guidesDir, `${guide}.md`), 'utf8').trim()
 
@@ -112,6 +115,8 @@ pnpm dlx shadcn@latest add @coreloom/button @coreloom/ai-chat
 
 Then, in the global CSS after \`@import "tailwindcss";\`: \`@import "tw-animate-css"; @import "./coreloom/fonts.css"; @import "./coreloom/tokens.css"; @import "./coreloom/theme.css";\`. Mount \`TooltipProvider\` and one \`Toaster\` at the root. Components install into \`@/components/ui/<name>\`, block parts into \`@/components/<name>\`; import them by name (named exports only).
 
+Items marked experimental may still change in a minor release; the others follow semantic versioning (VERSIONING.md).
+
 Rules that hold everywhere: colours come from the semantic Tailwind tokens (\`bg-primary\`, \`text-muted-foreground\`, \`border-border\`…), never hex values; every string comes from \`useCoreloomI18n()\`; focus is the 3 px \`ring-ring\`; one primary (cyan) action per view.
 
 - [Registry index](${SITE}/r/registry.json): every item as JSON (files, dependencies)
@@ -129,7 +134,10 @@ Rules that hold everywhere: colours come from the semantic Tailwind tokens (\`bg
     for (const item of section) {
       const guides = guidesFor(item)
       const install = `\`@coreloom/${item.name}\``
-      const description = item.description?.trim() ?? ''
+      // Experimental items may change in a minor release (VERSIONING.md): say so before installing.
+      const description =
+        (isExperimental(item) ? '(Experimental: may change in a minor release.) ' : '') +
+        (item.description?.trim() ?? '')
       index.push(
         guides.length
           ? `- [${item.title ?? item.name}](${guideUrl(guides[0])}): ${install} — ${description}`

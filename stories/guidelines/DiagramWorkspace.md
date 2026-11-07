@@ -1,5 +1,7 @@
 # Diagram Workspace
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Where a document of several diagrams is written: its name, whether it's saved, the list of its views, and the diagram editor for the view that's open. The app keeps the document and saves it; every change comes back through a callback.
 
 **The consumer provides** `title` and `onTitleChange` (the name, edited in place with EditableText), `diagrams` (`{ id, title, value, format }[]`: each view's text in `mermaid`, `plantuml` or `json`), `activeId` and `onActiveChange`, `onDiagramChange(id, value, result, format)` (the open view's new text, what could be read from it, and its format), `onAdd(kind)` (a diagram kind from "Add a diagram"; add the view and usually open it), `onImport({ title, value, result, format })` (optional: a file picked with "Import a file…" at the end of the Add menu, read in the browser; `title` is its name without the extension; add the view and usually open it; without it the menu offers no import), `onRename(id, title)`, `onReorder(ids)`, `onDelete(id)`, `saveState` (`saved`, `saving`, `unsaved` or `error`), and optionally `savedAt`, `onRetrySave` (shown with SaveStatus), `actions` (the app's buttons, such as Share, at the end of the top bar), `height` (the whole workspace's height on wide screens, the editor taking what's left under the top bar; default: none, the editor's panes are 560px) and `className`.

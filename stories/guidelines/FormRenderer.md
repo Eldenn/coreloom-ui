@@ -1,5 +1,7 @@
 # Form Renderer
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Builds a form at runtime from a **FormSpec**: a JSON description of its sections, fields, checks and conditions. Use it when the form's shape comes from data (a settings page your server describes, a survey, a form made in the Form builder block) rather than from code.
 
 **The consumer provides** `spec` and `onSubmit(values)`, and optionally `defaultValues`, `onValuesChange`, `submitLabel`, `hideHeader`, `hideSubmit` and `types`. For an editor around the form (FormBuilder's canvas does this): `showHidden` shows fields whose condition is false, `renderField(field, node, visible)` wraps each field and `renderSection(section, node)` each section's grid.

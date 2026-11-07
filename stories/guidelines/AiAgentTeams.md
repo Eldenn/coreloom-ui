@@ -1,5 +1,7 @@
 # AI Agent Teams
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A multi-agent system at a glance: `AgentTeams` puts the agent graph next to a panel on the selected agent — its role, team, model, status, who it reports to and delegates to, who it hands off to and takes over from, the tools and knowledge it uses — with links to its page and its runs. A team filter narrows the graph to one team and the tools it uses. `AgentDetails` is the panel on its own.
 
 **`AgentTeams` takes** `agents` (as in the agent graph, plus a `description`), `edges` and `teams`, and optionally `href(id)` and `runsHref(id)`, `defaultSelectedId`, `defaultTeam` (`'all'`), `defaultView` (left out, a list on a box too narrow to read the graph), `activity` / `activePath` to show a run, `onEdit(selectedId)`, which adds an **Edit graph** button for your agent builder, and `avatars` (`face` or `dots`) to draw the agents as animated Agent Avatars in the graph and the details.

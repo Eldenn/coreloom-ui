@@ -1,5 +1,7 @@
 # AnsiOutput
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Text from a program with its ANSI colours and styles: a CLI's output, a build or test report, a stack trace from a tool. It reads what terminals read: SGR colours (16, 256 and true colour), bold, dim, italic, underline, inverse and strike, OSC 8 hyperlinks, and the cursor moves that progress bars use (carriage return, erase line, cursor up, clear screen).
 
 **The consumer provides** `text` (it can grow while it streams), and optionally `wrap` (true), `follow` (true: stays at the end as text arrives, unless the reader scrolled up), `links` (true: http(s) URLs become links) and `maxHeight`.
