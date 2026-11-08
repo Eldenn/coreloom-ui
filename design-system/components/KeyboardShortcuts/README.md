@@ -2,7 +2,7 @@
 
 Keyboard shortcuts for an app: running them (`useHotkeys`), drawing them (`Hotkey`) and listing them (`ShortcutsDialog`).
 
-**The consumer provides** to `useHotkeys(keys, handler, options)` one or several combinations: "mod+k" (⌘ on a Mac, Ctrl elsewhere), "shift+?", or a sequence such as "g i"; options are `enabled`, `preventDefault`, `enableOnFormFields`, `event` and `target`. `Hotkey keys="mod+k"` draws a combination; `ShortcutsDialog` takes `groups` of `{ keys, description }`, `open` and `onOpenChange`.
+**The consumer provides** to `useHotkeys(keys, handler, options)` one or several combinations: "mod+k" (⌘ on a Mac, Ctrl elsewhere), "shift+?", or a sequence such as "g i"; options are `enabled`, `preventDefault`, `enableOnFormFields`, `event` and `target`. `Hotkey keys="mod+k"` draws a combination; `ShortcutsDialog` takes `groups` of `{ keys, description }`, `open` and `onOpenChange` (or `defaultOpen`).
 
 - Single keys and sequences don't fire while someone types in a field; combinations with Ctrl, ⌘ or Alt do.
 - Open the list with "?" and from a help menu, so people who don't know the shortcut can find it.

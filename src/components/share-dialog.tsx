@@ -38,8 +38,11 @@ import { cn } from '@/lib/utils'
 type ShareVisibility = 'private' | 'public' | 'protected'
 
 interface ShareDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  /** Whether the dialog shows (controlled). */
+  open?: boolean
+  /** Shown at first, when `open` is not set: the dialog opens as it mounts. */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   /** The document's name, in the dialog's title and in the copied message. */
   title: string
   visibility: ShareVisibility
@@ -272,6 +275,7 @@ function Choices({
 
 function ShareDialog({
   open,
+  defaultOpen,
   onOpenChange,
   title,
   visibility,
@@ -297,7 +301,7 @@ function ShareDialog({
   const opener = React.useRef<HTMLElement | null>(null)
   const content = React.useRef<HTMLDivElement>(null)
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
       <DialogContent
         data-slot="share-dialog"
         className={cn('max-h-[calc(100svh-2rem)] overflow-y-auto', className)}

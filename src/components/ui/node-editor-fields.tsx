@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { useControllableState } from '@/lib/use-controllable-state'
 import { cn } from '@/lib/utils'
 
 /** A value an expression can use, offered as you type `{{`. */
@@ -340,8 +341,11 @@ const sampleText = (v: unknown) => {
 
 interface ExpressionInputProps {
   id: string
-  value: string
-  onValueChange: (value: string) => void
+  /** The text (controlled). */
+  value?: string
+  /** The first text when `value` is not set. Default: empty. */
+  defaultValue?: string
+  onValueChange?: (value: string) => void
   placeholder?: string | undefined
   readOnly?: boolean
   /** A textarea instead of a one-line input. */
@@ -363,7 +367,8 @@ interface ExpressionInputProps {
  */
 function ExpressionInput({
   id,
-  value,
+  value: valueProp,
+  defaultValue = '',
   onValueChange,
   placeholder,
   readOnly = false,
@@ -373,6 +378,11 @@ function ExpressionInput({
   className,
   ...aria
 }: ExpressionInputProps) {
+  const [value, setValue] = useControllableState({
+    value: valueProp,
+    defaultValue,
+    onChange: onValueChange,
+  })
   const t = useCoreloomI18n().messages.nodeEditor
   const env = useFieldsEnv()
   const listId = `${id}-suggestions`
@@ -405,7 +415,7 @@ function ExpressionInput({
     const after = value.slice(caret).replace(/^\s*\}\}/, '')
     const token = `{{ ${path} }}`
     const next = value.slice(0, open.start) + token + after
-    onValueChange(next)
+    setValue(next)
     setOpen(null)
     const pos = open.start + token.length
     requestAnimationFrame(() => {
@@ -419,7 +429,7 @@ function ExpressionInput({
     if (!el) return
     const caret = el.selectionStart
     const next = `${value.slice(0, caret)}{{ ${value.slice(caret)}`
-    onValueChange(next)
+    setValue(next)
     const pos = caret + 3
     setOpen({ start: caret, query: '' })
     setActive(0)
@@ -482,7 +492,7 @@ function ExpressionInput({
             rows={rows ?? 4}
             className={cn(canInsert && 'pr-9')}
             onChange={(e) => {
-              onValueChange(e.target.value)
+              setValue(e.target.value)
               sync(e.currentTarget)
             }}
             {...shared}
@@ -492,7 +502,7 @@ function ExpressionInput({
             ref={ref}
             className={cn(canInsert && 'pr-9')}
             onChange={(e) => {
-              onValueChange(e.target.value)
+              setValue(e.target.value)
               sync(e.currentTarget)
             }}
             {...shared}
@@ -570,7 +580,7 @@ function ExpressionInput({
 interface ControlProps<V> {
   id: string
   value: V
-  onChange: (value: V) => void
+  onValueChange: (value: V) => void
   readOnly: boolean
   invalid?: boolean
   describedBy?: string | undefined
@@ -581,7 +591,7 @@ interface ControlProps<V> {
 function ConditionsControl({
   id,
   value,
-  onChange,
+  onValueChange,
   readOnly,
   describedBy,
   labelId,
@@ -590,7 +600,7 @@ function ConditionsControl({
   const env = useFieldsEnv()
   const c = asConditions(value)
   const set = (patch: Partial<ConditionsValue>) => {
-    onChange({ ...c, ...patch })
+    onValueChange({ ...c, ...patch })
   }
   const setRule = (i: number, patch: Partial<ConditionRule>) => {
     set({ rules: c.rules.map((r, j) => (j === i ? { ...r, ...patch } : r)) })
@@ -722,7 +732,7 @@ function ConditionsControl({
 function KeyValueControl({
   id,
   value,
-  onChange,
+  onValueChange,
   readOnly,
   describedBy,
   labelId,
@@ -736,7 +746,7 @@ function KeyValueControl({
   const rows = asKeyValues(value)
   const addRef = React.useRef<HTMLButtonElement>(null)
   const setRow = (i: number, patch: Partial<KeyValueItem>) => {
-    onChange(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+    onValueChange(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)))
   }
   return (
     <div
@@ -778,7 +788,7 @@ function KeyValueControl({
                   aria-label={t.remove(n)}
                   className="mt-0.5"
                   onClick={() => {
-                    onChange(rows.filter((_, j) => j !== i))
+                    onValueChange(rows.filter((_, j) => j !== i))
                     requestAnimationFrame(() => addRef.current?.focus())
                   }}
                 >
@@ -807,7 +817,7 @@ function KeyValueControl({
           size="sm"
           className="self-start"
           onClick={() => {
-            onChange([...rows, { key: '', value: '' }])
+            onValueChange([...rows, { key: '', value: '' }])
             requestAnimationFrame(() => {
               document.getElementById(`${id}-k${String(rows.length)}`)?.focus()
             })
@@ -825,7 +835,7 @@ function KeyValueControl({
 function CodeControl({
   id,
   value,
-  onChange,
+  onValueChange,
   readOnly,
   invalid,
   describedBy,
@@ -846,7 +856,7 @@ function CodeControl({
       aria-invalid={invalid ? true : undefined}
       aria-describedby={describedBy}
       onChange={(e) => {
-        onChange(e.target.value)
+        onValueChange(e.target.value)
       }}
     />
   )
@@ -856,7 +866,7 @@ function CodeControl({
 function CredentialControl({
   id,
   value,
-  onChange,
+  onValueChange,
   readOnly,
   invalid,
   describedBy,
@@ -875,7 +885,7 @@ function CredentialControl({
           value={typeof value === 'string' ? value : ''}
           disabled={readOnly}
           onValueChange={(v) => {
-            onChange(v)
+            onValueChange(v)
           }}
         >
           <SelectTrigger
@@ -912,7 +922,7 @@ function CredentialControl({
             setBusy(true)
             void create(credentialType)
               .then((c) => {
-                if (c) onChange(c.id)
+                if (c) onValueChange(c.id)
               })
               .catch(() => undefined)
               .finally(() => {

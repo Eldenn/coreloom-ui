@@ -257,7 +257,7 @@ function MessageFields({
           value={step[side]}
           options={people}
           disabled={locked}
-          onChange={(v) => {
+          onValueChange={(v) => {
             change({ [side]: v })
           }}
         />
@@ -266,7 +266,7 @@ function MessageFields({
         label={t.steps.text}
         value={drafts.text ?? step.text}
         disabled={locked}
-        onChange={(v) => {
+        onValueChange={(v) => {
           set('text', v)
         }}
         onCommit={() => {
@@ -279,7 +279,7 @@ function MessageFields({
         value={step.arrow}
         options={ARROWS.map((a) => ({ value: a, label: seq.arrows[a] }))}
         disabled={locked}
-        onChange={(arrow) => {
+        onValueChange={(arrow) => {
           change({ arrow })
         }}
       />
@@ -330,7 +330,7 @@ function NoteFields({
           label: t.steps.positions[v],
         }))}
         disabled={locked}
-        onChange={(position) => {
+        onValueChange={(position) => {
           // Only a note over the lifelines spans two participants.
           change({ position, participants: position === 'over' ? step.participants : [first] })
         }}
@@ -340,7 +340,7 @@ function NoteFields({
         value={first}
         options={people}
         disabled={locked}
-        onChange={(v) => {
+        onValueChange={(v) => {
           change({ participants: second && second !== v ? [v, second] : [v] })
         }}
       />
@@ -350,7 +350,7 @@ function NoteFields({
           value={second ?? ''}
           options={[{ value: '', label: t.steps.none }, ...people.filter((p) => p.value !== first)]}
           disabled={locked}
-          onChange={(v) => {
+          onValueChange={(v) => {
             change({ participants: v ? [first, v] : [first] })
           }}
         />
@@ -360,7 +360,7 @@ function NoteFields({
         value={drafts.text ?? step.text}
         multiline
         disabled={locked}
-        onChange={(v) => {
+        onValueChange={(v) => {
           set('text', v)
         }}
         onCommit={() => {
@@ -388,7 +388,7 @@ function ActivationFields({
         value={step.participant}
         options={people}
         disabled={locked}
-        onChange={(participant) => {
+        onValueChange={(participant) => {
           onChange(id, { ...step, participant })
         }}
       />
@@ -400,7 +400,7 @@ function ActivationFields({
           { value: 'off', label: t.steps.deactivates },
         ]}
         disabled={locked}
-        onChange={(v) => {
+        onValueChange={(v) => {
           onChange(id, { ...step, active: v === 'on' })
         }}
       />
@@ -434,7 +434,7 @@ function BlockFields({ step, props }: { step: Block; props: StepFormProps }) {
         value={step.kind}
         options={BLOCKS.map((k) => ({ value: k, label: seq.blocks[k] }))}
         disabled={locked}
-        onChange={(kind) => {
+        onValueChange={(kind) => {
           onChange(id, withKind(step, kind))
         }}
       />
@@ -446,7 +446,7 @@ function BlockFields({ step, props }: { step: Block; props: StepFormProps }) {
               label={n === 0 ? t.steps.condition : t.steps.sectionLabel(word, n)}
               value={drafts[n] ?? s.label}
               disabled={locked}
-              onChange={(v) => {
+              onValueChange={(v) => {
                 set(String(n), v)
               }}
               onCommit={commit}

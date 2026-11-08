@@ -39,12 +39,16 @@ import { DIRECTIONS } from '@/lib/uml-arrange'
 import type { UmlImageFormat } from '@/lib/uml-image'
 import { parseMermaid, toMermaid } from '@/lib/uml-mermaid'
 import { isPlantUml, parsePlantUml, toPlantUml } from '@/lib/uml-plantuml'
+import { useControllableState } from '@/lib/use-controllable-state'
 import { cn } from '@/lib/utils'
 
 interface DiagramEditorProps {
   /** The text (controlled), in `format`. */
   value?: string
   defaultValue?: string
+  /** Called with the new text after each edit, import, template or format switch. */
+  onValueChange?: (text: string) => void
+  /** @deprecated Use `onValueChange`, the name every Coreloom field uses. Removed in 2.0. */
   onChange?: (text: string) => void
   format?: DiagramFormat
   /** Default: mermaid. */
@@ -324,16 +328,6 @@ function useDownload({
   return { download, failed }
 }
 
-function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T) => void) {
-  const [own, setOwn] = React.useState(initial)
-  const current = value ?? own
-  const set = (next: T) => {
-    if (value === undefined) setOwn(next)
-    onChange?.(next)
-  }
-  return [current, set] as const
-}
-
 /** "Copied" for a moment after copying text. */
 function useCopy(text: () => string) {
   const [copied, setCopied] = React.useState(false)
@@ -364,6 +358,47 @@ function paneHeight(height: string) {
     style: { '--diagram-editor-h': fill ? '560px' : height } as React.CSSProperties,
     className: fill ? 'lg:flex-1 lg:grid-rows-[minmax(0,1fr)]' : 'lg:h-(--diagram-editor-h)',
   }
+}
+
+// The text a new editor starts with when the app gives none: a small class diagram.
+const FIRST_TEMPLATE = DIAGRAM_TEMPLATES[0]?.text ?? ''
+
+/** The editor's text, format and view, each owned by the app or kept here. */
+function useEditorState(
+  props: Pick<
+    DiagramEditorProps,
+    | 'value'
+    | 'defaultValue'
+    | 'onValueChange'
+    | 'onChange'
+    | 'format'
+    | 'defaultFormat'
+    | 'onFormatChange'
+    | 'view'
+    | 'defaultView'
+    | 'onViewChange'
+  >,
+) {
+  const [text, setText] = useControllableState({
+    value: props.value,
+    defaultValue: props.defaultValue ?? FIRST_TEMPLATE,
+    onChange: (next: string) => {
+      props.onValueChange?.(next)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept working until 2.0
+      props.onChange?.(next)
+    },
+  })
+  const [format, setFormat] = useControllableState({
+    value: props.format,
+    defaultValue: props.defaultFormat ?? 'mermaid',
+    onChange: props.onFormatChange,
+  })
+  const [view, setView] = useControllableState({
+    value: props.view,
+    defaultValue: props.defaultView ?? 'split',
+    onChange: props.onViewChange,
+  })
+  return { text, setText, format, setFormat, view, setView }
 }
 
 /** The text, its marks and the problems under it. */
@@ -419,29 +454,19 @@ function TextPane({
 }
 
 function DiagramEditor({
-  value,
-  defaultValue = DIAGRAM_TEMPLATES[0]?.text ?? '',
-  onChange,
-  format: formatProp,
-  defaultFormat = 'mermaid',
-  onFormatChange,
   onDiagramChange,
   templates = DIAGRAM_TEMPLATES,
   height = '560px',
   fileName = 'diagram',
   autoFocus = false,
-  view: viewProp,
-  defaultView = 'split',
-  onViewChange,
   actions,
   readOnly = false,
   className,
+  ...owned
 }: DiagramEditorProps) {
   const { messages } = useCoreloomI18n()
   const t = messages.diagramEditor
-  const [text, setText] = useControlled(value, defaultValue, onChange)
-  const [format, setFormat] = useControlled(formatProp, defaultFormat, onFormatChange)
-  const [view, setView] = useControlled(viewProp, defaultView, onViewChange)
+  const { text, setText, format, setFormat, view, setView } = useEditorState(owned)
   // Positions dragged on the canvas; null until someone drags (the JSON's own layout applies).
   const [layout, setLayout] = React.useState<UmlLayout | null>(null)
 
@@ -554,7 +579,7 @@ function DiagramEditor({
             view={view}
             label={t.source}
             value={text}
-            onChange={type}
+            onValueChange={type}
             readOnly={readOnly}
             format={format}
             fileName={fileName}

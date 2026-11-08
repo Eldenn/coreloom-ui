@@ -1303,7 +1303,7 @@ function FieldControl({
           id={id}
           labelId={labelId}
           value={value}
-          onChange={onChange}
+          onValueChange={onChange}
           readOnly={readOnly}
           describedBy={describedBy}
         />
@@ -1314,7 +1314,7 @@ function FieldControl({
           id={id}
           labelId={labelId}
           value={value}
-          onChange={onChange}
+          onValueChange={onChange}
           readOnly={readOnly}
           describedBy={describedBy}
           keyPlaceholder={field.keyPlaceholder}
@@ -1327,7 +1327,7 @@ function FieldControl({
           id={id}
           labelId={labelId}
           value={value}
-          onChange={onChange}
+          onValueChange={onChange}
           readOnly={readOnly}
           invalid={invalid}
           describedBy={describedBy}
@@ -1341,7 +1341,7 @@ function FieldControl({
           id={id}
           labelId={labelId}
           value={value}
-          onChange={onChange}
+          onValueChange={onChange}
           readOnly={readOnly}
           invalid={invalid}
           describedBy={describedBy}

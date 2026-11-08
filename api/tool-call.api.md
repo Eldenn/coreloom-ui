@@ -12,7 +12,9 @@ ToolCall.tool?: ToolComponent<unknown, unknown> | undefined
 ToolCall.renderOutput?: ((output: unknown) => React.ReactNode | undefined) | undefined
 ToolCall.onApprovalResponse?: ((response: { id: string; approved: boolean; }) => void) | undefined
 ToolCall.onOutput?: ((arg: ToolOutputResponse) => void) | undefined
+ToolCall.open?: boolean | undefined
 ToolCall.defaultOpen?: boolean | undefined
+ToolCall.onOpenChange?: ((open: boolean) => void) | undefined
 ToolCall.className?: string | undefined
 type ToolCallback<Arg> = (arg: Arg) => void
 type ToolComponent<Input = unknown, Output = unknown> = {}

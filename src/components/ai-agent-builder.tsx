@@ -60,6 +60,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { WorkflowBuilder } from '@/components/workflow-builder'
 import type { AiModel } from '@/lib/ai'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { useControllableState } from '@/lib/use-controllable-state'
 
 const START = '__start__'
 const END = '__end__'
@@ -948,18 +949,27 @@ function useAgentBuilderKinds({
 
 /** The state's fields: name, type and how an update applies. */
 function StateEditor({
-  value,
+  value: valueProp,
+  defaultValue = [],
   onValueChange,
   readOnly = false,
 }: {
-  value: StateField[]
-  onValueChange: (value: StateField[]) => void
+  /** The state's fields (controlled). */
+  value?: StateField[]
+  /** The first fields when `value` is not set. Default: none. */
+  defaultValue?: StateField[]
+  onValueChange?: (value: StateField[]) => void
   readOnly?: boolean
 }) {
+  const [value, setValue] = useControllableState({
+    value: valueProp,
+    defaultValue,
+    onChange: onValueChange,
+  })
   const t = useCoreloomI18n().messages.ai.agentBuilder
   const baseId = React.useId()
   const set = (i: number, patch: Partial<StateField>) => {
-    onValueChange(value.map((f, j) => (j === i ? { ...f, ...patch } : f)))
+    setValue(value.map((f, j) => (j === i ? { ...f, ...patch } : f)))
   }
   return (
     <div className="flex flex-col gap-3">
@@ -991,7 +1001,7 @@ function StateEditor({
                 disabled={readOnly}
                 className="sm:order-last"
                 onClick={() => {
-                  onValueChange(value.filter((_, j) => j !== i))
+                  setValue(value.filter((_, j) => j !== i))
                 }}
               >
                 <Trash2Icon aria-hidden />
@@ -1046,7 +1056,7 @@ function StateEditor({
             const taken = new Set(value.map((f) => f.name))
             let name = 'field'
             for (let i = 2; taken.has(name); i++) name = `field_${String(i)}`
-            onValueChange([...value, { name, type: 'string', reducer: 'replace' }])
+            setValue([...value, { name, type: 'string', reducer: 'replace' }])
             // Focus the new name so the keyboard can type it straight away.
             requestAnimationFrame(() => {
               document.getElementById(`${baseId}-${String(value.length)}`)?.focus()

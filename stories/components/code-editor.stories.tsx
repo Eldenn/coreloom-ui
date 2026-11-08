@@ -79,7 +79,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Code to write, on CodeMirror 6 with Coreloom colours. The consumer provides `value` + `onChange` (or `defaultValue`), a `language` or a `path` to derive it from, and optionally `diagnostics` by line and column, `onSave` (Mod-S), `readOnly`, `wrap`, `tabSize`, sizes and more CodeMirror `extensions`.',
+          'Code to write, on CodeMirror 6 with Coreloom colours. The consumer provides `value` + `onValueChange` (or `defaultValue`), a `language` or a `path` to derive it from, and optionally `diagnostics` by line and column, `onSave` (Mod-S), `readOnly`, `wrap`, `tabSize`, sizes and more CodeMirror `extensions`.',
       },
     },
   },
@@ -90,7 +90,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   render: function Render(args) {
     const [value, setValue] = React.useState(component)
-    return <CodeEditor {...args} className="max-w-2xl" value={value} onChange={setValue} />
+    return <CodeEditor {...args} className="max-w-2xl" value={value} onValueChange={setValue} />
   },
 }
 
@@ -109,7 +109,7 @@ export const WithLanguageSelect: Story = {
           aria-label="Snippet"
           language={language}
           value={value}
-          onChange={setValue}
+          onValueChange={setValue}
           className="rounded-none border-0"
         />
       </div>
@@ -170,7 +170,7 @@ export const InAForm: Story = {
           aria-labelledby={id}
           language="javascript"
           value={value}
-          onChange={setValue}
+          onValueChange={setValue}
           placeholder="return input.map((row) => ({ ...row, total: row.price * row.qty }))"
           wrap
           lineNumbers={false}

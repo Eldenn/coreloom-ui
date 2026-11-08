@@ -9,7 +9,8 @@ const CODE_EDITOR_LANGUAGES: readonly { value: CodeEditorLanguage; label: string
 function CodeEditor
 CodeEditor.value?: string | undefined
 CodeEditor.defaultValue?: string | undefined
-CodeEditor.onChange?: ((value: string) => void) | undefined
+CodeEditor.onValueChange?: ((value: string) => void) | undefined
+CodeEditor.onChange?: ((value: string) => void) | undefined // deprecated
 CodeEditor.language?: CodeEditorLanguage | undefined
 CodeEditor.path?: string | undefined
 CodeEditor.readOnly?: boolean | undefined
@@ -47,8 +48,9 @@ CodeEditorDiagnostic.message: string
 CodeEditorDiagnostic.source?: string | undefined
 type CodeEditorLanguage = 'text' | 'json' | 'html' | 'markdown' | 'javascript' | 'jsx' | 'typescript' | 'tsx' | 'css' | 'python'
 function CodeEditorLanguageSelect
-CodeEditorLanguageSelect.value: CodeEditorLanguage
-CodeEditorLanguageSelect.onValueChange: (language: CodeEditorLanguage) => void
+CodeEditorLanguageSelect.value?: CodeEditorLanguage | undefined
+CodeEditorLanguageSelect.defaultValue?: CodeEditorLanguage | undefined
+CodeEditorLanguageSelect.onValueChange?: ((language: CodeEditorLanguage) => void) | undefined
 CodeEditorLanguageSelect.languages?: readonly CodeEditorLanguage[] | undefined
 CodeEditorLanguageSelect.size?: 'sm' | 'default' | undefined
 CodeEditorLanguageSelect.disabled?: boolean | undefined
@@ -57,7 +59,8 @@ CodeEditorLanguageSelect.aria-label?: string | undefined
 type CodeEditorProps = {}
 CodeEditorProps.value?: string | undefined
 CodeEditorProps.defaultValue?: string | undefined
-CodeEditorProps.onChange?: ((value: string) => void) | undefined
+CodeEditorProps.onValueChange?: ((value: string) => void) | undefined
+CodeEditorProps.onChange?: ((value: string) => void) | undefined // deprecated
 CodeEditorProps.language?: CodeEditorLanguage | undefined
 CodeEditorProps.path?: string | undefined
 CodeEditorProps.readOnly?: boolean | undefined

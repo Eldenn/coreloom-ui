@@ -9,7 +9,7 @@ One tool invocation in a conversation: its name, a status (preparing, running, d
 - `renderOutput(output)` to show a result as UI (a table, a card) instead of JSON — return `undefined` to keep the JSON; a drawn result shows unfolded (`tool` takes precedence);
 - `onApprovalResponse({ id, approved })` for tools that ask first — wire `addToolApprovalResponse` from `useChat`;
 - `onOutput({ tool, toolCallId, output })` (or `{ …, state: 'output-error', errorText }`) for tools that wait for the person (`tool.awaitsInput`, such as `formTool()`) — wire `addToolOutput` from `useChat`;
-- `defaultOpen`.
+- `defaultOpen`, or `open` + `onOpenChange` to own whether the details show (then it doesn't unfold by itself: open it when the call asks for approval or input).
 
 - The status is text and an icon, never colour alone; failures open by themselves.
 - A tool waiting for approval shows Allow and Deny; nothing runs until someone chooses.

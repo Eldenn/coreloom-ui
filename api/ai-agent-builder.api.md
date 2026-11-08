@@ -81,8 +81,9 @@ LangGraphNodeJSON.type?: string | undefined
 LangGraphNodeJSON.data?: unknown
 LangGraphNodeJSON.metadata?: Record<string, unknown> | null | undefined
 function StateEditor
-StateEditor.value: StateField[]
-StateEditor.onValueChange: (value: StateField[]) => void
+StateEditor.value?: StateField[] | undefined
+StateEditor.defaultValue?: StateField[] | undefined
+StateEditor.onValueChange?: ((value: StateField[]) => void) | undefined
 StateEditor.readOnly?: boolean | undefined
 type StateField = {}
 StateField.name: string

@@ -135,7 +135,9 @@ function ToolCall({
   renderOutput,
   onApprovalResponse,
   onOutput,
+  open: openProp,
   defaultOpen,
+  onOpenChange,
   className,
 }: {
   /** The tool part from the message (`tool-<name>` or `dynamic-tool`). */
@@ -150,7 +152,14 @@ function ToolCall({
   onApprovalResponse?: (response: { id: string; approved: boolean }) => void
   /** The answer of a tool with `awaitsInput` (`submit` / `cancel`). Wire it to `addToolOutput`. */
   onOutput?: ToolCallback<ToolOutputResponse>
+  /**
+   * Whether the details show (controlled). You decide: it doesn't unfold by itself, so open it
+   * when the call asks for approval or input.
+   */
+  open?: boolean
+  /** Open at first. By default it opens when the call asks, fails or draws its result. */
   defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   className?: string
 }) {
   const messages = useCoreloomI18n().messages.ai
@@ -209,17 +218,22 @@ function ToolCall({
       ? renderOutput(part.output)
       : undefined
   const isDrawn = drawn !== undefined && drawn !== null
-  const [open, setOpen] = React.useState(
+  const [own, setOwn] = React.useState(
     defaultOpen ?? (waiting || part.state === 'output-error' || isDrawn),
   )
+  const open = openProp ?? own
+  const setOpen = (next: boolean) => {
+    setOwn(next)
+    onOpenChange?.(next)
+  }
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when the call starts asking.
-    if (waiting) setOpen(true)
+    if (waiting) setOwn(true)
   }, [waiting])
   // A result drawn as UI is the answer: show it as soon as it arrives.
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- unfolds when a drawn result arrives.
-    if (isDrawn && defaultOpen === undefined) setOpen(true)
+    if (isDrawn && defaultOpen === undefined) setOwn(true)
   }, [isDrawn, defaultOpen])
 
   React.useEffect(() => {

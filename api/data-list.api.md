@@ -77,8 +77,9 @@ Facet.get?: ((row: T) => string) | undefined
 function FacetedFilter
 FacetedFilter.title: string
 FacetedFilter.options: FacetOption[]
-FacetedFilter.value: string[]
-FacetedFilter.onValueChange: (values: string[]) => void
+FacetedFilter.value?: string[] | undefined
+FacetedFilter.defaultValue?: string[] | undefined
+FacetedFilter.onValueChange?: ((values: string[]) => void) | undefined
 FacetedFilter.counts?: Record<string, number> | undefined
 type FacetOption = {}
 FacetOption.value: string

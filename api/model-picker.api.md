@@ -8,7 +8,8 @@ Stability: stable. Written by `pnpm api:report` from the code; don't edit it by 
 function ModelList
 ModelList.models: readonly AiModel[]
 ModelList.value?: string | undefined
-ModelList.onValueChange: (id: string) => void
+ModelList.defaultValue?: string | undefined
+ModelList.onValueChange?: ((id: string) => void) | undefined
 ModelList.autoFocus?: boolean | undefined
 ModelList.className?: string | undefined
 function ModelPicker

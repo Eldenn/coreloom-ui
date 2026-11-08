@@ -138,7 +138,7 @@ function ElementForm({
         multiline={note}
         disabled={locked}
         inputRef={nameRef}
-        onChange={(v) => {
+        onValueChange={(v) => {
           set('name', v)
         }}
         onCommit={commit}
@@ -149,7 +149,7 @@ function ElementForm({
           value={text('stereotype')}
           hint={stereotypeHint(kind, p)}
           disabled={locked}
-          onChange={(v) => {
+          onValueChange={(v) => {
             set('stereotype', v)
           }}
           onCommit={commit}
@@ -160,7 +160,7 @@ function ElementForm({
           members={fields.members}
           disabled={locked}
           p={{ ...p, moveUp: t.steps.moveUp, moveDown: t.steps.moveDown }}
-          onChange={(members) => {
+          onValueChange={(members) => {
             onChange(id, { ...fields, ...drafts, members })
           }}
         />
@@ -176,7 +176,7 @@ function ElementForm({
               mono={k === 'attributes'}
               {...(k === 'attributes' ? { hint: p.attributesHint } : {})}
               disabled={locked}
-              onChange={(v) => {
+              onValueChange={(v) => {
                 set(k, v)
               }}
               onCommit={commit}
@@ -188,7 +188,7 @@ function ElementForm({
           label={p.technology}
           value={text('technology')}
           disabled={locked}
-          onChange={(v) => {
+          onValueChange={(v) => {
             set('technology', v)
           }}
           onCommit={commit}
@@ -241,7 +241,7 @@ function RelationForm({
       label={label}
       value={text(k)}
       disabled={locked}
-      onChange={(v) => {
+      onValueChange={(v) => {
         set(k, v)
       }}
       onCommit={commit}
@@ -258,7 +258,7 @@ function RelationForm({
           value={fields.type}
           options={types.map((x) => ({ value: x, label: t.relations[x] }))}
           disabled={locked}
-          onChange={(type) => {
+          onValueChange={(type) => {
             onChange(index, { ...fields, ...drafts, type })
           }}
         />
@@ -278,7 +278,7 @@ function RelationForm({
             value={current}
             options={ER_ENDS.map((x) => ({ value: x, label: cardinality[x] }))}
             disabled={locked}
-            onChange={(v) => {
+            onValueChange={(v) => {
               onChange(index, { ...fields, ...drafts, [k]: v })
             }}
           />

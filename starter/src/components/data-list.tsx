@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { useControllableState } from '@/lib/use-controllable-state'
 import { cn } from '@/lib/utils'
 
 interface FacetOption {
@@ -198,16 +199,25 @@ type DataList<T extends object = any> = ReturnType<typeof useDataList<T>>
 function FacetedFilter({
   title,
   options,
-  value,
+  value: valueProp,
+  defaultValue = [],
   onValueChange,
   counts,
 }: {
   title: string
   options: FacetOption[]
-  value: string[]
-  onValueChange: (values: string[]) => void
+  /** The chosen option values (controlled). */
+  value?: string[]
+  /** The first chosen values when `value` is not set. Default: none. */
+  defaultValue?: string[]
+  onValueChange?: (values: string[]) => void
   counts?: Record<string, number>
 }) {
+  const [value, setValue] = useControllableState({
+    value: valueProp,
+    defaultValue,
+    onChange: onValueChange,
+  })
   const { messages, formatNumber } = useCoreloomI18n()
   const t = messages.dataList
   const selected = new Set(value)
@@ -255,7 +265,7 @@ function FacetedFilter({
                     role="option"
                     aria-selected={on}
                     onSelect={() => {
-                      onValueChange(on ? value.filter((v) => v !== o.value) : [...value, o.value])
+                      setValue(on ? value.filter((v) => v !== o.value) : [...value, o.value])
                     }}
                   >
                     <span
@@ -286,7 +296,7 @@ function FacetedFilter({
                 size="sm"
                 className="w-full"
                 onClick={() => {
-                  onValueChange([])
+                  setValue([])
                 }}
               >
                 {t.clear}
