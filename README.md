@@ -194,8 +194,9 @@ release; their guides say so. Deprecated APIs keep working until the next major.
 
 ## Develop
 
-pnpm is pinned in `package.json` (`corepack enable`). `pnpm-workspace.yaml` only installs versions
-published at least 14 days ago; Renovate opens dependency PRs on Mondays with the same rule.
+Node and pnpm are pinned in `mise.toml` (`mise install`); pnpm is also pinned in `package.json`
+(`corepack enable`). `pnpm-workspace.yaml` only installs versions published at least 14 days ago;
+Renovate opens dependency PRs on Mondays with the same rule.
 
 ```bash
 pnpm install
