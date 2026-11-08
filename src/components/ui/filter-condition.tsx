@@ -4,7 +4,6 @@
 // operator its type takes, and a value editor that fits both (text, number, date, a range, one or
 // several options, or nothing for "is empty"). FilterBar shows it in a popover, QueryBuilder in a
 // row. `describeCondition` writes the same condition as one line ("Status is any of Active, Paused").
-import * as React from 'react'
 
 import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
