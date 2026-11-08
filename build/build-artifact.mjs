@@ -245,6 +245,10 @@ const COMPONENTS = [
   'FileManager',
   'Inbox',
   'Spreadsheet',
+  'AudioRecorder',
+  'DictationButton',
+  'MediaPlayer',
+  'Booking',
 ]
 
 const globals = {
