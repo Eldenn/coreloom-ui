@@ -117,3 +117,17 @@ coreloom builds ls
 [^push]: Every push to \`main\` deploys, unless a build is pinned.`,
   },
 }
+
+/** `inline`: one line inside a label or a sentence. Blocks lose their markup, inline code stays. */
+export const Inline: Story = {
+  render: () => (
+    <p className="m-0 text-[14px] text-foreground">
+      <Markdown inline>
+        {'I forbid `any` and type explicitly, even if it means **writing more code**.'}
+      </Markdown>{' '}
+      <span className="text-muted-foreground">(strongly agree)</span>
+      <br />
+      <Markdown inline>{'# Not a heading\n\n- nor a list, just `text`'}</Markdown>
+    </p>
+  ),
+}

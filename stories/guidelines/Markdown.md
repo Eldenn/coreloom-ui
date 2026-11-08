@@ -2,7 +2,9 @@
 
 A model's answer, rendered: headings, lists, tables, task lists, links, inline code and code blocks with their language and a Copy button (react-markdown with GitHub-flavoured Markdown).
 
-**The consumer provides** the Markdown text as `children`, plus optionally `streaming` (shows a caret after the last character while the answer arrives), `sources`, `codeBlocks` and `className`.
+**The consumer provides** the Markdown text as `children`, plus optionally `streaming` (shows a caret after the last character while the answer arrives), `sources`, `codeBlocks`, `inline` and `className`.
+
+`inline` renders one line inside a label, a title or a sentence: a `<span>` that keeps inline code, emphasis, strong, strikethrough and links in the surrounding text's style, and turns blocks (paragraphs, headings, lists, code blocks) into their plain text. Use it for short catalog or user text that marks code with backticks, such as a survey question.
 
 `sources` takes the message's AI SDK source parts (`source-url`, `source-document`) in order. The model's markers — `[1]`, `[1][2]` — then become inline citations that show the source on hover, focus or tap. Markers inside code and links stay as written, and so do escaped ones (`\[1\]`) and ones right after a letter or digit (`items[1]`); a number with no source stays plain text, and a half-written `[1` while streaming is just text until it closes. A bracketed number never links anywhere: if the text defines it (`[1]: https://…`), it is still a citation of source 1 — or plain `[1]` when there is no such source.
 
