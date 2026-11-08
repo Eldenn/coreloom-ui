@@ -5178,6 +5178,227 @@
       }
     },
     {
+      "name": "testimonials",
+      "type": "registry:block",
+      "title": "Testimonials",
+      "description": "Customer quotes as cards: an even grid (a featured quote spans two columns) or a wall of columns with \"Show more\"; avatar, logo, rating and source on each.",
+      "categories": ["marketing"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/rating"
+      ],
+      "files": [
+        {
+          "path": "src/components/testimonials.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "comparison-table",
+      "type": "registry:block",
+      "title": "Comparison table",
+      "description": "Plans side by side, feature by feature, under a sticky header: ticks, dashes, \"Partial\" or values with words for screen readers, \"Only show differences\", and one plan at a time on phones.",
+      "categories": ["marketing", "pricing"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/segmented-control",
+        "@coreloom/switch"
+      ],
+      "files": [
+        {
+          "path": "src/components/comparison-table.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "changelog",
+      "type": "registry:block",
+      "title": "Changelog",
+      "description": "A public changelog page: entries with date, version, media and changes tagged New, Improved, Fixed, Security or Deprecated; a filter by kind, anchors, a feed link and older entries on demand.",
+      "categories": ["marketing"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/chip-group"
+      ],
+      "files": [
+        {
+          "path": "src/components/changelog.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "blog",
+      "type": "registry:block",
+      "title": "Blog",
+      "description": "A blog index with a featured post, cards, a category filter and \"More posts\"; an article page with a table of contents, authors and related posts; author cards and pages.",
+      "categories": ["marketing"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/button",
+        "@coreloom/chip-group",
+        "@coreloom/copy-button",
+        "@coreloom/initials",
+        "@coreloom/link"
+      ],
+      "files": [
+        {
+          "path": "src/components/blog.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/blog-article.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "newsletter",
+      "type": "registry:block",
+      "title": "Newsletter",
+      "description": "An email sign-up for a newsletter (onSubscribe) or a launch waitlist (onJoin, with the place in line and a link to share): checks the address, shows the wait, the error and a focused thank-you.",
+      "categories": ["marketing"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/copy-button",
+        "@coreloom/input",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/newsletter.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "cookie-consent",
+      "type": "registry:block",
+      "title": "Cookie consent",
+      "description": "A cookie banner with \"Reject all\" and \"Accept all\" of equal weight, a preferences dialog with a switch per category, and parseConsent to read stored choices back.",
+      "categories": ["marketing"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/dialog",
+        "@coreloom/switch"
+      ],
+      "files": [
+        {
+          "path": "src/components/cookie-consent.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "shop",
+      "type": "registry:block",
+      "title": "Shop",
+      "description": "A light shop without payment: product cards and grid, a product page with images, colour swatches, sizes, stock and quantity, a cart with an order summary (promo code, shipping, tax), a cart sheet and button; cartTotals and findVariant included.",
+      "categories": ["commerce"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/input",
+        "@coreloom/link",
+        "@coreloom/number-input",
+        "@coreloom/rating",
+        "@coreloom/sheet",
+        "@coreloom/status-button"
+      ],
+      "files": [
+        {
+          "path": "src/components/commerce.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/product.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/cart.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "voice-agent",
+      "type": "registry:block",
+      "title": "Voice agent",
+      "description": "The face of a spoken conversation with an AI: an avatar that listens, thinks and speaks, a level meter, a push-to-talk button (hold, Space, or hands-free) and the live transcript. The app owns the microphone and the model.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/agent-avatar",
+        "@coreloom/button",
+        "@coreloom/spinner",
+        "@coreloom/switch"
+      ],
+      "files": [
+        {
+          "path": "src/components/voice-agent.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "load-more",
       "type": "registry:ui",
       "title": "LoadMore",

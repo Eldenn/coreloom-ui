@@ -259,6 +259,22 @@ const COMPONENTS = [
   'DictationButton',
   'MediaPlayer',
   'Booking',
+  'TestimonialGrid',
+  'TestimonialWall',
+  'ComparisonTable',
+  'Changelog',
+  'BlogList',
+  'BlogArticle',
+  'AuthorProfile',
+  'NewsletterForm',
+  'Waitlist',
+  'CookieConsent',
+  'CookiePreferences',
+  'ProductCard',
+  'ProductDetail',
+  'Cart',
+  'OrderSummary',
+  'VoiceAgent',
 ]
 
 const globals = {
