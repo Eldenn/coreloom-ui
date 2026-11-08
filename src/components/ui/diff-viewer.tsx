@@ -159,8 +159,11 @@ const gutter = (type: DiffLine['type'] | undefined) =>
 const tint = (type: DiffLine['type'] | undefined) =>
   cn(type === 'add' && 'bg-success-subtle', type === 'remove' && 'bg-destructive-subtle')
 
+const SIGNS: Record<DiffLine['type'], string> = { add: '+', remove: '−', equal: '' }
+
 function Sign({ type, className }: { type: DiffLine['type'] | undefined; className?: string }) {
   const t = useCoreloomI18n().messages.display.diff
+  const changed = type === 'add' || type === 'remove'
   return (
     <td
       className={cn(
@@ -171,11 +174,159 @@ function Sign({ type, className }: { type: DiffLine['type'] | undefined; classNa
       )}
     >
       {/* The sign is drawn for the eye; the words are read out. */}
-      <span aria-hidden>{type === 'add' ? '+' : type === 'remove' ? '−' : ''}</span>
-      {type === 'add' || type === 'remove' ? (
-        <span className="sr-only">{type === 'add' ? t.added : t.removed}</span>
-      ) : null}
+      <span aria-hidden>{type ? SIGNS[type] : ''}</span>
+      {changed ? <span className="sr-only">{type === 'add' ? t.added : t.removed}</span> : null}
     </td>
+  )
+}
+
+/** A folded run of unchanged lines: a button across the table that unfolds it. */
+function FoldRow({ count, span, onExpand }: { count: number; span: number; onExpand: () => void }) {
+  const t = useCoreloomI18n().messages.display.diff
+  return (
+    <tr>
+      <td colSpan={span} className="border-y border-border-subtle bg-inset p-0">
+        <button
+          type="button"
+          className="w-full cursor-pointer px-4 py-1 text-left font-sans text-[12.5px] text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
+          onClick={onExpand}
+        >
+          {t.showUnchanged(count)}
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+interface RowsProps {
+  lines: readonly DiffLine[]
+  context: number
+  expanded: ReadonlySet<number>
+  onExpand: (key: number) => void
+  /** Classes of the cells that hold the text. */
+  textCell: string
+}
+
+function UnifiedRows({ lines, context, expanded, onExpand, textCell }: RowsProps) {
+  return (
+    <tbody>
+      {foldRuns(lines, (l) => l.type === 'equal', context, expanded).map((row) => {
+        if ('fold' in row)
+          return (
+            <FoldRow
+              key={`fold-${String(row.fold)}`}
+              count={row.count}
+              span={4}
+              onExpand={() => {
+                onExpand(row.fold)
+              }}
+            />
+          )
+        const line = row.entry
+        return (
+          <tr
+            key={row.key}
+            data-change={line.type === 'equal' ? undefined : line.type}
+            className={tint(line.type)}
+          >
+            <td className={gutter(line.type)}>{line.oldLine}</td>
+            <td className={gutter(line.type)}>{line.newLine}</td>
+            <Sign type={line.type} />
+            <td className={textCell}>{line.text || ' '}</td>
+          </tr>
+        )
+      })}
+    </tbody>
+  )
+}
+
+/** One side of a split row: number, sign and text, with the side's tint. */
+function SplitHalf({
+  line,
+  number,
+  textCell,
+  divided,
+}: {
+  line: DiffLine | undefined
+  number: number | undefined
+  textCell: string
+  /** The right half: a line between the two sides. */
+  divided?: boolean
+}) {
+  return (
+    <>
+      <td
+        className={cn(
+          gutter(line?.type),
+          tint(line?.type),
+          divided && 'border-l border-border-subtle',
+        )}
+      >
+        {number}
+      </td>
+      <Sign type={line?.type === 'equal' ? undefined : line?.type} className={tint(line?.type)} />
+      <td className={cn(textCell, tint(line?.type))}>{line ? line.text || ' ' : ''}</td>
+    </>
+  )
+}
+
+function SplitRows({
+  lines,
+  context,
+  expanded,
+  onExpand,
+  textCell,
+  beforeLabel,
+  afterLabel,
+}: RowsProps & { beforeLabel: React.ReactNode; afterLabel: React.ReactNode }) {
+  const pairs = React.useMemo(() => pairLines(lines), [lines])
+  return (
+    <>
+      <colgroup>
+        <col className="w-[1%]" />
+        <col className="w-4" />
+        <col className="w-1/2" />
+        <col className="w-[1%]" />
+        <col className="w-4" />
+        <col className="w-1/2" />
+      </colgroup>
+      <thead>
+        <tr className="border-b border-border-subtle text-left font-sans text-[12px] text-muted-foreground">
+          <th colSpan={3} scope="colgroup" className="px-2 py-1 font-medium">
+            {beforeLabel}
+          </th>
+          <th
+            colSpan={3}
+            scope="colgroup"
+            className="border-l border-border-subtle px-2 py-1 font-medium"
+          >
+            {afterLabel}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {foldRuns(pairs, (p) => p.left?.type === 'equal', context, expanded).map((row) => {
+          if ('fold' in row)
+            return (
+              <FoldRow
+                key={`fold-${String(row.fold)}`}
+                count={row.count}
+                span={6}
+                onExpand={() => {
+                  onExpand(row.fold)
+                }}
+              />
+            )
+          const { left, right } = row.entry
+          return (
+            <tr key={row.key} data-change={left?.type === 'equal' ? undefined : 'change'}>
+              <SplitHalf line={left} number={left?.oldLine} textCell={textCell} />
+              <SplitHalf line={right} number={right?.newLine} textCell={textCell} divided />
+            </tr>
+          )
+        })}
+      </tbody>
+    </>
   )
 }
 
@@ -214,7 +365,6 @@ function DiffViewer({
 }: DiffViewerProps) {
   const t = useCoreloomI18n().messages.display.diff
   const lines = React.useMemo(() => diffLines(before, after), [before, after])
-  const pairs = React.useMemo(() => (view === 'split' ? pairLines(lines) : []), [lines, view])
   const [expanded, setExpanded] = React.useState<ReadonlySet<number>>(() => new Set())
   // Folds are keyed by position, which means something else once the texts or the view change.
   const [shown, setShown] = React.useState({ lines, view })
@@ -224,35 +374,6 @@ function DiffViewer({
   }
   const added = lines.filter((l) => l.type === 'add').length
   const removed = lines.filter((l) => l.type === 'remove').length
-  const textCell = cn(
-    // align-top: in the split view a short side would otherwise centre against a long, wrapped one.
-    'pr-4 align-top text-foreground',
-    wrap ? '[overflow-wrap:anywhere] whitespace-pre-wrap' : 'whitespace-pre',
-  )
-
-  const fold = (key: number, count: number, span: number) => (
-    <tr key={`fold-${String(key)}`}>
-      <td colSpan={span} className="border-y border-border-subtle bg-inset p-0">
-        <button
-          type="button"
-          className="w-full cursor-pointer px-4 py-1 text-left font-sans text-[12.5px] text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
-          onClick={() => {
-            setExpanded((prev) => new Set(prev).add(key))
-          }}
-        >
-          {t.showUnchanged(count)}
-        </button>
-      </td>
-    </tr>
-  )
-
-  const header = (
-    <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-2 font-mono text-[12px]">
-      {title ? <span className="mr-auto text-foreground">{title}</span> : null}
-      <span className="text-success">{t.linesAdded(added)}</span>
-      <span className="text-destructive">{t.linesRemoved(removed)}</span>
-    </p>
-  )
 
   if (!added && !removed)
     return (
@@ -266,89 +387,36 @@ function DiffViewer({
       </div>
     )
 
+  const rows: RowsProps = {
+    lines,
+    context,
+    expanded,
+    onExpand: (key) => {
+      setExpanded((prev) => new Set(prev).add(key))
+    },
+    textCell: cn(
+      // align-top: in the split view a short side would otherwise centre against a long, wrapped one.
+      'pr-4 align-top text-foreground',
+      wrap ? '[overflow-wrap:anywhere] whitespace-pre-wrap' : 'whitespace-pre',
+    ),
+  }
   return (
     <div data-slot="diff-viewer" data-view={view} className={cn('min-w-0', className)} {...props}>
-      {header}
+      <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-2 font-mono text-[12px]">
+        {title ? <span className="mr-auto text-foreground">{title}</span> : null}
+        <span className="text-success">{t.linesAdded(added)}</span>
+        <span className="text-destructive">{t.linesRemoved(removed)}</span>
+      </p>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse font-mono text-[12.5px] leading-[1.7]">
           {view === 'split' ? (
-            <>
-              <colgroup>
-                <col className="w-[1%]" />
-                <col className="w-4" />
-                <col className="w-1/2" />
-                <col className="w-[1%]" />
-                <col className="w-4" />
-                <col className="w-1/2" />
-              </colgroup>
-              <thead>
-                <tr className="border-b border-border-subtle text-left font-sans text-[12px] text-muted-foreground">
-                  <th colSpan={3} scope="colgroup" className="px-2 py-1 font-medium">
-                    {beforeLabel ?? t.before}
-                  </th>
-                  <th
-                    colSpan={3}
-                    scope="colgroup"
-                    className="border-l border-border-subtle px-2 py-1 font-medium"
-                  >
-                    {afterLabel ?? t.after}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {foldRuns(pairs, (p) => p.left?.type === 'equal', context, expanded).map((row) => {
-                  if ('fold' in row) return fold(row.fold, row.count, 6)
-                  const { left, right } = row.entry
-                  return (
-                    <tr key={row.key} data-change={left?.type === 'equal' ? undefined : 'change'}>
-                      <td className={cn(gutter(left?.type), tint(left?.type))}>{left?.oldLine}</td>
-                      <Sign
-                        type={left?.type === 'equal' ? undefined : left?.type}
-                        className={tint(left?.type)}
-                      />
-                      <td className={cn(textCell, tint(left?.type))}>
-                        {left ? left.text || ' ' : ''}
-                      </td>
-                      <td
-                        className={cn(
-                          gutter(right?.type),
-                          tint(right?.type),
-                          'border-l border-border-subtle',
-                        )}
-                      >
-                        {right?.newLine}
-                      </td>
-                      <Sign
-                        type={right?.type === 'equal' ? undefined : right?.type}
-                        className={tint(right?.type)}
-                      />
-                      <td className={cn(textCell, tint(right?.type))}>
-                        {right ? right.text || ' ' : ''}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </>
+            <SplitRows
+              {...rows}
+              beforeLabel={beforeLabel ?? t.before}
+              afterLabel={afterLabel ?? t.after}
+            />
           ) : (
-            <tbody>
-              {foldRuns(lines, (l) => l.type === 'equal', context, expanded).map((row) => {
-                if ('fold' in row) return fold(row.fold, row.count, 4)
-                const line = row.entry
-                return (
-                  <tr
-                    key={row.key}
-                    data-change={line.type === 'equal' ? undefined : line.type}
-                    className={tint(line.type)}
-                  >
-                    <td className={gutter(line.type)}>{line.oldLine}</td>
-                    <td className={gutter(line.type)}>{line.newLine}</td>
-                    <Sign type={line.type} />
-                    <td className={textCell}>{line.text || ' '}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
+            <UnifiedRows {...rows} />
           )}
         </table>
       </div>
