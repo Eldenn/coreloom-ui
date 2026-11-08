@@ -1,0 +1,30 @@
+<!-- @dsCard group="Blocks" width=1280 height=640 subtitle="voice-agent block · push-to-talk · live transcript" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.VoiceAgent || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { VoiceAgent } = UI;
+      const transcript = [
+        { id: 'u1', role: 'user', text: 'What’s on my calendar tomorrow morning?' },
+        { id: 'a1', role: 'assistant', text: 'The design review at 9:30 and a call with Northwind at 11.' },
+        { id: 'u2', role: 'user', text: 'Move the Northwind call to the afternoon', final: false }];
+      function Demo() { return h('div', { style: { maxWidth: 420, margin: '0 auto' } }, h(VoiceAgent, { state: { status: 'listening' }, transcript, level: 0.7, name: 'Ada', seed: 'ada', onStart: () => {}, onStop: () => {} })); }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
