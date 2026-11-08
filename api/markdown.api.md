@@ -10,6 +10,7 @@ Markdown.children: string
 Markdown.streaming?: boolean | undefined
 Markdown.sources?: readonly CitationSource[] | undefined
 Markdown.codeBlocks?: Readonly<Partial<Record<string, React.ComponentType<MarkdownCodeBlockProps>>>> | undefined
+Markdown.inline?: boolean | undefined
 Markdown.className?: string | undefined
 type MarkdownCodeBlockProps = {}
 MarkdownCodeBlockProps.code: string
