@@ -4778,6 +4778,57 @@
       }
     },
     {
+      "name": "code-review",
+      "type": "registry:block",
+      "title": "Code review",
+      "description": "A pull request to review: changed files in a tree, unified or split diffs with a comment button on every line, threads under their lines (reply, resolve), Viewed per file and Finish review with a verdict; comments and the review are your app's callbacks.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/diff-viewer",
+        "@coreloom/comment-thread",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-view",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/checkbox",
+        "@coreloom/choice-card",
+        "@coreloom/label",
+        "@coreloom/popover",
+        "@coreloom/segmented-control",
+        "@coreloom/spinner",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/code-review.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-model.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-file.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-tree.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-submit.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "terminal-console",
       "type": "registry:block",
       "title": "Terminal console",
