@@ -42,9 +42,9 @@ ComboboxField.className?: string | undefined
 ComboboxField.labelAction?: React.ReactNode
 ComboboxField.hideLabel?: boolean | undefined
 ComboboxField.placeholder?: string | undefined
+ComboboxField.options: import("@/components/ui/combobox").ComboboxOption[]
 ComboboxField.disabled?: boolean | undefined
 ComboboxField.aria-label?: string | undefined
-ComboboxField.options: import("@/components/ui/combobox").ComboboxOption[]
 ComboboxField.searchPlaceholder?: string | undefined
 ComboboxField.emptyText?: React.ReactNode
 ComboboxField.contentClassName?: string | undefined
@@ -178,8 +178,8 @@ MentionField.hideLabel?: boolean | undefined
 MentionField.rows?: number | undefined
 MentionField.trigger?: string | undefined
 MentionField.placeholder?: string | undefined
-MentionField.disabled?: boolean | undefined
 MentionField.options: import("@/components/ui/mention-textarea").MentionOption[]
+MentionField.disabled?: boolean | undefined
 MentionField.maxSuggestions?: number | undefined
 function MoneyField
 MoneyField.label: React.ReactNode
@@ -213,9 +213,9 @@ MultiSelectField.className?: string | undefined
 MultiSelectField.labelAction?: React.ReactNode
 MultiSelectField.hideLabel?: boolean | undefined
 MultiSelectField.placeholder?: string | undefined
+MultiSelectField.options: import("@/components/ui/multi-select").MultiSelectOption[]
 MultiSelectField.disabled?: boolean | undefined
 MultiSelectField.aria-label?: string | undefined
-MultiSelectField.options: import("@/components/ui/multi-select").MultiSelectOption[]
 MultiSelectField.searchPlaceholder?: string | undefined
 MultiSelectField.emptyText?: React.ReactNode
 MultiSelectField.maxShown?: number | undefined
@@ -334,8 +334,8 @@ SegmentedField.className?: string | undefined
 SegmentedField.labelAction?: React.ReactNode
 SegmentedField.hideLabel?: boolean | undefined
 SegmentedField.size?: 'sm' | 'default' | undefined
-SegmentedField.disabled?: boolean | undefined
 SegmentedField.options: import("@/components/ui/segmented-control").SegmentedOption[]
+SegmentedField.disabled?: boolean | undefined
 SegmentedField.iconOnly?: boolean | undefined
 SegmentedField.fullWidth?: boolean | undefined
 function SelectField
@@ -366,8 +366,8 @@ SortableField.className?: string | undefined
 SortableField.labelAction?: React.ReactNode
 SortableField.hideLabel?: boolean | undefined
 SortableField.numbered?: boolean | undefined
-SortableField.disabled?: boolean | undefined
 SortableField.options: import("@/components/ui/sortable-list").SortableOption[]
+SortableField.disabled?: boolean | undefined
 function SubmitButton
 SubmitButton.size?: 'sm' | 'lg' | 'default' | 'icon' | 'icon-sm' | 'icon-lg' | null | undefined
 SubmitButton.variant?: 'link' | 'default' | 'destructive' | 'secondary' | 'outline' | 'ghost' | null | undefined
@@ -453,8 +453,8 @@ TransferField.labelAction?: React.ReactNode
 TransferField.hideLabel?: boolean | undefined
 TransferField.availableLabel?: string | undefined
 TransferField.selectedLabel?: string | undefined
-TransferField.disabled?: boolean | undefined
 TransferField.options: import("@/components/ui/transfer-list").TransferOption[]
+TransferField.disabled?: boolean | undefined
 function TreeSelectField
 TreeSelectField.label: React.ReactNode
 TreeSelectField.description?: React.ReactNode
