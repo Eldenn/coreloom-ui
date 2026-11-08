@@ -231,6 +231,7 @@ const COMPONENTS = [
   'IncidentTimeline',
   'ApiKeys',
   'Webhooks',
+  'ApiTryIt',
   'TwoFactorSettings',
   'ActiveSessions',
   'AuditLog',
