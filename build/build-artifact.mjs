@@ -223,6 +223,7 @@ const COMPONENTS = [
   'DiagramWorkspace',
   'FormBuilder',
   'Ide',
+  'CodeReview',
   'Gantt',
   'StatusPage',
   'UptimeBar',
