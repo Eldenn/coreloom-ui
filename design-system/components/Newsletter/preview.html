@@ -1,0 +1,30 @@
+<!-- @dsCard group="Blocks" width=1280 height=420 subtitle="newsletter block · sign-up · waitlist" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.NewsletterForm || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { NewsletterForm, Waitlist } = UI;
+      function Demo() {
+        return h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 1000, margin: '0 auto' } },
+          h(NewsletterForm, { variant: 'card', onSubscribe: () => new Promise((r) => setTimeout(r, 600)), title: 'The Coreloom letter', description: 'New components, twice a month.', note: 'Unsubscribe in one click.' }),
+          h(Waitlist, { variant: 'card', onJoin: () => Promise.resolve({ position: 1205, referralUrl: 'https://coreloom.dev/r/k7f2q' }), title: 'Coreloom Cloud is coming', description: 'Join to get early access.', count: 1204 }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

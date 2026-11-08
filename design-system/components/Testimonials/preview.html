@@ -1,0 +1,32 @@
+<!-- @dsCard group="Blocks" width=1280 height=620 subtitle="testimonials block · grid · wall · rating" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.TestimonialGrid || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { TestimonialGrid } = UI;
+      const testimonials = [
+        { id: 'a', featured: true, rating: 5, author: 'Inès Marchand', byline: 'Head of design, Northwind', source: { label: 'G2' }, quote: 'We replaced three internal component libraries with Coreloom in a quarter. The accessibility work alone would have taken us a year.' },
+        { id: 'b', rating: 5, author: 'Daniel Okafor', byline: 'Staff engineer, Lumen', quote: 'The AI chat blocks read our AI SDK messages as they are.' },
+        { id: 'c', author: 'Mei Tanaka', byline: 'Product, Atlas', quote: 'Keyboard support everywhere, even in the Gantt chart.' },
+        { id: 'd', author: 'Lucas Ferreira', byline: 'Founder, Pequi', quote: 'Dark mode, four languages and our brand colour from one command.' },
+        { id: 'e', rating: 4.5, author: 'Sarah Klein', byline: 'Frontend lead, Kontor', quote: 'Installed code is our code.' }];
+      function Demo() { return h(TestimonialGrid, { testimonials }); }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
