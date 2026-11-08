@@ -255,6 +255,10 @@ const COMPONENTS = [
   'VersionHistory',
   'SqlExplorer',
   'AgentRunReplay',
+  'AudioRecorder',
+  'DictationButton',
+  'MediaPlayer',
+  'Booking',
 ]
 
 const globals = {

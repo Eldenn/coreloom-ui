@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/media-player.stories'
+import guide from './MediaPlayer.md?raw'
+
+<Meta title="Guidelines/Media/Media player" />
+
+<Markdown>{guide}</Markdown>
+
+## Audio
+
+<Canvas of={Stories.Audio} />
