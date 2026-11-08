@@ -20,7 +20,7 @@ test.describe('Suggestion list (Components/Actions/Suggestion list)', () => {
     await expect(first).toContainText('Write a Playwright spec for every new page')
     await expect(first).toContainText('From your notes on “How do you test?”')
     // Inline Markdown keeps the code span.
-    await expect(items.nth(1).locator('code')).toHaveText('any')
+    await expect(items.nth(1).locator('code')).toHaveText(['any', 'unknown'])
     const accept = first.getByRole('button', { name: 'Accept' })
     await expect(accept).toHaveAccessibleDescription(/Write a Playwright spec/)
     await expect(first.getByRole('button', { name: 'Edit' })).toBeVisible()
