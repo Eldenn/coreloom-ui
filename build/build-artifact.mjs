@@ -244,6 +244,16 @@ const COMPONENTS = [
   'FileManager',
   'Inbox',
   'Spreadsheet',
+  'LoadMore',
+  'PresenceAvatars',
+  'RemoteCursors',
+  'ImageCrop',
+  'NotificationPreferences',
+  'EnvVars',
+  'FeatureFlags',
+  'VersionHistory',
+  'SqlExplorer',
+  'AgentRunReplay',
 ]
 
 const globals = {

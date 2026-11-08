@@ -1,0 +1,33 @@
+<!-- @dsCard group="Blocks" width=1280 height=620 subtitle="versions by day · compare · name · restore" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.VersionHistory || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { VersionHistory, TooltipProvider } = UI;
+      const at = (d, hr) => new Date(2026, 9, d, hr);
+      const versions = [
+        { id: 'v3', createdAt: at(14, 10), author: 'Grace Hopper', summary: 'Team plan', content: '# Pricing\n\n- Free\n- Pro: $12\n- Team: $24' },
+        { id: 'v2', createdAt: at(13, 17), author: 'Ada Lovelace', name: 'Sent to legal', content: '# Pricing\n\n- Free\n- Pro: $12' },
+        { id: 'v1', createdAt: at(10, 9), author: 'Alan Turing', name: 'First draft', content: '# Pricing\n\n- Free' }];
+      function Demo() {
+        return h(VersionHistory, { versions, onRestore: () => undefined, onRename: () => undefined });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
