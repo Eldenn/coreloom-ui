@@ -10,7 +10,7 @@ ActionBar.count: number
 ActionBar.label?: React.ReactNode
 ActionBar.open?: boolean | undefined
 ActionBar.onClear?: (() => void) | undefined
-ActionBar.position?: 'fixed' | 'sticky' | 'static' | undefined
+ActionBar.position?: 'sticky' | 'fixed' | 'static' | undefined
 ActionBar.children?: React.ReactNode
 ActionBar.*: react
 ```
