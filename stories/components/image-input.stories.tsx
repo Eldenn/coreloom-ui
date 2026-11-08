@@ -71,3 +71,25 @@ export const French: Story = {
     </Field>
   ),
 }
+
+/** `crop`: a chosen image is framed first (move, zoom), round for the circle; the value is the cropped File. */
+export const WithCrop: Story = {
+  render: function Render() {
+    const [photo, setPhoto] = React.useState<ImageValue>(null)
+    return (
+      <FieldGroup className="max-w-md">
+        <Field>
+          <FieldLabel htmlFor="img-crop">Profile photo</FieldLabel>
+          <ImageInput id="img-crop" crop value={photo} onValueChange={setPhoto} />
+          <FieldDescription>
+            {photo instanceof File ? `Cropped: ${photo.name}` : 'Choose a photo to frame it'}
+          </FieldDescription>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="img-crop-cover">Cover</FieldLabel>
+          <ImageInput id="img-crop-cover" shape="wide" crop={{ maxSize: 1600 }} />
+        </Field>
+      </FieldGroup>
+    )
+  },
+}

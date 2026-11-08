@@ -1,0 +1,13 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/notification-preferences.stories'
+import guide from './NotificationPreferences.md?raw'
+
+<Meta title="Guidelines/Blocks/Notification preferences" />
+
+{/* Written in the design system (its component guides); kept in sync by hand. */}
+
+<Markdown>{guide}</Markdown>
+
+## Example
+
+<Canvas of={Stories.Default} />

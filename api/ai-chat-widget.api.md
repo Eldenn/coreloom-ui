@@ -47,6 +47,6 @@ ChatWidget.offset?: number | { x: number; y: number; } | undefined
 ChatWidget.zIndex?: number | undefined
 ChatWidget.fullScreen?: boolean | undefined
 ChatWidget.className?: string | undefined
-type ChatWidgetPresence = 'offline' | 'online' | 'away'
+type ChatWidgetPresence = 'offline' | 'away' | 'online'
 type ChatWidgetProps = Omit<{ messages: readonly import("../lib/ai").AiMessage[]; status?: import("../lib/ai").AiChatStatus; error?: Error | string | null; onSend: (message: { text: string; files: File[]; }) => void; onStop?: () => void; onRegenerate?: () => void; feedback?: Record<string, import("@/components/ai-chat").Feedback | undefined>; onFeedback?: (messageId: string, feedback: import("@/components/ai-chat").Feedback | undefined) => void; suggestions?: string[]; emptyTitle?: React.ReactNode; emptyDescription?: React.ReactNode; toolbar?: React.ReactNode; allowAttachments?: boolean; accept?: string; placeholder?: string; header?: React.ReactNode; autoFocus?: boolean; className?: string; } & MessageOptions & ToolOptions & AvatarOptions, 'header' | 'className' | 'autoFocus'> & { open?: boolean; defaultOpen?: boolean; onOpenChange?: (open: boolean) => void; title?: React.ReactNode; subtitle?: React.ReactNode; avatar?: React.ReactNode; presence?: ChatWidgetPresence; unread?: number; greeting?: React.ReactNode; onGreetingDismiss?: () => void; onClose?: () => void; side?: 'left' | 'right'; offset?: number | { x: number; y: number; }; zIndex?: number; fullScreen?: boolean; className?: string; }
 ```

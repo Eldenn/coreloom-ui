@@ -1,0 +1,29 @@
+<!-- @dsCard group="Forms" height=460 subtitle="Frame an image · drag, arrows, zoom · round" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ImageCrop || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ImageCrop, TooltipProvider } = UI;
+      const src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600"><rect width="960" height="600" fill="#0e7490"/><circle cx="700" cy="170" r="70" fill="#fde68a"/><path d="M0 460 L220 260 L380 420 L560 220 L960 520 L960 600 L0 600 Z" fill="#164e63"/></svg>');
+      function Demo() {
+        return h('div', { style: { maxWidth: 320 } }, h(ImageCrop, { src, round: true, defaultValue: { x: 0.7, y: 0.3, zoom: 2 } }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
