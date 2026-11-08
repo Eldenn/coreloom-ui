@@ -1,0 +1,33 @@
+<!-- @dsCard group="Blocks" width=1280 height=820 subtitle="blog block · featured post · categories · cards" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.BlogList || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { BlogList } = UI;
+      const cover = (bg, a) => 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><rect width="1600" height="900" fill="' + bg + '"/><circle cx="1180" cy="300" r="220" fill="' + a + '"/></svg>');
+      const ines = { id: 'i', name: 'Inès Marchand' }, dan = { id: 'd', name: 'Daniel Okafor' };
+      const posts = [
+        { id: '1', title: 'Designing for the keyboard first', href: '#', category: 'Accessibility', date: new Date(2026, 9, 12), readingTime: 8, authors: [ines], cover: h('img', { src: cover('#1f2a37', '#3fb6c7'), alt: '' }), excerpt: 'How we design the keyboard path before the visual one.' },
+        { id: '2', title: 'Reading AI SDK messages without depending on it', href: '#', category: 'Engineering', date: new Date(2026, 9, 3), readingTime: 6, authors: [dan], cover: h('img', { src: cover('#2b2140', '#a78bfa'), alt: '' }) },
+        { id: '3', title: 'One accent colour, every pairing checked', href: '#', category: 'Design', date: new Date(2026, 8, 24), readingTime: 5, authors: [ines], cover: h('img', { src: cover('#3a2618', '#f59e0b'), alt: '' }) },
+        { id: '4', title: 'What we learned translating 3,000 strings', href: '#', category: 'Engineering', date: new Date(2026, 8, 10), readingTime: 7, authors: [dan], cover: h('img', { src: cover('#14302a', '#34d399'), alt: '' }) }];
+      function Demo() { return h(BlogList, { posts }); }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
