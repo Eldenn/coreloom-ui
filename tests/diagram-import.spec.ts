@@ -133,3 +133,56 @@ test.describe('Import in the diagram workspace (Blocks/Diagrams/Diagram workspac
     await expect(views(page).locator('[data-view-id]')).toHaveCount(3)
   })
 })
+
+/** Holds `files` over `selector` (the hint shows), then drops them, as a pointer would. */
+async function drop(page: Page, selector: string, files: { name: string; text: string }[]) {
+  const transfer = await page.evaluateHandle((list) => {
+    const data = new DataTransfer()
+    for (const file of list) data.items.add(new File([file.text], file.name))
+    return data
+  }, files)
+  const target = page.locator(selector)
+  await target.dispatchEvent('dragenter', { dataTransfer: transfer })
+  await target.dispatchEvent('dragover', { dataTransfer: transfer })
+  await expect(page.getByText('Drop diagram files to add them as views')).toBeVisible()
+  await target.dispatchEvent('drop', { dataTransfer: transfer })
+  await expect(page.getByText('Drop diagram files to add them as views')).toBeHidden()
+}
+
+test.describe('Dropping files on the diagram workspace (Blocks/Diagrams/Diagram workspace)', () => {
+  const views = (page: Page) => page.getByRole('navigation', { name: 'Views' })
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 })
+  })
+
+  test('a file dropped on the editor becomes a new view; the open text stays', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-workspace--default')
+    const source = page.getByRole('textbox', { name: 'Source' })
+    const before = await source.textContent()
+    await drop(page, '[data-slot="diagram-workspace"] .cm-content', [
+      { name: 'use-cases.puml', text: PLANTUML },
+    ])
+    await expect(
+      views(page).getByRole('button', { name: 'use-cases', exact: true }),
+    ).toHaveAttribute('aria-current', 'true')
+    await expect(source).toContainText('Place order')
+    // The view that was open when the file was dropped kept its text.
+    await views(page).locator('[data-view-id]').first().click()
+    await expect(source).toHaveText(before ?? '')
+  })
+
+  test('several files add a view each, and the ones that can’t be read say why', async ({
+    page,
+  }) => {
+    await open(page, 'blocks-diagrams-diagram-workspace--default')
+    await drop(page, '[data-slot="diagram-workspace"]', [
+      { name: 'billing.mmd', text: MERMAID },
+      { name: 'logo.png', text: 'PNG\u0000' },
+      { name: 'use-cases.puml', text: PLANTUML },
+    ])
+    await expect(views(page).locator('[data-view-id]')).toHaveCount(5)
+    await expect(views(page).getByRole('button', { name: 'billing', exact: true })).toBeVisible()
+    await expect(views(page).getByRole('status')).toHaveText('logo.png can’t be read as text.')
+  })
+})

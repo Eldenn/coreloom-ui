@@ -1,15 +1,20 @@
 'use client'
 
 // Coreloom UI — DiagramWorkspace. Where a document of several diagrams is written: its name,
-// whether it's saved, the list of its views (add one of a chosen kind or from a file, rename,
-// reorder, delete)
-// and the diagram editor for the view that's open. On a phone the list moves into a side sheet.
+// whether it's saved, the list of its views (add one of a chosen kind or from a file, picked or
+// dropped on the workspace; rename, reorder, delete) and the diagram editor for the view that's
+// open. On a phone the list moves into a side sheet.
 // The app keeps the document: every change comes back through a callback, and it saves.
 import { FileUpIcon, ListIcon, PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import * as React from 'react'
 
 import { DiagramEditor, type DiagramFormat, parseDiagram } from '@/components/diagram-editor'
-import { DIAGRAM_FILE_ACCEPT, importError, readDiagramFile } from '@/components/diagram-import'
+import {
+  DIAGRAM_FILE_ACCEPT,
+  importError,
+  readDiagramFile,
+  useFileDrop,
+} from '@/components/diagram-import'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -56,9 +61,10 @@ interface DiagramWorkspaceProps {
   /** "Add a diagram" with the kind picked; the app adds the view (and usually opens it). */
   onAdd: (kind: UmlDiagramKind) => void
   /**
-   * A file picked with "Import a file…" in the Add menu, read in the browser: its name without
-   * the extension, its text, what could be read from it and its format. The app adds the view.
-   * Without it, the Add menu offers no import.
+   * A file picked with "Import a file…" in the Add menu, or dropped on the workspace, read in the
+   * browser: its name without the extension, its text, what could be read from it and its format.
+   * The app adds the view; several dropped files call it once each, in order. Without it, the Add
+   * menu offers no import and dropped files are left alone.
    */
   onImport?: (view: DiagramWorkspaceImport) => void
   onRename: (id: string, title: string) => void
@@ -246,23 +252,26 @@ function ViewRow({
   )
 }
 
-/** A view from a file: reads it, hands it to the app, and says why when it can't be read. */
+/** Views from files: reads them, hands each to the app in order, says why any was left out. */
 function useWorkspaceImport(onImport: DiagramWorkspaceProps['onImport']) {
   const { messages } = useCoreloomI18n()
   const [error, setError] = React.useState<string | null>(null)
-  const importFile = (file: File) => {
-    void readDiagramFile(file, 'mermaid').then((read) => {
-      setError(importError(read, messages.diagramEditor))
-      if (read.status !== 'read') return
-      onImport?.({
-        title: read.title,
-        value: read.text,
-        result: parseDiagram(read.text, read.format),
-        format: read.format,
-      })
+  const importFiles = (files: File[]) => {
+    void Promise.all(files.map((file) => readDiagramFile(file, 'mermaid'))).then((reads) => {
+      const errors = reads.map((read) => importError(read, messages.diagramEditor))
+      setError(errors.filter(Boolean).join(' ') || null)
+      for (const read of reads) {
+        if (read.status !== 'read') continue
+        onImport?.({
+          title: read.title,
+          value: read.text,
+          result: parseDiagram(read.text, read.format),
+          format: read.format,
+        })
+      }
     })
   }
-  return { importFile, error }
+  return { importFiles, error }
 }
 
 function AddMenu({
@@ -271,7 +280,7 @@ function AddMenu({
 }: {
   onAdd: (kind: UmlDiagramKind) => void
   /** Present when the app takes views from files. */
-  onImport?: (file: File) => void
+  onImport?: (files: File[]) => void
 }) {
   const { messages } = useCoreloomI18n()
   const input = React.useRef<HTMLInputElement>(null)
@@ -323,7 +332,7 @@ function AddMenu({
           onChange={(e) => {
             const file = e.currentTarget.files?.[0]
             e.currentTarget.value = ''
-            if (file) onImport(file)
+            if (file) onImport([file])
           }}
         />
       )}
@@ -333,10 +342,14 @@ function AddMenu({
 
 type ViewsPanelProps = Pick<
   DiagramWorkspaceProps,
-  'diagrams' | 'activeId' | 'onAdd' | 'onImport' | 'onRename' | 'onReorder' | 'onDelete'
+  'diagrams' | 'activeId' | 'onAdd' | 'onRename' | 'onReorder' | 'onDelete'
 > & {
   /** A view was opened from the list. */
   onOpen: (id: string) => void
+  /** Present when the app takes views from files. */
+  importFiles?: (files: File[]) => void
+  /** Why the last files didn't all become views; null when they did. */
+  importError: string | null
 }
 
 /** The document's views: open, add, rename, delete, or reorder them. */
@@ -345,13 +358,13 @@ function ViewsPanel({
   activeId,
   onOpen,
   onAdd,
-  onImport,
+  importFiles,
+  importError,
   onRename,
   onReorder,
   onDelete,
 }: ViewsPanelProps) {
   const t = useCoreloomI18n().messages.diagramWorkspace
-  const imports = useWorkspaceImport(onImport)
   const [reordering, setReordering] = React.useState(false)
   const [renaming, setRenaming] = React.useState<string | null>(null)
   const list = React.useRef<HTMLDivElement>(null)
@@ -377,11 +390,11 @@ function ViewsPanel({
         >
           {reordering ? t.reorderDone : t.reorder}
         </Button>
-        <AddMenu onAdd={onAdd} onImport={onImport ? imports.importFile : undefined} />
+        <AddMenu onAdd={onAdd} onImport={importFiles} />
       </div>
-      {/* Says why a picked file didn't become a view; empty otherwise. */}
+      {/* Says why a picked or dropped file didn't become a view; empty otherwise. */}
       <p role="status" className="m-0 text-[12.5px] text-destructive empty:sr-only">
-        {imports.error}
+        {importError}
       </p>
       {reordering ? (
         <SortableList
@@ -421,6 +434,23 @@ function ViewsPanel({
           ))}
         </ul>
       )}
+    </div>
+  )
+}
+
+// Over the workspace while files are held above it. Only a pointer drops files; the keyboard
+// and screen readers have "Import a file…" in the Add menu, so this stays hidden from them.
+function DropHint({ text }: { text: string }) {
+  return (
+    <div
+      aria-hidden
+      data-slot="diagram-workspace-drop"
+      className="pointer-events-none absolute -inset-1.5 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-primary bg-background/80 p-6 backdrop-blur-sm"
+    >
+      <p className="m-0 flex max-w-sm items-center gap-2 rounded-md border border-border bg-card px-4 py-3 text-[14px] font-medium text-foreground shadow-md">
+        <FileUpIcon aria-hidden className="size-5 shrink-0 text-primary" />
+        {text}
+      </p>
     </div>
   )
 }
@@ -477,11 +507,14 @@ function DiagramWorkspace({
   const [sheet, setSheet] = React.useState(false)
   const active = diagrams.find((item) => item.id === activeId) ?? diagrams.at(0)
   const reports = useEditorReports(active, onDiagramChange)
+  const imports = useWorkspaceImport(onImport)
+  const drop = useFileDrop({ enabled: onImport !== undefined, onFiles: imports.importFiles })
   const panel = {
     diagrams,
     activeId: active?.id ?? '',
     onAdd,
-    onImport,
+    importFiles: onImport ? imports.importFiles : undefined,
+    importError: imports.error,
     onRename,
     onReorder,
     onDelete,
@@ -492,12 +525,14 @@ function DiagramWorkspace({
       data-slot="diagram-workspace"
       aria-label={title}
       className={cn(
-        'flex min-w-0 flex-col gap-3',
+        'relative flex min-w-0 flex-col gap-3',
         height && 'lg:h-(--diagram-workspace-h)',
         className,
       )}
       style={height ? ({ '--diagram-workspace-h': height } as React.CSSProperties) : undefined}
+      {...drop.handlers}
     >
+      {drop.dragging && <DropHint text={t.dropFiles} />}
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
         {/* The name takes its own row until the list of views moves to the side. */}
         <p className="m-0 flex min-w-0 basis-full font-display text-[20px] leading-tight font-semibold tracking-[-0.01em] lg:flex-1 lg:basis-0">
