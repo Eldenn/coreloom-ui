@@ -1,5 +1,7 @@
 # Terminal
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A command line in the page: a prompt, an input with history and Tab completion, and the output with its ANSI colours. Use it for a project's console, a CLI in the browser, an admin shell, a deploy that asks before it runs. It runs nothing itself: every command goes to your app, which answers with text, a promise or a stream, so the commands can be a pretend shell, calls to your API, or a real process behind a WebSocket.
 
 **The consumer provides** either `onCommand(command, context)` or a `session`, and optionally `prompt` (`"$ "`, ANSI allowed), `welcome`, `onComplete(input)` (candidates for the last word), `title`, `actions`, `toolbar` (true: title, Stop, Clear, Copy) and `autoFocus` (false). For the output to outlive the component (a panel that closes, a tab), create the terminal with `useTerminal(options)` or `createTerminal(options)` and pass it as `terminal`.

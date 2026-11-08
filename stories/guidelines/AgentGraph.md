@@ -1,5 +1,7 @@
 # Agent Graph
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 How a multi-agent system fits together: agents as cards, teams as frames around their members, and three kinds of links — **delegates** (solid: a supervisor gives a sub-task and gets the result back), **hands off** (dashed: the conversation moves to another agent) and **uses** (dotted: a tool or a knowledge base). Supervisors sit above the agents they delegate to; tools and knowledge share the bottom row. It is laid out by the component, with no graph library: there is nothing to drag or arrange.
 
 **The consumer provides** `agents` (id, name, and optionally `kind` — `agent` by default, `human`, `tool` or `knowledge` —, `role`, `team`, `model`, `status`), `edges` (`from`, `to`, `kind`: `delegates`, `handoff` or `uses`, and an optional short `label`) and optionally `teams` (id, name). Selection is `selectedId` + `onSelectedChange`, or `defaultSelectedId`. To show a run: `activity` (by agent id: `working`, `waiting`, `done` or `failed`) and `activePath` (the agents in the order they took turns; the links between them are highlighted). Also `view` / `defaultView` / `onViewChange` (`graph` or `list`), `maxHeight` (560), `legend` (true), `label`, and `avatars` (`face` or `dots`): agents drawn as animated Agent Avatars, seeded by id, that follow `activity` (working thinks, done smiles, failed frowns, paused sleeps). Left out, a robot icon.

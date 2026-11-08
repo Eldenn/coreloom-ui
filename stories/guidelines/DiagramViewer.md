@@ -1,5 +1,7 @@
 # Diagram Viewer
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A document of several diagrams to read, not edit: what a shared link opens. Its title, description and date on top, the views in tabs, the diagram with zoom and full screen, and SVG or PNG downloads. There are no editing tools.
 
 **The consumer provides** `title`, `diagrams` (`{ id, title, diagram, layout? }[]`: a `UmlSpec` per view, and the positions people placed for drawn diagrams), and optionally `description`, `updatedAt` (a Date: "Updated 2 hours ago"), `activeId` / `defaultActiveId` / `onActiveChange` (the view shown; the first one by default), `banner` (above the title: who shared it, a read-only notice), `fileName` (downloads are named `<fileName>-<view>.svg`; the view's name alone by default) and `className`.

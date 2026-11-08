@@ -1,5 +1,7 @@
 # Diagram Card
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A card in a gallery of diagram documents (architectures, models): a thumbnail, the title, who can see it, how many diagrams it holds, when it changed, and a "…" menu. The whole card opens the document.
 
 **The consumer provides** `title`, `href` (the document's address, through `AppLink`: wrap the app in `CoreloomLinkProvider` to use its router), `visibility` (`private`, `public` or `protected`), `updatedAt` (a Date), and optionally `diagram` (a `UmlSpec`, drawn with UML Diagram's `preview`) or `image` (the URL of a thumbnail the app already made; used when there's no `diagram`), `diagramCount` (the number of diagrams, "4 diagrams"), `actions` (the menu: `{ label, icon?, onSelect, destructive?, disabled? }[]`, such as Open, Duplicate, Share, Delete; no menu when empty) and `className`.

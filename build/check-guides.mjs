@@ -11,12 +11,13 @@
 // like the guide: Rating.md → Rating) must appear in the guide's code, inline or in a `<Tag props>`
 // or a code block. Pass-through props every field has (`className`, `aria-*`, `id`, `name`,
 // `disabled`, `placeholder`, `onBlur`…) don't need a word.
+// It also checks that experimental items (`meta.stability` in registry.json) say so in their guides.
 import fs from 'node:fs'
 import path from 'node:path'
 
 import ts from 'typescript'
 
-import { guidesFor } from './gen-llms.mjs'
+import { guidesFor, isExperimental } from './gen-llms.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const guidesDir = path.join(root, 'stories/guidelines')
@@ -203,6 +204,27 @@ function htmlAttributes(program, checker) {
   return names
 }
 
+const EXPERIMENTAL = '> **Experimental.**'
+
+/**
+ * An item's stability (`meta.stability` in registry.json) and its guides agree: an experimental
+ * item's guides open with the Experimental note, a stable item's guides don't carry it.
+ */
+function stabilityProblems(items) {
+  const problems = []
+  for (const item of items)
+    for (const guide of guidesFor(item)) {
+      const flagged = fs
+        .readFileSync(path.join(guidesDir, `${guide}.md`), 'utf8')
+        .includes(EXPERIMENTAL)
+      if (isExperimental(item) && !flagged)
+        problems.push(`${guide}.md: ${item.name} is experimental, add the "${EXPERIMENTAL}" note`)
+      if (!isExperimental(item) && flagged)
+        problems.push(`${guide}.md: ${item.name} is stable, remove the "${EXPERIMENTAL}" note`)
+    }
+  return problems
+}
+
 function main() {
   const registry = JSON.parse(fs.readFileSync(path.join(root, 'registry.json'), 'utf8'))
   const program = createProgram()
@@ -241,7 +263,7 @@ function main() {
       byGuide.set(guide, entry)
     }
 
-  const problems = []
+  const problems = stabilityProblems(registry.items)
   let checked = 0
   for (const [guide, { components, exports, ownProps }] of byGuide) {
     if (!components.size) continue

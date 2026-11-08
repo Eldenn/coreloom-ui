@@ -1,5 +1,7 @@
 # Access Code Gate
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The screen in front of a protected link: the document's name and one box per character of the access code. It goes in AuthLayout. The app checks the code; the gate collects it.
 
 **The consumer provides** `title` (the shared document's name) and `onSubmit(code) => Promise<void>`, and optionally `length` (characters in a code, `8` by default), `alphabet` (the characters a code can hold; by default upper-case letters and digits without 0, O, 1, I and L, which people mix up), `pending` (the app is checking: the boxes wait, `false` by default), `error` (what went wrong), `attemptsLeft` (shown under the boxes), `lockedUntil` (a Date: until then the boxes are off and a countdown runs) and `className`.

@@ -95,6 +95,10 @@ A change is finished when all of this is true:
 4. **A changeset** (`pnpm changeset`, or a file in `.changeset/`) says what changed for someone who
    installed the item, under Added / Changed / Fixed, and **Upgrading** when they must do something.
    Don't edit `CHANGELOG.md`: the release writes it from the changesets.
+   A change to a stable item's API follows [`VERSIONING.md`](./VERSIONING.md): add, don't rename or
+   remove. Deprecate first (`@deprecated` in the JSDoc, the replacement in the guide, a
+   **Deprecated** changeset entry) and remove only in a major. A new item that may still move is
+   added as experimental (`"meta": { "stability": "experimental" }` and the guide's note).
 5. **`pnpm starter:sync`** has run if any item the starter uses changed (CI runs
    `node build/sync-starter.mjs --check` and fails otherwise). New npm dependencies go in both
    `package.json` files at the same version.

@@ -168,6 +168,13 @@ no setup on our side; they read the docs and code but can't install items:
 | `build/`             | Scripts: the design-system bundle, accent presets, DTCG tokens, release notes, starter sync.                         |
 | `design-system/`     | The design system's component cards and page templates (see its README).                                             |
 
+## Versioning
+
+Semantic Versioning, with the API it covers spelled out in [`VERSIONING.md`](./VERSIONING.md): item
+names, exports, props, tokens and message keys. Items marked **experimental** (UML diagrams, the node
+editor and its agent builder, the terminal and IDE, the form builder) may still change in a minor
+release; their guides say so. Deprecated APIs keep working until the next major.
+
 ## Conventions
 
 - **No shadcn colour variables.** Coreloom already uses `--accent`, `--border` and `--radius-*` for its own

@@ -254,7 +254,10 @@
           "path": "src/lib/uml-arrange.ts",
           "type": "registry:lib"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai",
@@ -2186,7 +2189,10 @@
           "path": "src/components/ui/ansi-output.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "terminal",
@@ -2208,7 +2214,10 @@
           "path": "src/components/ui/terminal.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "log-viewer",
@@ -3058,7 +3067,10 @@
           "path": "src/components/ui/form-renderer.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "inline-citation",
@@ -3134,7 +3146,10 @@
           "path": "src/components/ui/agent-graph.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "node-editor",
@@ -3171,7 +3186,10 @@
           "path": "src/components/ui/node-editor-canvas.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "uml-diagram",
@@ -3221,7 +3239,10 @@
           "path": "src/lib/uml-image.ts",
           "type": "registry:lib"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "diagram-code-block",
@@ -3243,7 +3264,10 @@
           "path": "src/components/ui/diagram-code-block.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "context-meter",
@@ -4358,7 +4382,10 @@
           "path": "src/components/workflow-builder.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "diagram-editor",
@@ -4429,7 +4456,10 @@
           "path": "src/components/use-diagram-editing.ts",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "diagram-card",
@@ -4455,7 +4485,10 @@
           "path": "src/components/diagram-card.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "share-dialog",
@@ -4485,7 +4518,10 @@
           "path": "src/components/share-dialog.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "access-code-gate",
@@ -4510,7 +4546,10 @@
           "path": "src/components/access-code-gate.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "diagram-viewer",
@@ -4536,7 +4575,10 @@
           "path": "src/components/diagram-viewer.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "diagram-workspace",
@@ -4564,7 +4606,10 @@
           "path": "src/components/diagram-workspace.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "form-builder",
@@ -4601,7 +4646,10 @@
           "path": "src/components/form-builder.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ide",
@@ -4634,7 +4682,10 @@
           "path": "src/components/ide.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "terminal-console",
@@ -4660,7 +4711,10 @@
           "path": "src/components/terminal-console.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "pipeline-run",
@@ -4683,7 +4737,10 @@
           "path": "src/components/pipeline-run.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "event-calendar",
@@ -4896,7 +4953,10 @@
           "path": "src/components/ai-agent-teams.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-agent-builder",
@@ -4929,7 +4989,10 @@
           "path": "src/components/ai-agent-builder.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-playground",

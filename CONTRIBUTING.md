@@ -71,6 +71,9 @@ Every pull request that changes what ships (`src/`, `registry.json`) has a chang
 something. Don't edit `CHANGELOG.md` or `version`: the release writes them. README → Develop shows an
 example.
 
+Changing a stable item's API follows [`VERSIONING.md`](./VERSIONING.md): renaming or removing
+something is a major release, so deprecate it first and keep it working until then.
+
 ## Commits and pull requests
 
 - Commit messages and pull request titles follow

@@ -70,4 +70,30 @@ export async function openStory(
           a.timeline !== document.timeline,
       ),
   )
+  // Recharts animates its shapes from JavaScript, frame by frame, which getAnimations() doesn't
+  // see: a screenshot could catch a radar or an area half drawn. Wait until the charts' SVG stops
+  // changing (no mutation for 300 ms), for 5 s at most.
+  if (await page.locator('#storybook-root .recharts-wrapper').count()) await chartsSettled(page)
+}
+
+function chartsSettled(page: Page) {
+  return page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        const observer = new MutationObserver(() => {
+          clearTimeout(quiet)
+          quiet = setTimeout(done, 300)
+        })
+        let quiet = setTimeout(done, 300)
+        const cap = setTimeout(done, 5000)
+        function done() {
+          observer.disconnect()
+          clearTimeout(quiet)
+          clearTimeout(cap)
+          resolve()
+        }
+        for (const chart of document.querySelectorAll('#storybook-root .recharts-wrapper'))
+          observer.observe(chart, { subtree: true, attributes: true, childList: true })
+      }),
+  )
 }

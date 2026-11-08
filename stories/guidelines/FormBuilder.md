@@ -1,5 +1,7 @@
 # Form Builder
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Makes a form without code. A palette of field types on the left, the form itself in the middle (live: each field drawn as it will look), and the selected field's settings on the right. Preview tries the form; JSON shows it as a FormSpec (editable) or as a JSON Schema. What it edits is the FormSpec that `FormRenderer` draws, so a form built here is stored as JSON and shown anywhere.
 
 **`FormBuilder` takes** `value` / `defaultValue` / `onValueChange` (a `FormSpec`), and optionally `types` (the same you give FormRenderer), `onPreviewSubmit(values)` and `className`.

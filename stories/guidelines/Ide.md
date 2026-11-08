@@ -1,5 +1,7 @@
 # IDE
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A code workspace in the page, laid out like VS Code: a file explorer, tabs of open files, the CodeEditor, a bottom panel and a status bar. Use it for a playground, a template or config editor, an extension's or a function's source, a code exercise. Everything runs in the browser: the files are props, and saving, running and checking code are your app's callbacks.
 
 **The consumer provides** `files` + `onFilesChange` (or `defaultFiles`): `{ path, content, language?, readOnly? }` with `/` between folders (folders come from the paths), and optionally `defaultOpen` / `defaultActive` (paths), `onSave(file)` (resolve to mark it saved, reject to say it failed; without it files are never marked modified), `onRun(files, active)` with `running`, `diagnostics` (by path, the CodeEditor's shape), `panels` (`{ id, label, content }`: an output, a Terminal, a preview, after Problems), `panelOpen` / `defaultPanelOpen` / `onPanelOpenChange` and `panel` / `defaultPanel` / `onPanelChange` (control them to show a panel when your app runs something), `title`, `actions` (end of the title bar), `readOnly`, `fileOperations` (true: New file, Rename, Delete), `defaultWrap` and `tabSize`.
