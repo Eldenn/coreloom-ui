@@ -1,4 +1,4 @@
-# Build output and generated files
+# Build output and generated files (api/ is written by pnpm api:report)
 dist
 coverage
 storybook-static
@@ -10,6 +10,7 @@ pnpm-lock.yaml
 starter/pnpm-lock.yaml
 starter/dist
 starter/src/routeTree.gen.ts
+api
 # Synced from the design system (pnpm tokens:sync) and vendored builds
 src/styles/tokens.css
 src/styles/tokens.json

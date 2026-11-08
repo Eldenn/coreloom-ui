@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # api:check reads the API report of the base branch
       - uses: pnpm/action-setup@v6 # version from package.json "packageManager"
       - uses: actions/setup-node@v5
         with:
@@ -42,6 +44,10 @@ jobs:
       - run: pnpm registry:size --check
       # Every prop a guide names exists, and every prop a component declares is in its guide.
       - run: pnpm docs:check
+      # api/ matches the code, and stable items lose no export or prop outside a major (VERSIONING.md).
+      - run: pnpm api:check --since="origin/${BASE_REF:-main}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
       # The starter carries copies of the registry items: fail if they drifted, then build it.
       - run: node build/sync-starter.mjs --check
       - run: pnpm --dir starter build
