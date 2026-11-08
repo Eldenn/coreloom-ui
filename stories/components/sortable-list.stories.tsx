@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { GaugeIcon, LockIcon, PaletteIcon, PlugIcon } from 'lucide-react'
+import { GaugeIcon, LockIcon, PaletteIcon, PencilIcon, PlugIcon, Trash2Icon } from 'lucide-react'
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { SortableList, type SortableOption } from '@/components/ui/sortable-list'
 
@@ -42,7 +43,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Items to put in order. The consumer provides `options` (`{ value, label, description?, icon? }`), `value` + `onValueChange` (the values in order) and a name (`aria-labelledby`). Drag by the handle, with Space and arrows on it, or with the up and down buttons.',
+          'Items to put in order. The consumer provides `options` (`{ value, label, description?, icon?, actions? }`), `value` + `onValueChange` (the values in order) and a name (`aria-labelledby`). Drag by the handle, with Space and arrows on it, or with the up and down buttons.',
       },
     },
   },
@@ -99,4 +100,61 @@ export const French: Story = {
       />
     </Field>
   ),
+}
+
+const rules = [
+  {
+    value: 'r1',
+    label: 'Use date-fns for every date calculation; never write date arithmetic by hand.',
+    description: 'Tooling',
+  },
+  {
+    value: 'r2',
+    label:
+      'Keep each component under 150 lines; split it into smaller components or hooks when it grows past that, and colocate the pieces in the same folder.',
+    description: 'React',
+  },
+  { value: 'r3', label: 'Run pnpm lint before handing back.', description: 'Workflow' },
+]
+
+/** `wrap` keeps long items whole; `actions` adds an item's own buttons after the move buttons. */
+export const WithActions: Story = {
+  render: () => {
+    const [items, setItems] = React.useState(rules)
+    const options: SortableOption[] = items.map((rule) => ({
+      ...rule,
+      actions: (
+        <>
+          <Button variant="ghost" size="icon" className="size-7" aria-label={`Edit ${rule.label}`}>
+            <PencilIcon />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            aria-label={`Delete ${rule.label}`}
+            onClick={() => {
+              setItems((current) => current.filter((item) => item.value !== rule.value))
+            }}
+          >
+            <Trash2Icon />
+          </Button>
+        </>
+      ),
+    }))
+    return (
+      <Field className="max-w-xl">
+        <FieldLabel id="sl-rules">Rules</FieldLabel>
+        <SortableList
+          aria-labelledby="sl-rules"
+          wrap
+          options={options}
+          value={items.map((item) => item.value)}
+          onValueChange={(order) => {
+            setItems(order.flatMap((value) => items.filter((item) => item.value === value)))
+          }}
+        />
+      </Field>
+    )
+  },
 }

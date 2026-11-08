@@ -11,6 +11,7 @@ SortableList.value?: string[] | undefined
 SortableList.defaultValue?: string[] | undefined
 SortableList.onValueChange?: ((value: string[]) => void) | undefined
 SortableList.numbered?: boolean | undefined
+SortableList.wrap?: boolean | undefined
 SortableList.disabled?: boolean | undefined
 SortableList.className?: string | undefined
 SortableList.aria-label?: string | undefined
@@ -21,4 +22,5 @@ SortableOption.value: string
 SortableOption.label: string
 SortableOption.description?: string | undefined
 SortableOption.icon?: React.ReactNode
+SortableOption.actions?: React.ReactNode
 ```
