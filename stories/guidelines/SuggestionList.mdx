@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/suggestion-list.stories'
+import guide from './SuggestionList.md?raw'
+
+<Meta title="Guidelines/Actions/Suggestion list" />
+
+<Markdown>{guide}</Markdown>
+
+## Reviewing
+
+<Canvas of={Stories.Interactive} />
+
+## When saving fails
+
+<Canvas of={Stories.FailedSave} />
