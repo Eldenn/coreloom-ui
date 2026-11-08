@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/filter-bar.stories'
+import guide from './FilterBar.md?raw'
+
+<Meta title="Guidelines/Forms/Filter bar" />
+
+<Markdown>{guide}</Markdown>
+
+## Over a table
+
+<Canvas of={Stories.WithTable} />
+
+## Query builder
+
+<Canvas of={Stories.Builder} />
