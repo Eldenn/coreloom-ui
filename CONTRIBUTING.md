@@ -20,7 +20,8 @@ Small fixes (a typo, a broken link, an obvious bug) can go straight to a pull re
 
 ## Set up
 
-You need Node 22 and pnpm (the version is pinned in `package.json`; `corepack enable` picks it up).
+You need Node 22 and pnpm. With [mise](https://mise.jdx.dev), `mise install` sets up both from
+`mise.toml`; otherwise the pnpm version is pinned in `package.json` and `corepack enable` picks it up.
 
 ```bash
 pnpm install                 # only installs versions published ≥ 14 days ago
