@@ -1,0 +1,48 @@
+<!-- @dsCard group="Blocks" height=600 subtitle="CodeReview · file tree, line comments, threads, finish review" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.CodeReview || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const me = { name: 'Camille Martin' };
+      const now = new Date('2026-10-14T10:00:00+02:00');
+      const files = [
+        { path: 'src/lib/format.ts', status: 'modified',
+          before: "export function formatPrice(cents: number, symbol: string) {\n  return symbol + (cents / 100).toFixed(2)\n}\n",
+          after: "export function formatPrice(cents: number, currency: string, locale = 'en') {\n  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100)\n}\n" },
+        { path: 'src/components/price-tag.tsx', status: 'added', before: '',
+          after: "export function PriceTag({ cents }: { cents: number }) {\n  return <span>{formatPrice(cents, 'EUR')}</span>\n}\n" },
+      ];
+      const initial = [{ id: 't1', path: 'src/lib/format.ts', line: 2, side: 'new', comments: [
+        { id: 'c1', author: { name: 'Noah Laurent' }, body: 'Could we keep one formatter per locale?', createdAt: new Date(now.getTime() - 40 * 60000) },
+      ] }];
+      function Demo() {
+        const [threads, setThreads] = React.useState(initial);
+        let n = 0;
+        const comment = (body) => ({ id: 'c' + Date.now() + (n++), author: me, body, createdAt: now });
+        return h(UI.CodeReview, {
+          files, threads, currentUser: me, now,
+          onComment: ({ body, ...anchor }) => setThreads((list) => [...list, { id: 't' + Date.now(), ...anchor, comments: [comment(body)] }]),
+          onReply: (id, body) => setThreads((list) => list.map((t) => t.id === id ? { ...t, comments: [...t.comments, comment(body)] } : t)),
+          onResolve: (id, resolved) => setThreads((list) => list.map((t) => t.id === id ? { ...t, resolved } : t)),
+          onSubmitReview: () => Promise.resolve(),
+        });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

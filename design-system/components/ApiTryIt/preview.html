@@ -1,0 +1,47 @@
+<!-- @dsCard group="Blocks" height=860 subtitle="ApiTryIt · parameters, body, send, response, cURL" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;max-width:720px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ApiTryIt || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ApiTryIt } = UI;
+      const body = JSON.stringify({ data: [{ id: 'dpl_7Hq2', state: 'ready', branch: 'main' }], hasMore: false }, null, 2);
+      const response = {
+        status: 200, statusText: 'OK', durationMs: 142, body,
+        headers: [['content-type', 'application/json'], ['x-request-id', 'req_2f9c1a']],
+      };
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(ApiTryIt, {
+          baseUrl: 'https://api.coreloom.dev/v1',
+          endpoint: {
+            method: 'GET',
+            path: '/projects/{projectId}/deployments',
+            summary: 'List the deployments of a project, newest first.',
+            parameters: [
+              { name: 'projectId', in: 'path', required: true, example: 'web' },
+              { name: 'state', in: 'query', example: 'ready' },
+            ],
+          },
+          auth: { defaultToken: 'cl_live_4f7a9c2e81d3b6a0' },
+          defaultValues: { projectId: 'web' },
+          defaultResponse: response,
+          onSend: async () => { await wait(700); return response; },
+        }));
+    }
+    render();
+  </script>
+</body>
+</html>

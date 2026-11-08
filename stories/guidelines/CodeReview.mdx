@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/code-review.stories'
+import guide from './CodeReview.md?raw'
+
+<Meta title="Guidelines/Developer/Code review" />
+
+<Markdown>{guide}</Markdown>
+
+## With threads
+
+<Canvas of={Stories.WithThreads} />
