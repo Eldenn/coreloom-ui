@@ -144,6 +144,18 @@
       ]
     },
     {
+      "name": "use-controllable-state",
+      "type": "registry:lib",
+      "title": "useControllableState()",
+      "description": "One value a component's parent may own (`value` + `onChange`) or leave to the component (`defaultValue`), like useState.",
+      "files": [
+        {
+          "path": "src/lib/use-controllable-state.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "uml",
       "type": "registry:lib",
       "title": "UML model, Mermaid and PlantUML",
