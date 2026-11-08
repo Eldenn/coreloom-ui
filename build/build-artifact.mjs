@@ -216,6 +216,7 @@ const COMPONENTS = [
   'DiagramCodeBlock',
   'DiagramEditor',
   'SaveStatus',
+  'SuggestionList',
   'DiagramCard',
   'ShareDialog',
   'AccessCodeGate',
@@ -244,6 +245,10 @@ const COMPONENTS = [
   'FileManager',
   'Inbox',
   'Spreadsheet',
+  'AudioRecorder',
+  'DictationButton',
+  'MediaPlayer',
+  'Booking',
 ]
 
 const globals = {
