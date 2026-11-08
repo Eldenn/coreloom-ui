@@ -418,9 +418,6 @@
   },
   "src/components/ui/diff-viewer.tsx": {
     "complexity": {
-      "count": 2
-    },
-    "no-nested-ternary": {
       "count": 1
     }
   },
@@ -1029,9 +1026,6 @@
   },
   "starter/src/components/ui/diff-viewer.tsx": {
     "complexity": {
-      "count": 2
-    },
-    "no-nested-ternary": {
       "count": 1
     }
   },

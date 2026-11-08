@@ -1019,6 +1019,47 @@
       ]
     },
     {
+      "name": "filter-bar",
+      "type": "registry:ui",
+      "title": "FilterBar",
+      "description": "Filters as chips above a list or a table (Add filter, edit a chip's operator and value, remove it, saved views, result count), and QueryBuilder for nested AND / OR groups. The filter is a plain value: run it on rows with matchesFilter, send it to your API, or keep it in the URL with filterToSearchParams.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/date-picker",
+        "@coreloom/input",
+        "@coreloom/multi-select",
+        "@coreloom/number-input",
+        "@coreloom/popover",
+        "@coreloom/select"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/filter-bar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/filter-condition.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/query-builder.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/lib/filter.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "virtual-list",
       "type": "registry:ui",
       "title": "VirtualList",
@@ -3366,6 +3407,7 @@
         "@coreloom/combobox",
         "@coreloom/date-picker",
         "@coreloom/data-table",
+        "@coreloom/filter-bar",
         "@coreloom/virtual-list",
         "@coreloom/context-menu",
         "@coreloom/menubar",
@@ -4153,6 +4195,54 @@
       ]
     },
     {
+      "name": "api-try-it",
+      "type": "registry:block",
+      "title": "API try it",
+      "description": "The \"Try it\" panel of an API reference page: path, query and header parameters, headers, a JSON body, Send and Cancel, the status, time, body and headers that came back, and Copy as cURL. The app makes the call through onSend.",
+      "categories": ["application", "docs"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/copy-button",
+        "@coreloom/field",
+        "@coreloom/format",
+        "@coreloom/input",
+        "@coreloom/json-input",
+        "@coreloom/json-viewer",
+        "@coreloom/key-value-editor",
+        "@coreloom/sonner",
+        "@coreloom/spinner",
+        "@coreloom/tabs"
+      ],
+      "files": [
+        {
+          "path": "src/components/api-try-it.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-request.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-response.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "security-settings",
       "type": "registry:block",
       "title": "Security settings",
@@ -4710,6 +4800,57 @@
       "files": [
         {
           "path": "src/components/ide.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "code-review",
+      "type": "registry:block",
+      "title": "Code review",
+      "description": "A pull request to review: changed files in a tree, unified or split diffs with a comment button on every line, threads under their lines (reply, resolve), Viewed per file and Finish review with a verdict; comments and the review are your app's callbacks.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/diff-viewer",
+        "@coreloom/comment-thread",
+        "@coreloom/mention-textarea",
+        "@coreloom/tree-view",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/checkbox",
+        "@coreloom/choice-card",
+        "@coreloom/label",
+        "@coreloom/popover",
+        "@coreloom/segmented-control",
+        "@coreloom/spinner",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/code-review.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-model.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-file.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-tree.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/code-review-submit.tsx",
           "type": "registry:component"
         }
       ],
