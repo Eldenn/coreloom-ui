@@ -59,6 +59,11 @@ Nothing stable disappears without warning:
 2. It keeps working for at least one more minor release.
 3. The next major removes it, with **Upgrading** steps.
 
+CI holds stable items to this. `api/` records every item's exports and props, one per line
+(`pnpm api:report` writes it), so a pull request shows exactly what an API gains or loses.
+`pnpm api:check` fails when `api/` doesn't match the code, and when a stable item loses an export or
+a prop, or a component of one gains a required prop, without a pending major changeset.
+
 ## How changes are announced
 
 Each release has a section in [`CHANGELOG.md`](./CHANGELOG.md) and on

@@ -26,6 +26,8 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "docs:check": "node build/check-guides.mjs",
+    "api:report": "node build/api-report.mjs",
+    "api:check": "node build/api-report.mjs --check",
     "llms": "node build/gen-llms.mjs",
     "brand": "node build/gen-brand.mjs",
     "changeset": "changeset",
