@@ -4123,6 +4123,54 @@
       ]
     },
     {
+      "name": "api-try-it",
+      "type": "registry:block",
+      "title": "API try it",
+      "description": "The \"Try it\" panel of an API reference page: path, query and header parameters, headers, a JSON body, Send and Cancel, the status, time, body and headers that came back, and Copy as cURL. The app makes the call through onSend.",
+      "categories": ["application", "docs"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/copy-button",
+        "@coreloom/field",
+        "@coreloom/format",
+        "@coreloom/input",
+        "@coreloom/json-input",
+        "@coreloom/json-viewer",
+        "@coreloom/key-value-editor",
+        "@coreloom/sonner",
+        "@coreloom/spinner",
+        "@coreloom/tabs"
+      ],
+      "files": [
+        {
+          "path": "src/components/api-try-it.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-request.ts",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-form.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/api-try-it-response.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "security-settings",
       "type": "registry:block",
       "title": "Security settings",
