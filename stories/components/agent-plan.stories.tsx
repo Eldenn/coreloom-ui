@@ -89,3 +89,27 @@ export const Live: Story = {
     )
   },
 }
+
+/** `open` + `onOpenChange`: the page owns whether the steps show, here from a button of its own. */
+export const Controlled: Story = {
+  args: { plan: deployPlan(5), active: false },
+  render: function ControlledPlan(args) {
+    const [open, setOpen] = React.useState(false)
+    return (
+      <>
+        <AgentPlan {...args} open={open} onOpenChange={setOpen} />
+        <Button
+          size="sm"
+          variant="outline"
+          className="self-start"
+          aria-pressed={open}
+          onClick={() => {
+            setOpen(!open)
+          }}
+        >
+          Show the steps
+        </Button>
+      </>
+    )
+  },
+}
