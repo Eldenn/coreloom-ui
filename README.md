@@ -26,10 +26,12 @@
   context meter).
 - **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
   pages, notifications, team, billing, API keys, webhooks, security, audit log, integrations, kanban,
-  calendar, Gantt roadmap, status page, file manager, inbox, spreadsheet, marketing and docs.
+  calendar, Gantt roadmap, status page, file manager, inbox, spreadsheet, marketing and docs; for a
+  public site, testimonials, a plan comparison table, a changelog, a blog, a newsletter or waitlist
+  sign-up, a cookie banner and a light shop (product page, cart, order summary).
 - **AI blocks**: chat with conversation history, edits and branches, a floating chat widget, agent
   management, runs and traces, evaluations (run comparison, judge verdicts, regressions), a prompt
-  manager, a model playground and a knowledge base. They read the AI SDK's `UIMessage` as is, without
+  manager, a model playground, a knowledge base and a voice agent (push-to-talk, live transcript). They read the AI SDK's `UIMessage` as is, without
   depending on it or on any API.
 - **Dark and light** themes, four accent presets, every pairing WCAG AA. Axe runs on every story in CI.
 - **English, French, Spanish and German** for every built-in string.

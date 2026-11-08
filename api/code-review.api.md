@@ -41,7 +41,7 @@ ReviewFile.before: string
 ReviewFile.after: string
 type ReviewFileStatus = 'modified' | 'added' | 'deleted' | 'renamed'
 type ReviewLayout = 'unified' | 'split'
-type ReviewSide = 'old' | 'new'
+type ReviewSide = 'new' | 'old'
 function reviewStats(files: readonly ReviewFile[]) => DiffStats & { files: number; }
 type ReviewSubmission = {}
 ReviewSubmission.verdict: ReviewVerdict
@@ -85,7 +85,7 @@ ReviewFile.before: string
 ReviewFile.after: string
 type ReviewFileStatus = 'modified' | 'added' | 'deleted' | 'renamed'
 type ReviewLayout = 'unified' | 'split'
-type ReviewSide = 'old' | 'new'
+type ReviewSide = 'new' | 'old'
 function reviewStats(files: readonly ReviewFile[]) => DiffStats & { files: number; }
 type ReviewSubmission = {}
 ReviewSubmission.verdict: ReviewVerdict
