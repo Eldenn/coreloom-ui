@@ -1,0 +1,38 @@
+<!-- @dsCard group="AI" height=880 subtitle="AgentRunReplay · scrub a run · turns · per-agent cost" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AgentRunReplay || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AgentRunReplay, TooltipProvider } = UI;
+      const agents = [
+        { id: 'concierge', name: 'Concierge', role: 'Supervisor' },
+        { id: 'billing', name: 'Billing', role: 'Invoices' },
+        { id: 'tech', name: 'Tech support', role: 'Bugs' }];
+      const edges = [{ from: 'concierge', to: 'billing', kind: 'delegates' }, { from: 'concierge', to: 'tech', kind: 'delegates' }];
+      const spans = [
+        { id: 'a1', kind: 'agent', name: 'Concierge', agentId: 'concierge', startMs: 0, durationMs: 9000, status: 'ok', tokens: { input: 800, output: 120 }, cost: 0.004 },
+        { id: 'a2', parentId: 'a1', kind: 'agent', name: 'Billing', agentId: 'billing', startMs: 800, durationMs: 3000, status: 'ok', tokens: { input: 2000, output: 300 }, cost: 0.01 },
+        { id: 'a3', parentId: 'a1', kind: 'agent', name: 'Tech support', agentId: 'tech', startMs: 4000, durationMs: 4600, status: 'ok', tokens: { input: 3000, output: 600 }, cost: 0.018 },
+        { id: 't1', parentId: 'a3', kind: 'tool', name: 'get_logs', startMs: 4500, durationMs: 1500, status: 'error' }];
+      function Demo() {
+        return h(AgentRunReplay, { agents, edges, spans, defaultTime: 5000 });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

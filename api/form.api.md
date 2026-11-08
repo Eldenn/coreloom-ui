@@ -145,6 +145,7 @@ ImageField.shape?: 'square' | 'circle' | 'wide' | undefined
 ImageField.maxSize?: number | undefined
 ImageField.disabled?: boolean | undefined
 ImageField.hint?: React.ReactNode
+ImageField.crop?: boolean | import("@/components/ui/image-input").ImageInputCrop | undefined
 ImageField.fallback?: React.ReactNode
 function JsonField
 JsonField.label: React.ReactNode

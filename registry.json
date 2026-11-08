@@ -2031,7 +2031,8 @@
         "@coreloom/utils",
         "@coreloom/i18n",
         "@coreloom/button",
-        "@coreloom/file-upload"
+        "@coreloom/file-upload",
+        "@coreloom/image-crop"
       ],
       "files": [
         {
@@ -3541,7 +3542,10 @@
         "@coreloom/animated-background",
         "@coreloom/tilt-card",
         "@coreloom/audio-recorder",
-        "@coreloom/media-player"
+        "@coreloom/media-player",
+        "@coreloom/load-more",
+        "@coreloom/presence",
+        "@coreloom/image-crop"
       ],
       "dependencies": []
     },
@@ -5546,6 +5550,274 @@
       "files": [
         {
           "path": "src/components/voice-agent.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "load-more",
+      "type": "registry:ui",
+      "title": "LoadMore",
+      "description": "The end of a list or feed that loads its next page: a Load more button, or infinite scroll with `auto`, with loading, error (Try again) and end states; loadMoreStatus reads a TanStack infinite query.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/load-more.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "presence",
+      "type": "registry:ui",
+      "title": "Presence",
+      "description": "Who else is here: PresenceAvatars (stacked avatars with what each person is doing), PresenceActivity (\"Ada is editing…\") and RemoteCursors (other people’s pointers with their names). No transport: your app passes positions in.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/avatar",
+        "@coreloom/initials",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/presence.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "image-crop",
+      "type": "registry:ui",
+      "title": "ImageCrop",
+      "description": "Frame part of an image before upload: drag or arrow keys to move, zoom slider, fixed ratio, round frame for avatars; cropImage draws the result into a new File and ImageCropDialog asks for it in a dialog.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/dialog",
+        "@coreloom/slider"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/image-crop.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "dotenv",
+      "type": "registry:lib",
+      "title": "parseDotenv()",
+      "description": "Reads the text of a .env file into entries (comments, export, quotes and escapes), listing the lines it can’t read instead of throwing.",
+      "files": [
+        {
+          "path": "src/lib/dotenv.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "notification-preferences",
+      "type": "registry:block",
+      "title": "Notification preferences",
+      "description": "Which notifications someone gets and where: events (grouped) by channels (e-mail, push, in-app), a checkbox per cell and per channel, required and unavailable cells.",
+      "categories": ["application", "settings"],
+      "dependencies": [],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/card",
+        "@coreloom/checkbox"
+      ],
+      "files": [
+        {
+          "path": "src/components/notification-preferences.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "env-vars",
+      "type": "registry:block",
+      "title": "Environment variables",
+      "description": "A project’s environment variables per environment: secret values masked, Add, Edit, Delete, Import a pasted .env (previewed first) and Compare environments to see what is missing or different.",
+      "categories": ["application", "settings"],
+      "dependencies": ["lucide-react", "zod"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/card",
+        "@coreloom/dialog",
+        "@coreloom/dotenv",
+        "@coreloom/form",
+        "@coreloom/popconfirm",
+        "@coreloom/secret-value",
+        "@coreloom/tabs",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/env-vars.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "feature-flags",
+      "type": "registry:block",
+      "title": "Feature flags",
+      "description": "Feature flags per environment: on / off switches, rollout percentage, targeting rules (first match wins) and history in a side panel; evaluateFeatureFlag shows the logic your server applies.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react", "zod"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/dialog",
+        "@coreloom/form",
+        "@coreloom/input",
+        "@coreloom/relative-time",
+        "@coreloom/select",
+        "@coreloom/sheet",
+        "@coreloom/slider-input",
+        "@coreloom/switch",
+        "@coreloom/tags-input",
+        "@coreloom/timeline"
+      ],
+      "files": [
+        {
+          "path": "src/components/feature-flags.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/feature-flag-rules.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "version-history",
+      "type": "registry:block",
+      "title": "Version history",
+      "description": "The saved versions of a document, diagram or prompt by day: name a version, see it or its changes against the previous or current one (DiffViewer), and restore it.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/badge",
+        "@coreloom/button",
+        "@coreloom/diff-viewer",
+        "@coreloom/editable-text",
+        "@coreloom/label",
+        "@coreloom/popconfirm",
+        "@coreloom/relative-time",
+        "@coreloom/select",
+        "@coreloom/switch"
+      ],
+      "files": [
+        {
+          "path": "src/components/version-history.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "sql-explorer",
+      "type": "registry:block",
+      "title": "SQL explorer",
+      "description": "Query a database from the browser: schema tree, query tabs, a SQL editor with schema completion, Run (Mod-Enter, the selection or everything) and Cancel, results in a virtual table with CSV export. Your onRun returns the rows.",
+      "categories": ["application"],
+      "dependencies": [
+        "@codemirror/lang-sql@^6",
+        "@codemirror/state@^6",
+        "@codemirror/view@^6",
+        "@tanstack/react-table@^8",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/code-editor",
+        "@coreloom/data-table",
+        "@coreloom/kbd",
+        "@coreloom/tree-view"
+      ],
+      "files": [
+        {
+          "path": "src/components/sql-explorer.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "ai-agent-replay",
+      "type": "registry:block",
+      "title": "AI agent run replay",
+      "description": "Replay a finished multi-agent run from its trace spans: the agent graph at each moment, play or scrub the timeline, the numbered turns, and per-agent turns, time, tokens, tool calls, cost and errors.",
+      "categories": ["ai"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/agent-graph",
+        "@coreloom/ai-agent-teams",
+        "@coreloom/button",
+        "@coreloom/select",
+        "@coreloom/slider"
+      ],
+      "files": [
+        {
+          "path": "src/components/ai-agent-replay.tsx",
           "type": "registry:component"
         }
       ],

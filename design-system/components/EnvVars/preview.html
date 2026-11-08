@@ -1,0 +1,36 @@
+<!-- @dsCard group="Blocks" width=1280 height=520 subtitle="settings block · per environment · import .env · compare" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.EnvVars || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { EnvVars, TooltipProvider, Toaster } = UI;
+      const environments = [{ id: 'production', name: 'Production' }, { id: 'preview', name: 'Preview' }];
+      function Demo() {
+        const [variables, setVariables] = React.useState([
+          { key: 'DATABASE_URL', secret: true, values: { production: 'postgres://app:demo@db:5432/app', preview: 'postgres://app:demo@db-preview:5432/app' } },
+          { key: 'NEXT_PUBLIC_API_URL', values: { production: 'https://api.example.com', preview: 'https://api.preview.example.com' } },
+          { key: 'FEATURE_NEW_CHECKOUT', values: { preview: 'true' } }]);
+        return h('div', { style: { maxWidth: 860, margin: '0 auto' } }, h(EnvVars, { environments, variables,
+          onSet: (input) => setVariables((l) => l.filter((v) => v.key !== input.key).concat([{ key: input.key, secret: input.secret, values: Object.fromEntries(input.environments.map((e) => [e, input.value])) }])),
+          onDelete: (key, env) => setVariables((l) => l.map((v) => v.key === key ? Object.assign({}, v, { values: Object.assign({}, v.values, { [env]: undefined }) }) : v)),
+          onImport: () => undefined }), h(Toaster));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
