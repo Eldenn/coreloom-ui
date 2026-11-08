@@ -1,0 +1,39 @@
+<!-- @dsCard group="Blocks" width=1280 height=820 subtitle="shop block · product page · variants · cart" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.ProductDetail || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { ProductDetail } = UI;
+      const photo = (c) => 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><rect width="800" height="800" fill="#ece7df"/><rect x="190" y="300" width="420" height="120" rx="18" fill="' + c + '"/><rect x="230" y="220" width="340" height="80" rx="14" fill="' + c + '" opacity=".8"/></svg>');
+      const product = { id: 'throw', name: 'Linen throw', price: 89, compareAtPrice: 110, badge: '−20%', rating: { value: 4.6, count: 128 },
+        description: 'Stonewashed European linen, soft from the first night.',
+        images: [{ src: photo('#c8b79c'), alt: 'Sand' }, { src: photo('#6f7f6a'), alt: 'Sage' }, { src: photo('#2f3b4a'), alt: 'Ink' }],
+        options: [{ id: 'color', name: 'Colour', values: [{ value: 'sand', label: 'Sand', color: '#c8b79c' }, { value: 'sage', label: 'Sage', color: '#6f7f6a' }, { value: 'ink', label: 'Ink', color: '#2f3b4a' }] },
+          { id: 'size', name: 'Size', values: [{ value: 's', label: 'Single' }, { value: 'd', label: 'Double' }] }],
+        variants: [
+          { id: '1', options: { color: 'sand', size: 's' }, price: 89, compareAtPrice: 110, stock: 12, image: 0 },
+          { id: '2', options: { color: 'sand', size: 'd' }, price: 119, stock: 3, image: 0 },
+          { id: '3', options: { color: 'sage', size: 's' }, price: 89, stock: 0, image: 1 },
+          { id: '4', options: { color: 'sage', size: 'd' }, price: 119, stock: 4, image: 1 },
+          { id: '5', options: { color: 'ink', size: 's' }, price: 89, stock: 0, image: 2 },
+          { id: '6', options: { color: 'ink', size: 'd' }, price: 119, stock: 0, image: 2 }] };
+      function Demo() { return h('div', { style: { maxWidth: 1040, margin: '0 auto' } }, h(ProductDetail, { product, onAddToCart: () => new Promise((r) => setTimeout(r, 500)) })); }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(UI.TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
