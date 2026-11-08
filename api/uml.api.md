@@ -167,7 +167,7 @@ UmlPoint.y: number
 type UmlProblem = {}
 UmlProblem.line: number
 UmlProblem.severity: 'error' | 'warning'
-UmlProblem.code: 'json' | 'header' | 'empty' | 'syntax' | 'unclosed' | 'unexpected' | 'unsupported' | 'schema'
+UmlProblem.code: 'json' | 'header' | 'empty' | 'unsupported' | 'syntax' | 'unclosed' | 'unexpected' | 'schema'
 UmlProblem.text?: string | undefined
 type UmlSpec = UseCaseDiagram | ActivityDiagram | DeploymentDiagram | ComponentDiagram | PackageDiagram | ClassDiagram | SequenceDiagram | StateDiagram | ErDiagram | C4Diagram
 type UmlState = {}

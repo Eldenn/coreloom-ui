@@ -1,0 +1,29 @@
+<!-- @dsCard group="Forms" height=220 subtitle="AudioRecorder · record, waveform, playback; DictationButton" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:flex;flex-direction:column;gap:16px;max-width:560px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.AudioRecorder || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { AudioRecorder, AudioWaveform } = UI;
+      const levels = Array.from({ length: 70 }, (_, i) => 0.25 + 0.3 * (1 + Math.sin(i / 3)));
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h(React.Fragment, null,
+          h(AudioRecorder, { maxDuration: 60 }),
+          h(AudioWaveform, { levels, progress: 0.4 })));
+    }
+    render();
+  </script>
+</body>
+</html>

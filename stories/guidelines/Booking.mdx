@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../blocks/booking.stories'
+import guide from './Booking.md?raw'
+
+<Meta title="Guidelines/Booking/Booking" />
+
+<Markdown>{guide}</Markdown>
+
+## With the practitioner
+
+<Canvas of={Stories.Default} />
