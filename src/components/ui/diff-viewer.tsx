@@ -122,19 +122,19 @@ function pairLines(lines: readonly DiffLine[]): DiffPair[] {
 /** Entries to draw, with runs of unchanged ones longer than `context` on each side folded. */
 function foldRuns<T>(
   entries: readonly T[],
-  isEqual: (entry: T) => boolean,
+  isEqual: (entry: T, index: number) => boolean,
   context: number,
   expanded: ReadonlySet<number>,
 ): ({ entry: T; key: number } | { fold: number; count: number })[] {
   const rows: ({ entry: T; key: number } | { fold: number; count: number })[] = []
   for (let i = 0; i < entries.length;) {
     const entry = entries[i]
-    if (!isEqual(entry)) {
+    if (!isEqual(entry, i)) {
       rows.push({ entry, key: i++ })
       continue
     }
     let end = i
-    while (end < entries.length && isEqual(entries[end])) end++
+    while (end < entries.length && isEqual(entries[end], end)) end++
     const head = i === 0 ? 0 : context
     const tail = end === entries.length ? 0 : context
     if (end - i > head + tail + 1 && !expanded.has(i)) {
@@ -198,7 +198,17 @@ function FoldRow({ count, span, onExpand }: { count: number; span: number; onExp
   )
 }
 
-interface RowsProps {
+/** What the line slots draw: an empty slot (null, false, undefined) takes no room. */
+const filled = (node: React.ReactNode) => node !== null && node !== undefined && node !== false
+
+interface LineSlots {
+  /** A control at the start of a line, such as a "comment on this line" button. */
+  renderLineAction?: (line: DiffLine) => React.ReactNode
+  /** Content under a line, across the whole table, such as the comments on it. */
+  renderAfterLine?: (line: DiffLine) => React.ReactNode
+}
+
+interface RowsProps extends LineSlots {
   lines: readonly DiffLine[]
   context: number
   expanded: ReadonlySet<number>
@@ -207,33 +217,67 @@ interface RowsProps {
   textCell: string
 }
 
-function UnifiedRows({ lines, context, expanded, onExpand, textCell }: RowsProps) {
+/** The cell that holds a line's action; an empty one keeps the column. */
+function ActionCell({ children, className }: { children?: React.ReactNode; className?: string }) {
+  return <td className={cn('w-[1%] px-1 align-top whitespace-nowrap', className)}>{children}</td>
+}
+
+/** The content a line slot drew, in a row across the table. */
+function AfterRow({ span, children }: { span: number; children: React.ReactNode }) {
+  return (
+    <tr data-slot="diff-after-line">
+      <td colSpan={span} className="border-y border-border-subtle p-0 font-sans whitespace-normal">
+        {/* As wide as the visible part of the table and pinned to its left edge: long lines scroll
+            sideways, the content under them stays in view. */}
+        <div className="sticky left-0 w-[100cqw]">{children}</div>
+      </td>
+    </tr>
+  )
+}
+
+function UnifiedRows({
+  lines,
+  context,
+  expanded,
+  onExpand,
+  textCell,
+  renderLineAction,
+  renderAfterLine,
+}: RowsProps) {
+  const afters = renderAfterLine ? lines.map((line) => renderAfterLine(line)) : []
+  const span = renderLineAction ? 5 : 4
+  // A line with something under it stays in view: it never folds away.
+  const isEqual = (line: DiffLine, i: number) => line.type === 'equal' && !filled(afters[i])
   return (
     <tbody>
-      {foldRuns(lines, (l) => l.type === 'equal', context, expanded).map((row) => {
+      {foldRuns(lines, isEqual, context, expanded).map((row) => {
         if ('fold' in row)
           return (
             <FoldRow
               key={`fold-${String(row.fold)}`}
               count={row.count}
-              span={4}
+              span={span}
               onExpand={() => {
                 onExpand(row.fold)
               }}
             />
           )
         const line = row.entry
+        const after = afters[row.key]
         return (
-          <tr
-            key={row.key}
-            data-change={line.type === 'equal' ? undefined : line.type}
-            className={tint(line.type)}
-          >
-            <td className={gutter(line.type)}>{line.oldLine}</td>
-            <td className={gutter(line.type)}>{line.newLine}</td>
-            <Sign type={line.type} />
-            <td className={textCell}>{line.text || ' '}</td>
-          </tr>
+          <React.Fragment key={row.key}>
+            <tr
+              data-change={line.type === 'equal' ? undefined : line.type}
+              className={tint(line.type)}
+            >
+              {renderLineAction ? <ActionCell>{renderLineAction(line)}</ActionCell> : null}
+              <td className={gutter(line.type)}>{line.oldLine}</td>
+              <td className={gutter(line.type)}>{line.newLine}</td>
+              <Sign type={line.type} />
+              <td className={textCell}>{line.text || ' '}</td>
+            </tr>
+            {filled(after) ? <AfterRow span={span}>{after}</AfterRow> : null}
+          </React.Fragment>
         )
       })}
     </tbody>
@@ -246,27 +290,47 @@ function SplitHalf({
   number,
   textCell,
   divided,
+  action,
 }: {
   line: DiffLine | undefined
   number: number | undefined
   textCell: string
   /** The right half: a line between the two sides. */
   divided?: boolean
+  /** The action cell, when the viewer has `renderLineAction`. */
+  action?: { node: React.ReactNode }
 }) {
+  const edge = divided && 'border-l border-border-subtle'
   return (
     <>
-      <td
-        className={cn(
-          gutter(line?.type),
-          tint(line?.type),
-          divided && 'border-l border-border-subtle',
-        )}
-      >
-        {number}
-      </td>
+      {action ? (
+        <ActionCell className={cn(tint(line?.type), edge)}>{action.node}</ActionCell>
+      ) : null}
+      <td className={cn(gutter(line?.type), tint(line?.type), !action && edge)}>{number}</td>
       <Sign type={line?.type === 'equal' ? undefined : line?.type} className={tint(line?.type)} />
       <td className={cn(textCell, tint(line?.type))}>{line ? line.text || ' ' : ''}</td>
     </>
+  )
+}
+
+/** The lines of a split row that own its slots: a removed line on the left, the right line. */
+const pairOwners = ({ left, right }: DiffPair) =>
+  [left?.type === 'remove' ? left : undefined, right] as const
+
+function SplitColumns({ action }: { action: boolean }) {
+  const half = (
+    <>
+      {action ? <col className="w-[1%]" /> : null}
+      <col className="w-[1%]" />
+      <col className="w-4" />
+      <col className="w-1/2" />
+    </>
+  )
+  return (
+    <colgroup>
+      {half}
+      {half}
+    </colgroup>
   )
 }
 
@@ -278,25 +342,28 @@ function SplitRows({
   textCell,
   beforeLabel,
   afterLabel,
+  renderLineAction,
+  renderAfterLine,
 }: RowsProps & { beforeLabel: React.ReactNode; afterLabel: React.ReactNode }) {
   const pairs = React.useMemo(() => pairLines(lines), [lines])
+  const afters = renderAfterLine
+    ? pairs.map((pair) => pairOwners(pair).map((line) => (line ? renderAfterLine(line) : null)))
+    : []
+  const halfSpan = renderLineAction ? 4 : 3
+  const isEqual = (pair: DiffPair, i: number) =>
+    pair.left?.type === 'equal' && !afters[i]?.some(filled)
+  const action = (line: DiffLine | undefined) =>
+    renderLineAction ? { node: line ? renderLineAction(line) : null } : undefined
   return (
     <>
-      <colgroup>
-        <col className="w-[1%]" />
-        <col className="w-4" />
-        <col className="w-1/2" />
-        <col className="w-[1%]" />
-        <col className="w-4" />
-        <col className="w-1/2" />
-      </colgroup>
+      <SplitColumns action={Boolean(renderLineAction)} />
       <thead>
         <tr className="border-b border-border-subtle text-left font-sans text-[12px] text-muted-foreground">
-          <th colSpan={3} scope="colgroup" className="px-2 py-1 font-medium">
+          <th colSpan={halfSpan} scope="colgroup" className="px-2 py-1 font-medium">
             {beforeLabel}
           </th>
           <th
-            colSpan={3}
+            colSpan={halfSpan}
             scope="colgroup"
             className="border-l border-border-subtle px-2 py-1 font-medium"
           >
@@ -305,24 +372,45 @@ function SplitRows({
         </tr>
       </thead>
       <tbody>
-        {foldRuns(pairs, (p) => p.left?.type === 'equal', context, expanded).map((row) => {
+        {foldRuns(pairs, isEqual, context, expanded).map((row) => {
           if ('fold' in row)
             return (
               <FoldRow
                 key={`fold-${String(row.fold)}`}
                 count={row.count}
-                span={6}
+                span={halfSpan * 2}
                 onExpand={() => {
                   onExpand(row.fold)
                 }}
               />
             )
           const { left, right } = row.entry
+          const [leftOwner, rightOwner] = pairOwners(row.entry)
+          const [afterLeft, afterRight] = afters[row.key] ?? []
           return (
-            <tr key={row.key} data-change={left?.type === 'equal' ? undefined : 'change'}>
-              <SplitHalf line={left} number={left?.oldLine} textCell={textCell} />
-              <SplitHalf line={right} number={right?.newLine} textCell={textCell} divided />
-            </tr>
+            <React.Fragment key={row.key}>
+              <tr data-change={left?.type === 'equal' ? undefined : 'change'}>
+                <SplitHalf
+                  line={left}
+                  number={left?.oldLine}
+                  textCell={textCell}
+                  action={action(leftOwner)}
+                />
+                <SplitHalf
+                  line={right}
+                  number={right?.newLine}
+                  textCell={textCell}
+                  divided
+                  action={action(rightOwner)}
+                />
+              </tr>
+              {filled(afterLeft) || filled(afterRight) ? (
+                <AfterRow span={halfSpan * 2}>
+                  {filled(afterLeft) ? afterLeft : null}
+                  {filled(afterRight) ? afterRight : null}
+                </AfterRow>
+              ) : null}
+            </React.Fragment>
           )
         })}
       </tbody>
@@ -348,7 +436,53 @@ type DiffViewerProps = {
   emptyText?: React.ReactNode
   /** Long lines wrap instead of scrolling sideways. */
   wrap?: boolean
+  /** The header line (title, lines added and removed). Hide it when your own header says it. Default true. */
+  showHeader?: boolean
+  /**
+   * A control at the start of each line, such as a button to comment on it. In the split view,
+   * removed lines get it on the left and the other lines on the right.
+   */
+  renderLineAction?: (line: DiffLine) => React.ReactNode
+  /**
+   * Content under a line, across the table, such as the comments on it; return null for none. A
+   * line with content never folds away.
+   */
+  renderAfterLine?: (line: DiffLine) => React.ReactNode
 } & Omit<React.ComponentProps<'div'>, 'title'>
+
+function DiffHeader({
+  title,
+  added,
+  removed,
+}: {
+  title: React.ReactNode
+  added: number
+  removed: number
+}) {
+  const t = useCoreloomI18n().messages.display.diff
+  return (
+    <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-2 font-mono text-[12px]">
+      {title ? <span className="mr-auto text-foreground">{title}</span> : null}
+      <span className="text-success">{t.linesAdded(added)}</span>
+      <span className="text-destructive">{t.linesRemoved(removed)}</span>
+    </p>
+  )
+}
+
+/** The texts are the same: the title, if any, and a line that says so. */
+function DiffEmpty({ title, emptyText }: { title: React.ReactNode; emptyText: React.ReactNode }) {
+  const t = useCoreloomI18n().messages.display.diff
+  return (
+    <>
+      {title ? (
+        <p className="m-0 border-b border-border-subtle px-4 py-2 font-mono text-[12px] text-foreground">
+          {title}
+        </p>
+      ) : null}
+      <p className="m-0 p-5 text-[13.5px] text-muted-foreground">{emptyText ?? t.noChanges}</p>
+    </>
+  )
+}
 
 function DiffViewer({
   before,
@@ -360,6 +494,9 @@ function DiffViewer({
   afterLabel,
   emptyText,
   wrap = false,
+  showHeader = true,
+  renderLineAction,
+  renderAfterLine,
   className,
   ...props
 }: DiffViewerProps) {
@@ -378,12 +515,7 @@ function DiffViewer({
   if (!added && !removed)
     return (
       <div data-slot="diff-viewer" className={cn('min-w-0', className)} {...props}>
-        {title ? (
-          <p className="m-0 border-b border-border-subtle px-4 py-2 font-mono text-[12px] text-foreground">
-            {title}
-          </p>
-        ) : null}
-        <p className="m-0 p-5 text-[13.5px] text-muted-foreground">{emptyText ?? t.noChanges}</p>
+        <DiffEmpty title={showHeader ? title : null} emptyText={emptyText} />
       </div>
     )
 
@@ -399,27 +531,43 @@ function DiffViewer({
       'pr-4 align-top text-foreground',
       wrap ? '[overflow-wrap:anywhere] whitespace-pre-wrap' : 'whitespace-pre',
     ),
+    renderLineAction,
+    renderAfterLine,
   }
   return (
     <div data-slot="diff-viewer" data-view={view} className={cn('min-w-0', className)} {...props}>
-      <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-2 font-mono text-[12px]">
-        {title ? <span className="mr-auto text-foreground">{title}</span> : null}
-        <span className="text-success">{t.linesAdded(added)}</span>
-        <span className="text-destructive">{t.linesRemoved(removed)}</span>
-      </p>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse font-mono text-[12.5px] leading-[1.7]">
-          {view === 'split' ? (
-            <SplitRows
-              {...rows}
-              beforeLabel={beforeLabel ?? t.before}
-              afterLabel={afterLabel ?? t.after}
-            />
-          ) : (
-            <UnifiedRows {...rows} />
-          )}
-        </table>
-      </div>
+      {showHeader ? <DiffHeader title={title} added={added} removed={removed} /> : null}
+      <DiffTable
+        rows={rows}
+        split={view === 'split'}
+        beforeLabel={beforeLabel ?? t.before}
+        afterLabel={afterLabel ?? t.after}
+      />
+    </div>
+  )
+}
+
+function DiffTable({
+  rows,
+  split,
+  beforeLabel,
+  afterLabel,
+}: {
+  rows: RowsProps
+  split: boolean
+  beforeLabel: React.ReactNode
+  afterLabel: React.ReactNode
+}) {
+  return (
+    // A size container when content goes under lines: that content takes the visible width.
+    <div className={cn('overflow-x-auto', rows.renderAfterLine && '@container')}>
+      <table className="w-full border-collapse font-mono text-[12.5px] leading-[1.7]">
+        {split ? (
+          <SplitRows {...rows} beforeLabel={beforeLabel} afterLabel={afterLabel} />
+        ) : (
+          <UnifiedRows {...rows} />
+        )}
+      </table>
     </div>
   )
 }
