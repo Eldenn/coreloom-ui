@@ -34,6 +34,8 @@ const COMPONENTS = [
   'Command',
   'ContextMenu',
   'DataTable',
+  'FilterBar',
+  'QueryBuilder',
   'DatePicker',
   'Dialog',
   'Drawer',

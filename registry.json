@@ -1019,6 +1019,47 @@
       ]
     },
     {
+      "name": "filter-bar",
+      "type": "registry:ui",
+      "title": "FilterBar",
+      "description": "Filters as chips above a list or a table (Add filter, edit a chip's operator and value, remove it, saved views, result count), and QueryBuilder for nested AND / OR groups. The filter is a plain value: run it on rows with matchesFilter, send it to your API, or keep it in the URL with filterToSearchParams.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/command",
+        "@coreloom/date-picker",
+        "@coreloom/input",
+        "@coreloom/multi-select",
+        "@coreloom/number-input",
+        "@coreloom/popover",
+        "@coreloom/select"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/filter-bar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/filter-condition.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/query-builder.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/lib/filter.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "virtual-list",
       "type": "registry:ui",
       "title": "VirtualList",
@@ -3342,6 +3383,7 @@
         "@coreloom/combobox",
         "@coreloom/date-picker",
         "@coreloom/data-table",
+        "@coreloom/filter-bar",
         "@coreloom/virtual-list",
         "@coreloom/context-menu",
         "@coreloom/menubar",
