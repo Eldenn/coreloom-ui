@@ -3524,7 +3524,9 @@
         "@coreloom/typing-indicator",
         "@coreloom/scroll-effects",
         "@coreloom/animated-background",
-        "@coreloom/tilt-card"
+        "@coreloom/tilt-card",
+        "@coreloom/audio-recorder",
+        "@coreloom/media-player"
       ],
       "dependencies": []
     },
@@ -5213,6 +5215,104 @@
           "type": "registry:component"
         }
       ]
+    },
+    {
+      "name": "audio-recorder",
+      "type": "registry:ui",
+      "title": "AudioRecorder",
+      "description": "Records a voice note from the microphone: live waveform and timer, pause, stop, then playback and delete; DictationButton records for a composer, hands the audio to your onTranscribe and gives the text back. useAudioRecorder for your own UI.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/spinner",
+        "@coreloom/tooltip"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/audio-recorder.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/use-audio-recorder.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "media-player",
+      "type": "registry:ui",
+      "title": "MediaPlayer",
+      "description": "A video or audio player with its own controls: seek bar with chapter marks, back and forward, speed, captions (WebVTT), volume, full screen and keyboard shortcuts; chapters and a clickable transcript that follows playback. parseVtt reads a captions file into transcript lines.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/dropdown-menu",
+        "@coreloom/slider",
+        "@coreloom/tabs"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/media-player.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/media-player-controls.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/media-cues.ts",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
+      "name": "booking",
+      "type": "registry:block",
+      "title": "Booking",
+      "description": "Online appointment booking in three steps: a service, a day in the calendar and a free time (loaded through onLoadSlots), then a recap with the visitor's details and Confirm (onBook); a confirmation with its reference and an Add to calendar (.ics) link. An aside slot for a PractitionerCard or OpeningHours.",
+      "categories": ["application", "showcase"],
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/alert",
+        "@coreloom/button",
+        "@coreloom/calendar",
+        "@coreloom/choice-card",
+        "@coreloom/field",
+        "@coreloom/form",
+        "@coreloom/skeleton"
+      ],
+      "files": [
+        {
+          "path": "src/components/booking.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/booking-steps.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/booking-utils.ts",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     }
   ]
 }
