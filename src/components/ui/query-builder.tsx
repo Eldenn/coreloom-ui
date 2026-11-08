@@ -144,6 +144,7 @@ function GroupEditor<T>({
               <Button
                 variant="ghost"
                 size="icon"
+                className="mt-[3px]"
                 aria-label={t.removeCondition}
                 onClick={() => {
                   remove(rule.id)

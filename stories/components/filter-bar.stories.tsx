@@ -238,7 +238,7 @@ export const WithViews: Story = {
 export const ManyFilters: Story = {
   name: 'Many filters',
   args: {
-    resultCount: 0,
+    resultCount: 6,
     defaultValue: {
       kind: 'group',
       id: 'many',

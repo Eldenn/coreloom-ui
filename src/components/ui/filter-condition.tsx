@@ -67,13 +67,20 @@ function formatRange(value: FilterValue, kind: 'number' | 'date', f: Formatters)
   return a ? f.t.atLeast(a) : f.t.atMost(b)
 }
 
-function formatOptions(value: FilterValue, field: FilterField<never>, f: Formatters, max = 2) {
+function formatOptions(
+  value: FilterValue,
+  field: FilterField<never>,
+  f: Formatters & { all: boolean },
+  max = 2,
+) {
   let list: string[] = []
   if (Array.isArray(value)) list = value
   else if (typeof value === 'string') list = [value]
   const labels = list.map((v) => field.options?.find((o) => o.value === v)?.label ?? v)
   const shown = labels.slice(0, max)
-  const text = new Intl.ListFormat(f.locale, { type: 'disjunction' }).format(shown)
+  // "has all of A and B", "is any of A or B".
+  const type = f.all ? 'conjunction' : 'disjunction'
+  const text = new Intl.ListFormat(f.locale, { type }).format(shown)
   return labels.length > max ? `${text} ${f.t.more(labels.length - max)}` : text
 }
 
@@ -83,7 +90,7 @@ function describeValue(condition: FilterCondition, field: FilterField<never>, f:
   if (value === null) return ''
   switch (valueKind(field.type, condition.operator)) {
     case 'text':
-      return typeof value === 'string' ? `“${value}”` : ''
+      return typeof value === 'string' && value.trim() ? `“${value}”` : ''
     case 'number':
       return typeof value === 'number' ? new Intl.NumberFormat(f.locale).format(value) : ''
     case 'date':
@@ -94,7 +101,7 @@ function describeValue(condition: FilterCondition, field: FilterField<never>, f:
       return formatRange(value, 'date', f)
     case 'option':
     case 'options':
-      return formatOptions(value, field, f)
+      return formatOptions(value, field, { ...f, all: condition.operator === 'allOf' })
     case 'none':
       return ''
   }
@@ -110,6 +117,10 @@ function describeCondition<T>(
   const plain: FilterField<never> = { id: field.id, label: field.label, type: field.type }
   if (field.options) plain.options = field.options
   const value = describeValue(condition, plain, { locale, t })
+  // A range open at one end reads "Amount from 1,000", not "Amount is between from 1,000".
+  const { from, to } = rangeOf(condition.value)
+  if (condition.operator === 'between' && (from === null) !== (to === null))
+    return t.summary(field.label, value, '')
   return t.summary(field.label, t.operators[condition.operator], value)
 }
 
@@ -125,7 +136,7 @@ function NumberRangeEditor({
   const range = rangeOf(value)
   const num = (v: number | string | null) => (typeof v === 'number' ? v : null)
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
       <NumberInput
         aria-label={t.from}
         stepper="none"
@@ -157,7 +168,7 @@ function DateRangeEditor({
 }) {
   const range = rangeOf(value)
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
       <DatePicker
         aria-label={t.from}
         placeholder={t.from}

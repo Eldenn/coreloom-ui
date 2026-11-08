@@ -2,6 +2,7 @@
 // tree, and the URL round trip with hostile input.
 import { describe, expect, it } from 'vitest'
 
+import { describeCondition } from '@/components/ui/filter-condition'
 import {
   addRule,
   countConditions,
@@ -20,6 +21,7 @@ import {
   valueForOperator,
   valueKind,
 } from '@/lib/filter'
+import { en, fr } from '@/lib/i18n'
 
 interface Row {
   name: string
@@ -296,5 +298,38 @@ describe('URL', () => {
       fields,
     )
     expect(long.rules).toHaveLength(50)
+  })
+})
+
+describe('describeCondition', () => {
+  const field = (id: string) => {
+    const found = fields.find((f) => f.id === id)
+    if (!found) throw new Error(id)
+    return found
+  }
+  const say = (c: FilterCondition, locale = 'en') =>
+    describeCondition(c, field(c.field), {
+      locale,
+      t: locale === 'fr' ? fr.filterBar : en.filterBar,
+    })
+
+  it('writes a condition as one line, with option labels and locale formats', () => {
+    expect(say(cond('status', 'anyOf', ['open', 'void']))).toBe('Status is any of Open or Void')
+    expect(say(cond('tags', 'allOf', ['eu', 'us']))).toBe('Tags has all of eu and us')
+    expect(say(cond('amount', 'between', { from: 1000, to: null }))).toBe('Amount from 1,000')
+    expect(say(cond('created', 'between', { from: null, to: '2026-10-14' }))).toBe(
+      'Created up to Oct 14, 2026',
+    )
+    expect(say(cond('amount', 'between', { from: 1, to: 2 }))).toBe('Amount is between 1 and 2')
+    expect(say(cond('amount', 'gte', 1500), 'fr')).toBe('Amount est au moins 1\u202f500')
+    expect(say(cond('created', 'is', '2026-10-14'))).toBe('Created is Oct 14, 2026')
+  })
+
+  it('cuts long lists and leaves empty values out', () => {
+    expect(say(cond('status', 'anyOf', ['draft', 'open', 'paid', 'void']))).toBe(
+      'Status is any of draft or Open +2',
+    )
+    expect(say(cond('name', 'contains', '  '))).toBe('Name contains')
+    expect(say(cond('name', 'isEmpty', null))).toBe('Name is empty')
   })
 })
