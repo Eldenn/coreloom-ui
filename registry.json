@@ -2085,6 +2085,29 @@
       ]
     },
     {
+      "name": "suggestion-list",
+      "type": "registry:ui",
+      "title": "SuggestionList",
+      "description": "Suggestions reviewed one by one before they count (rules a model proposes, tags, fixes): Accept, Edit then accept, or Ignore each one; the outcome is announced and focus moves to the next.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/textarea"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/suggestion-list.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "timeline",
       "type": "registry:ui",
       "title": "Timeline",
@@ -3413,6 +3436,7 @@
         "@coreloom/timezone-select",
         "@coreloom/relative-time",
         "@coreloom/save-status",
+        "@coreloom/suggestion-list",
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",

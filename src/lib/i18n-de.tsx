@@ -2720,6 +2720,22 @@ export const de: Messages = {
       failed: 'Dieses Diagramm konnte nicht gezeichnet werden, hier ist sein Text.',
     },
   },
+  suggestionList: {
+    label: 'Vorschläge',
+    accept: 'Übernehmen',
+    edit: 'Bearbeiten',
+    ignore: 'Ignorieren',
+    acceptEdited: 'Bearbeitete Fassung übernehmen',
+    cancel: 'Abbrechen',
+    editLabel: 'Vorgeschlagener Text',
+    editHint: 'Strg+Eingabe übernimmt, Escape bricht ab.',
+    empty: 'Keine Vorschläge mehr.',
+    accepted: (left) =>
+      `Vorschlag übernommen. ${left === 0 ? 'Keiner mehr übrig.' : `Noch ${left}.`}`,
+    ignored: (left) =>
+      `Vorschlag ignoriert. ${left === 0 ? 'Keiner mehr übrig.' : `Noch ${left}.`}`,
+    failed: 'Das hat nicht geklappt: Der Vorschlag ist noch da.',
+  },
   saveStatus: {
     saved: 'Gespeichert',
     saving: 'Wird gespeichert…',

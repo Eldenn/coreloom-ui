@@ -216,6 +216,7 @@ const COMPONENTS = [
   'DiagramCodeBlock',
   'DiagramEditor',
   'SaveStatus',
+  'SuggestionList',
   'DiagramCard',
   'ShareDialog',
   'AccessCodeGate',

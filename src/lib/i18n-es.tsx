@@ -2694,6 +2694,22 @@ export const es: Messages = {
       failed: 'No se ha podido dibujar este diagrama; aquí está su texto.',
     },
   },
+  suggestionList: {
+    label: 'Sugerencias',
+    accept: 'Aceptar',
+    edit: 'Editar',
+    ignore: 'Ignorar',
+    acceptEdited: 'Aceptar la versión editada',
+    cancel: 'Cancelar',
+    editLabel: 'Texto sugerido',
+    editHint: 'Ctrl+Intro acepta, Escape cancela.',
+    empty: 'No quedan sugerencias.',
+    accepted: (left) =>
+      `Sugerencia aceptada. ${left === 0 ? 'No queda ninguna.' : `Pendientes: ${left}.`}`,
+    ignored: (left) =>
+      `Sugerencia ignorada. ${left === 0 ? 'No queda ninguna.' : `Pendientes: ${left}.`}`,
+    failed: 'No se ha podido hacer: la sugerencia sigue aquí.',
+  },
   saveStatus: {
     saved: 'Guardado',
     saving: 'Guardando…',
