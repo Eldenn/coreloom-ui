@@ -12,6 +12,7 @@
 - [ ] The relevant Playwright specs pass (a11y on the stories I touched, interactions, docs)
 - [ ] A changeset describes the change for someone who installed the item (or none is needed)
 - [ ] Guides match the code (`pnpm docs:check`)
+- [ ] `api/` is up to date (`pnpm api:report`), and a stable item's API only gains things
 - [ ] `pnpm starter:sync` has run, if an item the starter uses changed
 - [ ] New strings are in all four locales (en, fr, es, de)
 

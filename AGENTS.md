@@ -24,6 +24,7 @@ Storybook as its documentation and a Vite starter app that uses it.
 | `src/components/`                        | Block parts (`registry:component`), installed with their block.                                                        |
 | `src/lib/`                               | `i18n.tsx` (en + fr), `i18n-es.tsx`, `i18n-de.tsx`, `ai.ts` (AI SDK-shaped types and helpers), `link.tsx`, `utils.ts`. |
 | `src/styles/`                            | `tokens.css` (generated from the design system — don't edit by hand), `theme.css`, `fonts.css`, `accents.css`.         |
+| `api/`                                   | Every item's public API, written by `pnpm api:report`; checked in CI. Don't edit by hand.                              |
 | `registry.json`                          | Every item: files, npm `dependencies`, `registryDependencies`. The source of truth for what ships.                     |
 | `stories/components/`, `stories/blocks/` | One story file per component (or group) and per block.                                                                 |
 | `stories/guidelines/`                    | A guide per component and block: `Name.md` (the text) + `Name.mdx` (the Storybook page).                               |
@@ -46,6 +47,7 @@ pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
 pnpm registry:size           # gzip cost of every item; --check against build/registry-sizes.json (CI), --write after an intended change
 pnpm docs:check              # guides ↔ code: props a guide names exist, props a component declares are in its guide
+pnpm api:report              # api/<item>.api.md: every item's exports and props (api:check in CI)
 pnpm llms                    # public/llms.txt, llms-full.txt and guides/ from registry.json + guides
 pnpm brand "#ff5a1f" --name orange > brand.css   # an accent family from one brand colour
 pnpm changeset               # describe a change for the next release (changeset:check in CI)
@@ -97,7 +99,9 @@ A change is finished when all of this is true:
    Don't edit `CHANGELOG.md`: the release writes it from the changesets.
    A change to a stable item's API follows [`VERSIONING.md`](./VERSIONING.md): add, don't rename or
    remove. Deprecate first (`@deprecated` in the JSDoc, the replacement in the guide, a
-   **Deprecated** changeset entry) and remove only in a major. A new item that may still move is
+   **Deprecated** changeset entry) and remove only in a major. Run `pnpm api:report` after any
+   change to what an item exports and commit `api/`: `pnpm api:check` (CI) fails when it is out of
+   date, or when a stable item loses an export or a prop without a major changeset. A new item that may still move is
    added as experimental (`"meta": { "stability": "experimental" }` and the guide's note).
 5. **`pnpm starter:sync`** has run if any item the starter uses changed (CI runs
    `node build/sync-starter.mjs --check` and fails otherwise). New npm dependencies go in both

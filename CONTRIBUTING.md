@@ -35,6 +35,7 @@ pnpm lint                    # ESLint, type-aware, zero warnings
 pnpm typecheck               # library, stories and tests
 pnpm test:unit               # Vitest
 pnpm docs:check              # guides ↔ props
+pnpm api:report              # after changing what an item exports (CI runs api:check)
 pnpm storybook:build         # then: pnpm test (Playwright, against the build)
 pnpm starter:sync            # after changing an item the starter uses
 pnpm changeset               # describe your change for the CHANGELOG
