@@ -1,0 +1,11 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/audio-recorder.stories'
+import guide from './AudioRecorder.md?raw'
+
+<Meta title="Guidelines/Media/Audio recorder" />
+
+<Markdown>{guide}</Markdown>
+
+## Dictation in PromptInput
+
+<Canvas of={Stories.Dictation} />
