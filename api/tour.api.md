@@ -7,8 +7,9 @@ Stability: stable. Written by `pnpm api:report` from the code; don't edit it by 
 ```ts
 function Tour
 Tour.steps: TourStep[]
-Tour.open: boolean
-Tour.onOpenChange: (open: boolean) => void
+Tour.open?: boolean | undefined
+Tour.defaultOpen?: boolean | undefined
+Tour.onOpenChange?: ((open: boolean) => void) | undefined
 Tour.step?: number | undefined
 Tour.defaultStep?: number | undefined
 Tour.onStepChange?: ((step: number) => void) | undefined

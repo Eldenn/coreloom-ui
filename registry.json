@@ -144,6 +144,18 @@
       ]
     },
     {
+      "name": "use-controllable-state",
+      "type": "registry:lib",
+      "title": "useControllableState()",
+      "description": "One value a component's parent may own (`value` + `onChange`) or leave to the component (`defaultValue`), like useState.",
+      "files": [
+        {
+          "path": "src/lib/use-controllable-state.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
       "name": "uml",
       "type": "registry:lib",
       "title": "UML model, Mermaid and PlantUML",
@@ -2409,7 +2421,8 @@
         "@coreloom/theme",
         "@coreloom/utils",
         "@coreloom/i18n",
-        "@coreloom/button"
+        "@coreloom/button",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {
@@ -3169,7 +3182,8 @@
         "@coreloom/i18n",
         "@coreloom/ai",
         "@coreloom/command",
-        "@coreloom/popover"
+        "@coreloom/popover",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {
@@ -3236,7 +3250,8 @@
         "@coreloom/tags-input",
         "@coreloom/textarea",
         "@coreloom/tabs",
-        "@coreloom/context-menu"
+        "@coreloom/context-menu",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {
@@ -3961,7 +3976,8 @@
         "@coreloom/empty",
         "@coreloom/input",
         "@coreloom/popover",
-        "@coreloom/separator"
+        "@coreloom/separator",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {
@@ -4529,7 +4545,8 @@
         "@coreloom/label",
         "@coreloom/native-select",
         "@coreloom/textarea",
-        "@coreloom/checkbox"
+        "@coreloom/checkbox",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {
@@ -5153,7 +5170,8 @@
         "@coreloom/multi-select",
         "@coreloom/radio-group",
         "@coreloom/select",
-        "@coreloom/textarea"
+        "@coreloom/textarea",
+        "@coreloom/use-controllable-state"
       ],
       "files": [
         {

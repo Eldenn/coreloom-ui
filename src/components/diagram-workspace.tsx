@@ -581,7 +581,7 @@ function DiagramWorkspace({
             key={active.id}
             value={active.value}
             format={active.format}
-            onChange={reports.onChange}
+            onValueChange={reports.onChange}
             onFormatChange={reports.onFormatChange}
             fileName={downloadName(active.title)}
             height={height ? 'fill' : undefined}

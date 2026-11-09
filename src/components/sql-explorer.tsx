@@ -394,7 +394,7 @@ function SqlExplorer({
         <CodeEditor
           path={q.active.id}
           value={q.active.sql}
-          onChange={q.edit}
+          onValueChange={q.edit}
           extensions={extensions}
           onViewChange={(view) => {
             viewRef.current = view

@@ -54,16 +54,16 @@ type Story = StoryObj<typeof meta>
 /** In a composer's bottom bar: a ghost trigger. Open it and type "fast" or "openai". */
 export const Default: Story = {}
 
-/** The list on its own — what the trigger opens, or an inline choice on a settings page. */
+/**
+ * The list on its own — what the trigger opens, or an inline choice on a settings page. With
+ * `defaultValue` it keeps the choice itself; pass `value` + `onValueChange` to own it.
+ */
 export const List: Story = {
-  render: function Render(args) {
-    const [value, setValue] = React.useState(args.value)
-    return (
-      <div className="max-w-[400px] overflow-hidden rounded-md border border-border bg-popover">
-        <ModelList models={args.models} value={value} onValueChange={setValue} />
-      </div>
-    )
-  },
+  render: (args) => (
+    <div className="max-w-[400px] overflow-hidden rounded-md border border-border bg-popover">
+      <ModelList models={args.models} defaultValue={args.value} />
+    </div>
+  ),
 }
 
 /** Outline, full width: in a settings form, through the form kit's `ModelField`. */

@@ -7,6 +7,7 @@ A filterable list whose state lives in the URL (`?q=api&status=ready,failed&page
 **The consumer provides** `useDataList({ rows, searchKeys, facets, pageSize })` — `facets` are `[{ key, label, options: [{ value, label, icon? }], get? }]` — then renders:
 
 - `<DataListToolbar list searchLabel actions>`: the search box (filters as you type, after a beat), one faceted filter per facet (a searchable checklist with counts), "Clear filters" and the result count (`role="status"`).
+- `<FacetedFilter title options value onValueChange counts>` alone (or with `defaultValue` instead of `value`), for one checklist filter outside the toolbar.
 - The rows, however suits them: `list.pageRows` in a `Table`, cards or `Item`s; `<DataListEmpty list>` when `list.matched` is 0.
 - `<DataListPagination list>`: "Page 2 of 5" with previous / next.
 

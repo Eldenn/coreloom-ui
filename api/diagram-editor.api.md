@@ -10,7 +10,8 @@ const DIAGRAM_TEMPLATES: readonly { kind: UmlDiagramKind; text: string; }[]
 function DiagramEditor
 DiagramEditor.value?: string | undefined
 DiagramEditor.defaultValue?: string | undefined
-DiagramEditor.onChange?: ((text: string) => void) | undefined
+DiagramEditor.onValueChange?: ((text: string) => void) | undefined
+DiagramEditor.onChange?: ((text: string) => void) | undefined // deprecated
 DiagramEditor.format?: DiagramFormat | undefined
 DiagramEditor.defaultFormat?: DiagramFormat | undefined
 DiagramEditor.onFormatChange?: ((format: DiagramFormat) => void) | undefined
@@ -28,7 +29,8 @@ DiagramEditor.className?: string | undefined
 type DiagramEditorProps = {}
 DiagramEditorProps.value?: string | undefined
 DiagramEditorProps.defaultValue?: string | undefined
-DiagramEditorProps.onChange?: ((text: string) => void) | undefined
+DiagramEditorProps.onValueChange?: ((text: string) => void) | undefined
+DiagramEditorProps.onChange?: ((text: string) => void) | undefined // deprecated
 DiagramEditorProps.format?: DiagramFormat | undefined
 DiagramEditorProps.defaultFormat?: DiagramFormat | undefined
 DiagramEditorProps.onFormatChange?: ((format: DiagramFormat) => void) | undefined
@@ -320,7 +322,7 @@ Choice.label: string
 Choice.value: T
 Choice.options: readonly { value: T; label: string; }[]
 Choice.disabled: boolean
-Choice.onChange: (value: T) => void
+Choice.onValueChange: (value: T) => void
 type NameField = HTMLInputElement | HTMLTextAreaElement
 function TextField
 TextField.label: string
@@ -329,7 +331,7 @@ TextField.hint?: string | undefined
 TextField.multiline?: boolean | undefined
 TextField.mono?: boolean | undefined
 TextField.disabled: boolean
-TextField.onChange: (value: string) => void
+TextField.onValueChange: (value: string) => void
 TextField.onCommit: () => void
 TextField.inputRef?: React.Ref<NameField> | undefined
 function useDrafts<T extends object>(key: string) => { drafts: Partial<T>; set: <K extends keyof T>(k: K, value: T[K]) => void; take: () => Partial<T>; }
@@ -341,7 +343,7 @@ function useDrafts<T extends object>(key: string) => { drafts: Partial<T>; set: 
 function MemberList
 MemberList.members: readonly ClassMember[]
 MemberList.disabled: boolean
-MemberList.onChange: (members: ClassMember[]) => void
+MemberList.onValueChange: (members: ClassMember[]) => void
 MemberList.p: PropertiesText
 ```
 

@@ -45,7 +45,9 @@ function AgentPlan({
   label,
   active = true,
   announce = false,
+  open,
   defaultOpen = true,
+  onOpenChange,
   avatar,
   className,
 }: {
@@ -57,7 +59,11 @@ function AgentPlan({
   active?: boolean
   /** Announce the step in progress through its own live region. Leave off inside a live region (Chat's log). */
   announce?: boolean
+  /** Whether the steps show (controlled). */
+  open?: boolean
+  /** Whether the steps show at first, when `open` is not set. Default: true. */
   defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   /**
    * The agent working the plan, as an animated AgentAvatar in place of the list icon: it thinks on
    * a step, smiles when every step is done and frowns on a failure. `{ seed: agent.id }`.
@@ -70,7 +76,6 @@ function AgentPlan({
 }) {
   const t = useCoreloomI18n().messages.ai.plan
   const labelId = React.useId()
-  const [open, setOpen] = React.useState(defaultOpen)
   const { finished, total, current, failed, complete } = planProgress(plan)
   const name = label ?? plan.title ?? t.title
   const announcement = failed
@@ -84,7 +89,8 @@ function AgentPlan({
   return (
     <Collapsible
       open={open}
-      onOpenChange={setOpen}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
       data-slot="agent-plan"
       className={cn('rounded-md border border-border bg-card text-[13px]', className)}
     >

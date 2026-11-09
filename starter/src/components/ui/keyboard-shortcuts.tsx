@@ -264,14 +264,18 @@ interface ShortcutGroup {
 
 function ShortcutsDialog({
   open,
+  defaultOpen,
   onOpenChange,
   groups,
   title,
   description,
   filter = true,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  /** Whether the dialog shows (controlled). */
+  open?: boolean
+  /** Shown at first, when `open` is not set. */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   groups: ShortcutGroup[]
   /** "Keyboard shortcuts" by default. */
   title?: React.ReactNode
@@ -291,9 +295,10 @@ function ShortcutsDialog({
   return (
     <Dialog
       open={open}
+      defaultOpen={defaultOpen}
       onOpenChange={(next) => {
         if (!next) setQuery('')
-        onOpenChange(next)
+        onOpenChange?.(next)
       }}
     >
       <DialogContent

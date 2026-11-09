@@ -394,6 +394,9 @@ interface CodeEditorProps {
   /** The text (controlled). */
   value?: string
   defaultValue?: string
+  /** Called with the new text after each edit the user makes. */
+  onValueChange?: (value: string) => void
+  /** @deprecated Use `onValueChange`, the name every Coreloom field uses. Removed in 2.0. */
   onChange?: (value: string) => void
   /** A built-in language, or one derived from `path` when omitted. */
   language?: CodeEditorLanguage
@@ -436,6 +439,8 @@ interface CodeEditorProps {
 function CodeEditor({
   value,
   defaultValue = '',
+  onValueChange,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- kept working until 2.0
   onChange,
   language: languageProp,
   path,
@@ -470,9 +475,9 @@ function CodeEditor({
   const pathRef = React.useRef(path)
 
   // The latest callbacks, read by CodeMirror's listeners (which are set up once).
-  const callbacks = React.useRef({ onChange, onSave, onCursorChange })
+  const callbacks = React.useRef({ onValueChange, onChange, onSave, onCursorChange })
   React.useLayoutEffect(() => {
-    callbacks.current = { onChange, onSave, onCursorChange }
+    callbacks.current = { onValueChange, onChange, onSave, onCursorChange }
   })
 
   const compartments = React.useMemo(
@@ -573,7 +578,9 @@ function CodeEditor({
             update.docChanged &&
             !update.transactions.some((tr) => tr.annotation(external) === true)
           ) {
-            callbacks.current.onChange?.(update.state.doc.toString())
+            const text = update.state.doc.toString()
+            callbacks.current.onValueChange?.(text)
+            callbacks.current.onChange?.(text)
           }
           if (update.docChanged || update.selectionSet) {
             const range = update.state.selection.main
@@ -709,6 +716,7 @@ function useLanguageName() {
  */
 function CodeEditorLanguageSelect({
   value,
+  defaultValue,
   onValueChange,
   languages = CODE_EDITOR_LANGUAGES.map((l) => l.value),
   size = 'sm',
@@ -716,8 +724,11 @@ function CodeEditorLanguageSelect({
   className,
   'aria-label': ariaLabel,
 }: {
-  value: CodeEditorLanguage
-  onValueChange: (language: CodeEditorLanguage) => void
+  /** The chosen language (controlled). */
+  value?: CodeEditorLanguage
+  /** The first language when `value` is not set. */
+  defaultValue?: CodeEditorLanguage
+  onValueChange?: (language: CodeEditorLanguage) => void
   /** The languages to offer, in order (all built-in ones by default). */
   languages?: readonly CodeEditorLanguage[]
   size?: 'sm' | 'default'
@@ -730,8 +741,9 @@ function CodeEditorLanguageSelect({
   return (
     <Select
       value={value}
+      defaultValue={defaultValue}
       onValueChange={(next) => {
-        onValueChange(next as CodeEditorLanguage)
+        onValueChange?.(next as CodeEditorLanguage)
       }}
       disabled={disabled}
     >

@@ -7,6 +7,7 @@ import {
   DataListEmpty,
   DataListPagination,
   DataListToolbar,
+  FacetedFilter,
   useDataList,
 } from '@/components/data-list'
 import { Badge, BadgeDot } from '@/components/ui/badge'
@@ -204,6 +205,25 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Projects: Story = {}
+
+/**
+ * One faceted filter on its own, outside the toolbar. With `defaultValue` it keeps its own
+ * choice; `onValueChange` hears every change.
+ */
+export const FacetedFilterAlone: Story = {
+  render: () => (
+    <FacetedFilter
+      title="Status"
+      options={[
+        { value: 'ready', label: 'Ready' },
+        { value: 'building', label: 'Building' },
+        { value: 'failed', label: 'Failed' },
+      ]}
+      defaultValue={['failed']}
+      counts={{ ready: 12, building: 3, failed: 2 }}
+    />
+  ),
+}
 
 export const ServerSide: Story = {
   render: () => <ServerProjectsList />,

@@ -813,7 +813,7 @@ function Ide({
             wrap={wrap}
             tabSize={tabSize}
             diagnostics={diagnostics[activeFile.path]}
-            onChange={(content) => {
+            onValueChange={(content) => {
               updateContent(activeFile.path, content)
             }}
             onCursorChange={setCursor}

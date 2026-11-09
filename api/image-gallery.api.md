@@ -20,7 +20,8 @@ function ImageLightbox
 ImageLightbox.images: GalleryImage[]
 ImageLightbox.index: number
 ImageLightbox.onIndexChange: (index: number) => void
-ImageLightbox.open: boolean
-ImageLightbox.onOpenChange: (open: boolean) => void
+ImageLightbox.open?: boolean | undefined
+ImageLightbox.defaultOpen?: boolean | undefined
+ImageLightbox.onOpenChange?: ((open: boolean) => void) | undefined
 ImageLightbox.onCloseAutoFocus?: ((event: Event) => void) | undefined
 ```

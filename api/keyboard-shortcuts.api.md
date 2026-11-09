@@ -29,8 +29,9 @@ type ShortcutGroup = {}
 ShortcutGroup.title: React.ReactNode
 ShortcutGroup.shortcuts: { keys: string; description: string; }[]
 function ShortcutsDialog
-ShortcutsDialog.open: boolean
-ShortcutsDialog.onOpenChange: (open: boolean) => void
+ShortcutsDialog.open?: boolean | undefined
+ShortcutsDialog.defaultOpen?: boolean | undefined
+ShortcutsDialog.onOpenChange?: ((open: boolean) => void) | undefined
 ShortcutsDialog.groups: ShortcutGroup[]
 ShortcutsDialog.title?: React.ReactNode
 ShortcutsDialog.description?: React.ReactNode

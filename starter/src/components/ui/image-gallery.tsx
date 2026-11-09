@@ -27,14 +27,18 @@ function ImageLightbox({
   index,
   onIndexChange,
   open,
+  defaultOpen,
   onOpenChange,
   onCloseAutoFocus,
 }: {
   images: GalleryImage[]
   index: number
   onIndexChange: (index: number) => void
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  /** Whether the viewer shows (controlled). */
+  open?: boolean
+  /** Shown at first, when `open` is not set. */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   /** Where the focus goes on close (Radix Dialog's event); call preventDefault to move it yourself. */
   onCloseAutoFocus?: (event: Event) => void
 }) {
@@ -51,9 +55,10 @@ function ImageLightbox({
   return (
     <DialogPrimitive.Root
       open={open}
+      defaultOpen={defaultOpen}
       onOpenChange={(next) => {
         if (!next) setZoomed(false)
-        onOpenChange(next)
+        onOpenChange?.(next)
       }}
     >
       <DialogPrimitive.Portal>

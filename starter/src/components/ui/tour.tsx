@@ -15,6 +15,7 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useCoreloomI18n } from '@/lib/i18n'
+import { useControllableState } from '@/lib/use-controllable-state'
 import { cn } from '@/lib/utils'
 
 interface TourStep {
@@ -65,7 +66,8 @@ function useRect(element: Element | null) {
 
 function Tour({
   steps,
-  open,
+  open: openProp,
+  defaultOpen = false,
   onOpenChange,
   step: stepProp,
   defaultStep = 0,
@@ -74,8 +76,11 @@ function Tour({
   padding = 6,
 }: {
   steps: TourStep[]
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  /** Whether the tour shows (controlled). */
+  open?: boolean
+  /** Shown at first, when `open` is not set: the tour starts as it mounts. Default: false. */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   /** The step shown, from 0 (controlled). */
   step?: number
   defaultStep?: number
@@ -86,6 +91,11 @@ function Tour({
   padding?: number
 }) {
   const t = useCoreloomI18n().messages.display.tour
+  const [open, setOpen] = useControllableState({
+    value: openProp,
+    defaultValue: defaultOpen,
+    onChange: onOpenChange,
+  })
   const [inner, setInner] = React.useState(defaultStep)
   const index = Math.min(Math.max(stepProp ?? inner, 0), Math.max(steps.length - 1, 0))
   const current = steps.at(index)
@@ -127,7 +137,7 @@ function Tour({
     onStepChange?.(next)
   }
   const close = () => {
-    onOpenChange(false)
+    setOpen(false)
   }
   const isLast = index === steps.length - 1
 

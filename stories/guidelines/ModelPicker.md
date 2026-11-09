@@ -8,7 +8,7 @@ Which model answers: a small trigger with the chosen model's name that opens a s
 - `size` — `"sm"` (28 px, ghost's default) or `"default"` (42 px, outline's default);
 - `placeholder`, `disabled`;
 - `aria-labelledby` — a label elsewhere; the name becomes that label followed by the chosen model (otherwise "Model: Claude Sonnet");
-- `ModelList` (`models`, `value`, `onValueChange`) for the list inline, without the trigger;
+- `ModelList` (`models`, `value` + `onValueChange` or `defaultValue`) for the list inline, without the trigger;
 - `ModelField` for the form kit, in its own item so the picker doesn't pull in the form kit: `pnpm dlx shadcn@latest add @coreloom/model-field`, then `<form.AppField name="model">{() => <ModelField label="Model" models={models} />}</form.AppField>`.
 
 - Open with Enter, Space or a click; type to search names, providers, descriptions and capabilities; arrows move, Enter picks and closes, Escape closes and gives focus back.

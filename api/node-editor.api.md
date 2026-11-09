@@ -163,7 +163,7 @@ function asConditions(v: unknown) => ConditionsValue
 function CodeControl
 CodeControl.id: string
 CodeControl.value: unknown
-CodeControl.onChange: (value: unknown) => void
+CodeControl.onValueChange: (value: unknown) => void
 CodeControl.readOnly: boolean
 CodeControl.invalid?: boolean | undefined
 CodeControl.describedBy?: string | undefined
@@ -178,7 +178,7 @@ ConditionRule.right?: string | undefined
 function ConditionsControl
 ConditionsControl.id: string
 ConditionsControl.value: unknown
-ConditionsControl.onChange: (value: unknown) => void
+ConditionsControl.onValueChange: (value: unknown) => void
 ConditionsControl.readOnly: boolean
 ConditionsControl.invalid?: boolean | undefined
 ConditionsControl.describedBy?: string | undefined
@@ -189,7 +189,7 @@ ConditionsValue.rules: ConditionRule[]
 function CredentialControl
 CredentialControl.id: string
 CredentialControl.value: unknown
-CredentialControl.onChange: (value: unknown) => void
+CredentialControl.onValueChange: (value: unknown) => void
 CredentialControl.readOnly: boolean
 CredentialControl.invalid?: boolean | undefined
 CredentialControl.describedBy?: string | undefined
@@ -203,8 +203,9 @@ DataView.className?: string | undefined
 function evaluateConditions(value: unknown, scope: ExpressionScope) => boolean | null
 function ExpressionInput
 ExpressionInput.id: string
-ExpressionInput.value: string
-ExpressionInput.onValueChange: (value: string) => void
+ExpressionInput.value?: string | undefined
+ExpressionInput.defaultValue?: string | undefined
+ExpressionInput.onValueChange?: ((value: string) => void) | undefined
 ExpressionInput.placeholder?: string | undefined
 ExpressionInput.readOnly?: boolean | undefined
 ExpressionInput.multiline?: boolean | undefined
@@ -217,8 +218,9 @@ ExpressionInput.aria-label?: string | undefined
 ExpressionInput.aria-labelledby?: string | undefined
 type ExpressionInputProps = {}
 ExpressionInputProps.id: string
-ExpressionInputProps.value: string
-ExpressionInputProps.onValueChange: (value: string) => void
+ExpressionInputProps.value?: string | undefined
+ExpressionInputProps.defaultValue?: string | undefined
+ExpressionInputProps.onValueChange?: ((value: string) => void) | undefined
 ExpressionInputProps.placeholder?: string | undefined
 ExpressionInputProps.readOnly?: boolean | undefined
 ExpressionInputProps.multiline?: boolean | undefined
@@ -243,7 +245,7 @@ function jsonError(text: unknown) => string | null
 function KeyValueControl
 KeyValueControl.id: string
 KeyValueControl.value: unknown
-KeyValueControl.onChange: (value: unknown) => void
+KeyValueControl.onValueChange: (value: unknown) => void
 KeyValueControl.readOnly: boolean
 KeyValueControl.invalid?: boolean | undefined
 KeyValueControl.describedBy?: string | undefined

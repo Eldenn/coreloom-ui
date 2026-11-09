@@ -6,8 +6,9 @@ Stability: experimental. Written by `pnpm api:report` from the code; don't edit 
 
 ```ts
 function ShareDialog
-ShareDialog.open: boolean
-ShareDialog.onOpenChange: (open: boolean) => void
+ShareDialog.open?: boolean | undefined
+ShareDialog.defaultOpen?: boolean | undefined
+ShareDialog.onOpenChange?: ((open: boolean) => void) | undefined
 ShareDialog.title: string
 ShareDialog.visibility: ShareVisibility
 ShareDialog.onVisibilityChange: (visibility: ShareVisibility) => Promise<void>
@@ -19,8 +20,9 @@ ShareDialog.pending?: boolean | undefined
 ShareDialog.error?: React.ReactNode
 ShareDialog.className?: string | undefined
 type ShareDialogProps = {}
-ShareDialogProps.open: boolean
-ShareDialogProps.onOpenChange: (open: boolean) => void
+ShareDialogProps.open?: boolean | undefined
+ShareDialogProps.defaultOpen?: boolean | undefined
+ShareDialogProps.onOpenChange?: ((open: boolean) => void) | undefined
 ShareDialogProps.title: string
 ShareDialogProps.visibility: ShareVisibility
 ShareDialogProps.onVisibilityChange: (visibility: ShareVisibility) => Promise<void>
