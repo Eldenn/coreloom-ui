@@ -14,8 +14,305 @@ pointing the namespace there in `components.json` (dependencies between items re
 the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.10.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.11.0/{name}.json" }
 ```
+
+## [0.11.0] - 2026-11-09
+
+### Added
+
+- `AgentAvatar` has a `listening` state (wide eyes, sound waves) and an `animated` prop
+  (`false` shows the state without moving, for long lists).
+- `AgentAvatar` has a `shape` prop: `square` (rounded, the face's default), `circle` (the dots'
+  default), `hexagon`, `diamond`, `shield` or `blob`, or `seed` to let the seed pick one. The halo
+  and the error flash follow the outline. `Chat`'s `assistantAvatar` and `AgentPlan`'s `avatar`
+  take it too.
+- `agentAvatarLook(seed)` also returns `phase`, where the agent's idle loops start, and `shape`.
+- `CheckboxCardField`: checkbox cards (`CheckboxCard`) as a form field, the many-choice sibling of
+  `RadioCardField`; its value is a `string[]`.
+- `CheckboxGroupField` and `CheckboxCardField` options take `exclusive`: an answer such as "None
+  of these" that can't be ticked with another. Ticking it clears the others, and ticking another
+  clears it. `toggleChoice` is the rule, exported for custom fields.
+- `Markdown` has an `inline` prop: one line of text in a label, a title or a sentence, keeping
+  inline code, emphasis and links and dropping block markup.
+- `SortableList` options take `actions` (an item's own buttons, after its move buttons), and the
+  list takes `wrap`, so long labels run onto more lines instead of being cut.
+- `@coreloom/api-try-it` (experimental): the "Try it" panel of an API reference page. Path, query
+  and header parameters, extra headers, a JSON body, Send and Cancel, then the status, time, size,
+  body (a JSON tree or text) and headers that came back, and Copy as cURL. The app makes the call
+  through `onSend(request, { signal })`. The helpers `buildRequestUrl`, `buildRequest`, `toCurl`,
+  `shellQuote`, `parseResponseBody`, `statusKind` and `bodySize` are exported too.
+- **Booking** block (`@coreloom/booking`, experimental): online appointment booking.
+  - Three steps: a service (skipped when there is only one), a day in the calendar and a free time, then a recap with the visitor's name, email, optional phone and note, and Confirm.
+  - Free times come from `onLoadSlots({ serviceId, date })`, grouped as morning, afternoon and evening, shown in the place's `timeZone`; taken times are struck through. A failure offers Retry.
+  - `onBook(request)` makes the appointment; its `reference` shows on the confirmation, with an **Add to calendar** (.ics) link. A failure keeps everything filled in.
+  - `isDateUnavailable`, `fromDate` and `toDate` limit the calendar; `aside` takes a PractitionerCard or OpeningHours.
+  - Each step's title takes focus when it opens, and one polite live region says how many times are free.
+- **MediaPlayer** (`@coreloom/media-player`, experimental): a video or audio player with its own controls.
+  - Play, back and forward, a seek bar with chapter marks, speed, WebVTT captions, volume and full screen, with keyboard shortcuts (k, j, l, m, c, f, arrows).
+  - Chapters and a transcript below: the current line is highlighted, follows playback and plays from where it's clicked.
+  - `parseVtt(text)` turns a captions file into transcript lines, speakers included.
+- **AudioRecorder** (`@coreloom/audio-recorder`, experimental): records a voice note from the microphone.
+  - A live waveform and a timer, pause, stop and discard, then playback and delete; `maxDuration` stops it by itself.
+  - The recording (`blob`, `mimeType`, `duration`, `levels`) goes to the app through `onValueChange`.
+  - `DictationButton` goes in PromptInput's toolbar: it records, calls your `onTranscribe` and hands back the text (`appendText` adds it to the field).
+  - `useAudioRecorder` and `AudioWaveform` for a recorder or a voice message of your own.
+- `renderIcon` and the `IconLike` type (`@coreloom/render-icon`), and `initials` (`@coreloom/initials`): the helpers that AppSidebar, NavUser, CommandMenu, FeatureGrid and SettingsLayout (icons), and Team, Kanban, Inbox, AuditLog and CommentThread (avatar initials) each carried their own copy of. Those blocks now install them; nothing changes in how they render.
+- **Code review** block (`@coreloom/code-review`, experimental): review a pull request's changes.
+  - The changed files in a folder tree with their status, comment count and a check once viewed; Enter or a click goes to the file. Below about 768 px the tree folds behind a "Files" button.
+  - Each file's diff, unified or side by side (`layout` / `defaultLayout`), with a comment button on every line, keyboard and touch included. Threads show under their lines: reply, resolve, and resolved threads fold. Threads whose line left the diff are listed after the file.
+  - "Viewed" per file folds it (`viewed` / `defaultViewed` / `onViewedChange`).
+  - "Finish review" sends a verdict (comment, approve, request changes) and a summary through `onSubmitReview`, waiting for its promise.
+  - Your app keeps the files and threads: `onComment`, `onReply` and `onResolve` say what changed.
+- `DiffViewer` has two line slots: `renderLineAction(line)` draws a control at the start of each line, and `renderAfterLine(line)` draws content under a line (a line with content never folds away). `showHeader={false}` hides its header line when your own header shows the counts.
+- `useDataList` takes `server: { total, counts }` for lists the server filters and paginates:
+  `rows` is then the page it returned, the toolbar's result count and the pagination read
+  `server.total`, and the facet counts come from `server.counts`. The `DataListServer` type is
+  exported.
+- `useDataList` returns `matched`, the number of rows matching the search and filters on every
+  page (`filtered.length` without `server`, `server.total` with it).
+- **DiagramEditor**: an **Import** button in the top bar, between New diagram and Copy. It opens the file picker for a Mermaid (`.mmd`, `.mermaid`), PlantUML (`.puml`, `.plantuml`, `.pu`, `.iuml`, `.wsd`), JSON or `.txt` file. The file is read in the browser, replaces the text and sets the format: from the extension, or from the first words of a `.txt`. Files over 1 MB and binary files are refused, and the status line says why. Import is off when `readOnly`.
+- **DiagramWorkspace**: `onImport({ title, value, result, format })`. When it's given, the Add menu ends with "Import a file…", which reads a file the same way and hands it to the app to add as a new view, named after the file.
+- Strings for both in English, French, Spanish and German.
+- **Diagram viewer** block (`@coreloom/diagram-viewer`): a document of several diagrams to read, as a shared link opens it.
+  - Title, description and "Updated …" on top, and an optional `banner` above them.
+  - Up to six views are tabs; past six they are a list at the side; on a phone, a menu. `activeId` / `defaultActiveId` / `onActiveChange` set the view.
+  - The diagram keeps zoom, fit and full screen. Download makes an SVG or a PNG, named from `fileName` and the view.
+  - Left and right arrows, or Page Up and Page Down, change the view. No editing tools.
+- **Diagram workspace** block (`@coreloom/diagram-workspace`): the editor of a document with several diagrams.
+  - The document's name is edited in place (EditableText), and SaveStatus shows `saveState`, `savedAt` and Retry (`onRetrySave`).
+  - The list of views adds a view of a chosen kind (`onAdd(kind)`), renames (`onRename`), reorders with SortableList (`onReorder`) and deletes after a Popconfirm (`onDelete`). The last view can't be deleted.
+  - The open view is a controlled DiagramEditor; `onDiagramChange(id, value, result, format)` reports each change.
+  - On a phone, the list is in a side sheet.
+- **DiagramWorkspace**: diagram files can be dropped on the workspace. With `onImport`, files dragged over it show a dashed hint ("Drop diagram files to add them as views"), and each dropped file is read like "Import a file…" and handed to `onImport`, one call per file, in order. A file dropped on the editor also becomes a new view: the editor no longer pastes its text. The files that can't be read are named in the status under the list of views. Without `onImport`, dropped files are left alone.
+- **diagram-import**: `useFileDrop({ enabled, onFiles })`, the drop handling behind it, for an area that takes files.
+- The hint's string in English, French, Spanish and German.
+- **Filter bar** (`@coreloom/filter-bar`, experimental): filters as chips above a list or a table.
+  - "Add filter" picks a field from a searchable list; each chip opens to edit its operator and
+    value; × removes it. "Match all" / "Match any", "Clear filters", saved `views` with
+    `onSaveView`, and a `resultCount` announced politely.
+  - Six field types (`text`, `number`, `date`, `select`, `multiselect`, `boolean`), each with its
+    operators (`contains`, `between`, `before`, `anyOf`, `allOf`, `isEmpty`…).
+  - `QueryBuilder` edits the same filter as nested AND / OR groups (`maxDepth`, 3 by default).
+  - `@/lib/filter`: the `FilterGroup` value and `matchesFilter` to run it on rows,
+    `filterToSearchParams` / `parseFilterSearchParams` to keep it in the URL (unknown fields,
+    operators and values of the wrong shape are dropped), and helpers to edit it.
+- **AppShell** (`@coreloom/app-shell`): `fullWidth` (default `false`) lets the page use the whole width next to the sidebar instead of stopping at `--container-app`, for editors, canvases and wide tables. The gutters stay.
+- **Diagram workspace** (`@coreloom/diagram-workspace`): `height` sets the whole workspace's height on wide screens; the editor takes what's left under the top bar and a long list of views scrolls on its own. In `<AppShell fullWidth>`, `height="calc(100svh - 7.5rem)"` makes the editor fill the window. Without it nothing changes (560px panes).
+- **Diagram editor** (`@coreloom/diagram-editor`): `height="fill"` makes the panes share the height the editor is given (stretched in a grid or a flex column, or set with a class) instead of a fixed one. They keep 560px where they stack.
+- `@coreloom/charts` (Chart, RadarChart, ScatterChart, TreemapChart and SankeyChart, the charts drawn with Recharts), `@coreloom/editors` (RichTextEditor and CodeEditor) and `@coreloom/everything` (`all`, `charts`, `editors` and `node-editor`).
+- What each item costs an app, gzipped and without React, published at `r/sizes.json` with its npm packages.
+- `Logo` (`@coreloom/logo`): your logo as an inline SVG or an image (with a light version), named for screen readers, optionally linked home, with entrance animations: `fade`, `stagger` (its groups one after the other), `draw` (outlines trace, then fill), `assemble`, `wipe`, `shine` and `pulse`, played on mount, in view or on hover. `logoParts` and `assembleOffset` are exported for your own effects.
+- `LogoLoader` (`@coreloom/logo-loader`): the logo as a loading screen (busy status), that fades away into the content.
+- `LogoCloud` (`@coreloom/logo-cloud`): customer or partner logos in a grid or a marquee, muted until hovered.
+- Motion tokens in the theme: `--duration-fast` / `-base` / `-slow` / `-reveal` (120, 180, 320 and
+  600 ms) with the `duration-fast`, `duration-base`, `duration-slow` and `duration-reveal`
+  utilities, and `--ease-in-out` next to `--ease-out` and `--ease-spring`.
+- `Reveal` and `Stagger` (`@coreloom/reveal`): content that fades, slides, scales or comes into
+  focus as it scrolls into view, once, item by item for `Stagger`; `useInView` and
+  `useReducedMotion` are exported.
+- `WordReveal`, `Typewriter`, `ShimmerText` and `GradientText` (`@coreloom/text-effects`): words
+  arriving one by one, typed phrases with a caret, a shimmer for "Thinking…" labels, the accent
+  gradient on text. Screen readers get the whole text once.
+- `Marquee` (`@coreloom/marquee`): logos or quotes scrolling without end, with faded edges, a
+  pause button, and a stop on hover and focus.
+- `Spotlight` and `BorderGlow` (`@coreloom/spotlight`): a light that follows the pointer across a
+  card, and a light running along its border.
+- `useViewTransition` and `startViewTransition` (`@coreloom/view-transition`): fade, slide,
+  slide-back or scale between views with the View Transitions API.
+- Everything stands still for people who ask for reduced motion, page transitions included.
+- `StatusButton` (`@coreloom/status-button`): a button that shows its action, with a spinner,
+  a drawn check on success and a shake on error, each announced.
+- `DrawIcon`, `MorphIcon` and `MenuToggleIcon` (`@coreloom/animated-icon`): icons that draw
+  themselves, turn into one another, or fold into a cross.
+- `AnimatedList` (`@coreloom/animated-list`), `AnimatedHeight` (`@coreloom/animated-height`)
+  and `TabsIndicator` (`@coreloom/tabs-indicator`): items that slide in and out, a box that
+  follows its content's height, a highlight that slides between tabs.
+- `Ping` and `PingDot` (`@coreloom/ping`), `fireConfetti` (`@coreloom/confetti`),
+  `PageProgress` (`@coreloom/page-progress`) and `TypingIndicator`
+  (`@coreloom/typing-indicator`).
+- `AnimatedBackground` (`@coreloom/animated-background`), `TiltCard` (`@coreloom/tilt-card`),
+  `ScrollProgress` and `Parallax` (`@coreloom/scroll-effects`, CSS scroll-driven), and
+  `ScrambleText` in `@coreloom/text-effects`.
+- `Reveal` and `Stagger` take mask effects for images: `wipe-up`, `wipe-down`, `wipe-left`,
+  `wipe-right` and `circle`.
+
+All of these are experimental: their API may still change in a minor release.
+
+- **Load more** (`@coreloom/load-more`): the end of a paged list, as a button or loaded as it scrolls into view, with
+  loading, error (Try again) and end states; `loadMoreStatus` maps a TanStack infinite query to it.
+- **Presence** (`@coreloom/presence`): `PresenceAvatars` (who is here, idle shown), `PresenceActivity`
+  ("Ada is editing…") and `RemoteCursors` (named pointers over a shared surface).
+- **Image crop** (`@coreloom/image-crop`): move and zoom an image in a frame (pointer, keyboard, slider), round
+  for avatars; `cropImage` returns the cropped File.
+- **Notification preferences** (`@coreloom/notification-preferences`): an event × channel matrix with a toggle
+  per channel, required and unavailable cells.
+- **Environment variables** (`@coreloom/env-vars`): variables per environment, secrets masked, `.env` import
+  with a preview, and a comparison between environments. `@coreloom/dotenv` parses `.env` text.
+- **Feature flags** (`@coreloom/feature-flags`): flags per environment with a switch, a rollout percentage,
+  targeting rules and history; `evaluateFeatureFlag` evaluates them the same way.
+- **Version history** (`@coreloom/version-history`): versions grouped by day, named versions, a diff with the
+  previous or current one, and restore.
+- **SQL explorer** (`@coreloom/sql-explorer`): schema tree, query tabs in a SQL editor (Mod+Enter runs),
+  virtualised results, cancel and CSV export. Your `onRun` runs the query.
+- **Agent run replay** (`@coreloom/ai-agent-replay`): play back a multi-agent run from its spans, with a
+  timeline, the agent graph at that moment, the turns and per-agent metrics.
+- **Image input** has a `crop` prop: the chosen image is framed in a dialog first, and the value is the cropped
+  File.
+- **Testimonials** (`@coreloom/testimonials`, experimental): `TestimonialGrid`, `TestimonialWall` (columns with "Show more") and `TestimonialCard`, with avatar, logo, rating and source.
+- **Comparison table** (`@coreloom/comparison-table`, experimental): plans side by side under a sticky header, words for every cell, "Only show differences", one plan at a time on phones; `differingFeatures`.
+- **Changelog** (`@coreloom/changelog`, experimental): a public changelog page with changes tagged New, Improved, Fixed, Security or Deprecated, a filter by kind, anchors, a feed link and paging; `filterChangelog`, `changeKinds`.
+- **Blog** (`@coreloom/blog`, experimental): `BlogList` (featured post, categories, "More posts"), `BlogPostCard`, `BlogArticle` (table of contents, authors, related posts), `AuthorCard`, `AuthorProfile`; `readingTime`.
+- **Newsletter** (`@coreloom/newsletter`, experimental): `NewsletterForm` and `Waitlist` (place in line, referral link), with address checks, the callback's errors and a focused thank-you.
+- **Cookie consent** (`@coreloom/cookie-consent`, experimental): `CookieConsent` with equal "Reject all" / "Accept all", `CookiePreferences`, and `parseConsent`, `acceptAll`, `rejectAll`.
+- **Shop** (`@coreloom/shop`, experimental), without payment: `ProductCard`, `ProductGrid`, `ProductDetail` (swatches, sizes, stock, quantity), `Cart`, `CartSheet`, `CartButton`, `OrderSummary` (promo code, shipping, tax); `cartTotals`, `findVariant`, `isValueAvailable`, `formatMoney`.
+- **Voice agent** (`@coreloom/voice-agent`, experimental): `VoiceAgent` with push-to-talk (hold, Space, or hands-free), states, a level meter and a live transcript; `PushToTalkButton`, `LiveTranscript`, `VoiceLevel`.
+- Message groups `testimonials`, `comparison`, `changelog`, `blog`, `newsletter`, `cookieConsent`, `shop` and `voice` in English, French, Spanish and German.
+- **SaveStatus** (`@coreloom/save-status`, also in `all`): where an autosaving document stands.
+  - It shows "Saved · 2 minutes ago" (with RelativeTime), "Saving…", "Unsaved changes", or "Couldn't save" with a Retry button (`onRetry`).
+  - Screen readers hear one polite status message when the state settles; passing through Saving… isn't announced.
+  - After Retry, focus stays on the status line.
+- **Diagram card** block (`@coreloom/diagram-card`): a gallery card for a diagram document.
+  - The thumbnail is a `diagram` drawn with UmlDiagram's `preview`, or an `image` URL. When there's neither, a neutral drawing stands in.
+  - The title is a link (`AppLink`) that covers the whole card.
+  - It shows a visibility badge (`private`, `public`, `protected`, with an icon and a word), the number of diagrams and when the document changed.
+  - `actions` fill a "…" menu that stays its own button.
+- **Share dialog** block (`@coreloom/share-dialog`): choose who can open a document.
+  - Three radio cards: Private (only you), Public (anyone with the link), Protected (the link and a code).
+  - A choice applies through `onVisibilityChange` (a promise). Its card spins until it settles, and the old choice comes back if it rejects.
+  - The link is read-only with Copy. The code is in SecretValue. "Regenerate the link" and "Generate a new code" ask first, in a Popconfirm that says what stops working.
+  - "Copy link and code" copies a short message ready to send.
+- **Access code gate** block (`@coreloom/access-code-gate`): the screen in front of a protected link, for AuthLayout.
+  - One box per character (`length`, 8 by default). Letters are upper-cased and characters outside `alphabet` are ignored; by default the alphabet leaves out 0, O, 1, I and L.
+  - A pasted code fills every box, and the code is sent as soon as the last box is filled.
+  - After a wrong code the boxes empty and focus goes to the first one. `attemptsLeft` shows under the boxes; `lockedUntil` turns them off and shows a countdown.
+- [`VERSIONING.md`](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md) says what a
+  version promises: the API it covers (item names, exports, props, tokens, message keys), what
+  makes a major, minor or patch release, how deprecations work and which platforms are supported.
+- Items carry a stability level. These are **experimental**, and may still change in a minor
+  release: `uml`, `uml-diagram`, `diagram-code-block`, `diagram-editor`, `diagram-card`,
+  `diagram-viewer`, `diagram-workspace`, `share-dialog`, `access-code-gate`, `node-editor`,
+  `workflow-builder`, `agent-graph`, `ai-agent-builder`, `ai-agent-teams`, `terminal`,
+  `terminal-console`, `ansi-output`, `ide`, `pipeline-run`, `form-builder` and `form-renderer`.
+  Their registry entry has `"meta": { "stability": "experimental" }`, their guide opens with a
+  note, and `llms.txt` marks them. Every other item is stable.
+- **SuggestionList** (`@coreloom/suggestion-list`, also in `all`, experimental): suggestions reviewed one by one before they count, such as rules a model proposed.
+  - Each suggestion has a `text`, and optionally a `label` above it and a `detail` under it. Its buttons are Accept, Edit (the text opens in a field, then Accept edit or Cancel) and Ignore.
+  - `onAccept(suggestion, text)` and `onDismiss(suggestion)` may return a promise: a spinner shows while it runs, and a rejected one keeps the suggestion.
+  - The app removes handled suggestions; focus moves to the next one, and one polite message says what happened and how many are left.
+  - `renderText` draws the text (inline Markdown, for example), `editable={false}` hides Edit and `empty` replaces "No suggestions left."
+- **Component diagrams** (`kind: 'component'`) in `@coreloom/uml` and `@coreloom/uml-diagram`.
+  - Elements are components, interfaces and ports. A component holds others through `parent` and is then drawn as a frame.
+  - A port sits on its component's edge, half the ports on the left side and half on the right. A dragged port stays where it was put.
+  - Interfaces are drawn as lollipops.
+  - Relations: `provide` (a plain line to the lollipop), `require` (a socket round it), `assembly` (a ball in a socket), `delegate` (an arrow marked «delegate») and `dependency` (a dashed arrow, the default).
+  - Elements take a `stereotype`.
+- **Package diagrams** (`kind: 'package'`).
+  - Packages are drawn as folders. A package that holds others is a frame with its name in the tab.
+  - They contain classes, interfaces and components.
+  - Relations: `dependency` (the default), `import` and `merge`, as dashed arrows marked «import» and «merge».
+- `parseUmlJson` checks both kinds.
+- `parsePlantUml` reads both, and `toPlantUml` writes them back.
+  - Component diagrams: `component`, `[Name]`, `interface`, `() Name`, `port` / `portin` / `portout`, groupings in braces. Lines: `-(` requires, `-(0)-` is an assembly, `<<delegate>>` delegates.
+  - Package diagrams: `package` in braces around `class`, `interface`, `enum` and components. Lines: `<<import>>` and `<<merge>>`.
+- Mermaid has neither kind: `toMermaid` writes them as a flowchart, and the diagram editor turns Mermaid off in its format switch.
+- The diagram editor's tools add components, interfaces, ports and packages, and connect them with the kinds above. Its "New diagram" menu and the diagram workspace's Add menu offer both kinds. The properties panel edits the stereotype, with a hint for each kind.
+- Strings for both kinds in English, French, Spanish and German.
+- **UML diagrams.** `@coreloom/uml` is the typed model of class, sequence, state, entity–relationship and C4 diagrams, with `parseUmlJson` (checks JSON from outside), and `parseMermaid` / `toMermaid` for the matching Mermaid subset (`classDiagram`, `sequenceDiagram`, `stateDiagram-v2`, `erDiagram`, `C4Context`, `C4Container`, `C4Component`), tolerant: what can't be read comes back as a problem on its line. No `mermaid` dependency; nothing is rendered as HTML.
+- **UmlDiagram** (`@coreloom/uml-diagram`): draws class, state, ER and C4 diagrams on React Flow, laid out automatically in layers with UML markers, crow's feet, frames (namespaces, composite states, C4 boundaries) and multiplicities; zoom and fit; `editable` lets people drag elements and `onLayoutChange` gives their positions. Sequence diagrams render as an SVG (activations, notes, loop/alt/opt/par blocks, autonumber) with the steps as a list for screen readers. Also in `@coreloom/everything` (React Flow keeps it out of `all`).
+- **Diagram editor** block (`@coreloom/diagram-editor`): Mermaid or UML JSON beside the drawing, problems marked on their line, format switch, templates, copy and download.
+- **Sequence diagram editing** in `@coreloom/diagram-editor`: the side panel lists participants and steps (the keyboard path to what a click on the drawing selects), and the selected step's form changes a message (ends, text, arrow, activations), a note (text, place, participants), an activation, or a block (loop, alt, opt, par, critical, break: kind, condition, sections). Add holds notes and blocks (a block wraps the selected step), Connect adds a message after the selected step, Move up / Move down reorder steps, and a participant can be an actor. The functions are in `@coreloom/uml` (`uml-edit-sequence`): `insertMessage`, `insertNote`, `insertBlock`, `setStep`, `moveStep`, `addSection`, `removeSection`, `stepId`.
+- **Editing on the drawing.** UmlDiagram: `onRename` (F2 or a double click opens a name field over the element), `onElementDrop` (an element type dragged onto the canvas, with `UML_DRAG_TYPE`), "Select an area" for box selection, and an align bar (left, centre, right, top, middle, bottom, space evenly) for two or more selected elements. In the diagram editor, the quick Add buttons can be dragged onto the drawing.
+- **Copy, Paste, Duplicate** (Ctrl/⌘ with C, X, V, D) in the diagram editor: elements come with what they hold and the lines between them, under fresh names. `copyItems`, `pasteItems`, `duplicateItems` in `@coreloom/uml`.
+- **Layout** menu in the diagram editor: arrange automatically, and turn the flow (top to bottom, left to right, bottom to top, right to left). Dragged positions can now be undone. `alignBoxes`, `setDirection`, `clearLayout` in `@coreloom/uml`.
+- **SVG and PNG images.** UmlDiagram takes a `ref` whose `toImage('svg' | 'png')` gives the whole drawing as a data URL; the diagram editor's Download menu offers text, SVG and PNG. `@coreloom/uml-diagram` now depends on `html-to-image`.
+- **Class members line by line** in the properties panel: one field per member, typed as in Mermaid, with a menu for visibility, static, abstract, moving and removing; Add attribute and Add method. `memberFromText` in `@coreloom/uml`.
+- **Diagram editor tools.** The drawing in `@coreloom/diagram-editor` has its own toolbar: **Add** (the elements this kind of diagram holds: classes, interfaces, notes, states, entities, participants, C4 people, systems, containers, databases, boundaries…), **Connect** (a form for the kind, both ends and a label, filled from the selection), **Delete**, **Undo** and **Redo**. A **Properties** panel changes what's selected: name, stereotype, members, attributes, description, technology; a relation's kind, label, multiplicities or ER ends, and its direction. Each change is made on the model and the Mermaid or JSON text is written again. The tools are off while the text has problems.
+- **UML editing functions** in `@coreloom/uml`: `addElement`, `addRelation`, `deleteItems`, `renameElement`, `setElementFields`, `setRelationFields`, `reverseRelation` (and `elementTypes`, `relationTypes` to list what a diagram can hold). Plain functions that return a new diagram, for your own forms or an assistant's tool calls.
+- **UmlDiagram**: `selection` / `onSelectionChange`, `onConnect` (with `editable`, drag the dot under an element onto another) and `onDelete` (the Delete key). Selected elements show a ring.
+- **ToolbarMenu** in `@coreloom/toolbar`: a menu named by its text ("Add ▾"), one of the toolbar's arrow-key stops.
+- **Use case, activity and deployment diagrams** in `@coreloom/uml` and `@coreloom/uml-diagram`: actors (stick figures), use cases (ellipses) in their system, «include», «extend» and generalization; actions, decisions and merges (diamonds), start, end and flow end, fork and join bars, partitions and guards in brackets; nodes, devices and execution environments as 3D boxes with their keyword, artifacts, components, databases and clouds, nested in what they're deployed on, with links, dependencies and «deploy». The diagram editor's Add, Connect, properties, copy and paste work on all three.
+- **PlantUML**: `parsePlantUml` and `toPlantUml` (`@coreloom/uml`, `uml-plantuml`) read and write `@startuml` text for every kind (class, sequence, state, ER, C4-PlantUML macros, use case, deployment, and activities in the new syntax), tolerant like `parseMermaid`: problems by line, skin parameters set aside with a warning. No PlantUML dependency, nothing sent to a server. `isPlantUml` tells PlantUML text from Mermaid.
+- **Mermaid flowcharts** (`flowchart` / `graph`) are read as activity diagrams: `((start))`, `(((end)))`, `{decision}`, `@{ shape: fork }` and the other activity shapes, subgraphs as partitions, `&` and chained links.
+- **Diagram editor**: a PlantUML format (`format="plantuml"`, `.puml` downloads), templates for the three new kinds, and pasted text in another syntax switches the format. A format that can't hold the current kind is disabled.
+- **`@coreloom/diagram-code-block`**: draws the `mermaid and `plantuml blocks of a chat answer as diagrams, with a Diagram / Source switch; the plain code block while the answer streams or when the text can't be read. Register it once with `<MarkdownCodeBlocksContext value={diagramCodeBlocks}>`. It's in `everything`.
+- **Markdown**: `codeBlocks` and `MarkdownCodeBlocksContext` hand fenced code in a given language to the app's own renderer (it gets `code`, `language`, `streaming` and the plain block as `children`).
+- **UmlDiagram** (`@coreloom/uml-diagram`): `preview` draws a still thumbnail for galleries. The drawing fits its box and fits again when the box is resized. It has no controls and nothing inside can be focused, dragged or zoomed. Screen readers get one image named by `label`.
+- **UmlDiagram**: a full screen button in the controls, and in the top-right corner of sequence diagrams. It uses the Fullscreen API on the diagram's box. Escape leaves full screen and focus goes back to the button. Browsers without the Fullscreen API don't show the button.
+- **Diagram editor** (`@coreloom/diagram-editor`): `view` / `defaultView` / `onViewChange` show the text beside the drawing (`split`, the default), the drawing alone, or the text alone. A switch at the end of the format bar changes the view.
+- **Diagram editor**: `actions` puts the app's own buttons (Share, say) at the end of the top bar.
+- **Diagram editor**: `readOnly` keeps the text as it is. The text field is read-only; the format switch, New diagram, the drawing tools and the properties are off; nothing can be dragged. Copy, Download, zoom and full screen still work, and the status line starts with "Read only".
+
+### Changed
+
+- `AgentAvatar` is livelier: at rest it breathes, blinks and glances aside, each agent on its
+  own beat so a team never blinks in step; thinking and speaking glow with a halo; speech has an
+  uneven rhythm; done adds cheeks and a spark, error a red flash, offline a floating "z"; every
+  change of state plays a short bounce, and hovering it makes it squint. The dots breathe at rest
+  and pulse while listening. Everything still stops for reduced motion.
+- `@coreloom/all` no longer installs the components built on Recharts, Tiptap, CodeMirror and React Flow: it now adds about 460 KB of gzipped JavaScript instead of about 1 MB. The light charts (Sparkline, DonutChart, BarList, Gauge, Heatmap, FunnelChart) stay in it.
+- Guides now name every prop their component takes: Sidebar `side` and `variant`, AppShell's sidebar shape, QuotaBar's number options, Popconfirm `onCancel` and `defaultOpen`, FormRenderer's `renderField` / `renderSection` / `showHidden`, RichTextEditor `suggestion` and `onReviewEnd`, and a dozen more.
+- Components use the duration utilities instead of fixed values (`duration-base` for
+  `duration-180`, and so on); nothing moves differently.
+- The `@coreloom` namespace (`https://eldenn.github.io/coreloom-ui/r/{name}.json`) now serves the
+  latest release instead of `main`, and so do Storybook, the guides and `llms.txt` at the same
+  address. An item you install no longer changes between releases.
+- What `main` holds before it is released is published under `/next/`
+  (`https://eldenn.github.io/coreloom-ui/next/r/{name}.json`, and Storybook at `/next/`).
+- In a PlantUML text with packages, no `<<import>>` or `<<merge>>`, no class members in braces and no inheritance, composition or aggregation lines, the text is now read as a package diagram.
+- A PlantUML text whose only elements are components, interfaces or ports is now read as a component diagram. A text with nodes, devices, databases or other deployment elements is still read as a deployment diagram.
+- A component that holds others in a deployment diagram is drawn with a solid outline, as UML draws it, instead of a dashed one.
+- `UmlElementFields.members` (in `uml-edit-fields`) is a `ClassMember[]` instead of a text with one member per line.
+- The diagram editor's top bar is a Toolbar (one Tab stop, arrow keys between the format, New diagram, Copy and Download); on phones Copy and Download show their icon only.
+- `toMermaid` writes use case and deployment diagrams as a plain flowchart, since Mermaid has no such diagrams; the editor doesn't offer Mermaid for them. `toPlantUml` writes activities in PlantUML's arrow syntax, which isn't read back; the editor doesn't offer PlantUML for them.
+- `parseMermaid` no longer says a `flowchart` isn't a diagram type it reads.
+
+### Fixed
+
+- **Rich text editor** and **Settings section**: the link field and the "type to confirm" field take their id from `React.useId()` instead of a fixed string, so two instances on one page no longer share a label target.
+- The guide's advice for server-side filtering now works: before, a page of rows passed as
+  `rows` was searched, counted and sliced again in the browser.
+- **UML diagram** (`@coreloom/uml-diagram`, and the diagram editor, viewer and workspace that use it): leaving full screen (Escape or the button) puts back the view from before. The diagram used to keep the screen-sized pan and zoom and end up off to the side, out of sight.
+- **Diagram editor** and **Diagram workspace** (`@coreloom/uml`): elements dragged in a Mermaid or PlantUML diagram keep their place. Their positions used to live only in the open editor, so opening another view, reloading or saving lost them; they now travel in the text, in one comment line the renderers skip (`%% coreloom-layout {…}` in Mermaid, `' coreloom-layout {…}` before `@enduml` in PlantUML). `toMermaid` / `toPlantUml` write it and `parseMermaid` / `parsePlantUml` read it back, keeping only positions of elements the text has.
+- **UML diagram**: the Fit to view button (and the refit in full screen) works every time. It went through React Flow's `fitView`, which waits for the next change of the nodes; with the nodes kept by the app, after a drag that change could never come and Fit did nothing, leaving an element dragged out of view out of reach. It now fits the drawn elements at once (`useFitDiagram`).
+- `InlineCitation`: Enter on a citation you just tabbed back to now always moves focus to the
+  card's link. Before, when the card was mounting or still fading out, focus stayed on the card
+  itself or on the citation.
+- The Checkbox, Radio, Switch story links the checkbox to its description (`aria-describedby`), as an app should.
+- `Logo`: with `trigger="hover"` and `href`, the first click now goes home. Replaying the entrance used to remount the logo, so the element under the pointer changed between mousedown and mouseup and the click was lost; the replay now restarts the animation in place.
+- **Slider**: `aria-valuetext` now reaches the thumb (the element with the slider role) when there is one value.
+- **Toolbar**: a tool with an icon and text no longer shrinks to an icon's width and overlaps the next one.
+- `UmlDiagram`: lines no longer blink or vanish while an element is dragged (or on any other
+  re-render). Each box now hands React Flow its size, so React Flow keeps track of where its
+  lines attach instead of dropping them until it measures the box again.
+- PlantUML: a name in quotes no longer decides what kind of diagram the text is. A title, a
+  class, a participant or a message holding brackets (`"Order (v2)"`, `alt refused (fraud)`)
+  was read as a use case diagram and lost everything else.
+- PlantUML: a `#` inside a quoted name or after a colon is kept (`node "Server #2"`,
+  `Placed --> Paid : card #1`). Only colours on a declaration (`#pink`) are left out.
+- PlantUML: an entity with no attributes (`entity Order`) reads, and so does an entity's name
+  (`entity "Customer account" as Customer`). The editor's own entity–relationship template had a
+  problem as soon as it was switched to PlantUML.
+- Mermaid flowcharts: quoted text may hold brackets, braces and pipes (`A("Order (v2)")`,
+  `B{"Paid {card}?"}`, `-->|"yes | partly"|`).
+- Mermaid: `#quot;` turns back into `"` in class names, entity names and attribute comments, so a
+  name with quotes shows as typed.
+- `DiagramEditor`: a new note takes focus in its text box, as other new elements take it in their
+  name field (focus went to the page). An activity diagram written in Mermaid no longer offers
+  Note, which a Mermaid flowchart can't hold: it vanished as soon as it was added.
+
+### Upgrading
+
+- The new motions are `agent-*` animations in the theme's `theme.css`: add `@coreloom/theme`
+  again (`pnpm dlx shadcn@latest add @coreloom/theme`).
+- An app whose `onImport` adds a view with a plain state update (`setViews([...views, view])`) should build on the previous state (`setViews((all) => [...all, view])`): several dropped files call it in the same event.
+- To keep installing everything with one command, use `pnpm dlx shadcn@latest add @coreloom/everything` instead of `@coreloom/all`, or add `@coreloom/charts`, `@coreloom/editors` or `@coreloom/node-editor` next to `all` for the parts you use. Files already installed are not touched.
+- Re-add `@coreloom/theme` to get the logo keyframes and rules in `theme.css`.
+- Add the theme again (`pnpm dlx shadcn@latest add @coreloom/theme`): the duration utilities and
+  the keyframes of the new components live in `theme.css`, and updated components need them.
+- Add the theme again (`pnpm dlx shadcn@latest add @coreloom/theme`): the new keyframes and the
+  TabsIndicator rules live in `theme.css`.
+- If you call `setElementFields` with `members`, pass the members as `ClassMember` objects (`parseMember(line)` from `@/lib/uml-mermaid-class` reads one line as Mermaid writes it).
 
 ## [0.10.0] - 2026-11-03
 
@@ -783,6 +1080,7 @@ Gauge: the number, label and status now sit on the ring's center and stay inside
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[0.11.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.11.0
 [0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
 [0.8.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.8.0
