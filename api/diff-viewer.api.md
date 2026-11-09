@@ -17,13 +17,16 @@ DiffPair.right?: DiffLine | undefined
 function DiffViewer
 DiffViewer.before: string
 DiffViewer.after: string
-DiffViewer.view?: 'split' | 'unified' | undefined
+DiffViewer.view?: 'unified' | 'split' | undefined
 DiffViewer.context?: number | undefined
 DiffViewer.title?: React.ReactNode
 DiffViewer.beforeLabel?: React.ReactNode
 DiffViewer.afterLabel?: React.ReactNode
 DiffViewer.emptyText?: React.ReactNode
 DiffViewer.wrap?: boolean | undefined
+DiffViewer.showHeader?: boolean | undefined
+DiffViewer.renderLineAction?: ((line: DiffLine) => React.ReactNode) | undefined
+DiffViewer.renderAfterLine?: ((line: DiffLine) => React.ReactNode) | undefined
 DiffViewer.*: react
 function pairLines(lines: readonly DiffLine[]) => DiffPair[]
 ```

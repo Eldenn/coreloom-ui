@@ -12,6 +12,7 @@ ImageInput.onValueChange?: ((value: File | null) => void) | undefined
 ImageInput.shape?: 'square' | 'circle' | 'wide' | undefined
 ImageInput.accept?: string | undefined
 ImageInput.maxSize?: number | undefined
+ImageInput.crop?: boolean | ImageInputCrop | undefined
 ImageInput.fallback?: React.ReactNode
 ImageInput.hint?: React.ReactNode
 ImageInput.disabled?: boolean | undefined
@@ -21,5 +22,8 @@ ImageInput.onBlur?: (() => void) | undefined
 ImageInput.aria-label?: string | undefined
 ImageInput.aria-describedby?: string | undefined
 ImageInput.aria-invalid?: boolean | 'true' | 'false' | undefined
+type ImageInputCrop = {}
+ImageInputCrop.aspect?: number | undefined
+ImageInputCrop.maxSize?: number | undefined
 type ImageValue = string | File | null
 ```

@@ -184,7 +184,7 @@ ConditionsControl.invalid?: boolean | undefined
 ConditionsControl.describedBy?: string | undefined
 ConditionsControl.labelId: string
 type ConditionsValue = {}
-ConditionsValue.combinator: 'or' | 'and'
+ConditionsValue.combinator: 'and' | 'or'
 ConditionsValue.rules: ConditionRule[]
 function CredentialControl
 CredentialControl.id: string

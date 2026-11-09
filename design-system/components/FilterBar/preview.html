@@ -1,0 +1,50 @@
+<!-- @dsCard group="Forms" height=520 subtitle="FilterBar · chips, add filter, saved views · QueryBuilder" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.FilterBar || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { FilterBar, QueryBuilder, matchesFilter } = UI;
+      const fields = [
+        { id: 'customer', label: 'Customer', type: 'text' },
+        { id: 'amount', label: 'Amount', type: 'number' },
+        { id: 'issued', label: 'Issued', type: 'date' },
+        { id: 'status', label: 'Status', type: 'select', options: [
+          { value: 'open', label: 'Open' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' },
+        ] },
+      ];
+      const rows = [
+        { customer: 'Acme Corp', amount: 1200, issued: '2026-10-02', status: 'paid' },
+        { customer: 'Northwind', amount: 340, issued: '2026-10-05', status: 'open' },
+        { customer: 'Globex', amount: 8900, issued: '2026-09-21', status: 'overdue' },
+        { customer: 'Umbrella', amount: 2450, issued: '2026-10-12', status: 'open' },
+      ];
+      const start = { kind: 'group', id: 'root', combinator: 'and', rules: [
+        { kind: 'condition', id: 'a', field: 'status', operator: 'anyOf', value: ['open', 'overdue'] },
+        { kind: 'condition', id: 'b', field: 'amount', operator: 'gte', value: 500 },
+      ] };
+      function Demo() {
+        const [filter, setFilter] = React.useState(start);
+        const count = rows.filter((r) => matchesFilter(r, filter, fields)).length;
+        return h(React.Fragment, null,
+          h(FilterBar, { fields, value: filter, onValueChange: setFilter, resultCount: count }),
+          h(QueryBuilder, { fields, value: filter, onValueChange: setFilter }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+    }
+    render();
+  </script>
+</body>
+</html>

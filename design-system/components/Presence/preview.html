@@ -1,0 +1,38 @@
+<!-- @dsCard group="Data display" height=360 subtitle="PresenceAvatars · PresenceActivity · RemoteCursors" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.Presence || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { PresenceAvatars, PresenceActivity, RemoteCursors, TooltipProvider } = UI;
+      const users = [
+        { id: 'ada', name: 'Ada Lovelace', activity: 'editing' },
+        { id: 'grace', name: 'Grace Hopper' },
+        { id: 'alan', name: 'Alan Turing', status: 'idle' },
+        { id: 'kj', name: 'Katherine Johnson' },
+        { id: 'mh', name: 'Margaret Hamilton' }];
+      function Demo() {
+        return h('div', { style: { display: 'grid', gap: 12, maxWidth: 560 } },
+          h(PresenceAvatars, { users }),
+          h(PresenceActivity, { users: users.slice(0, 2), announce: false }),
+          h(RemoteCursors, { users, cursors: [{ id: 'ada', x: 0.2, y: 0.35 }, { id: 'grace', x: 0.65, y: 0.6 }] },
+            h('div', { className: 'h-40 rounded-lg border border-border bg-inset' })));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!-- @dsCard group="Blocks" width=1280 height=620 subtitle="developer block · schema · SQL editor · results · CSV" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.SqlExplorer || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { SqlExplorer, TooltipProvider } = UI;
+      const tables = [
+        { name: 'projects', columns: [{ name: 'id', type: 'int8' }, { name: 'name', type: 'text' }, { name: 'plan', type: 'text' }] },
+        { name: 'users', columns: [{ name: 'id', type: 'int8' }, { name: 'email', type: 'text' }] }];
+      const onRun = () => new Promise((resolve) => setTimeout(() => resolve({ columns: ['id', 'name', 'plan'], rows: [[1, 'Atlas', 'team'], [2, 'Billing', 'pro'], [3, 'Docs', null]], durationMs: 18 }), 400));
+      function Demo() {
+        return h(SqlExplorer, { tables, onRun, dialect: 'postgres', defaultQueries: [{ id: 'q1', name: 'Projects', sql: 'SELECT id, name, plan FROM projects;' }] });
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
