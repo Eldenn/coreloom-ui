@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { PlusIcon } from 'lucide-react'
+import * as React from 'react'
 
 import {
+  type DataList,
   DataListEmpty,
   DataListPagination,
   DataListToolbar,
@@ -57,32 +59,85 @@ const projects: Project[] = names.map((name, i) => ({
 
 const statusVariant = { ready: 'success', building: 'warning', failed: 'destructive' } as const
 
+const facets = [
+  {
+    key: 'status',
+    label: 'Status',
+    options: [
+      { value: 'ready', label: 'Ready' },
+      { value: 'building', label: 'Building' },
+      { value: 'failed', label: 'Failed' },
+    ],
+  },
+  {
+    key: 'region',
+    label: 'Region',
+    options: [
+      { value: 'cdg1', label: 'Paris (cdg1)' },
+      { value: 'fra1', label: 'Frankfurt (fra1)' },
+      { value: 'iad1', label: 'Washington (iad1)' },
+    ],
+  },
+]
+const PAGE_SIZE = 6
+
 function ProjectsList() {
   const list = useDataList({
     rows: projects,
     searchKeys: ['name', 'framework'],
-    pageSize: 6,
-    facets: [
-      {
-        key: 'status',
-        label: 'Status',
-        options: [
-          { value: 'ready', label: 'Ready' },
-          { value: 'building', label: 'Building' },
-          { value: 'failed', label: 'Failed' },
-        ],
-      },
-      {
-        key: 'region',
-        label: 'Region',
-        options: [
-          { value: 'cdg1', label: 'Paris (cdg1)' },
-          { value: 'fra1', label: 'Frankfurt (fra1)' },
-          { value: 'iad1', label: 'Washington (iad1)' },
-        ],
-      },
-    ],
+    pageSize: PAGE_SIZE,
+    facets,
   })
+  return <ProjectsView list={list} />
+}
+
+/** What an API would answer for these parameters: one page of matches, their total and counts. */
+function fakeServer(params: URLSearchParams) {
+  const q = (params.get('q') ?? '').trim().toLowerCase()
+  const selected = (key: string) => params.get(key)?.split(',').filter(Boolean) ?? []
+  const matches = (p: Project, except?: string) =>
+    (!q || p.name.includes(q) || p.framework.toLowerCase().includes(q)) &&
+    facets.every(
+      (f) =>
+        f.key === except ||
+        selected(f.key).length === 0 ||
+        selected(f.key).includes(p[f.key as keyof Project]),
+    )
+  const counts: Record<string, Record<string, number>> = {}
+  for (const f of facets) {
+    counts[f.key] = {}
+    for (const p of projects.filter((row) => matches(row, f.key))) {
+      const value = p[f.key as keyof Project]
+      counts[f.key][value] = (counts[f.key][value] ?? 0) + 1
+    }
+  }
+  const found = projects.filter((p) => matches(p))
+  const page = Math.max(1, Number(params.get('page')) || 1)
+  return {
+    rows: found.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    total: found.length,
+    counts,
+  }
+}
+
+/** The server filters and paginates; the list shows its page and its figures. */
+function ServerProjectsList() {
+  // A router would own these; the story keeps them in state.
+  const [params, setParams] = React.useState(() => new URLSearchParams())
+  const answer = fakeServer(params)
+  const list = useDataList({
+    rows: answer.rows,
+    searchKeys: [],
+    pageSize: PAGE_SIZE,
+    facets,
+    searchParams: params,
+    onSearchParamsChange: setParams,
+    server: { total: answer.total, counts: answer.counts },
+  })
+  return <ProjectsView list={list} />
+}
+
+function ProjectsView({ list }: { list: DataList<Project> }) {
   return (
     <div className="flex max-w-4xl flex-col gap-4">
       <DataListToolbar
@@ -95,7 +150,7 @@ function ProjectsList() {
           </Button>
         }
       />
-      {list.filtered.length === 0 ? (
+      {list.matched === 0 ? (
         <DataListEmpty list={list} />
       ) : (
         <div className="rounded-lg border border-border">
@@ -168,4 +223,16 @@ export const FacetedFilterAlone: Story = {
       counts={{ ready: 12, building: 3, failed: 2 }}
     />
   ),
+}
+
+export const ServerSide: Story = {
+  render: () => <ServerProjectsList />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The server filters and paginates: `rows` is the page it returned, `server` its total and facet counts.',
+      },
+    },
+  },
 }

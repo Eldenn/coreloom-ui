@@ -223,6 +223,23 @@ test.describe('blocks', () => {
     await expect.poll(() => new URL(page.url()).searchParams.has('q')).toBe(false)
   })
 
+  test('data list shows the page and figures the server returned', async ({ page }) => {
+    await open(page, 'blocks-data-list--server-side')
+    await expect(page.getByRole('status')).toHaveText('15 results')
+    await expect(page.getByText('Page 1 of 3')).toBeVisible()
+    await expect(page.getByRole('row')).toHaveCount(7) // the header and six rows
+    await page.getByRole('button', { name: 'Go to next page' }).click()
+    await expect(page.getByText('Page 2 of 3')).toBeVisible()
+    await expect(page.getByRole('row').nth(1)).toContainText('status-page')
+    await page.getByRole('button', { name: 'Filter by Status' }).click()
+    await expect(page.getByRole('option', { name: /Failed/ })).toContainText('3')
+    await page.getByRole('option', { name: /Failed/ }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('status')).toHaveText('3 results')
+    await expect(page.getByRole('row')).toHaveCount(4)
+    await expect(page.getByText(/Page \d of/)).toHaveCount(0)
+  })
+
   test('onboarding validates the step on screen and moves focus to the next one', async ({
     page,
   }) => {

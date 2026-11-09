@@ -1,0 +1,7 @@
+# Toolchain for working on Coreloom UI (https://mise.jdx.dev): run `mise install` in the repo.
+# Keep these in step with CI (node-version in .github/workflows/*.yml) and with
+# "packageManager" in package.json and starter/package.json.
+
+[tools]
+node = "22"
+pnpm = "12.13.0"
