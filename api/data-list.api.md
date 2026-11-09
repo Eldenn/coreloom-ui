@@ -17,6 +17,7 @@ DataList.filtered: T[]
 DataList.pageRows: T[]
 DataList.page: number
 DataList.pageCount: number
+DataList.matched: number
 DataList.total: number
 DataList.isFiltered: boolean
 function DataListEmpty
@@ -32,6 +33,7 @@ DataListEmpty.list.filtered: any[]
 DataListEmpty.list.pageRows: any[]
 DataListEmpty.list.page: number
 DataListEmpty.list.pageCount: number
+DataListEmpty.list.matched: number
 DataListEmpty.list.total: number
 DataListEmpty.list.isFiltered: boolean
 DataListEmpty.className?: string | undefined
@@ -48,9 +50,13 @@ DataListPagination.list.filtered: any[]
 DataListPagination.list.pageRows: any[]
 DataListPagination.list.page: number
 DataListPagination.list.pageCount: number
+DataListPagination.list.matched: number
 DataListPagination.list.total: number
 DataListPagination.list.isFiltered: boolean
 DataListPagination.className?: string | undefined
+type DataListServer = {}
+DataListServer.total: number
+DataListServer.counts?: Record<string, Record<string, number>> | undefined
 function DataListToolbar
 DataListToolbar.list: {}
 DataListToolbar.list.state: DataListState
@@ -64,6 +70,7 @@ DataListToolbar.list.filtered: any[]
 DataListToolbar.list.pageRows: any[]
 DataListToolbar.list.page: number
 DataListToolbar.list.pageCount: number
+DataListToolbar.list.matched: number
 DataListToolbar.list.total: number
 DataListToolbar.list.isFiltered: boolean
 DataListToolbar.searchLabel?: string | undefined
@@ -84,5 +91,5 @@ type FacetOption = {}
 FacetOption.value: string
 FacetOption.label: string
 FacetOption.icon?: React.ReactNode
-function useDataList<T extends object>({ rows, searchKeys, facets, pageSize, searchParams, onSearchParamsChange, }: { rows: T[]; searchKeys: (keyof T & string)[]; facets?: Facet<T>[]; pageSize?: number; searchParams?: URLSearchParams; onSearchParamsChange?: (params: URLSearchParams) => void; }) => { state: DataListState; setSearch: (value: string) => void; setFacet: (key: string, values: string[]) => void; setPage: (p: number) => void; clear: () => void; facets: Facet<T>[]; counts: Record<string, Record<string, number>>; filtered: T[]; pageRows: T[]; page: number; pageCount: number; total: number; isFiltered: boolean; }
+function useDataList<T extends object>({ rows, searchKeys, facets, pageSize, searchParams, onSearchParamsChange, server, }: { rows: T[]; searchKeys: (keyof T & string)[]; facets?: Facet<T>[]; pageSize?: number; searchParams?: URLSearchParams; onSearchParamsChange?: (params: URLSearchParams) => void; server?: DataListServer; }) => { state: DataListState; setSearch: (value: string) => void; setFacet: (key: string, values: string[]) => void; setPage: (p: number) => void; clear: () => void; facets: Facet<T>[]; counts: Record<string, Record<string, number>>; filtered: T[]; pageRows: T[]; page: number; pageCount: number; matched: number; total: number; isFiltered: boolean; }
 ```
