@@ -61,6 +61,10 @@ jobs:
     # Same image as the "Visual baselines" workflow, so screenshots render identically.
     # Keep the tag in step with @playwright/test in package.json.
     container: mcr.microsoft.com/playwright:v1.63.0-noble
+    # Firefox refuses to start when $HOME isn't owned by the user, and Actions points it at a
+    # folder owned by another one.
+    env:
+      HOME: /root
     strategy:
       fail-fast: false
       matrix:

@@ -71,8 +71,8 @@ test.describe('Every kind of diagram, every format (Blocks/Diagrams/Diagram edit
     }) => {
       await openStory(page, EDITOR, 'dark')
       await startNew(page, kind)
+      await expect(status(page)).toHaveText(new RegExp(`^${kind}, \\d+ elements$`))
       const start = (await status(page).textContent()) ?? ''
-      expect(start).toMatch(new RegExp(`^${kind}, \\d+ elements$`))
       await expectSameInEveryFormat(page, start)
     })
 

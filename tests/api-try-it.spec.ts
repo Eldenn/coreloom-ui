@@ -46,8 +46,12 @@ test.describe('API try it (Blocks/Developer/API try it)', () => {
 
   test('Cancel stops the request and leaves focus on Send', async ({ page }) => {
     await open(page, 'default')
+    // Timers stop, so the story's 700 ms answer can't arrive before the click on Cancel.
+    await page.clock.install()
+    await page.clock.pauseAt(Date.now() + 1000)
     await page.getByRole('button', { name: 'Send request' }).click()
     await page.getByRole('button', { name: 'Cancel' }).click()
+    await page.clock.resume()
     await expect(status(page)).toHaveText('Request cancelled.')
     await expect(page.getByRole('button', { name: 'Cancel' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Send request' })).toBeFocused()
