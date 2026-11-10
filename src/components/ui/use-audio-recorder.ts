@@ -91,15 +91,24 @@ interface Session {
   levels: number[]
   /** Seconds recorded before the current stretch (pauses split the recording into stretches). */
   before: number
-  /** AudioContext time when the current stretch started; null while paused. */
+  /** When the current stretch started (see `seconds`); null while paused. */
   since: number | null
-  /** AudioContext time of the last level kept. */
+  /** When the last level was kept. */
   lastLevel: number
   frame: number
 }
 
+/**
+ * The page's clock, in seconds. Not the AudioContext's: that one stands still while the context is
+ * suspended (no audio output on the machine, a browser that wants a gesture), and the recording
+ * goes on.
+ */
+function seconds() {
+  return performance.now() / 1000
+}
+
 function elapsedOf(session: Session) {
-  return session.before + (session.since === null ? 0 : session.context.currentTime - session.since)
+  return session.before + (session.since === null ? 0 : seconds() - session.since)
 }
 
 function release(session: Session) {
@@ -174,7 +183,7 @@ function useAudioRecorder({
   /** One animation frame: keeps a level every 1/20 s, updates the timer, enforces the limit. */
   const measure = (s: Session) => {
     if (session.current !== s) return
-    const now = s.context.currentTime
+    const now = seconds()
     if (s.since !== null && now - s.lastLevel >= 1 / LEVEL_RATE) {
       const samples = new Float32Array(s.analyser.fftSize)
       s.analyser.getFloatTimeDomainData(samples)
@@ -220,8 +229,8 @@ function useAudioRecorder({
         chunks: [],
         levels: [],
         before: 0,
-        since: context.currentTime,
-        lastLevel: context.currentTime,
+        since: seconds(),
+        lastLevel: seconds(),
         frame: 0,
       }
       recorder.ondataavailable = (event) => {
@@ -258,7 +267,7 @@ function useAudioRecorder({
     const s = session.current
     if (s?.recorder.state !== 'paused') return
     s.recorder.resume()
-    s.since = s.context.currentTime
+    s.since = seconds()
     setState({
       status: 'recording',
       paused: false,
