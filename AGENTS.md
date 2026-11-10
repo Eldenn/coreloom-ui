@@ -66,6 +66,10 @@ SB_PORT=6201 pnpm exec playwright test ai-chat-messages   # SB_PORT when several
 ```
 
 - Rebuild Storybook before Playwright: tests read `public/storybook`, not your source.
+- Three browsers: Chrome runs every spec; Firefox and WebKit (Safari's engine) run the behaviour
+  specs, not `visual`, `a11y` or `docs`. Install them once with `pnpm exec playwright install`;
+  `--project=chromium` runs one. A behaviour spec must pass on all three: use `allowClipboard`,
+  `clipboardEvent` and `addTabStops` from `tests/stories.ts` where the engines differ.
 - Locally the test server is reused if one is already running on the port (`reuseExistingServer`). If
   results look stale, kill it (`kill $(lsof -t -i:6106)`) — never `pkill -f`, which can kill your own shell.
 - Visual baselines come only from CI's container (the **Visual baselines** workflow). Never commit

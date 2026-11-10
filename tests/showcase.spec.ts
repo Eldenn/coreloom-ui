@@ -22,7 +22,8 @@ test('opening hours: open now, closing time, today marked', async ({ page }) => 
 test('opening hours: Saturday evening, it opens on Monday, in French', async ({ page }) => {
   await open(page, 'blocks-showcase--hours-closed', 'fr')
   await expect(page.getByText('Fermé', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('Ouvre lundi à 9:00')).toBeVisible()
+  // Firefox writes French hours with two digits.
+  await expect(page.getByText(/Ouvre lundi à 0?9:00/)).toBeVisible()
 })
 
 test('contact details: phone dials digits, directions open in a new tab', async ({ page }) => {

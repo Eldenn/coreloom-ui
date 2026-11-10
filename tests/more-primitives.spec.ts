@@ -2,7 +2,7 @@
 // editor, emoji picker, signature pad, password strength and copy input: what people do and get.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, clipboardEvent, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -103,12 +103,11 @@ test('key-value editor adds, removes, flags repeats and splits pasted lines', as
   await expect(page.getByText('2 headers')).toBeVisible()
   await page.getByRole('button', { name: 'Add row' }).click()
   await expect(page.getByLabel('Key, row 3')).toBeFocused()
-  await page.evaluate(() => {
-    const input = document.activeElement as HTMLInputElement
-    const data = new DataTransfer()
-    data.setData('text/plain', 'Authorization: Bearer x\nAccept: text/html')
-    input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
-  })
+  await clipboardEvent(
+    page.getByLabel('Key, row 3'),
+    'paste',
+    'Authorization: Bearer x\nAccept: text/html',
+  )
   await expect(page.getByLabel('Key, row 4')).toHaveValue('Accept')
   await expect(page.getByLabel('Value, row 3')).toHaveValue('Bearer x')
 })
@@ -154,9 +153,9 @@ test('password strength moves with the password and ticks rules', async ({ page 
   await expect(page.locator('[data-slot=password-strength] li[data-met]')).toHaveCount(3)
 })
 
-test('copy input copies its value and says so', async ({ page, context }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+test('copy input copies its value and says so', async ({ page }) => {
   await open(page, 'components-forms-input-group--copy')
+  await allowClipboard(page)
   await page.getByRole('button', { name: 'Copy' }).first().click()
   await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toBeAttached()
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(

@@ -129,6 +129,9 @@ test.describe('Media player (Components/Media/Media player)', () => {
 })
 
 test.describe('Audio recorder (Components/Media/Audio recorder)', () => {
+  // Safari records; the WebKit build Playwright ships for Linux has no MediaRecorder.
+  test.skip(({ browserName }) => browserName === 'webkit', 'No MediaRecorder in this WebKit build')
+
   test('recording, recorded and refused states pass axe', async ({ page }) => {
     await open(page, 'components-media-audio-recorder--default')
     const recorder = page.getByRole('group', { name: 'Voice recording' })

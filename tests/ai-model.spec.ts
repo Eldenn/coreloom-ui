@@ -2,7 +2,7 @@
 // Runs on the built Storybook like the other interaction tests, in the dark theme.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { addTabStops, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -120,6 +120,7 @@ test.describe('context meter', () => {
     await expect(card).toContainText('Cached input')
     await expect(card).toContainText('Estimated cost')
     await expect(card).toContainText('$0.30')
+    await addTabStops(page)
     await page.keyboard.press('Shift+Tab')
     await expect(card).toBeHidden()
   })

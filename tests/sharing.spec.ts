@@ -3,7 +3,7 @@
 // auto-submit, paste, retry focus and lock. Runs on the built Storybook.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, clipboardEvent, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -63,10 +63,9 @@ test.describe('Share dialog (Blocks/Sharing/Share dialog)', () => {
 
   test('the code is hidden until asked, and Copy link and code copies a message', async ({
     page,
-    context,
   }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
     await open(page, 'blocks-sharing-share-dialog--protected')
+    await allowClipboard(page)
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByText('H7KM-3QPX')).toHaveCount(0)
     await dialog.getByRole('button', { name: 'Show Access code' }).click()
@@ -122,11 +121,7 @@ test.describe('Access code gate (Blocks/Sharing/Access code gate)', () => {
 
   test('a pasted code fills every box', async ({ page }) => {
     await open(page, 'blocks-sharing-access-code-gate--default')
-    await field(page).evaluate((input) => {
-      const data = new DataTransfer()
-      data.setData('text/plain', 'h7km-3qpx')
-      input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
-    })
+    await clipboardEvent(field(page), 'paste', 'h7km-3qpx')
     await expect(page.getByRole('status').filter({ hasText: 'Opening “Checkout”…' })).toBeVisible()
   })
 

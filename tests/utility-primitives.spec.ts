@@ -2,7 +2,7 @@
 // file card, keyboard shortcuts, countdown and quota bar: what people do and get.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -58,8 +58,8 @@ test('popconfirm: Cancel is focused, an async confirm waits then closes', async 
 })
 
 test('secret value: masked until shown, Show is a toggle', async ({ page }) => {
-  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
   await open(page, 'components-data-display-secret-value--default')
+  await allowClipboard(page)
   const secret = page.locator('[data-slot=secret-value]').first()
   await expect(secret.locator('code')).toContainText('cl_live_••••••••••••c9f2')
   await expect(secret.locator('code')).not.toContainText('51Hc9')

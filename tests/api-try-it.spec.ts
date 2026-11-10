@@ -3,7 +3,7 @@
 // JSON body, and Copy as cURL. Runs on the built Storybook.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, openStory } from './stories'
 
 const open = (page: Page, story: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, `blocks-developer-api-try-it--${story}`, 'dark', locale)
@@ -83,9 +83,9 @@ test.describe('API try it (Blocks/Developer/API try it)', () => {
     await expect(page.getByRole('region', { name: 'Response' })).toContainText('200 OK')
   })
 
-  test('Copy as cURL copies a command with the headers and the body', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  test('Copy as cURL copies a command with the headers and the body', async ({ page }) => {
     await open(page, 'post-with-body')
+    await allowClipboard(page)
     await page.getByRole('button', { name: 'Copy as cURL' }).click()
     const copied = await page.evaluate(() => navigator.clipboard.readText())
     expect(copied).toContain("curl -X POST 'https://api.coreloom.dev/v1/projects'")

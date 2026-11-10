@@ -2,7 +2,7 @@
 // the preview uses it in both themes, and brand.css is there to copy or download.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, openStory } from './stories'
 
 const open = (page: Page, id: string) => openStory(page, id, 'dark')
 const STORY = 'foundations-theme-generator--'
@@ -76,9 +76,9 @@ test.describe('theme generator', () => {
     await expect(css).not.toContainText('--fg-on-accent: #ffffff;')
   })
 
-  test('copies brand.css and offers it as a download', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  test('copies brand.css and offers it as a download', async ({ page }) => {
     await open(page, `${STORY}generator`)
+    await allowClipboard(page)
     await page.getByRole('button', { name: 'Copy' }).click()
     await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible()
     const copied = await page.evaluate(() => navigator.clipboard.readText())

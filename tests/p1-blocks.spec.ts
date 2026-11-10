@@ -1,7 +1,7 @@
 // AI evaluations, file manager, inbox and spreadsheet blocks: what people do and get.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { addTabStops, clipboardEvent, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -208,23 +208,12 @@ test('spreadsheet: select a range, read the sum, copy, paste and clear', async (
   await expect(grid(page).locator('[aria-selected=true]')).toHaveCount(3)
 
   // Copy writes tab-separated text to the clipboard event.
-  const copied = await page.evaluate(() => {
-    const data = new DataTransfer()
-    const el = document.querySelector('[data-cell="2:3"]')
-    el?.dispatchEvent(new ClipboardEvent('copy', { clipboardData: data, bubbles: true }))
-    return data.getData('text/plain')
-  })
+  const copied = await clipboardEvent(cell(page, 2, 3), 'copy')
   expect(copied).toBe('128\n64\n6')
 
   // A block pasted from another spreadsheet lands from the top-left of the selection.
   await cell(page, 0, 1).click()
-  await page.evaluate(() => {
-    const data = new DataTransfer()
-    data.setData('text/plain', 'Alpha\tAPAC\t7\nBeta\tEU\t8\n')
-    document
-      .querySelector('[data-cell="0:1"]')
-      ?.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
-  })
+  await clipboardEvent(cell(page, 0, 1), 'paste', 'Alpha\tAPAC\t7\nBeta\tEU\t8\n')
   await expect(cell(page, 0, 1)).toHaveText('Alpha')
   await expect(cell(page, 1, 2)).toHaveText('EU')
   await expect(cell(page, 1, 3)).toHaveText('8')
@@ -241,6 +230,7 @@ test('spreadsheet: read-only columns can’t be edited, and Tab leaves the grid 
   await open(page, 'blocks-spreadsheet--default')
   await cell(page, 0, 0).dblclick()
   await expect(grid(page).getByRole('textbox')).toHaveCount(0)
+  await addTabStops(page)
   await cell(page, 0, 5).click()
   await page.keyboard.press('Tab')
   await expect(cell(page, 0, 5)).not.toBeFocused()
