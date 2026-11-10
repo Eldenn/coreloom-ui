@@ -282,6 +282,12 @@ release (a failed run, a deleted release) is released again from its tag; a vers
 left alone; pending changesets don't change any of this. So **Run workflow** on `main` is always a safe
 retry.
 
+**Release candidates.** While `.changeset/pre.json` exists (`pnpm changeset pre enter rc`), the Version
+Packages pull request bumps to a pre-release (`1.0.0-rc.0`, then `rc.1`…) and merging it publishes a
+GitHub pre-release with its registry attached, to pin and try. The site's root and the `@coreloom`
+namespace stay on the last stable release; `/next/` serves `main` as always. `pnpm changeset pre exit`,
+in a pull request, ends it: the next Version Packages pull request is the final version.
+
 `pnpm changeset status --verbose` shows the next version and the changesets that will go into it. Run
 `pnpm version-packages` yourself only to preview the CHANGELOG, and don't commit the result: the
 Version Packages pull request is where the version is bumped.
