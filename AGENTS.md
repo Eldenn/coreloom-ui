@@ -45,6 +45,7 @@ pnpm lint:prune              # drop eslint-suppressions.json entries for code th
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
+pnpm test:install            # shadcn add of every item into a new Next.js app, then tsc and next build (after registry:build)
 pnpm registry:size           # gzip cost of every item; --check against build/registry-sizes.json (CI), --write after an intended change
 pnpm docs:check              # guides ↔ code: props a guide names exist, props a component declares are in its guide
 pnpm api:report              # api/<item>.api.md: every item's exports and props (api:check in CI)

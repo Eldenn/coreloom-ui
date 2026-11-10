@@ -221,7 +221,9 @@ function LogViewer({
     overscan: 20,
     getItemKey: (i) => {
       const row = visible.at(i)
-      return row ? (row.entry.id ?? row.index) : i
+      // Next.js's React types let a key be a symbol, which TanStack Virtual's keys can't be.
+      const key = row ? (row.entry.id ?? row.index) : i
+      return typeof key === 'symbol' ? i : key
     },
   })
 

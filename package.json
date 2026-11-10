@@ -13,6 +13,7 @@
     "storybook:build": "storybook build -o public/storybook --quiet",
     "test": "playwright test",
     "test:unit": "vitest run",
+    "test:install": "build/check-install.sh",
     "coverage": "vitest run --coverage",
     "test:a11y": "playwright test a11y",
     "test:visual": "playwright test visual",
