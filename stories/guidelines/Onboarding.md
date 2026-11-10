@@ -1,5 +1,7 @@
 # Onboarding
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A multi-step setup screen: the `Stepper` on top, the current step in a card, Back / Continue at the bottom (Finish on the last step).
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/onboarding`. It writes `onboarding.tsx` (and installs `Stepper`).

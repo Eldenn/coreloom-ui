@@ -436,6 +436,18 @@ interface CodeEditorProps {
   id?: string
 }
 
+/**
+ * Whether `value` is the app handing back text this editor reported through its change callback,
+ * possibly a keystroke or two late: React can commit after the next key. Applying such an echo
+ * would undo what was typed since. Forgets the reports up to that one; any other value is the
+ * app's own, and forgets them all.
+ */
+function isEcho(reported: string[], value: string) {
+  const at = reported.lastIndexOf(value)
+  reported.splice(0, at === -1 ? reported.length : at + 1)
+  return at !== -1
+}
+
 function CodeEditor({
   value,
   defaultValue = '',
@@ -473,6 +485,8 @@ function CodeEditor({
   // One saved state per path, so switching files keeps each one's undo history and cursor.
   const states = React.useRef(new Map<string, EditorState>())
   const pathRef = React.useRef(path)
+  // The texts reported through onChange that `value` hasn't caught up with yet (see isEcho).
+  const reported = React.useRef<string[]>([])
 
   // The latest callbacks, read by CodeMirror's listeners (which are set up once).
   const callbacks = React.useRef({ onValueChange, onChange, onSave, onCursorChange })
@@ -579,6 +593,7 @@ function CodeEditor({
             !update.transactions.some((tr) => tr.annotation(external) === true)
           ) {
             const text = update.state.doc.toString()
+            reported.current = [...reported.current.slice(-49), text]
             callbacks.current.onValueChange?.(text)
             callbacks.current.onChange?.(text)
           }
@@ -626,6 +641,7 @@ function CodeEditor({
     if (!view || pathRef.current === path) return
     if (pathRef.current !== undefined) states.current.set(pathRef.current, view.state)
     pathRef.current = path
+    reported.current = []
     const saved = path === undefined ? undefined : states.current.get(path)
     view.setState(saved ?? createState(value ?? ''))
   }, [path, value])
@@ -671,7 +687,7 @@ function CodeEditor({
   // A new `value` from outside replaces the text (keeping the cursor where it can).
   React.useEffect(() => {
     const view = viewInstance.current
-    if (!view || value === undefined) return
+    if (!view || value === undefined || isEcho(reported.current, value)) return
     const current = view.state.doc.toString()
     if (value === current) return
     const head = Math.min(view.state.selection.main.head, value.length)

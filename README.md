@@ -40,6 +40,10 @@
 
 ## Quick start
 
+Coreloom UI is built on Radix. In a new project, pick the Radix base when you set shadcn up
+(`pnpm dlx shadcn@latest init --base radix`): with a Base UI style (`base-*` in `components.json`),
+the CLI rewrites the components as it installs them and they stop compiling.
+
 Add the registry to your project once:
 
 ```bash
@@ -173,9 +177,9 @@ no setup on our side; they read the docs and code but can't install items:
 ## Versioning
 
 Semantic Versioning, with the API it covers spelled out in [`VERSIONING.md`](./VERSIONING.md): item
-names, exports, props, tokens and message keys. Items marked **experimental** (UML diagrams, the node
-editor and its agent builder, the terminal and IDE, the form builder) may still change in a minor
-release; their guides say so. Deprecated APIs keep working until the next major.
+names, exports, props, tokens and message keys. Items marked **experimental** (every block, and the heavier
+components: the rich text editor, UML diagrams, the node editor, the terminal, the form renderer)
+may still change in a minor release; their guides say so. Deprecated APIs keep working until the next major.
 
 ## Conventions
 
@@ -247,7 +251,9 @@ starter:
   `tests/__screenshots__`. Baselines come from CI's container: after an intended visual change, run the
   **Visual baselines** workflow; it commits the new PNGs and re-runs the CI.
 - **Interactions, guidelines and starter:** keyboard and pointer behaviour, every Guidelines page, and the
-  starter end to end.
+  starter end to end. The behaviour specs also run in Firefox and WebKit (Safari's engine).
+- **Install:** every item is added to a new Next.js app with `shadcn add`, which is then type-checked
+  and built with every module imported from a Server Component.
 
 `main` deploys to GitHub Pages only when everything passes. `build/build-site.sh` builds Storybook, the
 registry (`/r/`), the design tokens in the DTCG format (`/tokens/`), `llms.txt` and the starter demo

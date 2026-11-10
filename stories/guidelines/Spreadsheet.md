@@ -1,5 +1,7 @@
 # Spreadsheet
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A grid people edit like a spreadsheet: price lists, budgets, bulk edits of records, data to clean before an import. Cells, ranges, copy and paste with Excel or Google Sheets, undo.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/spreadsheet`.

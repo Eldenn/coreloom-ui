@@ -1,5 +1,7 @@
 # EventCalendar
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A month of events: releases, meetings, on-call shifts.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/event-calendar`. It writes `event-calendar.tsx`.

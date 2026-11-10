@@ -1,7 +1,7 @@
 // Terminal, log viewer, terminal console and pipeline run: what people do and get.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { addTabStops, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -43,6 +43,7 @@ test('terminal: Tab completes a command, then lists the choices', async ({ page 
   await expect(output(page)).toContainText('build  test')
   await expect(input).toBeFocused()
   // After Escape, Tab leaves the terminal.
+  await addTabStops(page)
   await input.press('Escape')
   await input.press('Tab')
   await expect(input).not.toBeFocused()

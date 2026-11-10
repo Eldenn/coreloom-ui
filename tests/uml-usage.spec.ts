@@ -4,7 +4,7 @@
 // move. Runs on the built Storybook, in the dark theme.
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { allowClipboard, openStory } from './stories'
 
 const EDITOR = 'blocks-diagrams-diagram-editor--default'
 const open = (page: Page, id: string) => openStory(page, id, 'dark')
@@ -31,14 +31,15 @@ async function drag(page: Page, target: Locator, by: { x: number; y: number }) {
 function place(target: Locator) {
   return target.evaluate((el) => {
     const wrapper = el.closest<HTMLElement>('.react-flow__node') ?? (el as HTMLElement)
-    const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(wrapper.style.transform)
-    return { x: Math.round(Number(m?.[1])), y: Math.round(Number(m?.[2])) }
+    // Firefox writes `translate(86px)` when y is 0.
+    const m = /translate\(([-\d.]+)px(?:,\s*([-\d.]+)px)?\)/.exec(wrapper.style.transform)
+    return { x: Math.round(Number(m?.[1])), y: Math.round(Number(m?.[2] ?? 0)) }
   })
 }
 
 /** The whole source text (the editor only draws the lines on screen), through the clipboard. */
 async function wholeSource(page: Page) {
-  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+  await allowClipboard(page)
   await source(page).click()
   await page.keyboard.press('ControlOrMeta+A')
   await page.keyboard.press('ControlOrMeta+C')
@@ -119,6 +120,8 @@ test.describe('Moving elements (Blocks/Diagrams/Diagram editor)', () => {
     await customer.click()
     await page.keyboard.press('Delete')
     await expect(customer).toHaveCount(0)
+    // The shortcut is the drawing's: wait for focus to come back to it from the deleted class.
+    await expect(drawing(page)).toBeFocused()
     await page.keyboard.press('ControlOrMeta+Z')
     await expect(customer).toBeVisible()
     await expect.poll(() => place(customer)).toEqual(moved)
@@ -143,7 +146,10 @@ test.describe('Moving elements (Blocks/Diagrams/Diagram editor)', () => {
     const customer = classBox(page, 'Customer')
     const order = classBox(page, 'Order')
     await customer.click()
-    await order.click({ modifiers: ['ControlOrMeta'] })
+    // The key is Command where the browser says it is a Mac, which Playwright's Safari does on
+    // any machine: 'ControlOrMeta' would follow the machine instead.
+    const mac = await page.evaluate(() => navigator.userAgent.includes('Mac'))
+    await order.click({ modifiers: [mac ? 'Meta' : 'Control'] })
     const before = await Promise.all([place(customer), place(order)])
     await drag(page, order, { x: 60, y: 0 })
     const after = await Promise.all([place(customer), place(order)])

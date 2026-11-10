@@ -1,5 +1,7 @@
 # Security settings
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Two cards for the security page. `TwoFactorSettings` turns on two-step sign-in with an authenticator app; `ActiveSessions` lists where the account is signed in.
 
 **`TwoFactorSettings` takes** `enabled`, `enabledAt?`, `recoveryCodesLeft?`, `onSetupStart()` (create the secret on your server; return `{ secret, qrCode? }`, where `qrCode` is your rendering of the otpauth:// URI, on a light background), `onSetupVerify(code)` (check the 6 digits; reject when wrong; return `{ recoveryCodes }`), `onDisable()` and `onRegenerateCodes()` (returns the new codes).

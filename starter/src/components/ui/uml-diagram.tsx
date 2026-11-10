@@ -376,8 +376,12 @@ function useCanvasChanges(input: {
     remove: () => {
       const now = selection.current
       if (now.elements.length || now.relations.length) {
+        // A focused element or line is about to go: move focus to the canvas first. Waiting for
+        // it to disappear is a guess, since the app hands the new diagram back when it wants.
+        if (document.activeElement?.closest('.react-flow__node, .react-flow__edge'))
+          canvas.current?.focus()
         onDelete?.(now)
-        // The focused element is about to go: keep focus on the canvas, not the page.
+        // Anything else that held focus and goes with the selection (the align bar).
         requestAnimationFrame(() => {
           if (!canvas.current?.contains(document.activeElement)) canvas.current?.focus()
         })

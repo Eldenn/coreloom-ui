@@ -1,5 +1,7 @@
 # Pricing
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Plan cards with a monthly / yearly switch, for a marketing page or an in-app upgrade screen.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/pricing`. It writes `pricing.tsx`.

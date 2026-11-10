@@ -77,15 +77,15 @@ Re-installing is your choice: installed files are yours. Review with `shadcn add
 
 ## Supported platforms
 
-| What           | Supported                                                                              |
-| -------------- | -------------------------------------------------------------------------------------- |
-| React          | 19                                                                                     |
-| Tailwind CSS   | 4                                                                                      |
-| shadcn CLI     | The current major (`shadcn@latest`), with namespaced registries                        |
-| Browsers       | The last two versions of Chrome, Edge, Firefox and Safari (desktop and mobile)         |
-| Languages      | English, French, Spanish and German built in; any other through `CoreloomI18nProvider` |
-| Writing        | Left to right. Right-to-left layouts are not supported yet                             |
-| Node.js (repo) | 22, to develop this repository; apps only need what their framework needs              |
+| What           | Supported                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| React          | 19                                                                                              |
+| Tailwind CSS   | 4                                                                                               |
+| shadcn CLI     | The current major (`shadcn@latest`), with namespaced registries, in a project on the Radix base |
+| Browsers       | The last two versions of Chrome, Edge, Firefox and Safari (desktop and mobile)                  |
+| Languages      | English, French, Spanish and German built in; any other through `CoreloomI18nProvider`          |
+| Writing        | Left to right. Right-to-left layouts are not supported yet                                      |
+| Node.js (repo) | 22, to develop this repository; apps only need what their framework needs                       |
 
 Raising the minimum version of React, Tailwind CSS or the shadcn CLI is a major release. Dropping a
 browser version that has left the "last two" is not.

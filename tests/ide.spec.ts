@@ -1,7 +1,7 @@
 // Code editor and IDE block: what people do and get.
 import { expect, type Page, test } from '@playwright/test'
 
-import { openStory } from './stories'
+import { addTabStops, openStory } from './stories'
 
 const open = (page: Page, id: string, locale: 'en' | 'fr' = 'en') =>
   openStory(page, id, 'dark', locale)
@@ -19,6 +19,7 @@ test('code editor: a labelled text box that edits, and Escape then Tab leaves it
   await page.keyboard.press('Tab')
   await expect(editor).toBeFocused()
   // …until Escape: then Tab moves on.
+  await addTabStops(page)
   await page.keyboard.press('Escape')
   await page.keyboard.press('Tab')
   await expect(editor).not.toBeFocused()

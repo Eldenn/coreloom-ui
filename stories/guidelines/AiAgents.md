@@ -1,5 +1,7 @@
 # AI Agents
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Managing AI agents: `AgentList`, cards with each agent's status, model, tools and recent activity; and `AgentEditor`, the settings of one agent — identity, instructions, model, temperature, step limit, tools and the knowledge it can search.
 
 **`AgentList` takes** `agents` (id, name, description, status, model, toolCount, lastRunAt, runsThisWeek) and `href(id)`, plus optionally `onNew` and `now`.

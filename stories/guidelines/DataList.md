@@ -1,5 +1,7 @@
 # DataList
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A filterable list whose state lives in the URL (`?q=api&status=ready,failed&page=2`): a filtered view survives a reload and can be bookmarked or shared.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/data-list`. It writes `data-list.tsx`.

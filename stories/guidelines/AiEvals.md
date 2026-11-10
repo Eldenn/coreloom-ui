@@ -1,5 +1,7 @@
 # AI Evaluations
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 How good a prompt, a model or an agent is, case by case: `EvalSuiteList`, your test suites with their last pass rate, the trend and a Run button; and `EvalRunReport`, one run's cases with their scores and the judge's verdict, or two runs side by side to catch regressions before shipping. It complements AI runs: a trace shows what one run did, an eval scores many answers against what was expected.
 
 **`EvalSuiteList` takes** `suites` (`{ id, name, description?, caseCount, threshold?, lastRun?: { passRate, score?, at }, history? }`, rates from 0 to 1) and optionally `href(id)`, `onRun(id)` and `running` (ids whose button is busy). **`EvalRunReport` takes** `run` (`{ id, label, model?, startedAt?, cases }`, each case `{ id, name, input, expected?, output, score, passed, scores?, judge?: { verdict, reasoning?, judge? }, latencyMs?, cost?, error?, tags? }`) and optionally `baseline` (an earlier run), `tolerance` (default 0.05), `defaultFilter`, `defaultSelectedId` and `onRerunCase(id)`.

@@ -1,5 +1,7 @@
 # AI Runs and Traces
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 What agents did: `RunList`, a sortable table of runs (agent, status, trigger, start, duration, tokens, cost); and `RunTrace`, one run's steps — model calls, tool calls, retrieval — on a shared time axis, with the selected step's details.
 
 **`RunList` takes** `runs` and `href(id)`. **`RunTrace` takes** `run` (status, duration, tokens, cost) and `spans` (id, parentId, kind, name, start and duration in ms, status, and optionally model, tokens, cost, input, output, error, and `agentId` on agent spans of a multi-agent run), plus optionally `defaultSelectedId`.

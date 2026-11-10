@@ -1,5 +1,7 @@
 # Audit log
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Who did what, and when: one row per event, grouped by day, with the actor (a person, an API key or the platform), the action, its target, the IP address and place, and the event's details as JSON.
 
 **The consumer provides** `<AuditLog events actions hasMore loading onLoadMore onExport title>`: `events` are `{ id, actor: { name, email?, avatar?, type? }, action, target?, at, ip?, location?, metadata? }`; `actions` are `{ value, label }`, the words for each action key ("member.invited" → "invited"), also used by the action filter. `onExport(events)` receives the events that match the filters.

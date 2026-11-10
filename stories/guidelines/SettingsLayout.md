@@ -1,5 +1,7 @@
 # Settings page
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Settings layout with section navigation, form sections, switch rows and a danger zone, as one installable block.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/settings`. It writes `settings-layout.tsx` and `settings-section.tsx`.

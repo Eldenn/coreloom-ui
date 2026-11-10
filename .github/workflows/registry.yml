@@ -54,12 +54,17 @@ jobs:
 
   # The Playwright suite (a11y, visual, interactions, docs, starter) split in four: each shard
   # builds Storybook and the starter (under 20 s) and runs a quarter of the tests.
+  # Chrome runs everything; Firefox and WebKit run the behaviour specs (playwright.config.ts).
   test:
     name: Playwright ${{ matrix.shard }}/4
     runs-on: ubuntu-24.04
     # Same image as the "Visual baselines" workflow, so screenshots render identically.
     # Keep the tag in step with @playwright/test in package.json.
     container: mcr.microsoft.com/playwright:v1.63.0-noble
+    # Firefox refuses to start when $HOME isn't owned by the user, and Actions points it at a
+    # folder owned by another one.
+    env:
+      HOME: /root
     strategy:
       fail-fast: false
       matrix:
@@ -85,8 +90,25 @@ jobs:
             test-results
           retention-days: 14
 
+  # What a consumer does: `shadcn add` of every item into a new Next.js app, then its type check and
+  # build (see build/check-install.sh). It uses the latest Next.js and shadcn CLI on purpose: a
+  # failure here with no change of ours means one of them moved.
+  install:
+    name: Install into a new Next.js app
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm registry:build
+      - run: pnpm test:install
+
   build:
-    needs: [checks, test]
+    needs: [checks, test, install]
     # Pages only accepts main: a run started on another branch (the visual baselines workflow
     # starts one on its branch) tests, but doesn't build or deploy.
     if: github.ref == 'refs/heads/main'

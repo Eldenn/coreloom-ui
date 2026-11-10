@@ -1,5 +1,7 @@
 # Password reset
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The two screens of a password reset, in the `auth` block: ask for the email, then choose a new password from the emailed link. Built on `Form` (TanStack Form), like the sign-in forms.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/auth`. It writes `password-reset-form.tsx` with the other auth forms.

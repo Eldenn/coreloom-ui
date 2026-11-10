@@ -1,5 +1,7 @@
 # AI Artifact
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A document or a piece of code a model wrote, opened in a panel beside the chat instead of buried in a message: every version it went through, a before / after view of what changed, Copy, Download and Restore. Three parts: `ArtifactPanel` (the panel), `ArtifactCard` (the chip a message shows to open it) and `ArtifactLayout` (the chat and the panel side by side). Front-end only: the app keeps the versions and decides what Restore does.
 
 **The consumer provides**, on `ArtifactPanel`:

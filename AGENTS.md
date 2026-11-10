@@ -45,6 +45,7 @@ pnpm lint:prune              # drop eslint-suppressions.json entries for code th
 pnpm typecheck               # tsc -b: library, stories and tests (TypeScript 7)
 pnpm test:unit               # Vitest
 pnpm registry:build          # validates registry.json, writes public/r/ (+ guide links, *-demo examples from stories)
+pnpm test:install            # shadcn add of every item into a new Next.js app, then tsc and next build (after registry:build)
 pnpm registry:size           # gzip cost of every item; --check against build/registry-sizes.json (CI), --write after an intended change
 pnpm docs:check              # guides ↔ code: props a guide names exist, props a component declares are in its guide
 pnpm api:report              # api/<item>.api.md: every item's exports and props (api:check in CI)
@@ -66,6 +67,10 @@ SB_PORT=6201 pnpm exec playwright test ai-chat-messages   # SB_PORT when several
 ```
 
 - Rebuild Storybook before Playwright: tests read `public/storybook`, not your source.
+- Three browsers: Chrome runs every spec; Firefox and WebKit (Safari's engine) run the behaviour
+  specs, not `visual`, `a11y` or `docs`. Install them once with `pnpm exec playwright install`;
+  `--project=chromium` runs one. A behaviour spec must pass on all three: use `allowClipboard`,
+  `clipboardEvent` and `addTabStops` from `tests/stories.ts` where the engines differ.
 - Locally the test server is reused if one is already running on the port (`reuseExistingServer`). If
   results look stale, kill it (`kill $(lsof -t -i:6106)`) — never `pkill -f`, which can kill your own shell.
 - Visual baselines come only from CI's container (the **Visual baselines** workflow). Never commit

@@ -1,5 +1,7 @@
 # Auth screens
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Sign-in, sign-up and code verification forms with a centered layout, as one installable block. The same block holds the password reset screens (see **Password reset**). Built on `Form` (TanStack Form).
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/auth`. It writes `auth-layout.tsx`, `login-form.tsx`, `signup-form.tsx`, `verify-form.tsx` and `password-reset-form.tsx`, and installs `@coreloom/form`.

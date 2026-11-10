@@ -5,6 +5,7 @@
 //   tests/docs.spec.ts          every Guidelines page renders its guide and example
 // and against the built starter app (pnpm --dir starter build → starter/dist):
 //   tests/starter.spec.ts       sign-in, navigation, URL state, forms, 404, language, theme; axe on every screen
+// Chrome runs all of them; Firefox and WebKit run the behaviour specs (see `projects`).
 // Screenshots depend on the OS's font rendering, so baselines come from CI's Playwright container
 // (the "Visual baselines" workflow), never from a laptop. The version here must match that image.
 import fs from 'node:fs'
@@ -15,6 +16,8 @@ import { STARTER_PORT } from './tests/starter-server'
 
 // SB_PORT lets several checkouts run their tests side by side.
 const PORT = Number(process.env.SB_PORT ?? 6106)
+
+const ENGINE_INDEPENDENT = /(visual|a11y|docs)\.spec\.ts$/
 
 export default defineConfig({
   testDir: 'tests',
@@ -35,6 +38,21 @@ export default defineConfig({
   expect: {
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 },
   },
+  // Chrome runs everything. Firefox and Safari's engine run the behaviour specs: screenshots and
+  // axe don't depend on the engine enough to pay for them three times.
+  projects: [
+    { name: 'chromium' },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 800 } },
+      testIgnore: ENGINE_INDEPENDENT,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
+      testIgnore: ENGINE_INDEPENDENT,
+    },
+  ],
   webServer: [
     {
       command: `node tests/serve.mjs public/storybook ${PORT}`,

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 
 export const THEMES = ['dark', 'light'] as const
 export type Theme = (typeof THEMES)[number]
@@ -96,4 +96,66 @@ function chartsSettled(page: Page) {
           observer.observe(chart, { subtree: true, attributes: true, childList: true })
       }),
   )
+}
+
+/**
+ * Lets a test read what the page copies, with `navigator.clipboard.readText()`. Call it once the
+ * story is open. Chrome grants the real clipboard; Firefox and Safari don't let a script read it,
+ * so there `writeText` is recorded instead.
+ */
+export async function allowClipboard(page: Page) {
+  if (page.context().browser()?.browserType().name() === 'chromium') {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+    return
+  }
+  await page.evaluate(() => {
+    let copied = ''
+    // A real Ctrl+C in an editor never calls writeText: read what its copy handler put in the event.
+    document.addEventListener('copy', (event) => {
+      const text = event.clipboardData?.getData('text/plain')
+      if (text) copied = text
+    })
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: (text: string) => {
+          copied = text
+          return Promise.resolve()
+        },
+        readText: () => Promise.resolve(copied),
+      },
+    })
+  })
+}
+
+/**
+ * Sends a `copy`, `cut` or `paste` event to an element, carrying `text`, and returns the text its
+ * handler left in the event. Firefox ignores the `clipboardData` given to the ClipboardEvent
+ * constructor, so the data is attached to the event itself.
+ */
+export function clipboardEvent(target: Locator, type: 'copy' | 'cut' | 'paste', text = '') {
+  return target.evaluate(
+    (el, init) => {
+      const data = new DataTransfer()
+      if (init.text) data.setData('text/plain', init.text)
+      const event = new ClipboardEvent(init.type, { bubbles: true, cancelable: true })
+      Object.defineProperty(event, 'clipboardData', { value: data })
+      el.dispatchEvent(event)
+      return data.getData('text/plain')
+    },
+    { type, text },
+  )
+}
+
+/**
+ * Adds a button before and after the story, for tests where Tab must leave a component. A real
+ * page has other things to focus; alone on a page, Firefox keeps focus where it is.
+ */
+export async function addTabStops(page: Page) {
+  await page.evaluate(() => {
+    const button = (label: string) =>
+      Object.assign(document.createElement('button'), { textContent: label })
+    document.body.prepend(button('Before'))
+    document.body.append(button('After'))
+  })
 }

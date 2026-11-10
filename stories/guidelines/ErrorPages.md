@@ -1,5 +1,7 @@
 # ErrorPages
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The pages nobody plans for: not found, server error, maintenance — and `ErrorPage`, the bare layout for any other status.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/error-pages`. It writes `error-page.tsx`.

@@ -1,5 +1,7 @@
 # Dashboard
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The parts of an app's overview page, as one installable block: a stat grid, a card that frames a chart, a ready-made trend chart and an activity feed.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/dashboard`. It writes `dashboard.tsx` and `stat-card.tsx`; put them inside the app-shell block's `AppShell` + `PageHeader`.
