@@ -1,5 +1,7 @@
 # Showcase site
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Sections for the public site of a business people visit: a practice, a studio, a firm. A hero with a photo, the people, how to come and when, a few words from clients, and the legal pages.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/showcase`. It writes `hero.tsx`, `practitioner-card.tsx`, `contact-section.tsx`, `media-section.tsx`, `quote.tsx` and `legal-layout.tsx`, plus `site-header.tsx` and `site-footer.tsx`.

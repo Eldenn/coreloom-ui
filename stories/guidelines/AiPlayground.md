@@ -1,5 +1,7 @@
 # AI Playground
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Compare models or settings side by side: one system prompt and one message, up to three variants (model and temperature), each answer streamed into its own column with latency, tokens and cost.
 
 **The consumer provides** `models`, `defaultVariants`, `results` (per variant: status `idle`, `running`, `done` or `error`, text, and metrics) and `onRun({ system, prompt, variants })`, plus optionally `defaultSystem`, `defaultPrompt` and `maxVariants`.

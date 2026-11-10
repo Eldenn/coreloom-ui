@@ -1,5 +1,7 @@
 # AI Chat Widget
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The support bubble in a page's corner: a round launcher with an unread count and an optional greeting next to it, opening the `Chat` in a card above it — a full-screen sheet on phones (below 640px). It is the same Chat, so `useChat` plugs in the same way.
 
 **The consumer provides** everything `Chat` takes (`messages`, `status`, `onSend`, `onStop`, `onRegenerate`, `suggestions`, `toolLabels`…), plus optionally:

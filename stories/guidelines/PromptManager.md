@@ -1,5 +1,7 @@
 # Prompt manager
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 One prompt and its versions: the list of versions (with their message, author, date and where they're deployed), an editor, a diff between any two versions, Deploy, and a test bench.
 
 **The consumer provides** `<PromptManager name versions defaultVersionId labels defaultValues onSave onDeploy onTest>`: `versions` are `{ id, version, text, message?, author?, createdAt, labels? }`; `labels` are where a version can be deployed (`["production"]` by default). `onSave({ text, message, baseVersionId })` stores the draft as a new version and may return it (it opens); `onDeploy(versionId, label)` moves a label; `onTest({ text, filled, variables, versionId, signal })` returns text, a promise or an async iterable of chunks.

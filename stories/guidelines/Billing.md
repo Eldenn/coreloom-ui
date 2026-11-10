@@ -1,5 +1,7 @@
 # Billing
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The parts of a billing page: the current plan, usage against its limits, the card on file and the invoices.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/billing`. It writes `billing.tsx`.

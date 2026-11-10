@@ -1,6 +1,6 @@
 # @coreloom/api-keys
 
-Stability: stable. Written by `pnpm api:report` from the code; don't edit it by hand.
+Stability: experimental. Written by `pnpm api:report` from the code; don't edit it by hand.
 
 ## src/components/api-keys.tsx
 

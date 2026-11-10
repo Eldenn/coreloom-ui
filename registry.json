@@ -2977,7 +2977,10 @@
           "path": "src/components/ui/rich-text-field.tsx",
           "type": "registry:ui"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "markdown",
@@ -3735,7 +3738,10 @@
           "path": "src/components/stat-card.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "auth",
@@ -3779,7 +3785,10 @@
           "path": "src/components/password-reset-form.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "settings",
@@ -3810,7 +3819,10 @@
           "path": "src/components/settings-section.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "marketing",
@@ -3848,7 +3860,10 @@
           "path": "src/components/cta-section.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "showcase",
@@ -3892,7 +3907,10 @@
           "path": "src/components/legal-layout.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "docs",
@@ -3930,7 +3948,10 @@
           "path": "src/components/component-preview.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "dashboard",
@@ -3957,7 +3978,10 @@
           "path": "src/components/stat-card.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "data-list",
@@ -3984,7 +4008,10 @@
           "path": "src/components/data-list.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "pricing",
@@ -4007,7 +4034,10 @@
           "path": "src/components/pricing.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "onboarding",
@@ -4030,7 +4060,10 @@
           "path": "src/components/onboarding.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "error-pages",
@@ -4051,7 +4084,10 @@
           "path": "src/components/error-page.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "notifications",
@@ -4075,7 +4111,10 @@
           "path": "src/components/notifications.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "team",
@@ -4103,7 +4142,10 @@
           "path": "src/components/team.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "gantt",
@@ -4123,7 +4165,10 @@
           "path": "src/components/gantt.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "status-page",
@@ -4147,7 +4192,10 @@
           "path": "src/components/status-page.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "api-keys",
@@ -4175,7 +4223,10 @@
           "path": "src/components/api-keys.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "webhooks",
@@ -4208,7 +4259,10 @@
           "path": "src/components/webhooks.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "api-try-it",
@@ -4286,7 +4340,10 @@
           "path": "src/components/security-settings.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "audit-log",
@@ -4313,7 +4370,10 @@
           "path": "src/components/audit-log.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "integrations",
@@ -4338,7 +4398,10 @@
           "path": "src/components/integrations.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "prompt-manager",
@@ -4368,7 +4431,10 @@
           "path": "src/components/prompt-manager.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "billing",
@@ -4393,7 +4459,10 @@
           "path": "src/components/billing.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "kanban",
@@ -4422,7 +4491,10 @@
           "path": "src/components/kanban.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "file-manager",
@@ -4448,7 +4520,10 @@
           "path": "src/components/file-manager.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "inbox",
@@ -4480,7 +4555,10 @@
           "path": "src/components/inbox.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "spreadsheet",
@@ -4494,7 +4572,10 @@
           "path": "src/components/spreadsheet.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "workflow-builder",
@@ -4948,7 +5029,10 @@
           "path": "src/components/event-calendar.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-chat",
@@ -4983,7 +5067,10 @@
           "path": "src/components/ai-chat.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-chat-widget",
@@ -5005,7 +5092,10 @@
           "path": "src/components/ai-chat-widget.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-artifact",
@@ -5033,7 +5123,10 @@
           "path": "src/components/ai-artifact.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-agents",
@@ -5064,7 +5157,10 @@
           "path": "src/components/ai-agents.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-runs",
@@ -5087,7 +5183,10 @@
           "path": "src/components/ai-runs.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-evals",
@@ -5116,7 +5215,10 @@
           "path": "src/components/ai-evals.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-agent-teams",
@@ -5208,7 +5310,10 @@
           "path": "src/components/ai-playground.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "ai-knowledge",
@@ -5236,7 +5341,10 @@
           "path": "src/components/ai-knowledge.tsx",
           "type": "registry:component"
         }
-      ]
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
     },
     {
       "name": "audio-recorder",

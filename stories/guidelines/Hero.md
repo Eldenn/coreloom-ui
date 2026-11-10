@@ -1,5 +1,7 @@
 # Marketing page
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Landing page sections as one installable block: header, hero, features, FAQ, call to action and footer.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/marketing`. It writes `hero.tsx`, `feature-grid.tsx`, `faq.tsx` and `cta-section.tsx`, plus `site-header.tsx`, `site-footer.tsx` and `copy-button.tsx`.

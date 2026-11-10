@@ -1,5 +1,7 @@
 # Webhooks
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The endpoints a workspace sends events to: URL, description, the events they listen to, on / off, the signing secret, and each endpoint's recent deliveries with the payload sent, the response and Redeliver.
 
 **The consumer provides** `<Webhooks endpoints deliveries events defaultOpenId onCreate onToggle onDelete onRedeliver onSendTest onRevealSecret title description>`: `endpoints` are `{ id, url, description?, events, enabled, secret? }`, `events` the catalogue `{ value, label, description? }`, `deliveries` `{ id, endpointId, event, status, statusCode?, at, durationMs?, attempt?, payload?, response? }` with `status` succeeded, failed or pending.

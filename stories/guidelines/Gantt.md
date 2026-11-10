@@ -1,5 +1,7 @@
 # Gantt
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A roadmap on a timeline: each task is a bar (with its progress), milestones are diamonds, arrows join a task to the ones it waits for, tasks sit under their group, and a line marks today. The zoom switches between days, weeks and months; Today scrolls back to it.
 
 **The consumer provides** `<Gantt tasks today zoom defaultZoom onZoomChange selectedId onTaskClick onTaskChange title toolbar>`: `tasks` are `{ id, name, start, end, progress?, group?, dependsOn?, milestone?, tone? }` (`end` is the last day, included; `progress` 0 to 100; `tone` one of primary, success, warning, danger, info, neutral). `defaultZoom` is `"week"`; `today` is the current date by default (pass it for stable screenshots). `onTaskChange(id, { start, end })` makes bars movable and receives the new dates once a move ends.

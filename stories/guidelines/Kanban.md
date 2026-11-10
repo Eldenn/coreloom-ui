@@ -1,5 +1,7 @@
 # Kanban
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Columns of cards to reorder and move between: a sprint, a pipeline, a support queue.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/kanban`. It writes `kanban.tsx` and installs dnd-kit.

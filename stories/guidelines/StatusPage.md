@@ -1,5 +1,7 @@
 # Status page
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A public status page: the overall state at the top (the worst state of any component), ongoing incidents with their updates, each component with its state and 90 days of uptime, and past incidents.
 
 **The consumer provides** `<StatusPage components incidents title updatedAt onSubscribe>`: `components` are `{ id, name, description?, status, group?, days?, uptime? }` with `status` one of operational, degraded, partial, major, maintenance, and `days` one `{ date, uptime?, status?, incidents? }` per day, oldest first (a day without `uptime` shows as "no data"). `incidents` are `{ id, title, impact, components?, updates }`, each update `{ stage, message, at }` (investigating, identified, monitoring, resolved; or scheduled, inProgress, verifying, completed for maintenance). An incident whose latest update is resolved or completed goes under Past incidents. `onSubscribe` shows Subscribe to updates.

@@ -1,5 +1,7 @@
 # Inbox
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Conversations a team shares: support tickets, sales leads, messages from a contact form or a chat widget. The list with search and filters, the thread with internal notes, and a box to reply. A base for a helpdesk.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/inbox`.

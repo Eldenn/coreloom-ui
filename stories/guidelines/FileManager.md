@@ -1,5 +1,7 @@
 # File manager
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Folders and files to browse and organise: a drive, a media library, a project's attachments, a knowledge base's sources. A grid or a list, a breadcrumb back up, several items selected at once, drag and drop to move, files dropped from the computer to upload, and a details panel.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/file-manager`.

@@ -1,5 +1,7 @@
 # Team
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The members of a workspace: who they are, their role, pending invites; invite and remove.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/team`. It writes `team.tsx`.

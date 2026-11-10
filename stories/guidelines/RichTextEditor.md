@@ -1,5 +1,7 @@
 # RichTextEditor
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Formatted text: descriptions, comments, release notes. Tiptap (ProseMirror) under a Coreloom toolbar.
 
 **The consumer provides** `value` + `onValueChange` (HTML; `""` when empty — or `defaultValue`), a label through `aria-labelledby` (or `aria-label`), and optionally `placeholder`, `minHeight` (160), `disabled`, and `suggestion` + `onReviewEnd` to propose a new version for review (see Editor AI).

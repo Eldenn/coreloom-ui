@@ -1,5 +1,7 @@
 # Docs layout
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 Documentation pages as one installable block: nav column, article, "On this page" rail, code blocks and Preview / Code tabs.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/docs`. It writes `docs-layout.tsx`, `docs-toc.tsx`, `code-block.tsx` and `component-preview.tsx`, plus `site-header.tsx`, `site-footer.tsx` and `copy-button.tsx`.

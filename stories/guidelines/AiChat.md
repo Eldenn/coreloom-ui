@@ -1,5 +1,7 @@
 # AI Chat
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A conversation with an assistant: messages with their reasoning, tool calls, sources and actions, the composer, an empty state with suggestions, and the list of past conversations. It reads the AI SDK's `UIMessage` as is, so `useChat` plugs in directly — but it needs no SDK and no server: any state that produces messages works.
 
 **The consumer provides** `messages`, `status` and `onSend({ text, files })`, plus optionally:

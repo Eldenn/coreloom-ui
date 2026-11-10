@@ -1,5 +1,7 @@
 # Notifications
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 A bell for the app header with the unread count, and a popover of notifications.
 
 **Install** `pnpm dlx shadcn@latest add @coreloom/notifications`. It writes `notifications.tsx`; put `<NotificationsMenu>` in the app shell's `headerActions`.

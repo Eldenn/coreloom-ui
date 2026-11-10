@@ -1,5 +1,7 @@
 # AI Knowledge
 
+> **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
+
 The documents agents search: `KnowledgeBase`, totals and a table of files with their indexing status, re-index and remove; and `RetrievalTest`, ask a question and see the passages retrieval returns, with their scores.
 
 **`KnowledgeBase` takes** `documents` (id, name, size, status `queued`, `processing`, `indexed` or `failed`, progress, chunks, updatedAt, error), plus optionally `onUpload(files)`, `onReindex(id)`, `onRemove(id)` and `accept`. **`RetrievalTest` takes** `onSearch(query)`, returning passages (text, source, score).
