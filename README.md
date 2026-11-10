@@ -214,8 +214,8 @@ pnpm --dir starter build   # include the starter in pnpm test
 pnpm changeset          # describe a change for the CHANGELOG (see Release)
 ```
 
-Every user-facing change comes with a **changeset**: run `pnpm changeset`, pick the bump (`minor` for a
-feature or an API change while we're below 1.0, `patch` for a fix) and write the entry for someone who
+Every user-facing change comes with a **changeset**: run `pnpm changeset`, pick the bump (`major`, `minor` or
+`patch` as [`VERSIONING.md`](./VERSIONING.md) says) and write the entry for someone who
 installed the item, under the CHANGELOG's sections. Commit the file it creates in `.changeset/` with
 the change:
 
