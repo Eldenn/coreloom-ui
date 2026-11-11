@@ -126,12 +126,17 @@ jobs:
       # guides never change without a release; main is served under /next/ to try what's coming.
       # The release is the last commit that changed package.json's version (the Version Packages
       # commit, as in release.yml): it is right even while the release workflow is still tagging it.
+      # Pre-releases (1.0.0-rc.0) are skipped: the root stays on the last stable version, and a
+      # release candidate is tried under /next/ or pinned from its GitHub release.
       - name: Find the released commit
         id: release
         run: |
-          ref="$(git log -1 --format=%H -G'"version":' -- package.json)"
+          for ref in $(git log --format=%H -G'"version":' -- package.json); do
+            version="$(git show "$ref:package.json" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).version')"
+            case "$version" in *-*) ;; *) break ;; esac
+          done
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
-          echo "Root: v$(node -p "require('./package.json').version") at $ref; /next/: $GITHUB_SHA"
+          echo "Root: v$version at $ref; /next/: $GITHUB_SHA"
       - name: Build main under /next/
         run: build/build-site.sh . site/next /coreloom-ui/next/
       - name: Build the release at the root

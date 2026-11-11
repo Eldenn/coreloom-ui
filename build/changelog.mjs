@@ -8,7 +8,8 @@
 //      text as written, sections included (no commit hashes, no bullet wrapped around it).
 //   2. Run as a script after `changeset version` (`pnpm version-packages` does both), it rewrites
 //      that entry: dated heading, the changesets' sections merged in the house order, moved under
-//      the intro, with its link and the "pin a release" example updated to the new version.
+//      the intro, with its link and the "pin a release" example updated to the new version
+//      (a pre-release such as 1.0.0-rc.0 keeps the example on the last stable one).
 // `node build/changelog.mjs --check` validates the pending changesets (CI runs it on pull requests).
 import fs from 'node:fs'
 import path from 'node:path'
@@ -176,12 +177,15 @@ export function formatRelease(file, { date = releaseDate() } = {}) {
   const firstRelease = rest.search(/^## \[/m)
   const firstLink = rest.search(/^\[[^\]]+\]: /m)
   const at = firstRelease !== -1 ? firstRelease : firstLink !== -1 ? firstLink : rest.length
-  const intro = rest
-    .slice(0, at)
-    .replace(
-      new RegExp(`(/releases/download/)v${VERSION}(/)`, 'g'),
-      (_, before, after) => `${before}v${version}${after}`,
-    )
+  // The example pins the newest stable release: a pre-release (1.0.0-rc.0) leaves it alone.
+  const intro = version.includes('-')
+    ? rest.slice(0, at)
+    : rest
+        .slice(0, at)
+        .replace(
+          new RegExp(`(/releases/download/)v${VERSION}(/)`, 'g'),
+          (_, before, after) => `${before}v${version}${after}`,
+        )
   rest = `${intro.trimEnd()}\n\n${entry}\n${rest.slice(at).trimStart()}`
 
   // The version's link, first among the links (they run newest first).

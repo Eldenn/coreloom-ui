@@ -8,6 +8,8 @@
 #       "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.8.0/{name}.json"
 #     The release is built from the commit the tag points at (or will point at: the one that set the
 #     version), never from whatever main holds now. A version with a release is left alone.
+#     A pre-release version (1.0.0-rc.0, while .changeset/pre.json exists) is released the same
+#     way and marked as a pre-release.
 # Tagging and releasing happen in this workflow on purpose: a tag pushed with the workflow's token
 # doesn't start other workflows, so a separate "on: push: tags" workflow would never run.
 name: Release
@@ -128,4 +130,7 @@ jobs:
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" public/r/*.json public/tokens/*.json --title "$TAG" --notes-file release-notes.md --verify-tag
+        # A pre-release (v1.0.0-rc.0) is marked as one, so it never becomes GitHub's "Latest".
+        run: |
+          case "$TAG" in *-*) pre=--prerelease ;; *) pre= ;; esac
+          gh release create "$TAG" public/r/*.json public/tokens/*.json --title "$TAG" --notes-file release-notes.md --verify-tag $pre

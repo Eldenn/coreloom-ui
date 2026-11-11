@@ -1,8 +1,9 @@
 # Changelog
 
 What changed in the `@coreloom` registry, release by release. Versions follow
-[Semantic Versioning](https://semver.org): while the major is 0, a minor can change a
-component's API; each entry says what to do under **Upgrading**.
+[Semantic Versioning](https://semver.org), with the API it covers spelled out in
+[`VERSIONING.md`](./VERSIONING.md); before 1.0, a minor could change a component's API. Each
+entry says what to do under **Upgrading**.
 
 Installed components are your code: `shadcn add` won't touch them unless you pass
 `--overwrite`. Read the release before overwriting, and diff with `git` afterwards.

@@ -174,6 +174,19 @@ What changed, release by release.
     )
   })
 
+  it('keeps the pin example on the stable release for a pre-release', async () => {
+    const entry = await changesetsEntry('1.0.0-rc.0', [
+      { id: 'a', type: 'major', summary: '### Changed\n\n- 1.0.' },
+    ])
+    const result = changelog.formatRelease(asWrittenByChangesets(intro, entry), {
+      date: '2026-11-10',
+    })
+    expect(result?.version).toBe('1.0.0-rc.0')
+    expect(result?.changelog).toBe(
+      `${intro}\n## [1.0.0-rc.0] - 2026-11-10\n\n### Changed\n\n- 1.0.\n\n[1.0.0-rc.0]: ${REPO}/releases/tag/v1.0.0-rc.0\n`,
+    )
+  })
+
   it('does nothing when Changesets wrote no entry', () => {
     expect(changelog.formatRelease(intro + '\n' + history)).toBeNull()
   })
