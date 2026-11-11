@@ -18,6 +18,54 @@ the same namespace):
 "registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.11.0/{name}.json" }
 ```
 
+## [1.0.0-rc.0] - 2026-11-11
+
+### Added
+
+- `@coreloom/use-controllable-state`: `useControllableState({ value, defaultValue, onChange })`, the hook behind the components below that can be owned by the app or keep their own state.
+- `onValueChange` on `CodeEditor` and `DiagramEditor`, the name every Coreloom field uses for its change callback.
+- `defaultValue` on `ModelList`, `FacetedFilter`, `CodeEditorLanguageSelect`, `ExpressionInput` and `StateEditor`. Their `value` and `onValueChange` are now optional.
+- `open` and `onOpenChange` on `AgentPlan`, `Reasoning` and `ToolCall`, to own whether they show. With `open`, `Reasoning` and `ToolCall` no longer fold or unfold by themselves.
+- `defaultOpen` on `ShareDialog`, `ImageLightbox`, `ShortcutsDialog` and `Tour`. Their `open` and `onOpenChange` are now optional.
+
+### Changed
+
+- The node editor's field controls (`CodeControl`, `ConditionsControl`, `CredentialControl`, `KeyValueControl`) and the diagram editor's parts (`TextField`, `Choice`, `MemberList`) take `onValueChange` instead of `onChange`. Both items are experimental.
+- Every block is now **experimental**, and so is `RichTextEditor`: the 35 blocks that were stable
+  (app shell, auth, settings, dashboard, data list, kanban, inbox, file manager, the AI chat and
+  its siblings…) may still change in a minor release, with an **Upgrading** note when they do.
+  Nothing changes in their code. The components in `@coreloom/all` other than the rich text
+  editor stay stable. Their guides and `llms.txt` say which is which.
+- **1.0.** The API described in [`VERSIONING.md`](./VERSIONING.md) is now stable: the names, exports and props of stable items, the tokens and the message keys only change in a major release, after a deprecation. Items marked experimental (every block, and the heavier components) may still change in a minor release; their guides say so.
+
+### Deprecated
+
+- `onChange` on `CodeEditor` and `DiagramEditor`: use `onValueChange`. It keeps working until 2.0.
+
+### Fixed
+
+- `AudioRecorder`: the elapsed time stayed at 0:00, and `maxDuration` never stopped the recording,
+  when the browser kept its audio context suspended (a machine without audio output, for one).
+  The time now comes from the page's clock.
+- `CodeEditor` and `RichTextEditor`, controlled: fast typing could lose or reorder characters
+  when the app handed `value` back a keystroke late (seen in Firefox). The editors now recognise
+  their own text coming back and leave what was typed since.
+- `UmlDiagram`: deleting the focused element or line from the keyboard could leave focus on the
+  page instead of the canvas, when the app handed the new diagram back after the next frame
+  (seen in Safari). Focus now moves to the canvas before the element goes.
+- `Item` can be imported from a Server Component: its file now starts with `'use client'` (it
+  creates a context, which failed a Next.js build).
+- `VirtualList` and `LogViewer` compile in a Next.js app, whose React types let a key be a symbol
+  that TanStack Virtual's keys can't be.
+- Every npm dependency an item installs now names its major (`radix-ui@^1`, `lucide-react@^1`,
+  `class-variance-authority@^0.7`…). `shadcn add` used to install the latest version of 14 of
+  them, so a dependency's next major could have reached an app without a major release here.
+
+### Upgrading
+
+- If you render the node editor's field controls or the diagram editor's parts yourself, rename their `onChange` prop to `onValueChange`.
+- From 0.11, 1.0 asks for nothing more than the steps listed here. From an older version, follow the **Upgrading** section of each release you skipped, oldest first.
+
 ## [0.11.0] - 2026-11-09
 
 ### Added
@@ -1081,6 +1129,7 @@ Gauge: the number, label and status now sit on the ring's center and stay inside
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[1.0.0-rc.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v1.0.0-rc.0
 [0.11.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.11.0
 [0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
