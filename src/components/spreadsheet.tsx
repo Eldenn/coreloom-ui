@@ -564,6 +564,10 @@ function Spreadsheet({
                         col.readOnly ? 'bg-inset text-fg-secondary' : 'text-foreground',
                         selected && multi && 'bg-primary-subtle',
                         invalid && 'text-destructive',
+                        // A corner mark as well as the colour, as spreadsheets flag a cell.
+                        invalid &&
+                          !isEditing &&
+                          'after:absolute after:top-0 after:left-0 after:border-4 after:border-transparent after:border-t-destructive after:border-l-destructive',
                         isActive &&
                           'z-[1] shadow-[inset_0_0_0_2px_var(--color-primary)] focus-visible:shadow-[inset_0_0_0_2px_var(--color-ring)]',
                         isEditing && 'p-0',

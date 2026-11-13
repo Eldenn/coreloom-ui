@@ -157,6 +157,17 @@ const usePercent = () => {
   }, [locale])
 }
 
+/** Tailwind's `max-sm`: the width under which the bar hides its older days. */
+const PHONE = '(width < 40rem)'
+
+function onPhoneChange(notify: () => void) {
+  const query = window.matchMedia(PHONE)
+  query.addEventListener('change', notify)
+  return () => {
+    query.removeEventListener('change', notify)
+  }
+}
+
 function UptimeBar({
   days,
   name,
@@ -183,6 +194,13 @@ function UptimeBar({
   })
   // Phones show the last 30 days: 90 bars would be a pixel wide each.
   const phoneDays = Math.min(30, days.length)
+  const onPhone = React.useSyncExternalStore(
+    onPhoneChange,
+    () => window.matchMedia(PHONE).matches,
+    () => false,
+  )
+  // The slider only counts and steps through the days on screen.
+  const first = onPhone ? days.length - phoneDays : 0
 
   const describe = (day: UptimeDay) => {
     const date = dateFormat.format(day.date)
@@ -198,11 +216,11 @@ function UptimeBar({
     const current = active ?? last
     const next =
       e.key === 'ArrowLeft'
-        ? Math.max(0, current - 1)
+        ? Math.max(first, current - 1)
         : e.key === 'ArrowRight'
           ? Math.min(last, current + 1)
           : e.key === 'Home'
-            ? 0
+            ? first
             : e.key === 'End'
               ? last
               : null
@@ -224,8 +242,8 @@ function UptimeBar({
           days.length,
         )}
         aria-valuemin={1}
-        aria-valuemax={days.length}
-        aria-valuenow={(active ?? days.length - 1) + 1}
+        aria-valuemax={days.length - first}
+        aria-valuenow={Math.max(first, active ?? days.length - 1) - first + 1}
         aria-valuetext={
           days.length ? describe(days[active ?? days.length - 1] ?? days[0]) : undefined
         }

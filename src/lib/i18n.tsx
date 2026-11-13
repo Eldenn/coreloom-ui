@@ -1882,7 +1882,9 @@ const en = {
     milestone: (name: string, date: string) => `${name}, milestone on ${date}`,
     progress: (percent: number) => `${String(percent)}% done`,
     dependsOn: (names: string) => `after ${names}`,
-    editHint: 'Left and right arrows move it by a day; with Shift, they move its end.',
+    startsBefore: (names: string) => `starts before ${names} ends`,
+    editHint:
+      'Left and right arrows move it by a day; with Alt, they move its start; with Shift, its end.',
   },
   statusPage: {
     title: 'System status',
@@ -2632,9 +2634,9 @@ const en = {
     selectedAll: 'All cells selected',
     undone: 'Undone',
     redone: 'Redone',
-    help: 'Arrows move, Shift with the arrows selects a range. Type or press Enter to edit, Escape to cancel. Delete clears; copy, cut and paste work with other spreadsheets.',
+    help: 'Arrows move, Shift with the arrows selects a range. Type or press Enter to edit, Escape to cancel. Delete clears; copy, cut and paste work with other spreadsheets. Tab moves along the row and leaves the grid at either end.',
     helpReadOnly:
-      'Arrows move, Shift with the arrows selects a range, copy works with other spreadsheets.',
+      'Arrows move, Shift with the arrows selects a range, copy works with other spreadsheets. Tab moves along the row and leaves the grid at either end.',
   },
   eventCalendar: {
     today: 'Today',
@@ -2644,6 +2646,7 @@ const en = {
     events: (count: string, n: number) => `${count} ${n === 1 ? 'event' : 'events'}`,
     noEvents: 'No events',
     allDay: 'All day',
+    showLess: 'Show less',
   },
   editor: {
     toolbar: 'Formatting',
@@ -3163,6 +3166,7 @@ const en = {
       return n === 1 ? '1 problem' : `${n} problems`
     },
     line: (n: number) => `Line ${n}`,
+    severity: { error: 'Error', warning: 'Warning' },
     status: (kind: string, elements: number) =>
       `${kind}, ${elements === 1 ? '1 element' : `${elements} elements`}`,
     problem: {
@@ -5280,8 +5284,9 @@ const fr: Messages = {
     milestone: (name, date) => `${name}, jalon le ${date}`,
     progress: (percent) => `${String(percent)} % fait`,
     dependsOn: (names) => `après ${names}`,
+    startsBefore: (names) => `commence avant la fin de ${names}`,
     editHint:
-      'Les flèches gauche et droite la décalent d’un jour ; avec Maj, elles déplacent sa fin.',
+      'Les flèches gauche et droite la décalent d’un jour ; avec Alt, elles déplacent son début ; avec Maj, sa fin.',
   },
   statusPage: {
     title: 'État des services',
@@ -6075,9 +6080,9 @@ const fr: Messages = {
     selectedAll: 'Toutes les cellules sélectionnées',
     undone: 'Annulé',
     redone: 'Rétabli',
-    help: 'Les flèches déplacent, Maj avec les flèches sélectionne une plage. Tapez ou appuyez sur Entrée pour modifier, Échap pour annuler. Suppr efface ; copier, couper et coller fonctionnent avec les autres tableurs.',
+    help: 'Les flèches déplacent, Maj avec les flèches sélectionne une plage. Tapez ou appuyez sur Entrée pour modifier, Échap pour annuler. Suppr efface ; copier, couper et coller fonctionnent avec les autres tableurs. Tab parcourt la ligne et quitte la grille à chaque extrémité.',
     helpReadOnly:
-      'Les flèches déplacent, Maj avec les flèches sélectionne une plage, copier fonctionne avec les autres tableurs.',
+      'Les flèches déplacent, Maj avec les flèches sélectionne une plage, copier fonctionne avec les autres tableurs. Tab parcourt la ligne et quitte la grille à chaque extrémité.',
   },
   eventCalendar: {
     today: 'Aujourd’hui',
@@ -6087,6 +6092,7 @@ const fr: Messages = {
     events: (count, n) => `${count} évènement${n > 1 ? 's' : ''}`,
     noEvents: 'Aucun évènement',
     allDay: 'Toute la journée',
+    showLess: 'Afficher moins',
   },
   editor: {
     toolbar: 'Mise en forme',
@@ -6607,6 +6613,7 @@ const fr: Messages = {
       return n === 1 ? '1 problème' : `${n} problèmes`
     },
     line: (n) => `Ligne ${n}`,
+    severity: { error: 'Erreur', warning: 'Avertissement' },
     status: (kind, elements) =>
       `${kind}, ${elements <= 1 ? `${elements} élément` : `${elements} éléments`}`,
     problem: {

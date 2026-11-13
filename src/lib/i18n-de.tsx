@@ -1902,8 +1902,9 @@ export const de: Messages = {
     milestone: (name, date) => `${name}, Meilenstein am ${date}`,
     progress: (percent) => `${String(percent)} % erledigt`,
     dependsOn: (names) => `nach ${names}`,
+    startsBefore: (names) => `beginnt vor dem Ende von ${names}`,
     editHint:
-      'Die Pfeiltasten links und rechts verschieben sie um einen Tag; mit Umschalt verschieben sie ihr Ende.',
+      'Die Pfeiltasten links und rechts verschieben sie um einen Tag; mit Alt verschieben sie ihren Anfang, mit Umschalt ihr Ende.',
   },
   statusPage: {
     title: 'Systemstatus',
@@ -2702,9 +2703,9 @@ export const de: Messages = {
     selectedAll: 'Alle Zellen ausgewählt',
     undone: 'Rückgängig gemacht',
     redone: 'Wiederhergestellt',
-    help: 'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich. Tippe oder drück Eingabe zum Bearbeiten, Escape zum Abbrechen. Entf leert; Kopieren, Ausschneiden und Einfügen funktionieren mit anderen Tabellen.',
+    help: 'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich. Tippe oder drück Eingabe zum Bearbeiten, Escape zum Abbrechen. Entf leert; Kopieren, Ausschneiden und Einfügen funktionieren mit anderen Tabellen. Tab geht die Zeile entlang und verlässt das Raster an beiden Enden.',
     helpReadOnly:
-      'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich, Kopieren funktioniert mit anderen Tabellen.',
+      'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich, Kopieren funktioniert mit anderen Tabellen. Tab geht die Zeile entlang und verlässt das Raster an beiden Enden.',
   },
   eventCalendar: {
     today: 'Heute',
@@ -2714,6 +2715,7 @@ export const de: Messages = {
     events: (count, n) => `${count} ${n === 1 ? 'Termin' : 'Termine'}`,
     noEvents: 'Keine Termine',
     allDay: 'Ganztägig',
+    showLess: 'Weniger anzeigen',
   },
   editor: {
     toolbar: 'Formatierung',
@@ -3235,6 +3237,7 @@ export const de: Messages = {
       return n === 1 ? '1 Problem' : `${n} Probleme`
     },
     line: (n) => `Zeile ${n}`,
+    severity: { error: 'Fehler', warning: 'Warnung' },
     status: (kind, elements) => `${kind}, ${elements === 1 ? '1 Element' : `${elements} Elemente`}`,
     problem: {
       empty: 'Noch nichts zu lesen.',

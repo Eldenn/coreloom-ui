@@ -1886,7 +1886,9 @@ export const es: Messages = {
     milestone: (name, date) => `${name}, hito el ${date}`,
     progress: (percent) => `${String(percent)} % hecho`,
     dependsOn: (names) => `después de ${names}`,
-    editHint: 'Las flechas izquierda y derecha la mueven un día; con Mayús, mueven su final.',
+    startsBefore: (names) => `empieza antes de que termine ${names}`,
+    editHint:
+      'Las flechas izquierda y derecha la mueven un día; con Alt, mueven su inicio; con Mayús, su final.',
   },
   statusPage: {
     title: 'Estado del sistema',
@@ -2674,9 +2676,9 @@ export const es: Messages = {
     selectedAll: 'Todas las celdas seleccionadas',
     undone: 'Deshecho',
     redone: 'Rehecho',
-    help: 'Las flechas mueven, Mayús con las flechas selecciona un rango. Escribe o pulsa Intro para editar, Escape para cancelar. Supr borra; copiar, cortar y pegar funcionan con otras hojas de cálculo.',
+    help: 'Las flechas mueven, Mayús con las flechas selecciona un rango. Escribe o pulsa Intro para editar, Escape para cancelar. Supr borra; copiar, cortar y pegar funcionan con otras hojas de cálculo. Tab recorre la fila y sale de la cuadrícula en cada extremo.',
     helpReadOnly:
-      'Las flechas mueven, Mayús con las flechas selecciona un rango, copiar funciona con otras hojas de cálculo.',
+      'Las flechas mueven, Mayús con las flechas selecciona un rango, copiar funciona con otras hojas de cálculo. Tab recorre la fila y sale de la cuadrícula en cada extremo.',
   },
   eventCalendar: {
     today: 'Hoy',
@@ -2686,6 +2688,7 @@ export const es: Messages = {
     events: (count, n) => `${count} ${n === 1 ? 'evento' : 'eventos'}`,
     noEvents: 'Sin eventos',
     allDay: 'Todo el día',
+    showLess: 'Mostrar menos',
   },
   editor: {
     toolbar: 'Formato',
@@ -3211,6 +3214,7 @@ export const es: Messages = {
       return n === 1 ? '1 problema' : `${n} problemas`
     },
     line: (n) => `Línea ${n}`,
+    severity: { error: 'Error', warning: 'Advertencia' },
     status: (kind, elements) =>
       `${kind}, ${elements === 1 ? '1 elemento' : `${elements} elementos`}`,
     problem: {

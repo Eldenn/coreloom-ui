@@ -62,7 +62,10 @@ function EventCalendar({
   const locale = dateLocale as Locale | undefined
   const [inner, setInner] = React.useState(() => startOfMonth(defaultMonth ?? new Date()))
   const current = startOfMonth(month ?? inner)
+  // Said when the month changes; empty before, so the title isn't read twice.
+  const [announcement, setAnnouncement] = React.useState('')
   const go = (next: Date) => {
+    setAnnouncement(format(next, 'LLLL yyyy', { locale }))
     if (month === undefined) setInner(startOfMonth(next))
     onMonthChange?.(startOfMonth(next))
   }
@@ -111,10 +114,7 @@ function EventCalendar({
   return (
     <div data-slot="event-calendar" className={cn('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-center gap-2">
-        <h2
-          aria-live="polite"
-          className="m-0 mr-auto font-display text-[20px] font-semibold tracking-[-0.01em] text-foreground first-letter:uppercase"
-        >
+        <h2 className="m-0 mr-auto font-display text-[20px] font-semibold tracking-[-0.01em] text-foreground first-letter:uppercase">
           {format(current, 'LLLL yyyy', { locale })}
         </h2>
         <Button
@@ -146,6 +146,9 @@ function EventCalendar({
         >
           <ChevronRightIcon />
         </Button>
+        <p role="status" className="sr-only">
+          {announcement}
+        </p>
       </div>
 
       {/* Wide screens: the month grid. */}
@@ -229,7 +232,7 @@ function EventCalendar({
                           }}
                           className="flex min-h-6 cursor-pointer items-center self-start rounded-sm px-1.5 text-[11px] font-medium text-primary-text outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
                         >
-                          {open ? '−' : t.more(formatNumber(list.length - maxPerDay))}
+                          {open ? t.showLess : t.more(formatNumber(list.length - maxPerDay))}
                         </button>
                       )}
                     </div>
@@ -252,14 +255,21 @@ function EventCalendar({
           .filter((d) => isSameMonth(d, current) && on(d).length > 0)
           .map((day) => (
             <li key={day.toISOString()} className="rounded-lg border border-border">
-              <h3
+              <p
                 className={cn(
-                  'm-0 border-b border-border px-3 py-2 text-[13px] font-semibold first-letter:uppercase',
+                  'm-0 flex items-baseline gap-2 border-b border-border px-3 py-2 text-[13px] font-semibold',
                   isSameDay(day, today) ? 'text-primary-text' : 'text-foreground',
                 )}
               >
-                {format(day, 'EEEE d MMMM', { locale })}
-              </h3>
+                <span className="inline-block first-letter:uppercase">
+                  {format(day, 'EEEE d MMMM', { locale })}
+                </span>
+                {isSameDay(day, today) && (
+                  <span className="font-mono text-[11px] font-semibold tracking-[0.08em] uppercase">
+                    {t.today}
+                  </span>
+                )}
+              </p>
               <div className="flex flex-col p-1">{on(day).map((e) => eventButton(e, false))}</div>
             </li>
           ))}
