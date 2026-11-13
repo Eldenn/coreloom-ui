@@ -851,6 +851,7 @@ export const es: Messages = {
       search: 'Buscar conversaciones',
       empty: 'Todavía no hay conversaciones.',
       noResults: 'Ninguna conversación coincide.',
+      results: (count) => (count === 1 ? '1 conversación' : `${count} conversaciones`),
       today: 'Hoy',
       yesterday: 'Ayer',
       week: 'Últimos 7 días',

@@ -857,6 +857,7 @@ export const de: Messages = {
       search: 'Unterhaltungen durchsuchen',
       empty: 'Noch keine Unterhaltungen.',
       noResults: 'Keine Unterhaltung passt.',
+      results: (count) => (count === 1 ? '1 Unterhaltung' : `${count} Unterhaltungen`),
       today: 'Heute',
       yesterday: 'Gestern',
       week: 'Letzte 7 Tage',
