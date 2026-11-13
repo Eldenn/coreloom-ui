@@ -70,12 +70,22 @@ function Playground({
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })
+  const rootRef = React.useRef<HTMLDivElement>(null)
+  const remove = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index))
+    // The button goes with its variant: focus the neighbour's Remove button, or the model picker
+    // of the last variant left (which has no Remove button).
+    requestAnimationFrame(() => {
+      const sections = rootRef.current?.querySelectorAll('[data-variant]')
+      sections?.[Math.min(index, variants.length - 2)]?.querySelector('button')?.focus()
+    })
+  }
   const update = (id: string, patch: Partial<PlaygroundVariant>) => {
     setVariants((all) => all.map((v) => (v.id === id ? { ...v, ...patch } : v)))
   }
 
   return (
-    <div data-slot="playground" className={cn('flex flex-col gap-4', className)}>
+    <div ref={rootRef} data-slot="playground" className={cn('flex flex-col gap-4', className)}>
       <form
         className="grid gap-4 rounded-lg border border-border bg-card p-4 lg:grid-cols-2"
         onSubmit={(e) => {
@@ -155,15 +165,16 @@ function Playground({
           return (
             <section
               key={v.id}
+              data-variant
               aria-labelledby={headingId}
               aria-busy={r?.status === 'running' || undefined}
               className="flex min-w-0 flex-col rounded-lg border border-border bg-card"
             >
               <header className="flex flex-col gap-3 border-b border-border-subtle p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 id={headingId} className="m-0 text-[13.5px] font-semibold text-foreground">
+                  <p id={headingId} className="m-0 text-[13.5px] font-semibold text-foreground">
                     {t.variant(i + 1)}
-                  </h3>
+                  </p>
                   {variants.length > 1 && (
                     <Button
                       type="button"
@@ -171,7 +182,7 @@ function Playground({
                       size="icon-sm"
                       aria-label={t.removeVariant(i + 1)}
                       onClick={() => {
-                        setVariants(variants.filter((x) => x.id !== v.id))
+                        remove(i)
                       }}
                     >
                       <XIcon />

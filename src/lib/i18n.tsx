@@ -1481,7 +1481,7 @@ const en = {
     preview: 'Preview',
     code: 'Code',
   },
-  marketing: { faq: 'Questions' },
+  marketing: { faq: 'Questions', nav: 'Main', mobileNav: 'Main menu' },
   showcase: {
     footer: 'Footer',
     social: 'Social media',
@@ -1620,6 +1620,7 @@ const en = {
   },
   settings: {
     title: 'Settings',
+    sections: 'Settings sections',
     save: 'Save changes',
     dangerZone: 'Danger zone',
     typeToConfirm: (name: Text): Text => (
@@ -4866,7 +4867,11 @@ const fr: Messages = {
     preview: 'Aperçu',
     code: 'Code',
   },
-  marketing: { faq: 'Questions fréquentes' },
+  marketing: {
+    faq: 'Questions fréquentes',
+    nav: 'Navigation principale',
+    mobileNav: 'Menu principal',
+  },
   showcase: {
     footer: 'Pied de page',
     social: 'Réseaux sociaux',
@@ -5006,6 +5011,7 @@ const fr: Messages = {
   },
   settings: {
     title: 'Paramètres',
+    sections: 'Sections des paramètres',
     save: 'Enregistrer',
     dangerZone: 'Zone de danger',
     typeToConfirm: (name) => (

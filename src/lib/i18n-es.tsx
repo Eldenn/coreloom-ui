@@ -1480,7 +1480,11 @@ export const es: Messages = {
     preview: 'Vista previa',
     code: 'Código',
   },
-  marketing: { faq: 'Preguntas frecuentes' },
+  marketing: {
+    faq: 'Preguntas frecuentes',
+    nav: 'Navegación principal',
+    mobileNav: 'Menú principal',
+  },
   showcase: {
     footer: 'Pie de página',
     social: 'Redes sociales',
@@ -1620,6 +1624,7 @@ export const es: Messages = {
   },
   settings: {
     title: 'Ajustes',
+    sections: 'Secciones de ajustes',
     save: 'Guardar cambios',
     dangerZone: 'Zona de peligro',
     typeToConfirm: (name) => (
