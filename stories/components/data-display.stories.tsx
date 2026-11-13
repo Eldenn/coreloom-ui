@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { FolderIcon, InfoIcon, PackageIcon, PlusIcon, ZapIcon } from 'lucide-react'
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  FolderIcon,
+  InfoIcon,
+  PackageIcon,
+  PlusIcon,
+  TriangleAlertIcon,
+  ZapIcon,
+} from 'lucide-react'
 
 import {
   Accordion,
@@ -130,14 +139,17 @@ export const AlertStory: Story = {
         <AlertDescription>Theming comes from the tokens.</AlertDescription>
       </Alert>
       <Alert variant="success">
+        <CircleCheckIcon />
         <AlertTitle>Deployed</AlertTitle>
         <AlertDescription>coreloom-web is live.</AlertDescription>
       </Alert>
       <Alert variant="warning">
+        <TriangleAlertIcon />
         <AlertTitle>Build minutes at 90%</AlertTitle>
         <AlertDescription>Upgrade before Nov 30.</AlertDescription>
       </Alert>
       <Alert variant="destructive">
+        <CircleAlertIcon />
         <AlertTitle>Deploy failed</AlertTitle>
         <AlertDescription>Type error in src/theme.ts — see logs.</AlertDescription>
       </Alert>

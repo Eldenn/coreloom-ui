@@ -4,7 +4,13 @@
 // select-an-area and arrange buttons; the bar that aligns and spaces the selected boxes; and the
 // field that renames an element in place (F2 or a double click); and full screen. UmlDiagram
 // places them.
-import { getViewportForBounds, Panel, useReactFlow, useStoreApi } from '@xyflow/react'
+import {
+  getViewportForBounds,
+  Panel,
+  useNodesInitialized,
+  useReactFlow,
+  useStoreApi,
+} from '@xyflow/react'
 import {
   AlignCenterHorizontalIcon,
   AlignCenterVerticalIcon,
@@ -53,6 +59,55 @@ function useFitDiagram() {
     },
     [flow, store],
   )
+}
+
+/** Under this zoom an element's 12.5px name is drawn smaller than 11px: too small to read. */
+const READABLE_ZOOM = 0.88
+
+/** Pixels kept between the edge of the canvas and the start of a graph that doesn't fit in it. */
+const FIT_MARGIN = 24
+
+/**
+ * The view of a graph at a zoom people can read. On an axis where the graph fits at that zoom it
+ * is centered; where it doesn't, its start (left, top) is shown and the rest is a pan away.
+ */
+function readableViewport(
+  bounds: { x: number; y: number; width: number; height: number },
+  pane: { width: number; height: number },
+  zoom: number,
+) {
+  const place = (start: number, size: number, room: number) =>
+    size * zoom + 2 * FIT_MARGIN <= room
+      ? (room - size * zoom) / 2 - start * zoom
+      : FIT_MARGIN - start * zoom
+  return {
+    x: place(bounds.x, bounds.width, pane.width),
+    y: place(bounds.y, bounds.height, pane.height),
+    zoom,
+  }
+}
+
+/**
+ * Corrects the first fit of the canvas. Fitting a tall diagram whole in a short canvas shrinks
+ * its text to a few pixels: the view then opens on the start of the diagram at a readable zoom
+ * instead. The Fit button still shows everything. Not for thumbnails (`enabled` false).
+ */
+function useReadableFirstFit(enabled: boolean, padding = 0.15) {
+  const flow = useReactFlow()
+  const store = useStoreApi()
+  const measured = useNodesInitialized()
+  const done = React.useRef(false)
+  React.useEffect(() => {
+    if (!enabled || !measured || done.current) return
+    done.current = true
+    const { width, height, minZoom } = store.getState()
+    const ids = flow.getNodes().map((node) => node.id)
+    if (!ids.length || !width || !height) return
+    const bounds = flow.getNodesBounds(ids)
+    const whole = getViewportForBounds(bounds, width, height, minZoom, 1, padding)
+    if (whole.zoom >= READABLE_ZOOM) return
+    void flow.setViewport(readableViewport(bounds, { width, height }, READABLE_ZOOM))
+  }, [enabled, measured, flow, store, padding])
 }
 
 /** Whether the browser lets a page show an element full screen (false on the server). */
@@ -384,9 +439,12 @@ export {
   dropHandlers,
   type Fullscreen,
   FullscreenButton,
+  READABLE_ZOOM,
+  readableViewport,
   RenameField,
   type RenameTarget,
   useFitDiagram,
   useFullscreen,
+  useReadableFirstFit,
   useRename,
 }

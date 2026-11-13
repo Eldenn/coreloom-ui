@@ -40,6 +40,7 @@ import {
   FullscreenButton,
   RenameField,
   useFullscreen,
+  useReadableFirstFit,
   useRename,
 } from '@/components/ui/uml-diagram-tools'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
@@ -227,7 +228,13 @@ function useCanvasEffects({
       }
     },
   }))
+  // The first fit is the canvas's own (`fitView`), made readable when the diagram is too tall
+  // or too wide for its text to stay legible. Thumbnails always show the whole diagram.
+  useReadableFirstFit(!refit)
+  const fitted = React.useRef(ids)
   React.useEffect(() => {
+    if (fitted.current === ids) return
+    fitted.current = ids
     // React Flow's fitView, which waits until new elements have their size.
     const frame = requestAnimationFrame(() => void flow.fitView({ padding: 0.15, maxZoom: 1 }))
     return () => {

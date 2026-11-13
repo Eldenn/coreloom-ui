@@ -79,10 +79,13 @@ export const Matrix: Story = {
   },
 }
 
-/** A year of days: weeks as columns, Monday first. Scrolls to the latest weeks when narrow. */
+/**
+ * A year of days: weeks as columns, Monday first. A year at the default cell size is about 800 px
+ * wide: the card leaves it that room, and scrolls to the latest weeks when narrower.
+ */
 export const Calendar: Story = {
   render: () => (
-    <Card className="max-w-3xl">
+    <Card className="max-w-4xl">
       <CardHeader>
         <CardTitle>Deploys</CardTitle>
         <CardDescription>November 2025 – October 2026</CardDescription>
