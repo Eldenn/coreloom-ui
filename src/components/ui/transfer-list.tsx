@@ -87,7 +87,11 @@ function TransferPane({
                 }}
                 className="mt-0.5 size-4 cursor-[inherit] focus-visible:ring-0"
               />
-              <span className="flex min-w-0 flex-col">
+              {/* Says the dimmed text belongs to a disabled choice. */}
+              <span
+                aria-disabled={(disabled ?? false) || (item.disabled ?? false) || undefined}
+                className="flex min-w-0 flex-col"
+              >
                 <span className="truncate">{item.label}</span>
                 {item.description ? (
                   <span className="truncate text-[12px] text-muted-foreground">

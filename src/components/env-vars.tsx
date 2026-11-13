@@ -233,8 +233,7 @@ function ImportDialog({
           setText(e.target.value)
         }}
       />
-      {/* Not a live region: it changes on every keystroke. It describes the field instead. */}
-      <div id={`${id}-summary`} className="flex flex-col gap-1 text-[12.5px]">
+      <div id={`${id}-summary`} role="status" className="flex flex-col gap-1 text-[12.5px]">
         {text.trim() && (
           <p className="m-0 text-fg-secondary">
             {t.importSummary(parsed.entries.length, replaced)}

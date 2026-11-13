@@ -286,7 +286,7 @@ function ShortcutList({ groups, filtering }: { groups: ShortcutGroup[]; filterin
   return (
     <div
       ref={ref}
-      role={overflows ? 'region' : undefined}
+      role={overflows ? 'group' : undefined}
       aria-label={overflows ? t.title : undefined}
       tabIndex={overflows ? 0 : undefined}
       className="-mx-1 min-h-0 overflow-auto px-1 outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"

@@ -340,6 +340,10 @@ function FacetedFilter({
                 variant="ghost"
                 size="sm"
                 className="w-full"
+                // Command gives Enter to its highlighted option: this button keeps its own keys.
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                }}
                 onClick={(e) => {
                   setValue([])
                   // The button hides with nothing picked: keep focus in the panel, on its search box.

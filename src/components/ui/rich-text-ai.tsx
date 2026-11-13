@@ -649,7 +649,7 @@ function PreviewCode({ text, caret }: { text: string; caret: React.ReactNode }) 
   return (
     <pre
       ref={ref}
-      role={overflows ? 'region' : undefined}
+      role={overflows ? 'group' : undefined}
       aria-label={overflows ? t.codeBlock : undefined}
       tabIndex={overflows ? 0 : undefined}
       className="overflow-x-auto rounded-md bg-surface p-2.5 font-mono text-[12.5px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring"

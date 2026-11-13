@@ -76,7 +76,7 @@ function Playground({
     // The button goes with its variant: focus the neighbour's Remove button, or the model picker
     // of the last variant left (which has no Remove button).
     requestAnimationFrame(() => {
-      const sections = rootRef.current?.querySelectorAll('[data-variant]')
+      const sections = rootRef.current?.querySelectorAll('[data-slot=playground-variant]')
       sections?.[Math.min(index, variants.length - 2)]?.querySelector('button')?.focus()
     })
   }
@@ -165,7 +165,7 @@ function Playground({
           return (
             <section
               key={v.id}
-              data-variant
+              data-slot="playground-variant"
               aria-labelledby={headingId}
               aria-busy={r?.status === 'running' || undefined}
               className="flex min-w-0 flex-col rounded-lg border border-border bg-card"

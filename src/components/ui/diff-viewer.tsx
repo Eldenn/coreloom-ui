@@ -583,11 +583,11 @@ function DiffTable({
     // A size container when content goes under lines: that content takes the visible width.
     <div
       ref={ref}
-      role={overflows ? 'region' : undefined}
+      role={overflows ? 'group' : undefined}
       aria-label={overflows ? label : undefined}
       tabIndex={overflows ? 0 : undefined}
       className={cn(
-        'overflow-x-auto outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring',
+        'relative overflow-x-auto outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring',
         rows.renderAfterLine && '@container',
       )}
     >

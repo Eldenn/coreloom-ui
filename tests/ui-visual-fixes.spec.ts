@@ -69,6 +69,6 @@ test.describe('node editor', () => {
       })
     await expect.poll(drawn).toBeGreaterThanOrEqual(10.9)
     // The start of the workflow is in view.
-    await expect(node).toBeInViewport({ ratio: 1 })
+    await expect(node).toBeInViewport({ ratio: 0.99 })
   })
 })

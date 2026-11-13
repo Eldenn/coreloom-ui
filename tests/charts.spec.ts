@@ -89,7 +89,7 @@ test.describe('gauge', () => {
     const seats = page.getByRole('meter', { name: 'Seats used' })
     await expect(seats).toHaveAttribute('aria-valuenow', '86')
     await expect(seats).toHaveAttribute('aria-valuemax', '100')
-    await expect(seats).toHaveAttribute('aria-valuetext', '86 % of 100, Warning')
+    await expect(seats).toHaveAttribute('aria-valuetext', '86% of 100, Warning')
     await expect(seats).toContainText('Warning')
     await expect(page.getByRole('meter', { name: 'API quota' })).toContainText('Critical')
     await expect(page.getByRole('meter', { name: 'Storage used' })).toContainText('Normal')
@@ -98,14 +98,14 @@ test.describe('gauge', () => {
   test('flips the zones when higher is better', async ({ page }) => {
     await open(page, 'components-charts-gauge--higher-is-better')
     const uptime = page.getByRole('meter', { name: 'Uptime, 30 days' })
-    await expect(uptime).toHaveAttribute('aria-valuetext', '99.32\u202f% of 100.00, Warning')
+    await expect(uptime).toHaveAttribute('aria-valuetext', '99.32% of 100.00, Warning')
   })
 
   test('has no status without thresholds', async ({ page }) => {
     await open(page, 'components-charts-gauge--default')
     await expect(page.getByRole('meter', { name: 'Storage used' })).toHaveAttribute(
       'aria-valuetext',
-      '64 % of 100',
+      '64% of 100',
     )
   })
 })

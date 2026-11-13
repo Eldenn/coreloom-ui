@@ -23,5 +23,8 @@
   the page's heading order.
 - `TeamMembers`, `Webhooks`: after a member is removed, an invite revoked or an endpoint deleted,
   focus moves to the list instead of being lost.
-- `EnvVars`: on a narrow card the Import and Add buttons go under the title and description. The
-  import summary is no longer announced on every keystroke: it describes the field.
+- `EnvVars`: on a narrow card the Import and Add buttons go under the title and description.
+- `DiffViewer`: in the split layout on a narrow screen, the hidden "added" and "removed" words no
+  longer widen the page.
+- `CodeBlock`: without a title, a long line scrolls under the copy button instead of showing
+  through it.

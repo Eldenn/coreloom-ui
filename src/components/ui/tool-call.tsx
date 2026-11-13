@@ -78,7 +78,7 @@ function Json({ value, label }: { value: unknown; label: string }) {
   return (
     <pre
       ref={ref}
-      role={overflows ? 'region' : undefined}
+      role={overflows ? 'group' : undefined}
       aria-label={overflows ? label : undefined}
       tabIndex={overflows ? 0 : undefined}
       className="m-0 max-h-64 overflow-auto rounded-md bg-inset px-3 py-2.5 font-mono text-[12px] leading-[1.6] whitespace-pre-wrap text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"

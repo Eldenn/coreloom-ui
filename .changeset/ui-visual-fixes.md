@@ -4,11 +4,9 @@
 
 ### Fixed
 
-- `NodeEditor`, `UmlDiagram`: a long workflow or a tall diagram no longer opens shrunk until its
-  text is a few pixels high. When fitting everything would draw the names under about 11px, the
+- `NodeEditor`: a long workflow no longer opens shrunk until its text is a few pixels high. When fitting everything would draw the names under about 11px, the
   canvas opens on the start of the graph (left, top) at a readable zoom; pan for the rest. The Fit
-  button, the minimap and zooming out still show everything, and thumbnails (`preview`) still fit
-  the whole diagram.
+  button, the minimap and zooming out still show everything.
 - `UmlDiagram`: a sequence diagram narrower than its box is centered, like the other kinds.
 - `Heatmap`, `CalendarHeatmap`: a cell with nothing in it is a faint neutral tint of the surface
   under it instead of a dark well, and the steps are tints of that surface too, so the ramp runs

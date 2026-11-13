@@ -252,7 +252,7 @@ function TableScroll(props: React.ComponentProps<'table'>) {
   return (
     <div
       ref={ref}
-      role={overflows ? 'region' : undefined}
+      role={overflows ? 'group' : undefined}
       aria-label={overflows ? t.scrollable : undefined}
       tabIndex={overflows ? 0 : undefined}
       className="my-3 overflow-x-auto rounded-md border border-border-subtle outline-none focus-visible:ring-[3px] focus-visible:ring-ring"

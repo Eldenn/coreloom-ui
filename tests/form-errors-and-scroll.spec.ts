@@ -61,7 +61,7 @@ test('diff viewer: a tab stop and a name only while its lines scroll', async ({ 
   await open(page, 'components-data-display-diff-viewer--default')
   const diff = page.locator('[data-slot=diff-viewer]')
   await expect(diff).toContainText('4 lines added')
-  const region = diff.getByRole('region', { name: 'package.json' })
+  const region = diff.getByRole('group', { name: 'package.json' })
 
   // Too narrow for the lines: the box scrolls, so the keyboard must be able to reach it.
   await page.setViewportSize({ width: 240, height: 800 })

@@ -8,6 +8,8 @@
   - `ApiKeys` (Revoke), `ActiveSessions` (Sign out) and `KnowledgeBase` (Remove): focus moves to
     the next row's button, the previous one's, or the list when it is empty. `KnowledgeBase` also
     returns focus to the row's menu when the removal is cancelled.
+  - `FacetedFilter`: Enter on Clear now clears the filter (it toggled the highlighted option) and
+    focus moves to the panel's search box.
   - `Playground`: removing a variant focuses the neighbouring variant's Remove button, or the model
     picker of the last variant left.
   - `TerminalConsole`: closing the second pane of a split with its own button focuses the tab that
