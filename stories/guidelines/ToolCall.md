@@ -15,6 +15,6 @@ One tool invocation in a conversation: its name, a status (preparing, running, d
 - A tool waiting for approval shows Allow and Deny; nothing runs until someone chooses.
 - A tool with `awaitsInput` reads "Waiting for you" instead of "Running" while its state is `input-available`, and isn't marked busy; see Tool Form.
 - Mark tools that change things (send, delete, deploy, pay) as needing approval on the agent.
-- JSON is shown in a scrollable code block; very long outputs stay inside the card.
+- JSON is shown in a scrollable code block; very long outputs stay inside the card. A block that scrolls takes a tab stop and is named "Input" or "Output"; one that fits doesn't.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/tool-call` and import from `@/components/ui/tool-call`.

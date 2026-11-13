@@ -524,6 +524,7 @@ export const de: Messages = {
     tree: { label: 'Baum' },
     diff: {
       noChanges: 'Keine Unterschiede.',
+      label: 'Unterschiede',
       linesAdded: (n) => (n === 1 ? '1 Zeile hinzugefügt' : `${n} Zeilen hinzugefügt`),
       linesRemoved: (n) => (n === 1 ? '1 Zeile entfernt' : `${n} Zeilen entfernt`),
       showUnchanged: (n) =>
@@ -619,6 +620,7 @@ export const de: Messages = {
       description: 'Die in dieser App verfügbaren Tastenkürzel.',
       filter: 'Tastenkürzel suchen',
       empty: 'Kein Tastenkürzel gefunden.',
+      results: (n) => `${n} Tastenkürzel`,
       then: 'dann',
     },
     countdown: {
@@ -1323,7 +1325,11 @@ export const de: Messages = {
     description: 'Zeigt die Seitenleiste auf dem Handy.',
   },
   slider: { minimum: 'Minimum', maximum: 'Maximum' },
-  form: { errorTitle: 'Speichern nicht möglich' },
+  form: {
+    errorTitle: 'Speichern nicht möglich',
+    invalidFields: (n) =>
+      n === 1 ? '1 Feld muss korrigiert werden.' : `${n} Felder müssen korrigiert werden.`,
+  },
   theme: {
     toLight: 'Zum hellen Design wechseln',
     toDark: 'Zum dunklen Design wechseln',

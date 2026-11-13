@@ -519,6 +519,7 @@ export const es: Messages = {
     tree: { label: 'Árbol' },
     diff: {
       noChanges: 'Sin diferencias.',
+      label: 'Diferencias',
       linesAdded: (n) => (n === 1 ? '1 línea añadida' : `${n} líneas añadidas`),
       linesRemoved: (n) => (n === 1 ? '1 línea eliminada' : `${n} líneas eliminadas`),
       showUnchanged: (n) =>
@@ -614,6 +615,7 @@ export const es: Messages = {
       description: 'Los atajos disponibles en esta aplicación.',
       filter: 'Buscar atajos',
       empty: 'Ningún atajo coincide.',
+      results: (n) => (n === 1 ? '1 atajo' : `${n} atajos`),
       then: 'luego',
     },
     countdown: {
@@ -1313,7 +1315,10 @@ export const es: Messages = {
     description: 'Muestra la barra lateral en el móvil.',
   },
   slider: { minimum: 'mínimo', maximum: 'máximo' },
-  form: { errorTitle: 'No se pudo guardar' },
+  form: {
+    errorTitle: 'No se pudo guardar',
+    invalidFields: (n) => (n === 1 ? 'Hay 1 campo por corregir.' : `Hay ${n} campos por corregir.`),
+  },
   theme: {
     toLight: 'Cambiar al tema claro',
     toDark: 'Cambiar al tema oscuro',

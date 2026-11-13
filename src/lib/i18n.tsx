@@ -538,6 +538,7 @@ const en = {
     tree: { label: 'Tree' },
     diff: {
       noChanges: 'No differences.',
+      label: 'Differences',
       linesAdded: (n: number): string => (n === 1 ? '1 line added' : `${n} lines added`),
       linesRemoved: (n: number): string => (n === 1 ? '1 line removed' : `${n} lines removed`),
       showUnchanged: (n: number): string =>
@@ -633,6 +634,7 @@ const en = {
       description: 'The shortcuts available in this app.',
       filter: 'Search shortcuts',
       empty: 'No shortcut matches.',
+      results: (n: number) => (n === 1 ? '1 shortcut' : `${n} shortcuts`),
       then: 'then',
     },
     countdown: {
@@ -1313,7 +1315,11 @@ const en = {
     description: 'Displays the mobile sidebar.',
   },
   slider: { minimum: 'minimum', maximum: 'maximum' },
-  form: { errorTitle: 'Couldn’t save' },
+  form: {
+    errorTitle: 'Couldn’t save',
+    invalidFields: (n: number) =>
+      n === 1 ? '1 field needs attention.' : `${n} fields need attention.`,
+  },
   theme: {
     toLight: 'Switch to light theme',
     toDark: 'Switch to dark theme',
@@ -3920,6 +3926,7 @@ const fr: Messages = {
     tree: { label: 'Arborescence' },
     diff: {
       noChanges: 'Aucune différence.',
+      label: 'Différences',
       linesAdded: (n) => (n === 1 ? '1 ligne ajoutée' : `${n} lignes ajoutées`),
       linesRemoved: (n) => (n === 1 ? '1 ligne supprimée' : `${n} lignes supprimées`),
       showUnchanged: (n) =>
@@ -4015,6 +4022,7 @@ const fr: Messages = {
       description: 'Les raccourcis disponibles dans cette application.',
       filter: 'Rechercher un raccourci',
       empty: 'Aucun raccourci ne correspond.',
+      results: (n: number) => (n === 1 ? '1 raccourci' : `${n} raccourcis`),
       then: 'puis',
     },
     countdown: {
@@ -4723,7 +4731,11 @@ const fr: Messages = {
     description: 'Affiche la barre latérale sur mobile.',
   },
   slider: { minimum: 'minimum', maximum: 'maximum' },
-  form: { errorTitle: 'Enregistrement impossible' },
+  form: {
+    errorTitle: 'Enregistrement impossible',
+    invalidFields: (n: number) =>
+      n === 1 ? '1 champ est à corriger.' : `${n} champs sont à corriger.`,
+  },
   theme: {
     toLight: 'Passer au thème clair',
     toDark: 'Passer au thème sombre',
