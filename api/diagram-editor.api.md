@@ -85,6 +85,9 @@ FileTools.t.downloadPng: string
 FileTools.t.imageFailed: string
 FileTools.t.problems: (n: number) => string
 FileTools.t.line: (n: number) => string
+FileTools.t.severity: {}
+FileTools.t.severity.error: string
+FileTools.t.severity.warning: string
 FileTools.t.status: (kind: string, elements: number) => string
 FileTools.t.problem: {}
 FileTools.t.problem.empty: string
@@ -149,6 +152,9 @@ ProblemList.t.downloadPng: string
 ProblemList.t.imageFailed: string
 ProblemList.t.problems: (n: number) => string
 ProblemList.t.line: (n: number) => string
+ProblemList.t.severity: {}
+ProblemList.t.severity.error: string
+ProblemList.t.severity.warning: string
 ProblemList.t.status: (kind: string, elements: number) => string
 ProblemList.t.problem: {}
 ProblemList.t.problem.empty: string

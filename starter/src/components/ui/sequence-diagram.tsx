@@ -459,7 +459,8 @@ function SequenceSvg({
     <svg
       aria-hidden
       {...size}
-      className={cn('block', onSelect && '[&_[data-id]]:cursor-pointer')}
+      // Centered when the box is wider than the drawing, like the other kinds on their canvas.
+      className={cn('mx-auto block', onSelect && '[&_[data-id]]:cursor-pointer')}
       {...(onSelect
         ? {
             onClick: (e: React.MouseEvent) => {

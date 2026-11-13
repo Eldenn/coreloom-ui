@@ -340,8 +340,17 @@ function FacetedFilter({
                 variant="ghost"
                 size="sm"
                 className="w-full"
-                onClick={() => {
+                // Command gives Enter to its highlighted option: this button keeps its own keys.
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                }}
+                onClick={(e) => {
                   setValue([])
+                  // The button hides with nothing picked: keep focus in the panel, on its search box.
+                  e.currentTarget
+                    .closest('[data-slot=command]')
+                    ?.querySelector<HTMLElement>('[data-slot=command-input]')
+                    ?.focus()
                 }}
               >
                 {t.clear}
@@ -352,6 +361,15 @@ function FacetedFilter({
       </PopoverContent>
     </Popover>
   )
+}
+
+/** The search box of the toolbar closest to `from`, going up the page (several lists can share it). */
+function nearestSearch(from: Element) {
+  for (let el = from.parentElement; el; el = el.parentElement) {
+    const input = el.querySelector<HTMLElement>('[data-slot=data-list-toolbar] input[type=search]')
+    if (input) return input
+  }
+  return undefined
 }
 
 /** Search box, one FacetedFilter per facet, "Clear filters" and the result count. */
@@ -415,7 +433,15 @@ function DataListToolbar({
           />
         ))}
         {list.isFiltered && (
-          <Button variant="ghost" size="sm" onClick={list.clear}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              list.clear()
+              // The button hides once nothing is filtered: hand focus to the search box.
+              nearestSearch(e.currentTarget)?.focus()
+            }}
+          >
             {t.clear}
             <XIcon />
           </Button>
@@ -442,7 +468,15 @@ function DataListEmpty({ list, className }: { list: DataList; className?: string
         <EmptyDescription>{t.emptyHint}</EmptyDescription>
       </EmptyHeader>
       {list.isFiltered && (
-        <Button variant="secondary" size="sm" onClick={list.clear}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={(e) => {
+            list.clear()
+            // This empty state goes with the filters: hand focus to the toolbar's search box.
+            nearestSearch(e.currentTarget)?.focus()
+          }}
+        >
           {t.clear}
         </Button>
       )}

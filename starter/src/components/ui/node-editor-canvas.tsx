@@ -4,7 +4,15 @@
 // a note is text for the people reading the workflow, a group frames related nodes and moves them
 // together. Neither runs nor is checked. Also the "Find" list that jumps to a node, a note or a
 // group. NodeEditor uses all of it; the helpers work on any graph with `notes` and `groups`.
-import { type Node, type NodeProps, NodeResizer } from '@xyflow/react'
+import {
+  getViewportForBounds,
+  type Node,
+  type NodeProps,
+  NodeResizer,
+  useNodesInitialized,
+  useReactFlow,
+  useStoreApi,
+} from '@xyflow/react'
 import { GripHorizontalIcon } from 'lucide-react'
 import * as React from 'react'
 
@@ -149,6 +157,57 @@ function boundsOf(wf: CanvasGraph, ids: readonly string[], sizes: Sizes = new Ma
     width: Math.max(...boxes.map((b) => b.x + b.width)) - x,
     height: Math.max(...boxes.map((b) => b.y + b.height)) - y,
   }
+}
+
+/** Under this zoom a card's 13px title is drawn smaller than 11px: too small to read. */
+const READABLE_ZOOM = 0.85
+
+/** Pixels kept between the edge of the canvas and the start of a graph that doesn't fit in it. */
+const FIT_MARGIN = 24
+
+/**
+ * The view of a graph at a zoom people can read. On an axis where the graph fits at that zoom it
+ * is centered; where it doesn't, its start (left, top) is shown and the rest is a pan away.
+ */
+function readableViewport(
+  bounds: { x: number; y: number; width: number; height: number },
+  pane: { width: number; height: number },
+  zoom: number,
+) {
+  const place = (start: number, size: number, room: number) =>
+    size * zoom + 2 * FIT_MARGIN <= room
+      ? (room - size * zoom) / 2 - start * zoom
+      : FIT_MARGIN - start * zoom
+  return {
+    x: place(bounds.x, bounds.width, pane.width),
+    y: place(bounds.y, bounds.height, pane.height),
+    zoom,
+  }
+}
+
+/**
+ * Corrects the first fit of the canvas (under the same ReactFlowProvider). Fitting a long
+ * workflow whole in a small canvas shrinks its text to a few pixels: the view then opens on the
+ * start of the workflow at a readable zoom instead. The Fit button and the minimap still show
+ * everything.
+ */
+function ReadableFirstFit({ padding }: { padding: number }) {
+  const flow = useReactFlow()
+  const store = useStoreApi()
+  const measured = useNodesInitialized()
+  const done = React.useRef(false)
+  React.useEffect(() => {
+    if (!measured || done.current) return
+    done.current = true
+    const { width, height, minZoom } = store.getState()
+    const ids = flow.getNodes().map((node) => node.id)
+    if (!ids.length || !width || !height) return
+    const bounds = flow.getNodesBounds(ids)
+    const whole = getViewportForBounds(bounds, width, height, minZoom, 1, padding)
+    if (whole.zoom >= READABLE_ZOOM) return
+    void flow.setViewport(readableViewport(bounds, { width, height }, READABLE_ZOOM))
+  }, [measured, flow, store, padding])
+  return null
 }
 
 /** The group's frame around a box: padding on every side, and the header on top. */
@@ -529,6 +588,9 @@ export {
   moveGroup,
   type NoteData,
   type NoteNode,
+  READABLE_ZOOM,
+  ReadableFirstFit,
+  readableViewport,
   refitGroups,
   removeCanvasItems,
   updateGroup,

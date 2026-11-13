@@ -540,6 +540,7 @@ function DiffViewer({
       <DiffTable
         rows={rows}
         split={view === 'split'}
+        title={title}
         beforeLabel={beforeLabel ?? t.before}
         afterLabel={afterLabel ?? t.after}
       />
@@ -550,17 +551,46 @@ function DiffViewer({
 function DiffTable({
   rows,
   split,
+  title,
   beforeLabel,
   afterLabel,
 }: {
   rows: RowsProps
   split: boolean
+  /** Names the box when long lines make it scroll, if it is text. */
+  title: React.ReactNode
   beforeLabel: React.ReactNode
   afterLabel: React.ReactNode
 }) {
+  const t = useCoreloomI18n().messages.display.diff
+  const label = typeof title === 'string' && title ? title : t.label
+  // Long lines scroll sideways: only then does the box take a tab stop, so the keyboard can scroll it.
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [overflows, setOverflows] = React.useState(false)
+  React.useEffect(() => {
+    const box = ref.current
+    if (!box) return
+    const observer = new ResizeObserver(() => {
+      setOverflows(box.scrollWidth > box.clientWidth + 1)
+    })
+    observer.observe(box)
+    if (box.firstElementChild) observer.observe(box.firstElementChild)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
   return (
     // A size container when content goes under lines: that content takes the visible width.
-    <div className={cn('overflow-x-auto', rows.renderAfterLine && '@container')}>
+    <div
+      ref={ref}
+      role={overflows ? 'group' : undefined}
+      aria-label={overflows ? label : undefined}
+      tabIndex={overflows ? 0 : undefined}
+      className={cn(
+        'relative overflow-x-auto outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring',
+        rows.renderAfterLine && '@container',
+      )}
+    >
       <table className="w-full border-collapse font-mono text-[12.5px] leading-[1.7]">
         {split ? (
           <SplitRows {...rows} beforeLabel={beforeLabel} afterLabel={afterLabel} />
