@@ -361,6 +361,9 @@ export const de: Messages = {
       over: (label: string, position: number) => `${label} ist an Position ${position}.`,
       dropped: (label: string, position: number) => `${label} an Position ${position} abgelegt.`,
       cancelled: (label: string) => `Verschieben von ${label} abgebrochen.`,
+      instructions:
+        'Zum Aufnehmen eines Felds Leertaste oder Eingabetaste drücken. Mit den Pfeiltasten verschieben, mit Leertaste oder Eingabetaste ablegen, mit Escape abbrechen.',
+      roleDescription: 'verschiebbar',
     },
     inspector: {
       title: 'Einstellungen',
@@ -2589,6 +2592,7 @@ export const de: Messages = {
     empty: 'Karten hier ablegen',
     instructions:
       'Zum Aufnehmen einer Karte Leertaste oder Eingabetaste drücken. Mit den Pfeiltasten verschieben, mit Leertaste oder Eingabetaste ablegen, mit Escape abbrechen.',
+    roleDescription: 'verschiebbar',
     picked: (title, column) => `${title} in ${column} aufgenommen.`,
     over: (title, column, position) => `${title} über ${column}, Position ${position}.`,
     dropped: (title, column, position) => `${title} in ${column} abgelegt, Position ${position}.`,
@@ -2605,6 +2609,8 @@ export const de: Messages = {
     size: 'Größe',
     modified: 'Geändert',
     sortBy: (column: string) => `Nach ${column} sortieren`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Nach ${column} sortieren, ${direction === 'asc' ? 'aufsteigend' : 'absteigend'} sortiert`,
     contents: (folder: string) => `Inhalt von ${folder}`,
     emptyFolder: 'Dieser Ordner ist leer',
     emptyFolderHint: 'Zieh Dateien hierher oder nutze Hochladen.',

@@ -357,6 +357,9 @@ export const es: Messages = {
       over: (label: string, position: number) => `${label} está en la posición ${position}.`,
       dropped: (label: string, position: number) => `${label} soltado en la posición ${position}.`,
       cancelled: (label: string) => `Se canceló mover ${label}.`,
+      instructions:
+        'Para coger un campo, pulsa Espacio o Intro. Muévelo con las flechas, suéltalo con Espacio o Intro y cancela con Esc.',
+      roleDescription: 'arrastrable',
     },
     inspector: {
       title: 'Ajustes',
@@ -2566,6 +2569,7 @@ export const es: Messages = {
     empty: 'Suelta tarjetas aquí',
     instructions:
       'Para coger una tarjeta, pulsa Espacio o Intro. Muévela con las flechas, suéltala con Espacio o Intro y cancela con Esc.',
+    roleDescription: 'arrastrable',
     picked: (title, column) => `${title} cogida en ${column}.`,
     over: (title, column, position) => `${title} sobre ${column}, posición ${position}.`,
     dropped: (title, column, position) => `${title} soltada en ${column}, posición ${position}.`,
@@ -2582,6 +2586,8 @@ export const es: Messages = {
     size: 'Tamaño',
     modified: 'Modificado',
     sortBy: (column: string) => `Ordenar por ${column.toLocaleLowerCase('es')}`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Ordenar por ${column.toLocaleLowerCase('es')}, orden ${direction === 'asc' ? 'ascendente' : 'descendente'}`,
     contents: (folder: string) => `Contenido de ${folder}`,
     emptyFolder: 'Esta carpeta está vacía',
     emptyFolderHint: 'Suelta archivos aquí o usa Subir.',

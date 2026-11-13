@@ -17,8 +17,8 @@ const [spec, setSpec] = React.useState<FormSpec>(saved)
 
 - **Add** a field with the palette: it lands after the selected field (or at the end of the selected section) and is selected.
 - **Select** a field, a section or the form by clicking it; its settings open in the inspector: label, name (applied on Enter or when left, if it's valid and free; conditions follow a rename), type, help text, placeholder, required, width, section, options, the type's own settings, checks, and "Show only when" (one condition; combined ones are edited in JSON).
-- **Move** a field with its handle: drag it, or focus the handle, press Space, use the arrows and Space again (announced in the locale). Duplicate and Delete sit beside it; deleting a field removes the conditions that read it.
-- **Sections** have a title, a description and 1 to 3 columns. Deleting one moves its fields to the section before it.
+- **Move** a field with its handle: drag it, or focus the handle, press Space, use the arrows and Space again (announced in the locale). Duplicate and Delete sit beside it; deleting a field removes the conditions that read it, selects its section and moves focus there.
+- **Sections** have a title, a description and 1 to 3 columns. Deleting one moves its fields to the section before it, and selects and focuses the form.
 - **JSON**: edit and Apply; what can't be read is listed and left out (see `readFormSpec`). Copy takes either format. **Import** takes a FormSpec or a JSON Schema with an optional UI schema.
 - Fields on the canvas can't be focused or typed into: they are a picture of the form. Use Preview to fill it in.
 

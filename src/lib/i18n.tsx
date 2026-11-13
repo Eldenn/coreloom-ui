@@ -377,6 +377,9 @@ const en = {
       over: (label: string, position: number) => `${label} is at position ${position}.`,
       dropped: (label: string, position: number) => `${label} dropped at position ${position}.`,
       cancelled: (label: string) => `Moving ${label} was cancelled.`,
+      instructions:
+        'To pick up a field, press Space or Enter. Use the arrow keys to move it, Space or Enter to drop it, Escape to cancel.',
+      roleDescription: 'draggable',
     },
     inspector: {
       title: 'Settings',
@@ -2523,6 +2526,7 @@ const en = {
     empty: 'Drop cards here',
     instructions:
       'To pick up a card, press Space or Enter. Use the arrow keys to move it, Space or Enter to drop it, Escape to cancel.',
+    roleDescription: 'draggable',
     picked: (title: string, column: string) => `Picked up ${title} in ${column}.`,
     over: (title: string, column: string, position: number) =>
       `${title} is over ${column}, position ${position}.`,
@@ -2541,6 +2545,8 @@ const en = {
     size: 'Size',
     modified: 'Modified',
     sortBy: (column: string) => `Sort by ${column}`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Sort by ${column}, sorted ${direction === 'asc' ? 'ascending' : 'descending'}`,
     contents: (folder: string) => `Contents of ${folder}`,
     emptyFolder: 'This folder is empty',
     emptyFolderHint: 'Drop files here or use Upload.',
@@ -3737,6 +3743,9 @@ const fr: Messages = {
       over: (label: string, position: number) => `${label} est en position ${position}.`,
       dropped: (label: string, position: number) => `${label} déposé en position ${position}.`,
       cancelled: (label: string) => `Déplacement de ${label} annulé.`,
+      instructions:
+        'Pour prendre un champ, appuyez sur Espace ou Entrée. Déplacez-le avec les flèches, déposez-le avec Espace ou Entrée, annulez avec Échap.',
+      roleDescription: 'déplaçable',
     },
     inspector: {
       title: 'Réglages',
@@ -5962,6 +5971,7 @@ const fr: Messages = {
     empty: 'Déposez des cartes ici',
     instructions:
       'Pour prendre une carte, appuyez sur Espace ou Entrée. Déplacez-la avec les flèches, déposez-la avec Espace ou Entrée, annulez avec Échap.',
+    roleDescription: 'déplaçable',
     picked: (title, column) => `${title} prise dans ${column}.`,
     over: (title, column, position) => `${title} au-dessus de ${column}, position ${position}.`,
     dropped: (title, column, position) => `${title} déposée dans ${column}, position ${position}.`,
@@ -5978,6 +5988,8 @@ const fr: Messages = {
     size: 'Taille',
     modified: 'Modifié',
     sortBy: (column: string) => `Trier par ${column.toLocaleLowerCase('fr')}`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Trier par ${column.toLocaleLowerCase('fr')}, tri ${direction === 'asc' ? 'croissant' : 'décroissant'}`,
     contents: (folder: string) => `Contenu de ${folder}`,
     emptyFolder: 'Ce dossier est vide',
     emptyFolderHint: 'Déposez des fichiers ici ou utilisez Importer.',
