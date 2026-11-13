@@ -6,7 +6,7 @@ A discussion under a document, a task, a design or a pull request: comments with
 
 - Reply opens a box under the comment; replies stay one level deep, which keeps long threads readable. Beyond `collapseRepliesAfter`, earlier replies fold behind "Show n replies".
 - Reactions are toggle buttons that say the count and whether yours is among them; the smiley button adds one from the emoji picker.
-- Ctrl or Cmd + Enter sends, Escape cancels a reply. Mentions of `mentionables` are drawn as mentions in the comments.
+- Ctrl or Cmd + Enter sends, Escape cancels a reply; once a reply is sent or cancelled, the focus returns to the Reply button that opened it. Mentions of `mentionables` are drawn as mentions in the comments.
 - It is front-end only: you store the comments, notify the people mentioned (`mentionsIn` from MentionTextarea lists them) and update the list.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/comment-thread` and import from `@/components/ui/comment-thread`.

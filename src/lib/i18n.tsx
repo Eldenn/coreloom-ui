@@ -32,7 +32,13 @@ const en = {
     nextPage: 'Go to next page',
     morePages: 'More pages',
   },
-  carousel: { previous: 'Previous slide', next: 'Next slide' },
+  carousel: {
+    previous: 'Previous slide',
+    next: 'Next slide',
+    label: 'Carousel',
+    roleDescription: 'carousel',
+    slide: 'slide',
+  },
   calendar: {
     /** date-fns pattern for the day buttons' accessible names. */
     dayLabel: 'EEEE d MMMM yyyy',
@@ -67,6 +73,7 @@ const en = {
     browse: 'browse',
     dropOne: 'Drop a file here or',
     remove: (name: string) => `Remove ${name}`,
+    removed: (name: string) => `${name} removed`,
     tooLarge: (name: string, max: string) => `${name} is larger than ${max}.`,
     wrongType: (name: string) => `${name} isn’t an accepted file type.`,
     tooMany: (max: number) => `You can add up to ${max} files.`,
@@ -114,7 +121,11 @@ const en = {
       left: (n: number) => (n === 1 ? '1 character left' : `${n} characters left`),
       over: (n: number) => (n === 1 ? '1 character too many' : `${n} characters too many`),
     },
-    editable: { edit: (label: string) => `Edit ${label}`, empty: 'Empty' },
+    editable: {
+      edit: (label: string) => `Edit ${label}`,
+      empty: 'Empty',
+      kept: 'It can’t be empty: the previous text is back.',
+    },
     masked: { invalid: 'Check this number: it isn’t valid.' },
     color: {
       open: 'Choose a color',
@@ -150,6 +161,7 @@ const en = {
     copied: 'Copied',
     emoji: {
       open: 'Add emoji',
+      jump: 'Jump to a category',
       search: 'Search emoji',
       empty: 'No emoji found.',
       results: (n: number) => (n === 1 ? '1 emoji' : `${n} emoji`),
@@ -225,6 +237,7 @@ const en = {
       choose: 'Upload image',
       replace: 'Replace',
       remove: 'Remove',
+      removed: 'Image removed',
       preview: 'Image preview',
       drop: 'Drop the image here',
       hint: (types: string, max?: string) => (max ? `${types}, up to ${max}.` : `${types}.`),
@@ -776,6 +789,7 @@ const en = {
       stop: 'Stop',
       attach: 'Attach files',
       removeFile: (name: string) => `Remove ${name}`,
+      removedFile: (name: string) => `${name} removed`,
     },
     reasoning: {
       thinking: 'Thinking…',
@@ -3400,7 +3414,13 @@ const fr: Messages = {
     nextPage: 'Page suivante',
     morePages: 'Autres pages',
   },
-  carousel: { previous: 'Diapositive précédente', next: 'Diapositive suivante' },
+  carousel: {
+    previous: 'Diapositive précédente',
+    next: 'Diapositive suivante',
+    label: 'Carrousel',
+    roleDescription: 'carrousel',
+    slide: 'diapositive',
+  },
   calendar: { dayLabel: 'EEEE d MMMM yyyy', today: 'Aujourd’hui', selected: 'sélectionné' },
   datePicker: {
     placeholder: 'Choisir une date',
@@ -3429,6 +3449,7 @@ const fr: Messages = {
     browse: 'parcourez',
     dropOne: 'Déposez un fichier ici ou',
     remove: (name) => `Retirer ${name}`,
+    removed: (name) => `${name} retiré`,
     tooLarge: (name, max) => `${name} dépasse ${max}.`,
     wrongType: (name) => `${name} n’est pas un type de fichier accepté.`,
     tooMany: (max) => `Vous pouvez ajouter ${max} fichiers au maximum.`,
@@ -3475,7 +3496,11 @@ const fr: Messages = {
       left: (n: number) => (n <= 1 ? `${n} caractère restant` : `${n} caractères restants`),
       over: (n: number) => (n <= 1 ? `${n} caractère en trop` : `${n} caractères en trop`),
     },
-    editable: { edit: (label: string) => `Modifier ${label}`, empty: 'Vide' },
+    editable: {
+      edit: (label: string) => `Modifier ${label}`,
+      empty: 'Vide',
+      kept: 'Ce texte ne peut pas être vide : l’ancien texte est rétabli.',
+    },
     masked: { invalid: 'Vérifiez ce numéro : il n’est pas valide.' },
     color: {
       open: 'Choisir une couleur',
@@ -3515,6 +3540,7 @@ const fr: Messages = {
     copied: 'Copié',
     emoji: {
       open: 'Ajouter un emoji',
+      jump: 'Aller à une catégorie',
       search: 'Rechercher un emoji (en anglais)',
       empty: 'Aucun emoji trouvé.',
       results: (n) => (n <= 1 ? `${n} emoji` : `${n} emojis`),
@@ -3588,6 +3614,7 @@ const fr: Messages = {
       choose: 'Choisir une image',
       replace: 'Remplacer',
       remove: 'Retirer',
+      removed: 'Image retirée',
       preview: 'Aperçu de l’image',
       drop: 'Déposez l’image ici',
       hint: (types, max) => (max ? `${types}, jusqu’à ${max}.` : `${types}.`),
@@ -4144,6 +4171,7 @@ const fr: Messages = {
       stop: 'Arrêter',
       attach: 'Joindre des fichiers',
       removeFile: (name) => `Retirer ${name}`,
+      removedFile: (name) => `${name} retiré`,
     },
     reasoning: {
       thinking: 'Réflexion…',

@@ -164,7 +164,7 @@ function LoadMore({
           <p
             ref={endRef}
             tabIndex={-1}
-            className="m-0 text-[12.5px] text-muted-foreground outline-none"
+            className="m-0 rounded-sm text-[12.5px] text-muted-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
           >
             {end}
           </p>

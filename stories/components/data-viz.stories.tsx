@@ -17,6 +17,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { Input } from '@/components/ui/input'
 
 const data = [
   { month: 'Jun', production: 186, preview: 80 },
@@ -111,6 +112,41 @@ export const CarouselStory: Story = {
               </Card>
             </CarouselItem>
           ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  ),
+}
+
+/** A field in a slide keeps its arrow keys: the carousel only pages from a slide or a button. */
+export const CarouselWithField: Story = {
+  name: 'Carousel with a field',
+  args: { config, children: <></> },
+  render: () => (
+    <div className="px-12">
+      <Carousel aria-label="Set up your workspace" className="max-w-sm">
+        <CarouselContent>
+          <CarouselItem>
+            <Card>
+              <CardHeader>
+                <CardTitle>Name it</CardTitle>
+                <CardDescription>You can change it later.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input aria-label="Workspace name" defaultValue="Acme" />
+              </CardContent>
+            </Card>
+          </CarouselItem>
+          <CarouselItem>
+            <Card>
+              <CardHeader>
+                <CardTitle>Invite your team</CardTitle>
+                <CardDescription>Send a link, or add people one by one.</CardDescription>
+              </CardHeader>
+            </Card>
+          </CarouselItem>
         </CarouselContent>
         <CarouselPrevious />
         <CarouselNext />

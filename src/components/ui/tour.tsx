@@ -100,7 +100,7 @@ function Tour({
   const index = Math.min(Math.max(stepProp ?? inner, 0), Math.max(steps.length - 1, 0))
   const current = steps.at(index)
   const titleId = React.useId()
-  const titleRef = React.useRef<HTMLHeadingElement>(null)
+  const titleRef = React.useRef<HTMLParagraphElement>(null)
 
   const [element, setElement] = React.useState<Element | null>(null)
   React.useEffect(() => {
@@ -205,14 +205,14 @@ function Tour({
           <p className="m-0 font-mono text-[11.5px] text-muted-foreground">
             {t.step(index + 1, steps.length)}
           </p>
-          <h2
+          <p
             ref={titleRef}
             id={titleId}
             tabIndex={-1}
-            className="m-0 -mt-1.5 text-[15px] font-semibold text-foreground outline-none"
+            className="m-0 -mt-1.5 rounded-sm text-[15px] font-semibold text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
           >
             {current.title}
-          </h2>
+          </p>
           {current.content ? <div className="text-[13.5px]">{current.content}</div> : null}
           <div className="mt-1 flex items-center gap-2">
             {isLast ? null : (

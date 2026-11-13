@@ -23,7 +23,13 @@ export const de: Messages = {
     nextPage: 'Zur nächsten Seite',
     morePages: 'Weitere Seiten',
   },
-  carousel: { previous: 'Vorherige Folie', next: 'Nächste Folie' },
+  carousel: {
+    previous: 'Vorherige Folie',
+    next: 'Nächste Folie',
+    label: 'Karussell',
+    roleDescription: 'Karussell',
+    slide: 'Folie',
+  },
   calendar: { dayLabel: 'EEEE, d. MMMM yyyy', today: 'Heute', selected: 'ausgewählt' },
   datePicker: {
     placeholder: 'Datum wählen',
@@ -52,6 +58,7 @@ export const de: Messages = {
     browse: 'durchsuchen',
     dropOne: 'Datei hier ablegen oder',
     remove: (name) => `${name} entfernen`,
+    removed: (name) => `${name} entfernt`,
     tooLarge: (name, max) => `${name} ist größer als ${max}.`,
     wrongType: (name) => `${name} ist kein erlaubter Dateityp.`,
     tooMany: (max) => `Du kannst bis zu ${max} Dateien hinzufügen.`,
@@ -94,7 +101,11 @@ export const de: Messages = {
       left: (n) => (n === 1 ? 'Noch 1 Zeichen' : `Noch ${n} Zeichen`),
       over: (n) => (n === 1 ? '1 Zeichen zu viel' : `${n} Zeichen zu viel`),
     },
-    editable: { edit: (label) => `${label} bearbeiten`, empty: 'Leer' },
+    editable: {
+      edit: (label) => `${label} bearbeiten`,
+      empty: 'Leer',
+      kept: 'Darf nicht leer sein: Der vorherige Text ist wieder da.',
+    },
     masked: { invalid: 'Prüfe diese Nummer: Sie ist ungültig.' },
     color: {
       open: 'Farbe wählen',
@@ -134,6 +145,7 @@ export const de: Messages = {
     copied: 'Kopiert',
     emoji: {
       open: 'Emoji hinzufügen',
+      jump: 'Zu einer Kategorie springen',
       search: 'Emoji suchen (auf Englisch)',
       empty: 'Keine Emojis gefunden.',
       results: (n) => (n === 1 ? '1 Emoji' : `${n} Emojis`),
@@ -209,6 +221,7 @@ export const de: Messages = {
       choose: 'Bild hochladen',
       replace: 'Ersetzen',
       remove: 'Entfernen',
+      removed: 'Bild entfernt',
       preview: 'Bildvorschau',
       drop: 'Bild hier ablegen',
       hint: (types, max) => (max ? `${types}, bis ${max}.` : `${types}.`),
@@ -761,6 +774,7 @@ export const de: Messages = {
       stop: 'Stoppen',
       attach: 'Dateien anhängen',
       removeFile: (name) => `${name} entfernen`,
+      removedFile: (name) => `${name} entfernt`,
     },
     reasoning: {
       thinking: 'Denkt nach…',
