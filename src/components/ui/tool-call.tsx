@@ -47,10 +47,42 @@ function renderState(part: AiToolPart) {
   >
 }
 
-function Json({ value }: { value: unknown }) {
+/** Whether the box scrolls: only then does it take a tab stop, so keyboard users can scroll it.
+ *  Measured again when `content` changes and when the box or its first child changes size. */
+function useOverflows<T extends HTMLElement>(content?: unknown) {
+  const ref = React.useRef<T>(null)
+  const [overflows, setOverflows] = React.useState(false)
+  const measure = React.useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    setOverflows(el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)
+  }, [])
+  React.useLayoutEffect(measure, [content, measure])
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    if (el.firstElementChild) observer.observe(el.firstElementChild)
+    return () => {
+      observer.disconnect()
+    }
+  }, [measure])
+  return [ref, overflows] as const
+}
+
+/** A value as text, in a box that scrolls when it is long; `label` names it then. */
+function Json({ value, label }: { value: unknown; label: string }) {
   const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+  const [ref, overflows] = useOverflows<HTMLPreElement>(text)
   return (
-    <pre className="m-0 max-h-64 overflow-auto rounded-md bg-inset px-3 py-2.5 font-mono text-[12px] leading-[1.6] whitespace-pre-wrap text-foreground">
+    <pre
+      ref={ref}
+      role={overflows ? 'group' : undefined}
+      aria-label={overflows ? label : undefined}
+      tabIndex={overflows ? 0 : undefined}
+      className="m-0 max-h-64 overflow-auto rounded-md bg-inset px-3 py-2.5 font-mono text-[12px] leading-[1.6] whitespace-pre-wrap text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
+    >
       {text}
     </pre>
   )
@@ -341,7 +373,7 @@ function ToolCall({
               <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                 {t.input}
               </p>
-              <Json value={part.input} />
+              <Json value={part.input} label={t.input} />
             </div>
           )}
           {asking && approval && (
@@ -375,7 +407,7 @@ function ToolCall({
               <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                 {t.output}
               </p>
-              {isDrawn ? drawn : <Json value={part.output} />}
+              {isDrawn ? drawn : <Json value={part.output} label={t.output} />}
             </div>
           )}
           {!isCustom && part.state === 'output-error' && (

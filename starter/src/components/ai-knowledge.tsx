@@ -99,12 +99,28 @@ function KnowledgeBase({
   const t = messages.ai.knowledge
   const input = React.useRef<HTMLInputElement>(null)
   const [removing, setRemoving] = React.useState<KnowledgeDocument>()
+  const rootRef = React.useRef<HTMLDivElement>(null)
+  // The row whose removal was asked, to give focus back once the confirmation closes.
+  const asked = React.useRef<{ id: string; index: number }>(undefined)
+  const focusRow = () => {
+    const buttons = [...(rootRef.current?.querySelectorAll<HTMLElement>('[data-actions]') ?? [])]
+    const own = buttons.find((b) => b.dataset.actions === asked.current?.id)
+    // Cancelled: back to the row's menu. Removed: the row that took its place (or the last one),
+    // else the block itself.
+    const target = own ?? buttons.at(asked.current?.index ?? 0) ?? buttons.at(-1) ?? rootRef.current
+    target?.focus()
+  }
   const chunks = documents.reduce((n, d) => n + (d.chunks ?? 0), 0)
   const indexed = documents.filter((d) => d.status === 'indexed').map((d) => +new Date(d.updatedAt))
   const last = indexed.length ? new Date(Math.max(...indexed)) : undefined
 
   return (
-    <div data-slot="knowledge-base" className={cn('flex flex-col gap-4', className)}>
+    <div
+      ref={rootRef}
+      tabIndex={-1}
+      data-slot="knowledge-base"
+      className={cn('flex flex-col gap-4 outline-none', className)}
+    >
       <div className="flex flex-wrap items-end justify-between gap-4 rounded-lg border border-border bg-card p-4">
         <div className="flex flex-wrap gap-8">
           <Stat label={t.documents} value={formatNumber(documents.length)} />
@@ -155,7 +171,7 @@ function KnowledgeBase({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {documents.map((d) => (
+            {documents.map((d, index) => (
               <TableRow key={d.id}>
                 <TableCell>
                   <span className="flex min-w-0 items-center gap-2">
@@ -199,7 +215,12 @@ function KnowledgeBase({
                   {(!!onReindex || !!onRemove) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm" aria-label={t.actions(d.name)}>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={t.actions(d.name)}
+                          data-actions={d.id}
+                        >
                           <MoreHorizontalIcon />
                         </Button>
                       </DropdownMenuTrigger>
@@ -219,6 +240,7 @@ function KnowledgeBase({
                           <DropdownMenuItem
                             variant="destructive"
                             onSelect={() => {
+                              asked.current = { id: d.id, index }
                               setRemoving(d)
                             }}
                           >
@@ -237,7 +259,12 @@ function KnowledgeBase({
       )}
 
       <AlertDialog open={!!removing} onOpenChange={(o) => !o && setRemoving(undefined)}>
-        <AlertDialogContent>
+        <AlertDialogContent
+          onCloseAutoFocus={(event) => {
+            event.preventDefault()
+            focusRow()
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>{removing ? t.removeTitle(removing.name) : ''}</AlertDialogTitle>
             <AlertDialogDescription>{t.removeText}</AlertDialogDescription>
@@ -288,9 +315,9 @@ function RetrievalTest({
       className={cn('flex flex-col gap-4 rounded-lg border border-border bg-card p-4', className)}
     >
       <div className="flex flex-col gap-1">
-        <h3 id={`${baseId}-title`} className="m-0 text-[14.5px] font-semibold text-foreground">
+        <p id={`${baseId}-title`} className="m-0 text-[14.5px] font-semibold text-foreground">
           {t.test}
-        </h3>
+        </p>
         <p className="m-0 text-[13px] text-muted-foreground">{t.testHint}</p>
       </div>
       <form
@@ -322,48 +349,51 @@ function RetrievalTest({
           {t.search}
         </Button>
       </form>
-      <div aria-live="polite" aria-busy={state.status === 'loading' || undefined}>
-        {state.status === 'done' &&
-          (state.results.length === 0 ? (
-            <p className="m-0 text-[13px] text-muted-foreground">{t.noResults}</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-[11.5px] text-muted-foreground">
-                {t.results(state.results.length)}
-              </span>
-              <ol className="m-0 flex list-none flex-col gap-2 p-0">
-                {state.results.map((r) => (
-                  <li
-                    key={r.id}
-                    className="flex flex-col gap-2 rounded-md border border-border-subtle bg-inset p-3"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-fg-secondary">
-                        <FileTextIcon className="size-3.5 shrink-0" aria-hidden />
-                        <span className="truncate">{r.source}</span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-2">
-                        <span className="sr-only">{t.score}</span>
-                        <span
-                          aria-hidden
-                          className="h-1.5 w-16 overflow-hidden rounded-full bg-secondary"
-                        >
-                          <span
-                            className="block h-full rounded-full bg-primary"
-                            style={{ width: `${Math.round(r.score * 100)}%` }}
-                          />
-                        </span>
-                        <span className="font-mono text-[11.5px] text-foreground tabular-nums">
-                          {pct.format(r.score)}
-                        </span>
-                      </span>
-                    </div>
-                    <p className="m-0 text-[13px] leading-[1.6] text-foreground">{r.text}</p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ))}
+      <div aria-busy={state.status === 'loading' || undefined} className="flex flex-col gap-2">
+        {/* Only this line is announced: the passages are there to read, not to be read out. */}
+        <p
+          role="status"
+          className={cn(
+            'm-0 text-muted-foreground',
+            state.results.length === 0 ? 'text-[13px]' : 'font-mono text-[11.5px]',
+          )}
+        >
+          {state.status === 'done' &&
+            (state.results.length === 0 ? t.noResults : t.results(state.results.length))}
+        </p>
+        {state.results.length > 0 && (
+          <ol className="m-0 flex list-none flex-col gap-2 p-0">
+            {state.results.map((r) => (
+              <li
+                key={r.id}
+                className="flex flex-col gap-2 rounded-md border border-border-subtle bg-inset p-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex min-w-0 items-center gap-1.5 text-[12.5px] text-fg-secondary">
+                    <FileTextIcon className="size-3.5 shrink-0" aria-hidden />
+                    <span className="truncate">{r.source}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="sr-only">{t.score}</span>
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-16 overflow-hidden rounded-full bg-secondary"
+                    >
+                      <span
+                        className="block h-full rounded-full bg-primary"
+                        style={{ width: `${Math.round(r.score * 100)}%` }}
+                      />
+                    </span>
+                    <span className="font-mono text-[11.5px] text-foreground tabular-nums">
+                      {pct.format(r.score)}
+                    </span>
+                  </span>
+                </div>
+                <p className="m-0 text-[13px] leading-[1.6] text-foreground">{r.text}</p>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
     </section>
   )

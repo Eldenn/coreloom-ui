@@ -260,9 +260,9 @@ function RunTrace({
           className="flex min-w-0 flex-col rounded-lg border border-border bg-card"
         >
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
-            <h3 id={`${baseId}-steps`} className="m-0 text-[13.5px] font-semibold text-foreground">
+            <p id={`${baseId}-steps`} className="m-0 text-[13.5px] font-semibold text-foreground">
               {t.steps}
-            </h3>
+            </p>
             <span className="font-mono text-[11px] text-muted-foreground">{t.timeline}</span>
           </div>
           <div
@@ -350,8 +350,11 @@ function RunTrace({
           </ul>
         </section>
 
+        {/* Picking a step announces its name, not the whole pane. */}
+        <p role="status" className="sr-only">
+          {current ? `${current.name}, ${t.kinds[current.kind]}` : ''}
+        </p>
         <section
-          aria-live="polite"
           aria-label={current ? current.name : t.steps}
           className="flex min-w-0 flex-col gap-4 rounded-lg border border-border bg-card p-4"
         >
@@ -361,9 +364,9 @@ function RunTrace({
                 <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                   {t.kinds[current.kind]}
                 </span>
-                <h3 className="m-0 font-mono text-[14px] font-semibold break-all text-foreground">
+                <p className="m-0 font-mono text-[14px] font-semibold break-all text-foreground">
                   {current.name}
-                </h3>
+                </p>
               </div>
               <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
                 <div>
@@ -400,9 +403,9 @@ function RunTrace({
               </dl>
               {current.error && (
                 <div className="flex flex-col gap-1.5">
-                  <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-destructive uppercase">
+                  <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-destructive uppercase">
                     {t.error}
-                  </h4>
+                  </p>
                   <p className="m-0 rounded-md bg-destructive-subtle px-3 py-2 text-[13px] text-foreground">
                     {current.error}
                   </p>
@@ -410,17 +413,17 @@ function RunTrace({
               )}
               {current.input !== undefined && (
                 <div className="flex flex-col gap-1.5">
-                  <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                  <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                     {t.input}
-                  </h4>
+                  </p>
                   <Json value={current.input} />
                 </div>
               )}
               {current.output !== undefined && (
                 <div className="flex flex-col gap-1.5">
-                  <h4 className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                  <p className="m-0 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
                     {t.output}
-                  </h4>
+                  </p>
                   <Json value={current.output} />
                 </div>
               )}

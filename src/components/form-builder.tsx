@@ -253,6 +253,26 @@ const EMPTY: FormSpec = { version: 1, sections: [{ id: 'main', fields: [] }] }
 type Selection =
   { kind: 'form' } | { kind: 'section'; id: string } | { kind: 'field'; name: string }
 
+/** What a card's select button carries in `data-select`, to find it again. */
+function selectionKey(s: Selection) {
+  if (s.kind === 'form') return 'form'
+  return s.kind === 'section' ? `section:${s.id}` : `field:${s.name}`
+}
+
+/**
+ * Removing a field or a section takes the focused button with it: on the next frame, focus the
+ * select button of what is selected instead.
+ */
+function focusSelection(root: HTMLElement | null, selection: Selection) {
+  const key = selectionKey(selection)
+  requestAnimationFrame(() => {
+    const overlays = root?.querySelectorAll<HTMLElement>('[data-select]') ?? []
+    Array.from(overlays)
+      .find((o) => o.dataset.select === key)
+      ?.focus()
+  })
+}
+
 interface FormBuilderProps {
   /** The form being edited (controlled). */
   value?: FormSpec
@@ -284,6 +304,11 @@ function FormBuilder({
   const [selection, setSelection] = React.useState<Selection>({ kind: 'form' })
   const [tab, setTab] = React.useState('build')
   const [issues, setIssues] = React.useState<FormSpecIssue[]>([])
+  const buildRef = React.useRef<HTMLDivElement>(null)
+  const selectAfterRemove = (next: Selection) => {
+    setSelection(next)
+    focusSelection(buildRef.current, next)
+  }
 
   const selectedField =
     selection.kind === 'field'
@@ -330,7 +355,7 @@ function FormBuilder({
       </div>
       {issues.length > 0 && <IssuesAlert t={t} issues={issues} onDismiss={() => setIssues([])} />}
       <TabsContent value="build">
-        <div className="grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_18rem]">
+        <div ref={buildRef} className="grid gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_18rem]">
           <Palette t={t} types={types} onAdd={add} />
           <Canvas
             t={t}
@@ -338,6 +363,7 @@ function FormBuilder({
             types={types}
             selection={selection}
             onSelect={setSelection}
+            onRemoved={selectAfterRemove}
             onChange={setSpec}
           />
           <Inspector
@@ -348,6 +374,7 @@ function FormBuilder({
             field={selectedField}
             section={selection.kind === 'section' ? selectedSection : undefined}
             onSelect={setSelection}
+            onRemoved={selectAfterRemove}
             onChange={setSpec}
           />
         </div>
@@ -427,12 +454,12 @@ function Palette({
   const headingId = React.useId()
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
-      <h3
+      <p
         id={headingId}
         className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
       >
         {t.palette.title}
-      </h3>
+      </p>
       {GROUPS.map((group) => {
         const list = Object.values(types).filter((type) => type.group === group)
         if (!list.length) return null
@@ -479,6 +506,7 @@ function Canvas({
   types,
   selection,
   onSelect,
+  onRemoved,
   onChange,
 }: {
   t: T
@@ -486,6 +514,8 @@ function Canvas({
   types: FormFieldTypes
   selection: Selection
   onSelect: (s: Selection) => void
+  /** Selects what is left after a removal, and moves focus there. */
+  onRemoved: (s: Selection) => void
   onChange: (spec: FormSpec) => void
 }) {
   const sensors = useSensors(
@@ -523,6 +553,7 @@ function Canvas({
     >
       <div className="relative rounded-xl border border-border bg-card p-3 shadow-sm sm:p-6">
         <SelectOverlay
+          target={{ kind: 'form' }}
           label={t.canvas.editForm}
           selected={isFormSelected}
           onSelect={() => {
@@ -542,6 +573,7 @@ function Canvas({
                 over ? t.dnd.dropped(labelOf(active.id), positionOf(over.id)) : undefined,
               onDragCancel: ({ active }) => t.dnd.cancelled(labelOf(active.id)),
             },
+            screenReaderInstructions: { draggable: t.dnd.instructions },
           }}
         >
           <FormRenderer
@@ -582,7 +614,7 @@ function Canvas({
                 onRemove={() => {
                   onChange(removeFormField(spec, field.name))
                   const section = sectionOf(field.name)
-                  onSelect(section ? { kind: 'section', id: section.id } : { kind: 'form' })
+                  onRemoved(section ? { kind: 'section', id: section.id } : { kind: 'form' })
                 }}
               >
                 {node}
@@ -616,10 +648,12 @@ function Canvas({
 
 /** A transparent button over a card: a click anywhere on it selects it. */
 function SelectOverlay({
+  target,
   label,
   selected,
   onSelect,
 }: {
+  target: Selection
   label: string
   selected: boolean
   onSelect: () => void
@@ -629,6 +663,7 @@ function SelectOverlay({
       type="button"
       aria-label={label}
       aria-pressed={selected}
+      data-select={selectionKey(target)}
       onClick={onSelect}
       className={cn(
         'absolute inset-0 rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
@@ -657,7 +692,12 @@ function CanvasSection({
   const title = section.title ?? t.canvas.untitled(index + 1)
   return (
     <div className="relative flex flex-col gap-3 rounded-lg border border-dashed border-border p-3">
-      <SelectOverlay label={t.canvas.editSection(title)} selected={selected} onSelect={onSelect} />
+      <SelectOverlay
+        target={{ kind: 'section', id: section.id }}
+        label={t.canvas.editSection(title)}
+        selected={selected}
+        onSelect={onSelect}
+      />
       <SortableContext items={section.fields.map((f) => f.name)} strategy={rectSortingStrategy}>
         {section.fields.length ? (
           children
@@ -702,7 +742,7 @@ function CanvasField({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field.name })
+  } = useSortable({ id: field.name, attributes: { roleDescription: t.dnd.roleDescription } })
   return (
     <div
       ref={setNodeRef}
@@ -713,7 +753,12 @@ function CanvasField({
         fieldSpanClass(field, columns),
       )}
     >
-      <SelectOverlay label={t.canvas.edit(field.label)} selected={selected} onSelect={onSelect} />
+      <SelectOverlay
+        target={{ kind: 'field', name: field.name }}
+        label={t.canvas.edit(field.label)}
+        selected={selected}
+        onSelect={onSelect}
+      />
       <div className="relative flex items-center gap-1.5">
         <Button
           ref={setActivatorNodeRef}
@@ -777,6 +822,7 @@ function Inspector({
   field,
   section,
   onSelect,
+  onRemoved,
   onChange,
 }: {
   t: T
@@ -786,6 +832,8 @@ function Inspector({
   field: FormFieldSpec | undefined
   section: FormSectionSpec | undefined
   onSelect: (s: Selection) => void
+  /** Selects what is left after a removal, and moves focus there. */
+  onRemoved: (s: Selection) => void
   onChange: (spec: FormSpec) => void
 }) {
   const headingId = React.useId()
@@ -796,12 +844,12 @@ function Inspector({
       aria-labelledby={headingId}
       className="flex min-w-0 flex-col gap-4 rounded-xl border border-border-subtle bg-card p-4"
     >
-      <h3
+      <p
         id={headingId}
         className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
       >
         {ti.title} · {heading}
-      </h3>
+      </p>
       {field ? (
         <FieldInspector
           // A fresh draft of the name per field.
@@ -823,7 +871,7 @@ function Inspector({
           onChange={onChange}
           onRemove={() => {
             onChange(removeSection(spec, section.id))
-            onSelect({ kind: 'form' })
+            onRemoved({ kind: 'form' })
           }}
         />
       ) : selection.kind === 'form' ? (
@@ -1403,11 +1451,25 @@ function OptionsSetting({
   onChange: (options: NonNullable<FormFieldSpec['options']>) => void
 }) {
   const ti = t.inspector
+  const listRef = React.useRef<HTMLFieldSetElement>(null)
   const update = (i: number, patch: Partial<(typeof options)[number]>) => {
     onChange(options.map((o, j) => (j === i ? { ...o, ...patch } : o)))
   }
+  const remove = (i: number) => {
+    onChange(options.filter((_, j) => j !== i))
+    // Rows are keyed by position: only the last row's button goes away with its option. Focus the
+    // option before it then, or Add option when none is left.
+    if (i < options.length - 1) return
+    requestAnimationFrame(() => {
+      const list = listRef.current
+      const target =
+        list?.querySelectorAll<HTMLElement>('[data-option-label]')[i - 1] ??
+        list?.querySelector<HTMLElement>('[data-option-add]')
+      target?.focus()
+    })
+  }
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset ref={listRef} className="flex flex-col gap-2">
       <legend className="mb-2 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
         {ti.options}
       </legend>
@@ -1416,6 +1478,7 @@ function OptionsSetting({
         <div key={i} className="flex items-center gap-1.5">
           <Input
             aria-label={ti.optionLabel(i + 1)}
+            data-option-label
             value={o.label}
             onChange={(e) => {
               update(i, { label: e.target.value })
@@ -1435,7 +1498,7 @@ function OptionsSetting({
             size="icon-sm"
             aria-label={ti.removeOption(o.label || o.value)}
             onClick={() => {
-              onChange(options.filter((_, j) => j !== i))
+              remove(i)
             }}
           >
             <XIcon />
@@ -1447,6 +1510,7 @@ function OptionsSetting({
           type="button"
           variant="outline"
           size="sm"
+          data-option-add
           onClick={() => {
             let n = options.length + 1
             while (options.some((o) => o.value === `option-${n}`)) n++
@@ -1599,12 +1663,12 @@ function Preview({
         aria-labelledby={headingId}
         className="flex min-w-0 flex-col gap-2 rounded-xl border border-border-subtle bg-inset p-4"
       >
-        <h3
+        <p
           id={headingId}
           className="font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
         >
           {t.preview.submitted}
-        </h3>
+        </p>
         {values ? (
           <pre className="overflow-x-auto font-mono text-[12px] text-foreground">
             {JSON.stringify(values, (_, v: unknown) => (v instanceof File ? v.name : v), 2)}
@@ -1629,19 +1693,24 @@ function CopyTextButton({ t, text }: { t: T; text: string }) {
     }
   }, [copied])
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={() => {
-        void navigator.clipboard.writeText(text).then(() => {
-          setCopied(true)
-        })
-      }}
-    >
-      {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-      <span aria-live="polite">{copied ? t.json.copied : t.json.copy}</span>
-    </Button>
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          void navigator.clipboard.writeText(text).then(() => {
+            setCopied(true)
+          })
+        }}
+      >
+        {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+        {copied ? t.json.copied : t.json.copy}
+      </Button>
+      <span role="status" className="sr-only">
+        {copied ? t.json.copied : ''}
+      </span>
+    </>
   )
 }
 
@@ -1731,9 +1800,10 @@ function JsonView({
             setError(null)
           }}
         />
+        {/* One polite region for the error and the status: the error inside is not a second one. */}
         <div id={`${id}-status`} aria-live="polite">
           {error ? (
-            <FieldError>{error}</FieldError>
+            <FieldError role={undefined}>{error}</FieldError>
           ) : format === 'schema' ? (
             <FieldDescription>{t.json.readOnly}</FieldDescription>
           ) : status ? (

@@ -268,7 +268,7 @@ function ChatWidget({
         onKeyDown={onPanelKeyDown}
         className={cn(
           'pointer-events-auto flex flex-col overflow-hidden bg-surface text-foreground outline-none',
-          'duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0',
+          'duration-base ease-out motion-safe:animate-in motion-safe:fade-in-0',
           sheet
             ? 'fixed inset-0 motion-safe:slide-in-from-bottom-6'
             : cn(
@@ -363,7 +363,7 @@ function ChatWidget({
             data-slot="chat-widget-greeting"
             className={cn(
               'relative mb-2 flex max-w-64 items-start gap-1 rounded-xl border border-border bg-popover py-1 pr-1 pl-1 text-[13.5px] text-foreground shadow-lg',
-              'duration-200 ease-out motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1',
+              'duration-base ease-out motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1',
               side === 'right' ? 'rounded-br-sm' : 'rounded-bl-sm',
             )}
           >

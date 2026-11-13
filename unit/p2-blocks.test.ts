@@ -25,11 +25,11 @@ describe('gantt dates', () => {
 
   it('pads the range and aligns it to weeks (Monday) or months', () => {
     const tasks = [{ id: 'a', name: 'A', start: d(10, 14), end: d(10, 20) }]
-    const week = ganttRange(tasks, 'week')
+    const week = ganttRange(tasks, 'week', d(10, 14))
     expect(week.start.getDay()).toBe(1)
     expect(week.end.getDay()).toBe(0)
     expect(week.start <= d(10, 7)).toBe(true)
-    const month = ganttRange(tasks, 'month')
+    const month = ganttRange(tasks, 'month', d(10, 14))
     expect(month.start).toEqual(d(9, 1))
     expect(month.end).toEqual(d(11, 30))
   })

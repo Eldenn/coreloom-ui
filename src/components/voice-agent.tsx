@@ -182,6 +182,8 @@ function PushToTalkButton({
     <Button
       type="button"
       size="icon-lg"
+      // After a failure (a blocked microphone) the button still works, without its accent.
+      variant={state.status === 'error' ? 'secondary' : 'default'}
       aria-label={label}
       aria-pressed={listening}
       disabled={!!disabled || busy}

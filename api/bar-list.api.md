@@ -7,7 +7,7 @@ Stability: stable. Written by `pnpm api:report` from the code; don't edit it by 
 ```ts
 function BarList
 BarList.data: readonly BarListItem[]
-BarList.sortOrder?: 'none' | 'desc' | 'asc' | undefined
+BarList.sortOrder?: 'none' | 'asc' | 'desc' | undefined
 BarList.limit?: number | undefined
 BarList.max?: number | undefined
 BarList.color?: string | undefined
@@ -22,7 +22,7 @@ BarListItem.href?: string | undefined
 BarListItem.icon?: React.ReactNode
 type BarListProps = {}
 BarListProps.data: readonly BarListItem[]
-BarListProps.sortOrder?: 'none' | 'desc' | 'asc' | undefined
+BarListProps.sortOrder?: 'none' | 'asc' | 'desc' | undefined
 BarListProps.limit?: number | undefined
 BarListProps.max?: number | undefined
 BarListProps.color?: string | undefined

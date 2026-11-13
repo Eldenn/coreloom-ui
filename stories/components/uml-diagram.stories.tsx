@@ -51,7 +51,7 @@ type Story = StoryObj<typeof meta>
 export const Class: Story = {}
 
 /** Participants and an actor, numbered calls and replies, an activation, an alt block and a note. */
-export const Sequence: Story = { args: { diagram: fromMermaid(sequenceText) } }
+export const Sequence: Story = { args: { diagram: fromMermaid(sequenceText), height: 640 } }
 
 /** A review workflow: start and end, a choice, a composite state and a note. */
 export const State: Story = { args: { diagram: fromMermaid(stateText) } }
@@ -157,6 +157,7 @@ export const EditingOnCanvas: Story = {
 
 /** A sequence diagram with a step selected: a click picks a participant, message, note or block. */
 export const SequenceSelection: Story = {
+  args: { height: 640 },
   render: function Render(args) {
     const [selection, setSelection] = React.useState<UmlSelection>({
       elements: ['step:1'],
@@ -209,7 +210,7 @@ export const French: Story = {
 }
 
 export const FrenchSequence: Story = {
-  args: { diagram: fromMermaid(sequenceText) },
+  args: { diagram: fromMermaid(sequenceText), height: 640 },
   globals: { locale: 'fr' },
 }
 

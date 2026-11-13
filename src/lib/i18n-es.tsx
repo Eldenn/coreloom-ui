@@ -23,7 +23,13 @@ export const es: Messages = {
     nextPage: 'Ir a la página siguiente',
     morePages: 'Más páginas',
   },
-  carousel: { previous: 'Diapositiva anterior', next: 'Diapositiva siguiente' },
+  carousel: {
+    previous: 'Diapositiva anterior',
+    next: 'Diapositiva siguiente',
+    label: 'Carrusel',
+    roleDescription: 'carrusel',
+    slide: 'diapositiva',
+  },
   calendar: { dayLabel: "EEEE d 'de' MMMM 'de' yyyy", today: 'Hoy', selected: 'seleccionado' },
   datePicker: {
     placeholder: 'Elegir una fecha',
@@ -52,6 +58,7 @@ export const es: Messages = {
     browse: 'búscalos',
     dropOne: 'Suelta un archivo aquí o',
     remove: (name) => `Quitar ${name}`,
+    removed: (name) => `${name} quitado`,
     tooLarge: (name, max) => `${name} pesa más de ${max}.`,
     wrongType: (name) => `${name} no es un tipo de archivo admitido.`,
     tooMany: (max) => `Puedes añadir hasta ${max} archivos.`,
@@ -94,7 +101,11 @@ export const es: Messages = {
       left: (n) => (n === 1 ? 'Queda 1 carácter' : `Quedan ${n} caracteres`),
       over: (n) => (n === 1 ? '1 carácter de más' : `${n} caracteres de más`),
     },
-    editable: { edit: (label) => `Editar ${label}`, empty: 'Vacío' },
+    editable: {
+      edit: (label) => `Editar ${label}`,
+      empty: 'Vacío',
+      kept: 'No puede quedar vacío: se ha recuperado el texto anterior.',
+    },
     masked: { invalid: 'Revisa este número: no es válido.' },
     color: {
       open: 'Elegir un color',
@@ -130,6 +141,7 @@ export const es: Messages = {
     copied: 'Copiado',
     emoji: {
       open: 'Añadir emoji',
+      jump: 'Ir a una categoría',
       search: 'Buscar emoji (en inglés)',
       empty: 'No se encontraron emojis.',
       results: (n) => (n === 1 ? '1 emoji' : `${n} emojis`),
@@ -205,6 +217,7 @@ export const es: Messages = {
       choose: 'Subir imagen',
       replace: 'Reemplazar',
       remove: 'Quitar',
+      removed: 'Imagen quitada',
       preview: 'Vista previa de la imagen',
       drop: 'Suelta la imagen aquí',
       hint: (types, max) => (max ? `${types}, hasta ${max}.` : `${types}.`),
@@ -357,6 +370,9 @@ export const es: Messages = {
       over: (label: string, position: number) => `${label} está en la posición ${position}.`,
       dropped: (label: string, position: number) => `${label} soltado en la posición ${position}.`,
       cancelled: (label: string) => `Se canceló mover ${label}.`,
+      instructions:
+        'Para coger un campo, pulsa Espacio o Intro. Muévelo con las flechas, suéltalo con Espacio o Intro y cancela con Esc.',
+      roleDescription: 'arrastrable',
     },
     inspector: {
       title: 'Ajustes',
@@ -503,6 +519,7 @@ export const es: Messages = {
     tree: { label: 'Árbol' },
     diff: {
       noChanges: 'Sin diferencias.',
+      label: 'Diferencias',
       linesAdded: (n) => (n === 1 ? '1 línea añadida' : `${n} líneas añadidas`),
       linesRemoved: (n) => (n === 1 ? '1 línea eliminada' : `${n} líneas eliminadas`),
       showUnchanged: (n) =>
@@ -598,6 +615,7 @@ export const es: Messages = {
       description: 'Los atajos disponibles en esta aplicación.',
       filter: 'Buscar atajos',
       empty: 'Ningún atajo coincide.',
+      results: (n) => (n === 1 ? '1 atajo' : `${n} atajos`),
       then: 'luego',
     },
     countdown: {
@@ -753,6 +771,7 @@ export const es: Messages = {
       stop: 'Detener',
       attach: 'Adjuntar archivos',
       removeFile: (name) => `Quitar ${name}`,
+      removedFile: (name) => `${name} quitado`,
     },
     reasoning: {
       thinking: 'Pensando…',
@@ -851,6 +870,7 @@ export const es: Messages = {
       search: 'Buscar conversaciones',
       empty: 'Todavía no hay conversaciones.',
       noResults: 'Ninguna conversación coincide.',
+      results: (count) => (count === 1 ? '1 conversación' : `${count} conversaciones`),
       today: 'Hoy',
       yesterday: 'Ayer',
       week: 'Últimos 7 días',
@@ -1244,6 +1264,7 @@ export const es: Messages = {
       output: 'Salida',
       outputs: 'Salidas comparadas',
       sameOutput: 'Misma salida en ambas ejecuciones.',
+      noOutput: 'Sin salida.',
       error: 'Error',
       rerun: 'Volver a ejecutar',
     },
@@ -1294,7 +1315,10 @@ export const es: Messages = {
     description: 'Muestra la barra lateral en el móvil.',
   },
   slider: { minimum: 'mínimo', maximum: 'máximo' },
-  form: { errorTitle: 'No se pudo guardar' },
+  form: {
+    errorTitle: 'No se pudo guardar',
+    invalidFields: (n) => (n === 1 ? 'Hay 1 campo por corregir.' : `Hay ${n} campos por corregir.`),
+  },
   theme: {
     toLight: 'Cambiar al tema claro',
     toDark: 'Cambiar al tema oscuro',
@@ -1479,7 +1503,11 @@ export const es: Messages = {
     preview: 'Vista previa',
     code: 'Código',
   },
-  marketing: { faq: 'Preguntas frecuentes' },
+  marketing: {
+    faq: 'Preguntas frecuentes',
+    nav: 'Navegación principal',
+    mobileNav: 'Menú principal',
+  },
   showcase: {
     footer: 'Pie de página',
     social: 'Redes sociales',
@@ -1619,6 +1647,7 @@ export const es: Messages = {
   },
   settings: {
     title: 'Ajustes',
+    sections: 'Secciones de ajustes',
     save: 'Guardar cambios',
     dangerZone: 'Zona de peligro',
     typeToConfirm: (name) => (
@@ -1880,7 +1909,9 @@ export const es: Messages = {
     milestone: (name, date) => `${name}, hito el ${date}`,
     progress: (percent) => `${String(percent)} % hecho`,
     dependsOn: (names) => `después de ${names}`,
-    editHint: 'Las flechas izquierda y derecha la mueven un día; con Mayús, mueven su final.',
+    startsBefore: (names) => `empieza antes de que termine ${names}`,
+    editHint:
+      'Las flechas izquierda y derecha la mueven un día; con Alt, mueven su inicio; con Mayús, su final.',
   },
   statusPage: {
     title: 'Estado del sistema',
@@ -2557,6 +2588,7 @@ export const es: Messages = {
     empty: 'Suelta tarjetas aquí',
     instructions:
       'Para coger una tarjeta, pulsa Espacio o Intro. Muévela con las flechas, suéltala con Espacio o Intro y cancela con Esc.',
+    roleDescription: 'arrastrable',
     picked: (title, column) => `${title} cogida en ${column}.`,
     over: (title, column, position) => `${title} sobre ${column}, posición ${position}.`,
     dropped: (title, column, position) => `${title} soltada en ${column}, posición ${position}.`,
@@ -2573,6 +2605,8 @@ export const es: Messages = {
     size: 'Tamaño',
     modified: 'Modificado',
     sortBy: (column: string) => `Ordenar por ${column.toLocaleLowerCase('es')}`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Ordenar por ${column.toLocaleLowerCase('es')}, orden ${direction === 'asc' ? 'ascendente' : 'descendente'}`,
     contents: (folder: string) => `Contenido de ${folder}`,
     emptyFolder: 'Esta carpeta está vacía',
     emptyFolderHint: 'Suelta archivos aquí o usa Subir.',
@@ -2668,9 +2702,9 @@ export const es: Messages = {
     selectedAll: 'Todas las celdas seleccionadas',
     undone: 'Deshecho',
     redone: 'Rehecho',
-    help: 'Las flechas mueven, Mayús con las flechas selecciona un rango. Escribe o pulsa Intro para editar, Escape para cancelar. Supr borra; copiar, cortar y pegar funcionan con otras hojas de cálculo.',
+    help: 'Las flechas mueven, Mayús con las flechas selecciona un rango. Escribe o pulsa Intro para editar, Escape para cancelar. Supr borra; copiar, cortar y pegar funcionan con otras hojas de cálculo. Tab recorre la fila y sale de la cuadrícula en cada extremo.',
     helpReadOnly:
-      'Las flechas mueven, Mayús con las flechas selecciona un rango, copiar funciona con otras hojas de cálculo.',
+      'Las flechas mueven, Mayús con las flechas selecciona un rango, copiar funciona con otras hojas de cálculo. Tab recorre la fila y sale de la cuadrícula en cada extremo.',
   },
   eventCalendar: {
     today: 'Hoy',
@@ -2680,6 +2714,7 @@ export const es: Messages = {
     events: (count, n) => `${count} ${n === 1 ? 'evento' : 'eventos'}`,
     noEvents: 'Sin eventos',
     allDay: 'Todo el día',
+    showLess: 'Mostrar menos',
   },
   editor: {
     toolbar: 'Formato',
@@ -3205,6 +3240,7 @@ export const es: Messages = {
       return n === 1 ? '1 problema' : `${n} problemas`
     },
     line: (n) => `Línea ${n}`,
+    severity: { error: 'Error', warning: 'Advertencia' },
     status: (kind, elements) =>
       `${kind}, ${elements === 1 ? '1 elemento' : `${elements} elementos`}`,
     problem: {

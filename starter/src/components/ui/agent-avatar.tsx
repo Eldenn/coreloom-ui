@@ -291,7 +291,7 @@ function Face({ state, eyes }: { state: AgentAvatarState; eyes: AgentAvatarEyes 
         <g
           className={cn(
             own,
-            'transition-transform duration-200 group-hover/agent-avatar:scale-y-[0.55]',
+            'transition-transform duration-base group-hover/agent-avatar:scale-y-[0.55]',
           )}
         >
           <Eye shape={eyes} cx={11} cy={15} className={cn(own, phased, 'animate-agent-blink')} />

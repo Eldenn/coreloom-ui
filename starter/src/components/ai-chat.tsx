@@ -691,7 +691,9 @@ function TypingIndicator({ assistantAvatar }: AvatarOptions) {
           <SparklesIcon className="size-3.5" />
         </div>
       )}
-      <div className="flex h-7 items-center gap-1" role="status" aria-label={t.waiting}>
+      <div className="flex h-7 items-center gap-1">
+        {/* The log reads what is added to it: the words are for it, the dots for the eyes. */}
+        <span className="sr-only">{t.waiting}</span>
         {[0, 150, 300].map((d) => (
           <span
             key={d}
@@ -832,7 +834,8 @@ function ChatMessages({
           ))}
           {status === 'submitted' && <TypingIndicator assistantAvatar={assistantAvatar} />}
           {(status === 'error' || error) && (
-            <Alert variant="destructive">
+            // The log already reads what is added to it: an alert of its own would be read twice.
+            <Alert variant="destructive" role="none">
               <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
                 <span>{typeof error === 'string' ? error : t.error}</span>
                 {onRetry && (
@@ -1032,6 +1035,150 @@ function groupConversations(conversations: Conversation[], now: Date) {
   return groups
 }
 
+/** Focuses a conversation's link or button; false when the row is gone. */
+function focusConversation(row: Element | null | undefined) {
+  const target = row?.isConnected ? row.querySelector<HTMLElement>('a, button') : null
+  target?.focus()
+  return !!target
+}
+
+/** One conversation: a link or a button, Rename and Delete in its menu; renaming happens in place. */
+function ConversationRow({
+  conversation: c,
+  active,
+  href,
+  onSelect,
+  onRename,
+  onDelete,
+}: {
+  conversation: Conversation
+  active: boolean
+  href?: (id: string) => string
+  onSelect?: (id: string) => void
+  onRename?: (id: string, title: string) => void
+  /** Delete was chosen in the menu: the list asks before it deletes. */
+  onDelete?: (conversation: Conversation) => void
+}) {
+  const t = useCoreloomI18n().messages.ai.conversations
+  const [renaming, setRenaming] = React.useState(false)
+  const rowRef = React.useRef<HTMLLIElement>(null)
+  const rowClass = cn(
+    'flex min-w-0 flex-1 items-center rounded-md px-2.5 py-1.5 text-left text-[13.5px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+    active
+      ? 'bg-primary-subtle font-medium text-foreground'
+      : 'text-fg-secondary hover:bg-accent hover:text-foreground',
+  )
+  if (renaming)
+    return (
+      <li ref={rowRef} data-conversation={c.id} className="relative flex items-center">
+        <Input
+          autoFocus
+          defaultValue={c.title}
+          aria-label={t.renameLabel}
+          className="h-8 text-[13.5px]"
+          onBlur={() => {
+            setRenaming(false)
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' && e.key !== 'Escape') return
+            const title = e.currentTarget.value.trim()
+            if (e.key === 'Enter' && title) onRename?.(c.id, title)
+            setRenaming(false)
+            // The field goes away with the focus: put it on the row once it is back.
+            requestAnimationFrame(() => {
+              focusConversation(rowRef.current)
+            })
+          }}
+        />
+      </li>
+    )
+  return (
+    <li ref={rowRef} data-conversation={c.id} className="group/row relative flex items-center">
+      {href ? (
+        <AppLink href={href(c.id)} aria-current={active ? 'page' : undefined} className={rowClass}>
+          <span className="truncate pr-6">{c.title}</span>
+        </AppLink>
+      ) : (
+        <button
+          type="button"
+          aria-current={active ? 'true' : undefined}
+          onClick={() => onSelect?.(c.id)}
+          className={cn(rowClass, 'cursor-pointer')}
+        >
+          <span className="truncate pr-6">{c.title}</span>
+        </button>
+      )}
+      {(!!onRename || !!onDelete) && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            {/* Shown on hover and focus; always on touch screens, which can't hover. */}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t.actions(c.title)}
+              className="absolute right-1 size-6 opacity-0 group-focus-within/row:opacity-100 group-hover/row:opacity-100 data-[state=open]:opacity-100 pointer-coarse:opacity-100"
+            >
+              <MoreHorizontalIcon />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onRename && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  setTimeout(() => {
+                    setRenaming(true)
+                  })
+                }
+              >
+                <PencilIcon />
+                {t.rename}
+              </DropdownMenuItem>
+            )}
+            {onDelete && (
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  onDelete(c)
+                }}
+              >
+                <Trash2Icon />
+                {t.delete}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </li>
+  )
+}
+
+/**
+ * A deleted conversation takes its row, and the menu that had the focus, with it. `remember`
+ * notes the row and its neighbour before the app removes it; `restore`, given to the
+ * confirmation's `onCloseAutoFocus`, then focuses the next row (or the previous one), else the list.
+ */
+function useFocusAfterDelete(listRef: React.RefObject<HTMLElement | null>) {
+  const removed = React.useRef<{ row?: HTMLElement; next?: HTMLElement }>(undefined)
+  const remember = (id: string) => {
+    const rows = [...(listRef.current?.querySelectorAll<HTMLElement>('[data-conversation]') ?? [])]
+    const index = rows.findIndex((r) => r.dataset.conversation === id)
+    if (index < 0) return
+    removed.current = {
+      row: rows.at(index),
+      next: rows.at(index + 1) ?? (index > 0 ? rows.at(index - 1) : undefined),
+    }
+  }
+  const restore = (event: Event) => {
+    const gone = removed.current
+    removed.current = undefined
+    // Cancelled, or the app kept the row: focus goes back where it was.
+    if (!gone || gone.row?.isConnected) return
+    event.preventDefault()
+    if (!focusConversation(gone.next)) listRef.current?.focus()
+  }
+  return { remember, restore }
+}
+
 /** The history of conversations: search, grouped by day, rename and delete from each row's menu. */
 function ConversationList({
   conversations,
@@ -1058,110 +1205,23 @@ function ConversationList({
 }) {
   const all = useCoreloomI18n().messages
   const t = all.ai.conversations
+  const id = React.useId()
+  const listRef = React.useRef<HTMLDivElement>(null)
+  const focusAfterDelete = useFocusAfterDelete(listRef)
   const [query, setQuery] = React.useState('')
-  const [renaming, setRenaming] = React.useState<string>()
   const [deleting, setDeleting] = React.useState<Conversation>()
   const filtered = conversations.filter((c) =>
     c.title.toLowerCase().includes(query.trim().toLowerCase()),
   )
   const groups = groupConversations(filtered, now ?? new Date())
-
-  const row = (c: Conversation) => {
-    const active = c.id === activeId
-    const rowClass = cn(
-      'flex min-w-0 flex-1 items-center rounded-md px-2.5 py-1.5 text-left text-[13.5px] outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
-      active
-        ? 'bg-primary-subtle font-medium text-foreground'
-        : 'text-fg-secondary hover:bg-accent hover:text-foreground',
-    )
-    return (
-      <li key={c.id} className="group/row relative flex items-center">
-        {renaming === c.id ? (
-          <Input
-            autoFocus
-            defaultValue={c.title}
-            aria-label={t.renameLabel}
-            className="h-8 text-[13.5px]"
-            onBlur={() => {
-              setRenaming(undefined)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setRenaming(undefined)
-              if (e.key === 'Enter') {
-                const title = e.currentTarget.value.trim()
-                if (title) onRename?.(c.id, title)
-                setRenaming(undefined)
-              }
-            }}
-          />
-        ) : (
-          <>
-            {href ? (
-              <AppLink
-                href={href(c.id)}
-                aria-current={active ? 'page' : undefined}
-                className={rowClass}
-              >
-                <span className="truncate pr-6">{c.title}</span>
-              </AppLink>
-            ) : (
-              <button
-                type="button"
-                aria-current={active ? 'true' : undefined}
-                onClick={() => onSelect?.(c.id)}
-                className={cn(rowClass, 'cursor-pointer')}
-              >
-                <span className="truncate pr-6">{c.title}</span>
-              </button>
-            )}
-            {(!!onRename || !!onDelete) && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t.actions(c.title)}
-                    className="absolute right-1 size-6 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
-                  >
-                    <MoreHorizontalIcon />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {onRename && (
-                    <DropdownMenuItem
-                      onSelect={() =>
-                        setTimeout(() => {
-                          setRenaming(c.id)
-                        })
-                      }
-                    >
-                      <PencilIcon />
-                      {t.rename}
-                    </DropdownMenuItem>
-                  )}
-                  {onDelete && (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={() => {
-                        setDeleting(c)
-                      }}
-                    >
-                      <Trash2Icon />
-                      {t.delete}
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </>
-        )}
-      </li>
-    )
-  }
-
   const sections = (['today', 'yesterday', 'week', 'older'] as const).filter(
     (g) => groups[g].length,
   )
+  // Said by the list's status: nothing to show, or how many titles match the search.
+  let status = ''
+  if (sections.length === 0) status = conversations.length ? t.noResults : t.empty
+  else if (query.trim()) status = t.results(filtered.length)
+
   return (
     <nav
       data-slot="conversation-list"
@@ -1189,23 +1249,46 @@ function ConversationList({
           className="h-8 pl-8 text-[13px]"
         />
       </div>
-      <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
-        {sections.length === 0 && (
-          <p className="m-0 px-2.5 text-[13px] text-muted-foreground">
-            {conversations.length ? t.noResults : t.empty}
-          </p>
-        )}
+      <div
+        ref={listRef}
+        tabIndex={-1}
+        className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring"
+      >
+        {/* Always in the page, so that a search's result is announced; seen when the list is empty. */}
+        <p
+          role="status"
+          className={
+            sections.length === 0 ? 'm-0 px-2.5 text-[13px] text-muted-foreground' : 'sr-only'
+          }
+        >
+          {status}
+        </p>
         {sections.map((g) => (
-          <section key={g} className="flex flex-col gap-1">
-            <h3 className="m-0 px-2.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          <div key={g} className="flex flex-col gap-1">
+            <p
+              id={`${id}-${g}`}
+              className="m-0 px-2.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+            >
               {t[g]}
-            </h3>
-            <ul className="m-0 flex list-none flex-col gap-0.5 p-0">{groups[g].map(row)}</ul>
-          </section>
+            </p>
+            <ul aria-labelledby={`${id}-${g}`} className="m-0 flex list-none flex-col gap-0.5 p-0">
+              {groups[g].map((c) => (
+                <ConversationRow
+                  key={c.id}
+                  conversation={c}
+                  active={c.id === activeId}
+                  href={href}
+                  onSelect={onSelect}
+                  onRename={onRename}
+                  onDelete={onDelete && setDeleting}
+                />
+              ))}
+            </ul>
+          </div>
         ))}
       </div>
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(undefined)}>
-        <AlertDialogContent>
+        <AlertDialogContent onCloseAutoFocus={focusAfterDelete.restore}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t.deleteTitle}</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1216,7 +1299,11 @@ function ConversationList({
             <AlertDialogCancel>{all.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => deleting && onDelete?.(deleting.id)}
+              onClick={() => {
+                if (!deleting) return
+                focusAfterDelete.remember(deleting.id)
+                onDelete?.(deleting.id)
+              }}
             >
               {t.delete}
             </AlertDialogAction>

@@ -23,7 +23,13 @@ export const de: Messages = {
     nextPage: 'Zur nächsten Seite',
     morePages: 'Weitere Seiten',
   },
-  carousel: { previous: 'Vorherige Folie', next: 'Nächste Folie' },
+  carousel: {
+    previous: 'Vorherige Folie',
+    next: 'Nächste Folie',
+    label: 'Karussell',
+    roleDescription: 'Karussell',
+    slide: 'Folie',
+  },
   calendar: { dayLabel: 'EEEE, d. MMMM yyyy', today: 'Heute', selected: 'ausgewählt' },
   datePicker: {
     placeholder: 'Datum wählen',
@@ -52,6 +58,7 @@ export const de: Messages = {
     browse: 'durchsuchen',
     dropOne: 'Datei hier ablegen oder',
     remove: (name) => `${name} entfernen`,
+    removed: (name) => `${name} entfernt`,
     tooLarge: (name, max) => `${name} ist größer als ${max}.`,
     wrongType: (name) => `${name} ist kein erlaubter Dateityp.`,
     tooMany: (max) => `Du kannst bis zu ${max} Dateien hinzufügen.`,
@@ -94,7 +101,11 @@ export const de: Messages = {
       left: (n) => (n === 1 ? 'Noch 1 Zeichen' : `Noch ${n} Zeichen`),
       over: (n) => (n === 1 ? '1 Zeichen zu viel' : `${n} Zeichen zu viel`),
     },
-    editable: { edit: (label) => `${label} bearbeiten`, empty: 'Leer' },
+    editable: {
+      edit: (label) => `${label} bearbeiten`,
+      empty: 'Leer',
+      kept: 'Darf nicht leer sein: Der vorherige Text ist wieder da.',
+    },
     masked: { invalid: 'Prüfe diese Nummer: Sie ist ungültig.' },
     color: {
       open: 'Farbe wählen',
@@ -134,6 +145,7 @@ export const de: Messages = {
     copied: 'Kopiert',
     emoji: {
       open: 'Emoji hinzufügen',
+      jump: 'Zu einer Kategorie springen',
       search: 'Emoji suchen (auf Englisch)',
       empty: 'Keine Emojis gefunden.',
       results: (n) => (n === 1 ? '1 Emoji' : `${n} Emojis`),
@@ -209,6 +221,7 @@ export const de: Messages = {
       choose: 'Bild hochladen',
       replace: 'Ersetzen',
       remove: 'Entfernen',
+      removed: 'Bild entfernt',
       preview: 'Bildvorschau',
       drop: 'Bild hier ablegen',
       hint: (types, max) => (max ? `${types}, bis ${max}.` : `${types}.`),
@@ -361,6 +374,9 @@ export const de: Messages = {
       over: (label: string, position: number) => `${label} ist an Position ${position}.`,
       dropped: (label: string, position: number) => `${label} an Position ${position} abgelegt.`,
       cancelled: (label: string) => `Verschieben von ${label} abgebrochen.`,
+      instructions:
+        'Zum Aufnehmen eines Felds Leertaste oder Eingabetaste drücken. Mit den Pfeiltasten verschieben, mit Leertaste oder Eingabetaste ablegen, mit Escape abbrechen.',
+      roleDescription: 'verschiebbar',
     },
     inspector: {
       title: 'Einstellungen',
@@ -508,6 +524,7 @@ export const de: Messages = {
     tree: { label: 'Baum' },
     diff: {
       noChanges: 'Keine Unterschiede.',
+      label: 'Unterschiede',
       linesAdded: (n) => (n === 1 ? '1 Zeile hinzugefügt' : `${n} Zeilen hinzugefügt`),
       linesRemoved: (n) => (n === 1 ? '1 Zeile entfernt' : `${n} Zeilen entfernt`),
       showUnchanged: (n) =>
@@ -603,6 +620,7 @@ export const de: Messages = {
       description: 'Die in dieser App verfügbaren Tastenkürzel.',
       filter: 'Tastenkürzel suchen',
       empty: 'Kein Tastenkürzel gefunden.',
+      results: (n) => `${n} Tastenkürzel`,
       then: 'dann',
     },
     countdown: {
@@ -758,6 +776,7 @@ export const de: Messages = {
       stop: 'Stoppen',
       attach: 'Dateien anhängen',
       removeFile: (name) => `${name} entfernen`,
+      removedFile: (name) => `${name} entfernt`,
     },
     reasoning: {
       thinking: 'Denkt nach…',
@@ -857,6 +876,7 @@ export const de: Messages = {
       search: 'Unterhaltungen durchsuchen',
       empty: 'Noch keine Unterhaltungen.',
       noResults: 'Keine Unterhaltung passt.',
+      results: (count) => (count === 1 ? '1 Unterhaltung' : `${count} Unterhaltungen`),
       today: 'Heute',
       yesterday: 'Gestern',
       week: 'Letzte 7 Tage',
@@ -1249,6 +1269,7 @@ export const de: Messages = {
       output: 'Ausgabe',
       outputs: 'Ausgaben im Vergleich',
       sameOutput: 'Gleiche Ausgabe in beiden Läufen.',
+      noOutput: 'Keine Ausgabe.',
       error: 'Fehler',
       rerun: 'Erneut ausführen',
     },
@@ -1304,7 +1325,11 @@ export const de: Messages = {
     description: 'Zeigt die Seitenleiste auf dem Handy.',
   },
   slider: { minimum: 'Minimum', maximum: 'Maximum' },
-  form: { errorTitle: 'Speichern nicht möglich' },
+  form: {
+    errorTitle: 'Speichern nicht möglich',
+    invalidFields: (n) =>
+      n === 1 ? '1 Feld muss korrigiert werden.' : `${n} Felder müssen korrigiert werden.`,
+  },
   theme: {
     toLight: 'Zum hellen Design wechseln',
     toDark: 'Zum dunklen Design wechseln',
@@ -1491,7 +1516,7 @@ export const de: Messages = {
     preview: 'Vorschau',
     code: 'Code',
   },
-  marketing: { faq: 'Häufige Fragen' },
+  marketing: { faq: 'Häufige Fragen', nav: 'Hauptnavigation', mobileNav: 'Hauptmenü' },
   showcase: {
     footer: 'Fußzeile',
     social: 'Soziale Medien',
@@ -1632,6 +1657,7 @@ export const de: Messages = {
   },
   settings: {
     title: 'Einstellungen',
+    sections: 'Einstellungsbereiche',
     save: 'Änderungen speichern',
     dangerZone: 'Gefahrenbereich',
     typeToConfirm: (name) => (
@@ -1900,8 +1926,9 @@ export const de: Messages = {
     milestone: (name, date) => `${name}, Meilenstein am ${date}`,
     progress: (percent) => `${String(percent)} % erledigt`,
     dependsOn: (names) => `nach ${names}`,
+    startsBefore: (names) => `beginnt vor dem Ende von ${names}`,
     editHint:
-      'Die Pfeiltasten links und rechts verschieben sie um einen Tag; mit Umschalt verschieben sie ihr Ende.',
+      'Die Pfeiltasten links und rechts verschieben sie um einen Tag; mit Alt verschieben sie ihren Anfang, mit Umschalt ihr Ende.',
   },
   statusPage: {
     title: 'Systemstatus',
@@ -2585,6 +2612,7 @@ export const de: Messages = {
     empty: 'Karten hier ablegen',
     instructions:
       'Zum Aufnehmen einer Karte Leertaste oder Eingabetaste drücken. Mit den Pfeiltasten verschieben, mit Leertaste oder Eingabetaste ablegen, mit Escape abbrechen.',
+    roleDescription: 'verschiebbar',
     picked: (title, column) => `${title} in ${column} aufgenommen.`,
     over: (title, column, position) => `${title} über ${column}, Position ${position}.`,
     dropped: (title, column, position) => `${title} in ${column} abgelegt, Position ${position}.`,
@@ -2601,6 +2629,8 @@ export const de: Messages = {
     size: 'Größe',
     modified: 'Geändert',
     sortBy: (column: string) => `Nach ${column} sortieren`,
+    sortedBy: (column: string, direction: 'asc' | 'desc') =>
+      `Nach ${column} sortieren, ${direction === 'asc' ? 'aufsteigend' : 'absteigend'} sortiert`,
     contents: (folder: string) => `Inhalt von ${folder}`,
     emptyFolder: 'Dieser Ordner ist leer',
     emptyFolderHint: 'Zieh Dateien hierher oder nutze Hochladen.',
@@ -2700,9 +2730,9 @@ export const de: Messages = {
     selectedAll: 'Alle Zellen ausgewählt',
     undone: 'Rückgängig gemacht',
     redone: 'Wiederhergestellt',
-    help: 'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich. Tippe oder drück Eingabe zum Bearbeiten, Escape zum Abbrechen. Entf leert; Kopieren, Ausschneiden und Einfügen funktionieren mit anderen Tabellen.',
+    help: 'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich. Tippe oder drück Eingabe zum Bearbeiten, Escape zum Abbrechen. Entf leert; Kopieren, Ausschneiden und Einfügen funktionieren mit anderen Tabellen. Tab geht die Zeile entlang und verlässt das Raster an beiden Enden.',
     helpReadOnly:
-      'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich, Kopieren funktioniert mit anderen Tabellen.',
+      'Pfeiltasten bewegen, Umschalt mit Pfeiltasten wählt einen Bereich, Kopieren funktioniert mit anderen Tabellen. Tab geht die Zeile entlang und verlässt das Raster an beiden Enden.',
   },
   eventCalendar: {
     today: 'Heute',
@@ -2712,6 +2742,7 @@ export const de: Messages = {
     events: (count, n) => `${count} ${n === 1 ? 'Termin' : 'Termine'}`,
     noEvents: 'Keine Termine',
     allDay: 'Ganztägig',
+    showLess: 'Weniger anzeigen',
   },
   editor: {
     toolbar: 'Formatierung',
@@ -3233,6 +3264,7 @@ export const de: Messages = {
       return n === 1 ? '1 Problem' : `${n} Probleme`
     },
     line: (n) => `Zeile ${n}`,
+    severity: { error: 'Fehler', warning: 'Warnung' },
     status: (kind, elements) => `${kind}, ${elements === 1 ? '1 Element' : `${elements} Elemente`}`,
     problem: {
       empty: 'Noch nichts zu lesen.',

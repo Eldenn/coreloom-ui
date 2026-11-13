@@ -221,13 +221,13 @@ function DeliveryRow({
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="group/trigger flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-sm text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+              className="group/trigger flex min-w-0 flex-1 basis-48 cursor-pointer items-center gap-3 rounded-sm text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
             >
               <ChevronDownIcon
                 aria-hidden
                 className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/trigger:rotate-180 motion-reduce:transition-none"
               />
-              <Badge variant={deliveryVariant[delivery.status]} className="min-w-14">
+              <Badge variant={deliveryVariant[delivery.status]} className="min-w-14 shrink-0">
                 {delivery.statusCode ?? t.status[delivery.status]}
                 {delivery.statusCode !== undefined && (
                   <span className="sr-only"> {t.status[delivery.status]}</span>
@@ -386,6 +386,17 @@ function EndpointPanel({
   )
 }
 
+/**
+ * After a row is removed its buttons are gone and focus falls to the page: put it on the first
+ * of these that is still there.
+ */
+function keepFocus(...targets: React.RefObject<HTMLElement | null>[]) {
+  requestAnimationFrame(() => {
+    if (document.activeElement && document.activeElement !== document.body) return
+    targets.find((target) => target.current)?.current?.focus()
+  })
+}
+
 function Webhooks({
   endpoints,
   deliveries = [],
@@ -426,6 +437,12 @@ function Webhooks({
   const { messages } = useCoreloomI18n()
   const t = messages.webhooks
   const [openId, setOpenId] = React.useState(defaultOpenId)
+  const listRef = React.useRef<HTMLUListElement>(null)
+  const emptyRef = React.useRef<HTMLDivElement>(null)
+  const remove = async (id: string) => {
+    await onDelete?.(id)
+    keepFocus(listRef, emptyRef)
+  }
   const eventLabel = (v: string) => events.find((e) => e.value === v)?.label ?? v
 
   return (
@@ -443,7 +460,11 @@ function Webhooks({
       </CardHeader>
       <CardContent className="p-0">
         {endpoints.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
+          <div
+            ref={emptyRef}
+            tabIndex={-1}
+            className="flex flex-col items-center gap-2 px-5 py-10 text-center outline-none"
+          >
             <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground [&_svg]:size-5">
               <WebhookIcon aria-hidden />
             </span>
@@ -451,7 +472,12 @@ function Webhooks({
             <p className="m-0 text-[13px] text-muted-foreground">{t.emptyHint}</p>
           </div>
         ) : (
-          <ul className="m-0 list-none p-0">
+          <ul
+            ref={listRef}
+            tabIndex={-1}
+            aria-label={t.title}
+            className="m-0 list-none p-0 outline-none"
+          >
             {endpoints.map((ep) => {
               const own = deliveries.filter((d) => d.endpointId === ep.id)
               const failed = own.filter((d) => d.status === 'failed').length
@@ -526,7 +552,7 @@ function Webhooks({
                               <AlertDialogCancel>{messages.common.cancel}</AlertDialogCancel>
                               <AlertDialogAction
                                 variant="destructive"
-                                onClick={() => void onDelete(ep.id)}
+                                onClick={() => void remove(ep.id)}
                               >
                                 {t.deleteConfirm}
                               </AlertDialogAction>

@@ -534,12 +534,15 @@ function EnvVars({
 
   return (
     <Card data-slot="env-vars" className={cn('gap-0 p-0', className)}>
-      <CardHeader className="border-b border-border px-5 py-4">
-        <CardTitle asChild>
-          <h2 className="m-0">{title ?? t.title}</h2>
-        </CardTitle>
-        <CardDescription>{description ?? t.description}</CardDescription>
-        <CardAction className="flex flex-wrap justify-end gap-2">
+      {/* A wrapping row: on a narrow card the buttons go under the text instead of squeezing it. */}
+      <CardHeader className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 border-b border-border px-5 py-4">
+        <div className="flex min-w-0 flex-1 basis-64 flex-col gap-1.5">
+          <CardTitle asChild>
+            <h2 className="m-0">{title ?? t.title}</h2>
+          </CardTitle>
+          <CardDescription>{description ?? t.description}</CardDescription>
+        </div>
+        <CardAction className="flex flex-wrap gap-2">
           {onImport && current && (
             <Button
               size="sm"

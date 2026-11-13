@@ -225,6 +225,91 @@ function useControllable<T>(value: T | undefined, initial: T, onChange?: (v: T) 
 
 const DRAG_TYPE = 'application/x-coreloom-files'
 
+/**
+ * The focused item, button or crumb goes away when the folder or its items change: on the next
+ * frame, focus the item that holds the Tab stop, or the empty state when nothing is left.
+ */
+function focusFolderContents(
+  list: React.RefObject<HTMLElement | null>,
+  empty: React.RefObject<HTMLElement | null>,
+) {
+  requestAnimationFrame(() => {
+    const item = list.current?.querySelector<HTMLElement>('[role=option][tabindex="0"]')
+    const target = item ?? list.current ?? empty.current
+    target?.focus()
+  })
+}
+
+/** A column header of the list view. `direction` is set on the column the list is sorted by. */
+function SortButton({
+  label,
+  name,
+  direction,
+  onClick,
+  className,
+}: {
+  label: string
+  /** The accessible name: the column and, when sorted by it, the direction. */
+  name: string
+  direction?: 'asc' | 'desc'
+  onClick: () => void
+  className?: string
+}) {
+  const Arrow = direction === 'desc' ? ArrowDownIcon : ArrowUpIcon
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={name}
+      aria-pressed={direction !== undefined}
+      className={cn(
+        'inline-flex cursor-pointer items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring',
+        direction && 'text-foreground',
+        className,
+      )}
+    >
+      {label}
+      {direction && <Arrow className="size-3" aria-hidden />}
+    </button>
+  )
+}
+
+/**
+ * The tick on an item, for the mouse and for touch (the keyboard selects with Space). Hidden until
+ * the item is hovered or focused; always there on a touch screen, where nothing hovers.
+ */
+function SelectionMark({
+  selected,
+  view,
+  onToggle,
+}: {
+  selected: boolean
+  view: FileManagerView
+  onToggle: () => void
+}) {
+  return (
+    <span
+      aria-hidden
+      onClick={(e) => {
+        e.stopPropagation()
+        onToggle()
+      }}
+      className={cn(
+        // The box is 16 px; `before` widens what a finger can hit to 24 px.
+        'absolute flex size-4 items-center justify-center rounded-[4px] border bg-background text-[10px] leading-none before:absolute before:-inset-1',
+        selected
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border-strong opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 pointer-coarse:opacity-100',
+        view === 'grid'
+          ? 'top-2 left-2'
+          : 'top-1/2 left-2.5 hidden -translate-y-1/2 pointer-coarse:flex',
+      )}
+    >
+      {selected ? '✓' : ''}
+    </span>
+  )
+}
+
 function FileManager({
   items,
   folderId: folderIdProp,
@@ -300,6 +385,7 @@ function FileManager({
   const [uploading, setUploading] = React.useState(false)
   const dragIds = React.useRef<string[]>([])
   const listRef = React.useRef<HTMLUListElement>(null)
+  const emptyRef = React.useRef<HTMLDivElement>(null)
   const uploadRef = React.useRef<HTMLInputElement>(null)
 
   const path = fileManagerPath(items, folderId)
@@ -324,12 +410,25 @@ function FileManager({
     if (announceIt) setAnnounce(ids.length ? t.selected(ids.length) : t.selectionCleared)
   }
 
+  const focusContents = () => {
+    focusFolderContents(listRef, emptyRef)
+  }
+
   const openFolder = (id: string | null) => {
     setFolderIdRaw(id)
     select([], false)
     setAnchor(undefined)
     setFocusId(undefined)
     setAnnounce(t.opened(folderName(id)))
+    focusContents()
+  }
+
+  // The Delete key and the toolbar's Delete: the selection (and its toolbar) goes with the items.
+  const deleteSelected = () => {
+    if (!onDelete || selectedList.length === 0) return
+    onDelete(selectedList)
+    select([], false)
+    focusContents()
   }
 
   const open = (item: FileManagerItem) => {
@@ -342,6 +441,7 @@ function FileManager({
     onMove(ids, target)
     select([], false)
     setAnnounce(t.moved(ids.length, folderName(target)))
+    focusContents()
   }
 
   const focusItem = (id: string | undefined) => {
@@ -432,7 +532,7 @@ function FileManager({
       case 'Delete':
         if (onDelete && selectedList.length) {
           e.preventDefault()
-          onDelete(selectedList)
+          deleteSelected()
         }
         return
       case 'Escape':
@@ -554,24 +654,16 @@ function FileManager({
 
   const sortHeader = (key: FileSortKey, label: string, cls?: string) => {
     const active = sort.key === key
-    const Arrow = sort.dir === 'asc' ? ArrowUpIcon : ArrowDownIcon
     return (
-      <button
-        type="button"
+      <SortButton
+        label={label}
+        name={active ? t.sortedBy(label, sort.dir) : t.sortBy(label)}
+        direction={active ? sort.dir : undefined}
+        className={cls}
         onClick={() => {
           setSort({ key, dir: active && sort.dir === 'asc' ? 'desc' : 'asc' })
         }}
-        aria-label={t.sortBy(label)}
-        aria-pressed={active}
-        className={cn(
-          'inline-flex cursor-pointer items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring',
-          active && 'text-foreground',
-          cls,
-        )}
-      >
-        {label}
-        {active && <Arrow className="size-3" aria-hidden />}
-      </button>
+      />
     )
   }
 
@@ -711,11 +803,7 @@ function FileManager({
               variant="ghost"
               size="sm"
               className="text-destructive hover:text-destructive"
-              onClick={() => {
-                onDelete(selectedList)
-                select([], false)
-                listRef.current?.focus()
-              }}
+              onClick={deleteSelected}
             >
               <Trash2Icon aria-hidden />
               {t.delete}
@@ -726,6 +814,7 @@ function FileManager({
             size="sm"
             onClick={() => {
               select([])
+              focusContents()
             }}
           >
             {t.clear}
@@ -741,14 +830,19 @@ function FileManager({
       >
         <div {...uploadDrop} className="relative min-h-56 min-w-0 p-2">
           {view === 'list' && here.length > 0 && (
-            <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-3 border-b border-border-subtle px-3 pb-1.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase sm:grid-cols-[minmax(0,1fr)_5.5rem_9rem]">
+            <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-3 border-b border-border-subtle px-3 pb-1.5 font-mono text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase sm:grid-cols-[minmax(0,1fr)_5.5rem_9rem] pointer-coarse:pl-9">
               {sortHeader('name', t.name)}
               {sortHeader('size', t.size, 'justify-end')}
               {sortHeader('modified', t.modified, 'hidden sm:inline-flex')}
             </div>
           )}
           {here.length === 0 ? (
-            <Empty className="h-full">
+            <Empty
+              ref={emptyRef}
+              tabIndex={-1}
+              onKeyDown={onKeyDown}
+              className="h-full outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+            >
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <FolderIcon />
@@ -768,7 +862,7 @@ function FileManager({
               tabIndex={-1}
               onKeyDown={onKeyDown}
               className={cn(
-                'm-0 list-none p-0 outline-none',
+                'm-0 list-none rounded-md p-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
                 view === 'grid'
                   ? 'grid grid-cols-[repeat(auto-fill,minmax(128px,1fr))] gap-2 pt-1'
                   : 'flex flex-col',
@@ -812,27 +906,17 @@ function FileManager({
                       isTarget && 'ring-2 ring-ring',
                       view === 'grid'
                         ? 'flex flex-col items-center gap-2 border border-transparent p-3 text-center'
-                        : 'grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-3 px-3 py-1.5 sm:grid-cols-[minmax(0,1fr)_5.5rem_9rem]',
+                        : 'grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-3 px-3 py-1.5 sm:grid-cols-[minmax(0,1fr)_5.5rem_9rem] pointer-coarse:pl-9',
                       view === 'grid' && isSelected && 'border-primary/40',
                     )}
                   >
-                    {}
-                    <span
-                      aria-hidden
-                      onClick={(e) => {
-                        e.stopPropagation()
+                    <SelectionMark
+                      selected={isSelected}
+                      view={view}
+                      onToggle={() => {
                         toggle(item.id)
                       }}
-                      className={cn(
-                        'absolute flex size-4 items-center justify-center rounded-[4px] border bg-background text-[10px] leading-none',
-                        isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border-strong opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100',
-                        view === 'grid' ? 'top-2 left-2' : 'hidden',
-                      )}
-                    >
-                      {isSelected ? '✓' : ''}
-                    </span>
+                    />
                     {view === 'grid' ? (
                       <>
                         <span className="flex size-16 items-center justify-center overflow-hidden rounded-md bg-inset">

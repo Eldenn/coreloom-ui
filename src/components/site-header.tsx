@@ -47,14 +47,17 @@ function SiteHeader({
       <div className={cn('mx-auto flex h-16 items-center gap-6 px-5 md:px-7', maxWidth)}>
         {brand}
         {links.length > 0 && (
-          <nav className="hidden items-center gap-6 text-[14px] md:flex" aria-label="Main">
+          <nav
+            className="hidden items-center gap-6 text-[14px] md:flex"
+            aria-label={t.marketing.nav}
+          >
             {links.map((link) => (
               <AppLink
                 key={link.href}
                 href={link.href}
                 aria-current={link.active ? 'page' : undefined}
                 className={cn(
-                  'transition-colors hover:text-foreground',
+                  'rounded-sm transition-colors outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring',
                   link.active ? 'font-medium text-foreground' : 'text-fg-secondary',
                 )}
               >
@@ -81,7 +84,7 @@ function SiteHeader({
                 <SheetHeader className="px-0">
                   <SheetTitle>{brand}</SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-1" aria-label="Main">
+                <nav className="flex flex-col gap-1" aria-label={t.marketing.mobileNav}>
                   {links.map((link) => (
                     <AppLink
                       key={link.href}
@@ -89,7 +92,11 @@ function SiteHeader({
                       onClick={() => {
                         setOpen(false)
                       }}
-                      className="rounded-sm px-2.5 py-2 text-[15px] text-fg-secondary hover:bg-accent hover:text-foreground"
+                      aria-current={link.active ? 'page' : undefined}
+                      className={cn(
+                        'rounded-sm px-2.5 py-2 text-[15px] outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring',
+                        link.active ? 'font-medium text-foreground' : 'text-fg-secondary',
+                      )}
                     >
                       {link.label}
                     </AppLink>

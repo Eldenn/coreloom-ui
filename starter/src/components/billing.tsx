@@ -88,7 +88,7 @@ function PlanCard({
   const money = useMoney(currency)
   const date = useDate()
   return (
-    <Card accent className={className}>
+    <Card accent className={cn('min-w-0', className)}>
       <CardHeader>
         <CardDescription className="font-mono text-[11px] tracking-[0.08em] uppercase">
           {t.plan}
@@ -149,7 +149,7 @@ function UsageMeters({ items, className }: { items: UsageItem[]; className?: str
   const { messages, formatNumber } = useCoreloomI18n()
   const t = messages.billing
   return (
-    <Card className={className}>
+    <Card className={cn('min-w-0', className)}>
       <CardHeader>
         <CardHeading>{t.usage}</CardHeading>
         <CardDescription>{t.usageHint}</CardDescription>
@@ -218,7 +218,7 @@ function PaymentMethod({
   const t = useCoreloomI18n().messages.billing
   const date = useDate()
   return (
-    <Card className={className}>
+    <Card className={cn('min-w-0', className)}>
       <CardHeader>
         <CardHeading>{t.paymentMethod}</CardHeading>
         {onUpdate && (
@@ -270,7 +270,7 @@ function InvoiceTable({
   const t = messages.billing
   const date = useDate()
   return (
-    <Card className={cn('gap-0 p-0', className)}>
+    <Card className={cn('min-w-0 gap-0 p-0', className)}>
       <CardHeader className="px-5 py-4">
         <CardHeading>{t.invoices}</CardHeading>
       </CardHeader>

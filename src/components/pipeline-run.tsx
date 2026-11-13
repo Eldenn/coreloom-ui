@@ -92,7 +92,9 @@ function PipelineStatusIcon({ status, className }: { status: PipelineStatus; cla
       <CircleDashedIcon aria-hidden className={classes} />
     )
   return (
-    <span className="inline-flex shrink-0" title={t.status[status]}>
+    // relative: the sr-only word is positioned; in the scrolling job strip it must stay inside the
+    // strip instead of widening the page.
+    <span className="relative inline-flex shrink-0" title={t.status[status]}>
       {icon}
       <span className="sr-only">{t.status[status]}</span>
     </span>

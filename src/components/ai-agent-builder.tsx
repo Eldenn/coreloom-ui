@@ -566,6 +566,7 @@ function ToolArgsEditor({
             </legend>
             {paramsOf(tool).map(([param, schema]) => {
               const inputId = `${id}-${tool.id}-${param}`
+              const helpId = schema.description ? `${inputId}-help` : undefined
               const v = own[param]
               return (
                 <div
@@ -575,7 +576,6 @@ function ToolArgsEditor({
                   <label
                     htmlFor={inputId}
                     className="truncate pt-2 font-mono text-[12px] text-fg-secondary"
-                    title={schema.description}
                   >
                     {param}
                     {required.includes(param) && <span aria-hidden>*</span>}
@@ -590,7 +590,7 @@ function ToolArgsEditor({
                         set(tool.id, param, next === MODEL_CHOOSES ? '' : next)
                       }}
                     >
-                      <SelectTrigger id={inputId} className="w-full">
+                      <SelectTrigger id={inputId} aria-describedby={helpId} className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -605,6 +605,7 @@ function ToolArgsEditor({
                   ) : (
                     <ExpressionInput
                       id={inputId}
+                      aria-describedby={helpId}
                       value={typeof v === 'string' ? v : ''}
                       placeholder={t.fields.modelChooses}
                       preview={false}
@@ -612,6 +613,14 @@ function ToolArgsEditor({
                         set(tool.id, param, next)
                       }}
                     />
+                  )}
+                  {schema.description && (
+                    <p
+                      id={helpId}
+                      className="col-start-2 m-0 text-[12px] break-words text-muted-foreground"
+                    >
+                      {schema.description}
+                    </p>
                   )}
                 </div>
               )

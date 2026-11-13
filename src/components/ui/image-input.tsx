@@ -106,12 +106,15 @@ function ImageInput({
   const [toCrop, setToCrop] = React.useState<File | null>(null)
   const cropOptions = cropSettings(crop)
   const fileRef = React.useRef<HTMLInputElement>(null)
+  const chooseRef = React.useRef<HTMLButtonElement>(null)
+  const [announcement, setAnnouncement] = React.useState('')
   const hintId = React.useId()
   const errorId = React.useId()
 
   const set = (next: File | null) => {
     if (value === undefined) setInner(next)
     onValueChange?.(next)
+    setAnnouncement(next ? '' : t.removed)
   }
   const take = (file: File | undefined) => {
     if (!file) return
@@ -188,7 +191,14 @@ function ImageInput({
       </button>
       <div className="flex min-w-0 flex-col gap-1.5">
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={choose}>
+          <Button
+            ref={chooseRef}
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={choose}
+          >
             <ImageUpIcon />
             {src ? t.replace : t.choose}
           </Button>
@@ -201,6 +211,8 @@ function ImageInput({
               onClick={() => {
                 setError(null)
                 set(null)
+                // Remove goes away with the image: the focus moves to the button that stays.
+                chooseRef.current?.focus()
               }}
             >
               {t.remove}
@@ -241,6 +253,9 @@ function ImageInput({
           e.target.value = ''
         }}
       />
+      <span role="status" className="sr-only">
+        {announcement}
+      </span>
     </div>
   )
 }

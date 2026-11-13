@@ -99,6 +99,7 @@ import {
   groupMembers,
   moveGroup,
   type NoteNode,
+  ReadableFirstFit,
   refitGroups,
   removeCanvasItems,
   updateGroup,
@@ -827,7 +828,7 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
           e.stopPropagation()
           onAddAfter(p.id, e.currentTarget)
         }}
-        className="nodrag nopan absolute top-1/2 -right-9 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground outline-none hover:border-primary hover:text-primary-text focus-visible:ring-[3px] focus-visible:ring-ring"
+        className="nodrag nopan absolute top-1/2 -right-9 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground outline-none after:absolute after:-inset-[3px] hover:border-primary hover:text-primary-text focus-visible:ring-[3px] focus-visible:ring-ring"
       >
         <PlusIcon aria-hidden className="size-3" />
       </button>
@@ -840,7 +841,7 @@ function NodeCard({ data, selected }: NodeProps<CardNode>) {
   return (
     <div
       className={cn(
-        'relative rounded-lg border bg-card text-left shadow-xs transition-[border-color,box-shadow] duration-150 group-focus-visible/node:ring-[3px] group-focus-visible/node:ring-ring',
+        'relative rounded-lg border bg-card text-left shadow-xs transition-[border-color,box-shadow] duration-base group-focus-visible/node:ring-[3px] group-focus-visible/node:ring-ring',
         node.disabled && 'opacity-60',
         selected
           ? 'border-primary ring-2 ring-primary/40'
@@ -1087,7 +1088,7 @@ function FlowEdge({
               transform: `translate(-50%, -50%) translate(${String(mid.x)}px, ${String(mid.y)}px)`,
             }}
             className={cn(
-              'nodrag nopan pointer-events-auto absolute top-0 left-0 flex size-5 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground transition-opacity duration-100 outline-none hover:border-primary hover:text-primary-text hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring motion-reduce:transition-none',
+              'nodrag nopan pointer-events-auto absolute top-0 left-0 flex size-5 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-card text-muted-foreground transition-opacity duration-fast outline-none after:absolute after:-inset-[3px] hover:border-primary hover:text-primary-text hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring motion-reduce:transition-none',
               edgeData.show ? 'opacity-100' : 'opacity-0',
             )}
           >
@@ -1911,7 +1912,7 @@ function ConnectionChip({
           type="button"
           aria-label={removeLabel}
           onClick={onRemove}
-          className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
+          className="relative flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none after:absolute after:-inset-0.5 hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           <XIcon className="size-3" />
         </button>
@@ -3519,6 +3520,7 @@ function NodeEditorInner({
 function NodeEditor(props: NodeEditorProps) {
   return (
     <ReactFlowProvider>
+      <ReadableFirstFit padding={0.2} />
       <NodeEditorInner {...props} />
     </ReactFlowProvider>
   )
