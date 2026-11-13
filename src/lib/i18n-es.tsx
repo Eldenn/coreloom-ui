@@ -1244,6 +1244,7 @@ export const es: Messages = {
       output: 'Salida',
       outputs: 'Salidas comparadas',
       sameOutput: 'Misma salida en ambas ejecuciones.',
+      noOutput: 'Sin salida.',
       error: 'Error',
       rerun: 'Volver a ejecutar',
     },

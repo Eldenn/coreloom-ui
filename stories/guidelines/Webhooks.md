@@ -9,6 +9,6 @@ The endpoints a workspace sends events to: URL, description, the events they lis
 - Add endpoint asks for an https URL (http is refused: payloads would travel in clear), a description and the events (a multi-select).
 - Details opens an endpoint: its signing secret in a `SecretValue` (Show and Copy; `onRevealSecret` lets you log who looked), the deliveries filtered All / Failed, Send test event.
 - Each delivery opens to show the JSON payload and the response. Redeliver shows progress while your promise runs.
-- The switch turns an endpoint on and off at once; Delete asks first.
+- The switch turns an endpoint on and off at once; Delete asks first, then focus moves to the list of endpoints (or to the empty state after the last one).
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/webhooks`.

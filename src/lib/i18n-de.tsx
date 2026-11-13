@@ -1249,6 +1249,7 @@ export const de: Messages = {
       output: 'Ausgabe',
       outputs: 'Ausgaben im Vergleich',
       sameOutput: 'Gleiche Ausgabe in beiden Läufen.',
+      noOutput: 'Keine Ausgabe.',
       error: 'Fehler',
       rerun: 'Erneut ausführen',
     },

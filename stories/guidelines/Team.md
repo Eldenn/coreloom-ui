@@ -10,4 +10,6 @@ The members of a workspace: who they are, their role, pending invites; invite an
 
 - A `Card` with the title and **Invite** at the top, one row per member (avatar, name, email, a role `Select`, a remove button), then the pending invites (dashed avatar, role and date, **Revoke**).
 - **Invite** opens a dialog: several emails in a `TagsInput` (each checked) and one role. Removing asks first in an `AlertDialog`. The signed-in member is marked "You" and can't remove or demote themselves.
+- After a member is removed or an invite revoked, focus moves to the list: the row and its button are gone.
+- On a narrow card the role and the remove button go under the name.
 - Leave out a callback to hide its control (read-only views for non-admins).

@@ -395,7 +395,7 @@ function BuyRow({
       />
       <StatusButton
         size="lg"
-        className="flex-1"
+        className="sm:flex-1"
         status={adding.status}
         disabled={unavailable}
         loadingLabel={t.adding}
