@@ -25,11 +25,13 @@ describe('gantt dates', () => {
 
   it('pads the range and aligns it to weeks (Monday) or months', () => {
     const tasks = [{ id: 'a', name: 'A', start: d(10, 14), end: d(10, 20) }]
-    const week = ganttRange(tasks, 'week')
+    // The range always includes today: pin it, or the expected months move with the calendar.
+    const today = d(10, 14)
+    const week = ganttRange(tasks, 'week', today)
     expect(week.start.getDay()).toBe(1)
     expect(week.end.getDay()).toBe(0)
     expect(week.start <= d(10, 7)).toBe(true)
-    const month = ganttRange(tasks, 'month')
+    const month = ganttRange(tasks, 'month', today)
     expect(month.start).toEqual(d(9, 1))
     expect(month.end).toEqual(d(11, 30))
   })
