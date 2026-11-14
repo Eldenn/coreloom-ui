@@ -219,6 +219,7 @@ const COMPONENTS = [
   'DiagramEditor',
   'SaveStatus',
   'SuggestionList',
+  'FindingCard',
   'DiagramCard',
   'ShareDialog',
   'AccessCodeGate',

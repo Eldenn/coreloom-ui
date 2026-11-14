@@ -23,7 +23,7 @@ import {
 } from '@/components/diagram-file-tools'
 import { sniffFormat, useFileImport } from '@/components/diagram-import'
 import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
-import type { UmlDiagramHandle } from '@/components/ui/uml-diagram'
+import type { UmlAnnotation, UmlDiagramHandle } from '@/components/ui/uml-diagram'
 import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import {
@@ -79,6 +79,13 @@ interface DiagramEditorProps {
    * diagram are off. Copy, Download, zoom and full screen stay. Default: false.
    */
   readOnly?: boolean
+  /**
+   * A status on some elements, by id (the findings of a review against the code): a ring and a
+   * badge on each. They follow the ids, so an element renamed in the text loses its badge.
+   */
+  annotations?: readonly UmlAnnotation[]
+  /** Makes each badge a button that hands its element's id back (the app shows its findings). */
+  onAnnotationSelect?: (element: string) => void
   className?: string
 }
 
@@ -461,6 +468,8 @@ function DiagramEditor({
   autoFocus = false,
   actions,
   readOnly = false,
+  annotations,
+  onAnnotationSelect,
   className,
   ...owned
 }: DiagramEditorProps) {
@@ -600,6 +609,10 @@ function DiagramEditor({
             notes={keepsNotes(diagram, format)}
             imageRef={image}
             onLayoutChange={setLayout}
+            review={{
+              ...(annotations ? { annotations } : {}),
+              ...(onAnnotationSelect ? { onAnnotationSelect } : {}),
+            }}
           />
         )}
       </div>
