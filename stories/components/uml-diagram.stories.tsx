@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
-import { UmlDiagram } from '@/components/ui/uml-diagram'
+import { type UmlAnnotation, UmlDiagram } from '@/components/ui/uml-diagram'
 import type { UmlLayout, UmlSpec } from '@/lib/uml'
 import { addRelation, deleteItems, type UmlSelection } from '@/lib/uml-edit'
 import { renameElement } from '@/lib/uml-edit-fields'
@@ -226,5 +226,71 @@ export const FrenchUseCase: Story = {
 
 export const FrenchComponent: Story = {
   args: { diagram: fromPlantUml(componentText), height: 560 },
+  globals: { locale: 'fr' },
+}
+
+/** Findings of a review against the code, as an app would pass them. */
+const CLASS_FINDINGS: UmlAnnotation[] = [
+  { element: 'Order', status: 'warning', count: 2, label: 'Differs from the code' },
+  { element: 'Payment', status: 'ok' },
+  { element: 'OrderRepository', status: 'error', label: 'Missing from the code' },
+  { element: 'LineItem', status: 'unknown' },
+]
+
+/**
+ * `annotations`: a status on some elements, drawn as a ring in its colour and a badge on the
+ * corner. With `onAnnotationSelect`, each badge is a button that hands the element's id back.
+ */
+export const Annotated: Story = {
+  render: function Render(args) {
+    const [picked, setPicked] = React.useState<string | null>(null)
+    return (
+      <div className="grid gap-3">
+        <UmlDiagram
+          {...args}
+          annotations={CLASS_FINDINGS}
+          onAnnotationSelect={(element) => {
+            setPicked(element)
+          }}
+        />
+        <p role="status" className="text-[13px] text-fg-secondary">
+          {picked ? `Showing the findings for ${picked}` : 'Press a badge to see its findings.'}
+        </p>
+      </div>
+    )
+  },
+}
+
+/** Participants and messages (`step:…` ids) annotated in a sequence diagram. */
+export const AnnotatedSequence: Story = {
+  args: {
+    diagram: fromMermaid(sequenceText),
+    annotations: [
+      { element: 'API', status: 'warning', label: 'Calls a service that isn’t drawn' },
+      { element: 'P', status: 'ok' },
+      { element: 'step:1', status: 'error', count: 3, label: 'No such route' },
+      { element: 'step:0', status: 'ok' },
+    ],
+    onAnnotationSelect: () => {
+      // The app shows the findings of that participant or step.
+    },
+  },
+}
+
+/** A thumbnail keeps the rings and badges, as marks only. */
+export const AnnotatedPreview: Story = {
+  args: { preview: true, height: 220, label: 'Orders', annotations: CLASS_FINDINGS },
+}
+
+export const FrenchAnnotated: Story = {
+  args: {
+    annotations: [
+      { element: 'Order', status: 'warning', count: 2, label: 'Diffère du code' },
+      { element: 'OrderRepository', status: 'error', label: 'Absent du code' },
+    ],
+    onAnnotationSelect: () => {
+      // L’app affiche les constats de l’élément.
+    },
+  },
   globals: { locale: 'fr' },
 }

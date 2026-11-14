@@ -92,3 +92,28 @@ export const French: Story = {
 export const Phone: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 }
+
+/**
+ * A view's `annotations`: the findings of a review against the code, as rings and badges.
+ * `onAnnotationSelect` gets the element and its view.
+ */
+export const Annotated: Story = {
+  args: {
+    defaultActiveId: 'classes',
+    diagrams: views.map((view) =>
+      view.id === 'classes'
+        ? {
+            ...view,
+            annotations: [
+              { element: 'Order', status: 'warning', count: 2, label: 'Differs from the code' },
+              { element: 'OrderRepository', status: 'error', label: 'Missing from the code' },
+              { element: 'Payment', status: 'ok' },
+            ],
+          }
+        : view,
+    ),
+    onAnnotationSelect: () => {
+      // The app opens the findings of that element.
+    },
+  },
+}

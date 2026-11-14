@@ -27,6 +27,7 @@ import {
   UserRoundIcon,
 } from 'lucide-react'
 
+import { type UmlAnnotation, withAnnotation } from '@/components/ui/uml-diagram-annotations'
 import { DiagramMarkers } from '@/components/ui/uml-diagram-markers'
 import {
   ActorNode,
@@ -42,10 +43,11 @@ import type { UmlDirection } from '@/lib/uml'
 import type { DiagramEdge, DiagramNode, DiagramRow } from '@/lib/uml-graph'
 import { cn } from '@/lib/utils'
 
-/** `connectable`: the node shows a dot to drag a new line from. */
+/** `connectable`: the node shows a dot to drag a new line from; `annotation`: its badge. */
 interface NodeData extends Record<string, unknown> {
   node: DiagramNode
   connectable?: boolean
+  annotation?: UmlAnnotation | undefined
 }
 type BoxNodeType = Node<NodeData, 'box'>
 type PseudoNodeType = Node<NodeData, 'pseudo'>
@@ -507,16 +509,17 @@ function UmlEdge({ source, target, data, selected }: EdgeProps<DiagramFlowEdge>)
   )
 }
 
+// Every shape carries its annotation's badge, when it has one.
 const NODE_TYPES = {
-  box: BoxNode,
-  pseudo: PseudoNode,
-  frame: FrameNode,
-  actor: ActorNode,
-  ellipse: EllipseNode,
-  decision: DecisionNode,
-  lollipop: LollipopNode,
-  port: PortNode,
-  folder: FolderNode,
+  box: withAnnotation(BoxNode),
+  pseudo: withAnnotation(PseudoNode),
+  frame: withAnnotation(FrameNode),
+  actor: withAnnotation(ActorNode),
+  ellipse: withAnnotation(EllipseNode),
+  decision: withAnnotation(DecisionNode),
+  lollipop: withAnnotation(LollipopNode),
+  port: withAnnotation(PortNode),
+  folder: withAnnotation(FolderNode),
 }
 const EDGE_TYPES = { uml: UmlEdge }
 

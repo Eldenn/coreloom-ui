@@ -245,3 +245,22 @@ export const PhoneReadOnly: Story = {
   },
   parameters: { viewport: { defaultViewport: 'mobile1' } },
 }
+
+/**
+ * `annotations`: findings of a review against the code on the drawing. They follow the element
+ * ids, so a renamed element loses its badge until the next review. Shown with the drawing alone,
+ * as a review screen would open it.
+ */
+export const Annotated: Story = {
+  args: {
+    defaultView: 'drawing',
+    annotations: [
+      { element: 'Order', status: 'warning', count: 2, label: 'Differs from the code' },
+      { element: 'OrderRepository', status: 'error', label: 'Missing from the code' },
+      { element: 'Payment', status: 'ok' },
+    ],
+    onAnnotationSelect: () => {
+      // The app opens the findings of that element.
+    },
+  },
+}

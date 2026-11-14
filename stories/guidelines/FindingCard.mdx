@@ -1,0 +1,15 @@
+import { Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks'
+import * as Stories from '../components/finding-card.stories'
+import guide from './FindingCard.md?raw'
+
+<Meta title="Guidelines/Diagrams/Finding card" />
+
+<Markdown>{guide}</Markdown>
+
+## With a diagram
+
+<Canvas of={Stories.WithDiagram} />
+
+## Every status
+
+<Canvas of={Stories.Statuses} />
