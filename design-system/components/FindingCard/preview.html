@@ -1,0 +1,35 @@
+<!-- @dsCard group="Diagrams" height=300 subtitle="A review finding · status, evidence, mark as done or ignore" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 28px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.FindingCard || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+      const { FindingCard } = UI;
+      ReactDOM.createRoot(document.getElementById('root')).render(
+        h('div', { style: { maxWidth: 520 } },
+          h(FindingCard, {
+            title: 'OrderRepository',
+            status: 'error',
+            statusLabel: 'Missing from the code',
+            severity: 'high',
+            comment: 'No interface or class by this name. Orders are saved through Lucid models.',
+            evidence: [{ path: 'app/orders/models/order.ts', line: 1 }],
+            onSelect: () => {},
+          })));
+    }
+    render();
+  </script>
+</body>
+</html>
