@@ -3006,6 +3006,23 @@ export const es: Messages = {
       `Sugerencia ignorada. ${left === 0 ? 'No queda ninguna.' : `Pendientes: ${left}.`}`,
     failed: 'No se ha podido hacer: la sugerencia sigue aquí.',
   },
+  diagramAnnotations: {
+    status: { ok: 'Sin problemas', warning: 'Advertencia', error: 'Error', unknown: 'Incierto' },
+    withCount: (what, count) => `${what}, ${count} ${count === 1 ? 'hallazgo' : 'hallazgos'}`,
+    show: (name, what) => `Hallazgos de ${name}: ${what}`,
+    described: (label, what) => `${label}. Hallazgo: ${what}`,
+  },
+  findingCard: {
+    severity: { low: 'Baja', medium: 'Media', high: 'Alta' },
+    severityLabel: (level) => `Gravedad: ${level}`,
+    evidence: 'Pruebas',
+    newTab: '(se abre en una pestaña nueva)',
+    show: 'Ver en el diagrama',
+    done: 'Marcar como resuelto',
+    dismiss: 'Ignorar',
+    reopen: 'Reabrir',
+    resolved: { done: 'Resuelto', dismissed: 'Ignorado' },
+  },
   saveStatus: {
     saved: 'Guardado',
     saving: 'Guardando…',

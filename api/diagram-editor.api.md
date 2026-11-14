@@ -25,6 +25,8 @@ DiagramEditor.defaultView?: DiagramEditorView | undefined
 DiagramEditor.onViewChange?: ((view: DiagramEditorView) => void) | undefined
 DiagramEditor.actions?: React.ReactNode
 DiagramEditor.readOnly?: boolean | undefined
+DiagramEditor.annotations?: readonly UmlAnnotation[] | undefined
+DiagramEditor.onAnnotationSelect?: ((element: string) => void) | undefined
 DiagramEditor.className?: string | undefined
 type DiagramEditorProps = {}
 DiagramEditorProps.value?: string | undefined
@@ -44,6 +46,8 @@ DiagramEditorProps.defaultView?: DiagramEditorView | undefined
 DiagramEditorProps.onViewChange?: ((view: DiagramEditorView) => void) | undefined
 DiagramEditorProps.actions?: React.ReactNode
 DiagramEditorProps.readOnly?: boolean | undefined
+DiagramEditorProps.annotations?: readonly UmlAnnotation[] | undefined
+DiagramEditorProps.onAnnotationSelect?: ((element: string) => void) | undefined
 DiagramEditorProps.className?: string | undefined
 type DiagramEditorView = 'text' | 'split' | 'drawing'
 type DiagramFormat = 'json' | 'mermaid' | 'plantuml'
@@ -302,6 +306,7 @@ Drawing.onLayoutChange: (layout: UmlLayout) => void
 Drawing.directions: readonly UmlDirection[]
 Drawing.notes?: boolean | undefined
 Drawing.imageRef: React.Ref<UmlDiagramHandle>
+Drawing.review?: Pick<UmlDiagramProps, 'annotations' | 'onAnnotationSelect'> | undefined
 ```
 
 ## src/components/diagram-commands.ts

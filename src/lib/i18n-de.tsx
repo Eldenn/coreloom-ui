@@ -3034,6 +3034,23 @@ export const de: Messages = {
       `Vorschlag ignoriert. ${left === 0 ? 'Keiner mehr übrig.' : `Noch ${left}.`}`,
     failed: 'Das hat nicht geklappt: Der Vorschlag ist noch da.',
   },
+  diagramAnnotations: {
+    status: { ok: 'Kein Problem', warning: 'Warnung', error: 'Fehler', unknown: 'Unklar' },
+    withCount: (what, count) => `${what}, ${count} ${count === 1 ? 'Befund' : 'Befunde'}`,
+    show: (name, what) => `Befunde zu ${name}: ${what}`,
+    described: (label, what) => `${label}. Befund: ${what}`,
+  },
+  findingCard: {
+    severity: { low: 'Niedrig', medium: 'Mittel', high: 'Hoch' },
+    severityLabel: (level) => `Schweregrad: ${level}`,
+    evidence: 'Belege',
+    newTab: '(öffnet in einem neuen Tab)',
+    show: 'Im Diagramm zeigen',
+    done: 'Als erledigt markieren',
+    dismiss: 'Ignorieren',
+    reopen: 'Wieder öffnen',
+    resolved: { done: 'Erledigt', dismissed: 'Ignoriert' },
+  },
   saveStatus: {
     saved: 'Gespeichert',
     saving: 'Wird gespeichert…',
