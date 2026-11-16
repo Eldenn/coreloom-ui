@@ -252,8 +252,9 @@ starter:
   **Visual baselines** workflow; it commits the new PNGs and re-runs the CI.
 - **Interactions, guidelines and starter:** keyboard and pointer behaviour, every Guidelines page, and the
   starter end to end. The behaviour specs also run in Firefox and WebKit (Safari's engine).
-- **Install:** every item is added to a new Next.js app with `shadcn add`, which is then type-checked
-  and built with every module imported from a Server Component.
+- **Install:** every item is added with `shadcn add` to a new Next.js app and to a new Vite app,
+  each then type-checked and built. In Next.js every module is imported from a Server Component; in
+  Vite, with the template's strict TypeScript settings.
 
 `main` deploys to GitHub Pages only when everything passes. `build/build-site.sh` builds Storybook, the
 registry (`/r/`), the design tokens in the DTCG format (`/tokens/`), `llms.txt` and the starter demo

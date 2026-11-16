@@ -16,8 +16,11 @@ import { cn } from '@/lib/utils'
  * grammar (engines word their errors differently, and some give no position at all).
  */
 class JsonStop extends Error {
-  constructor(readonly at: number) {
+  readonly at: number
+
+  constructor(at: number) {
     super('JSON stops here')
+    this.at = at
   }
 }
 
