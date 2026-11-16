@@ -4847,7 +4847,8 @@
         "@coreloom/popconfirm",
         "@coreloom/save-status",
         "@coreloom/sheet",
-        "@coreloom/sortable-list"
+        "@coreloom/sortable-list",
+        "@coreloom/uml-diagram"
       ],
       "files": [
         {

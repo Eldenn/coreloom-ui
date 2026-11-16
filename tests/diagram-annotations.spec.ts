@@ -1,7 +1,8 @@
 // UmlDiagram annotations and FindingCard: badges name their element and finding, hand the id
-// back, sit on sequence participants and messages, and stay out of thumbnails' focus order; a
-// finding is marked done, ignored and reopened with focus kept and the change announced; evidence
-// links are allowlisted. Runs on the built Storybook.
+// back (also from the open view of a diagram workspace), sit on sequence participants and
+// messages, and stay out of thumbnails' focus order; a finding is marked done, ignored and
+// reopened with focus kept and the change announced; evidence links are allowlisted. Runs on the
+// built Storybook.
 import { expect, type Page, test } from '@playwright/test'
 
 import { openStory } from './stories'
@@ -128,5 +129,25 @@ test.describe('Finding card (Components/Diagrams/Finding card)', () => {
     await expect(page.getByRole('article')).toContainText(
       'app/jobs/confirm_stock_reservation_job.ts:33',
     )
+  })
+})
+
+test.describe('Diagram workspace annotations (Blocks/Diagrams/Diagram workspace)', () => {
+  test('the open view shows its annotations and a badge hands back the element and view', async ({
+    page,
+  }) => {
+    await openStory(page, 'blocks-diagrams-diagram-workspace--annotated', 'dark')
+    const shown = page.getByRole('status').filter({ hasText: /findings/ })
+    await page
+      .getByRole('button', { name: 'Findings for Order: Differs from the code, 2 findings' })
+      .click()
+    await expect(shown).toHaveText('Showing the findings for Order (classes)')
+
+    // Another view has no findings: no marks on its drawing.
+    await page
+      .getByRole('navigation', { name: 'Views' })
+      .getByRole('button', { name: 'Checkout', exact: true })
+      .click()
+    await expect(page.locator('[data-slot="uml-annotation"]')).toHaveCount(0)
   })
 })
