@@ -90,12 +90,16 @@ jobs:
             test-results
           retention-days: 14
 
-  # What a consumer does: `shadcn add` of every item into a new Next.js app, then its type check and
-  # build (see build/check-install.sh). It uses the latest Next.js and shadcn CLI on purpose: a
-  # failure here with no change of ours means one of them moved.
+  # What a consumer does: `shadcn add` of every item into a new Next.js app and a new Vite app, then
+  # their type check and build (see build/check-install.sh). It uses the latest Next.js, Vite and
+  # shadcn CLI on purpose: a failure here with no change of ours means one of them moved.
   install:
-    name: Install into a new Next.js app
+    name: Install into a new ${{ matrix.framework == 'next' && 'Next.js' || 'Vite' }} app
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [next, vite]
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v6
@@ -105,7 +109,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm registry:build
-      - run: pnpm test:install
+      - run: pnpm test:install ${{ matrix.framework }}
 
   build:
     needs: [checks, test, install]
