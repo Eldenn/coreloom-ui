@@ -1,0 +1,15 @@
+# Keeps the actions pinned by commit SHA in .github/workflows up to date: one weekly pull request
+# that moves each pin and its `# vX.Y.Z` comment together. npm dependencies are updated by hand
+# (pnpm only installs versions published at least 14 days ago, see pnpm-workspace.yaml).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
