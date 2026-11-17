@@ -55,6 +55,7 @@ to fit the app.
 
 ## App setup (already done when installed with `@coreloom/all` or the starter)
 
-- Global CSS, after `@import "tailwindcss";`: `@import "tw-animate-css"; @import "./coreloom/fonts.css";
-@import "./coreloom/tokens.css"; @import "./coreloom/theme.css";`.
+- Global CSS, after `@import "tailwindcss";`: `@import "tw-animate-css";` then `fonts.css`, `tokens.css`
+  and `theme.css` from `src/styles/coreloom/` (`"./styles/coreloom/fonts.css"` from `src/index.css`,
+  `"../styles/coreloom/fonts.css"` from `src/app/globals.css`).
 - Mount `TooltipProvider` and one `Toaster` at the root.
