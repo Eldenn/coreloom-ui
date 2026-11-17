@@ -54,12 +54,23 @@ test.describe('Node editor (Components/Workflow/Node editor)', () => {
   test('draws a connection from an output to an input with the pointer', async ({ page }) => {
     await open(page, 'components-workflow-node-editor--default')
     await expect(edges(page)).toHaveCount(4)
+    // The first view opens on the start of the workflow at a readable zoom, which leaves "Tell
+    // sales" on the edge of the canvas, where a drag pans the view. Show the whole workflow, and
+    // wait for the fit's animation to end, before drawing.
+    await page.getByRole('button', { name: 'Fit to view' }).click()
     const from = node(page, 'Welcome email').locator('.react-flow__handle.source')
     const to = node(page, 'Tell sales').locator('.react-flow__handle.target')
+    let box = await to.boundingBox()
+    await expect
+      .poll(async () => {
+        const before = box
+        box = await to.boundingBox()
+        return JSON.stringify(box) === JSON.stringify(before)
+      })
+      .toBe(true)
+    if (!box) throw new Error('no target handle')
     await from.hover()
     await page.mouse.down()
-    const box = await to.boundingBox()
-    if (!box) throw new Error('no target handle')
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 8 })
     await page.mouse.up()
     await expect(edges(page)).toHaveCount(5)
