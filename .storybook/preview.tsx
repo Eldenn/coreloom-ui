@@ -124,7 +124,15 @@ const preview: Preview = {
     a11y: { test: 'todo' },
     docs: { theme: coreloomTheme },
     options: {
-      storySort: { order: ['Introduction', 'Components', 'Blocks'] },
+      storySort: {
+        order: [
+          'Introduction',
+          'Getting started',
+          ['Vite', 'Next.js', 'Choose a component'],
+          'Components',
+          'Blocks',
+        ],
+      },
     },
   },
 }

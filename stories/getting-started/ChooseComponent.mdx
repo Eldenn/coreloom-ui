@@ -1,0 +1,10 @@
+import { Markdown, Meta } from '@storybook/addon-docs/blocks'
+import guide from './ChooseComponent.md?raw'
+
+<Meta title="Getting started/Choose a component" />
+
+{/* The tables are wider than a phone: they scroll in their own box, not the page. */}
+
+<div style={{ overflowX: 'auto' }}>
+  <Markdown>{guide}</Markdown>
+</div>

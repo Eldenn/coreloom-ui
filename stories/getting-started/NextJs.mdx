@@ -1,0 +1,147 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Getting started/Next.js" />
+
+# Start with Next.js
+
+From an empty folder to a Next.js app (App Router) that renders Coreloom components. These are the
+steps CI runs on every change (`build/check-install.sh next`): every item is installed into a new
+app made this way and imported from a Server Component, then type-checked and built.
+
+## 1. Create the app
+
+```bash
+pnpm create next-app@latest my-app --ts --tailwind --app --src-dir --import-alias '@/*'
+cd my-app
+```
+
+## 2. Set up shadcn on the Radix base
+
+```bash
+pnpm dlx shadcn@latest init --base radix
+```
+
+Coreloom is built on Radix. With a Base UI style (`base-*` in `components.json`), the CLI rewrites
+`asChild` as it installs the components and they stop compiling.
+
+## 3. Add the registry and install
+
+```bash
+pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
+pnpm dlx shadcn@latest add @coreloom/all
+```
+
+`all` is the theme, the fonts, `cn` and every light component. Add `@coreloom/charts`,
+`@coreloom/editors` or `@coreloom/node-editor` for the parts built on large libraries, or a block
+(`@coreloom/app-shell`, `@coreloom/auth`, `@coreloom/ai-chat`…) for a whole screen. Each item pulls
+what it needs. **Getting started → Choose a component** says which one to reach for.
+
+## 4. The global CSS
+
+The theme installs into `src/styles/coreloom/`. Replace `src/app/globals.css`, colour block
+included, with:
+
+```css
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '../styles/coreloom/fonts.css';
+@import '../styles/coreloom/tokens.css';
+@import '../styles/coreloom/theme.css';
+@import '../styles/coreloom/accents.css'; /* optional: accent presets */
+@import '../styles/coreloom/surfaces.css'; /* optional: surface presets (mineral, bone) */
+```
+
+## 5. Providers
+
+Every component file starts with `'use client'`, so pages and layouts (Server Components) can import
+and render them directly. The providers take functions (your `Link`), which can't cross from the
+server to the client: they go in a client file of their own, `src/app/providers.tsx`.
+
+```tsx
+'use client'
+
+import Link from 'next/link'
+
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { CoreloomLinkProvider } from '@/lib/link'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <CoreloomLinkProvider component={Link}>
+      <TooltipProvider>
+        {children}
+        <Toaster />
+      </TooltipProvider>
+    </CoreloomLinkProvider>
+  )
+}
+```
+
+`CoreloomLinkProvider` makes the blocks' links client-side navigations through `next/link`. For
+another language, wrap it all in `CoreloomI18nProvider` from `@/lib/i18n`: `locale="fr"` for
+French, or `messages={es}` from `@/lib/i18n-es` (`@coreloom/i18n-es`) for Spanish. Without a
+provider everything is English.
+
+## 6. The layout, and the theme before the first paint
+
+Coreloom is dark first: `data-theme="light"` on `<html>` switches to light. `ThemeMenu` and
+`AccentPicker` (`@coreloom/theme-toggle`) keep the choice in `localStorage`. The script below reads
+it before the page paints, so there is no flash of the wrong theme. It changes `<html>` before
+React hydrates, hence `suppressHydrationWarning` on that one element. `src/app/layout.tsx`:
+
+```tsx
+import type { Metadata } from 'next'
+
+import { Providers } from './providers'
+import './globals.css'
+
+export const metadata: Metadata = { title: 'My app' }
+
+const theme = `try {
+  var t = localStorage.getItem('theme')
+  if (t === 'light' || (t === 'system' && matchMedia('(prefers-color-scheme: light)').matches))
+    document.documentElement.dataset.theme = 'light'
+  var a = localStorage.getItem('accent')
+  if (a) document.documentElement.dataset.accent = a
+} catch (e) {}`
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: theme }} />
+      </head>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  )
+}
+```
+
+The fonts come from `fonts.css` (Fontsource), so `next/font` isn't needed: remove the font imports
+`create-next-app` put in the layout.
+
+## 7. Check it
+
+```tsx
+import { Button } from '@/components/ui/button'
+
+export default function Page() {
+  return <Button>It works</Button>
+}
+```
+
+`pnpm dev` shows a cyan button on the dark background, and `pnpm build` passes.
+
+## Updating
+
+Installed files are your code: `shadcn add` never touches them without `--overwrite`. Before
+updating, read the release's **Upgrading** notes in the
+[changelog](https://github.com/Eldenn/coreloom-ui/blob/main/CHANGELOG.md), then see what would
+change:
+
+```bash
+pnpm dlx shadcn@latest add @coreloom/<item> --diff
+```
