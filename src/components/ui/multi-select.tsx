@@ -144,6 +144,7 @@ function MultiSelect({
       <PopoverContent align="start" className="w-(--radix-popover-trigger-width) min-w-60 p-0">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
+          {/* cmdk owns aria-selected (the keyboard highlight), so the picked state is aria-checked. */}
           <CommandList aria-multiselectable="true">
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
@@ -155,7 +156,7 @@ function MultiSelect({
                     value={option.value}
                     keywords={[option.label, ...(option.keywords ?? [])]}
                     disabled={!!option.disabled || (full && !isSelected)}
-                    aria-selected={isSelected}
+                    aria-checked={isSelected}
                     data-checked={isSelected || undefined}
                     onSelect={() => {
                       toggle(option.value)

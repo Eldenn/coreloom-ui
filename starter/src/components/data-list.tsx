@@ -298,7 +298,8 @@ function FacetedFilter({
       <PopoverContent align="start" className="w-56 p-0">
         <Command>
           <CommandInput placeholder={title} />
-          <CommandList>
+          {/* cmdk owns aria-selected (the keyboard highlight), so the picked state is aria-checked. */}
+          <CommandList aria-multiselectable="true">
             <CommandEmpty>{messages.common.noResults}</CommandEmpty>
             <CommandGroup>
               {options.map((o) => {
@@ -307,8 +308,7 @@ function FacetedFilter({
                   <CommandItem
                     key={o.value}
                     value={o.label}
-                    role="option"
-                    aria-selected={on}
+                    aria-checked={on}
                     onSelect={() => {
                       setValue(on ? value.filter((v) => v !== o.value) : [...value, o.value])
                     }}
