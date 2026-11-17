@@ -29,7 +29,7 @@ body:
     id: repro
     attributes:
       label: How to reproduce
-      description: A link (StackBlitz, a story, a repository) or the steps. The smaller, the faster it gets fixed.
+      description: A link (StackBlitz, a story, a repository) or the steps. The smaller, the faster it gets fixed. To start one, open the starter in StackBlitz (https://stackblitz.com/github/Eldenn/coreloom-ui/tree/main/starter), with the theme and most components already installed.
     validations:
       required: true
   - type: input

@@ -10,6 +10,8 @@ someone who already installed the item.
 
 - **Bugs:** open an issue with the [bug form](https://github.com/Eldenn/coreloom-ui/issues/new?template=bug_report.yml).
   A small reproduction (a story, a StackBlitz, or the steps in the starter) gets it fixed fastest.
+  To start one, [open the starter in StackBlitz](https://stackblitz.com/github/Eldenn/coreloom-ui/tree/main/starter):
+  it has the theme and most components installed, and runs in the browser.
 - **New components, blocks or props:** open a
   [request](https://github.com/Eldenn/coreloom-ui/issues/new?template=component_request.yml) first, so we
   agree on the API before you write it.
