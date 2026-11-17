@@ -21,6 +21,7 @@ DiagramWorkspace.saveState: SaveState
 DiagramWorkspace.savedAt?: Date | undefined
 DiagramWorkspace.onRetrySave?: (() => void) | undefined
 DiagramWorkspace.actions?: React.ReactNode
+DiagramWorkspace.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspace.height?: string | undefined
 DiagramWorkspace.className?: string | undefined
 type DiagramWorkspaceImport = {}
@@ -33,6 +34,7 @@ DiagramWorkspaceItem.id: string
 DiagramWorkspaceItem.title: string
 DiagramWorkspaceItem.value: string
 DiagramWorkspaceItem.format: DiagramFormat
+DiagramWorkspaceItem.annotations?: readonly UmlAnnotation[] | undefined
 type DiagramWorkspaceProps = {}
 DiagramWorkspaceProps.title: string
 DiagramWorkspaceProps.onTitleChange: (title: string) => void
@@ -49,6 +51,7 @@ DiagramWorkspaceProps.saveState: SaveState
 DiagramWorkspaceProps.savedAt?: Date | undefined
 DiagramWorkspaceProps.onRetrySave?: (() => void) | undefined
 DiagramWorkspaceProps.actions?: React.ReactNode
+DiagramWorkspaceProps.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspaceProps.height?: string | undefined
 DiagramWorkspaceProps.className?: string | undefined
 ```

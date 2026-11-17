@@ -25,6 +25,20 @@ const VIEWS: DiagramWorkspaceItem[] = [
   { id: 'states', title: 'Order states', value: stateText, format: 'mermaid' },
 ]
 
+// The findings of a review against the code, on the class diagram's elements.
+const ANNOTATED_VIEWS: DiagramWorkspaceItem[] = VIEWS.map((view) =>
+  view.id === 'classes'
+    ? {
+        ...view,
+        annotations: [
+          { element: 'Order', status: 'warning', count: 2, label: 'Differs from the code' },
+          { element: 'Payment', status: 'error', label: 'Missing from the code' },
+          { element: 'Customer', status: 'ok' },
+        ],
+      }
+    : view,
+)
+
 const share = (
   <Button type="button" variant="secondary" size="sm">
     <Share2Icon aria-hidden />
@@ -38,11 +52,13 @@ function Demo({
   failSaves = false,
   initialState = 'saved',
   height,
+  onAnnotationSelect,
 }: {
   views?: DiagramWorkspaceItem[]
   failSaves?: boolean
   initialState?: SaveState
   height?: string
+  onAnnotationSelect?: (element: string, viewId: string) => void
 }) {
   const kinds = useCoreloomI18n().messages.diagram.kinds
   const [title, setTitle] = React.useState('Checkout architecture')
@@ -113,6 +129,7 @@ function Demo({
       onRetrySave={changed}
       actions={share}
       height={height}
+      onAnnotationSelect={onAnnotationSelect}
     />
   )
 }
@@ -139,7 +156,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onImport({ title, value, result, format })` (a file picked in the Add menu or dropped on the workspace, read in the browser; without it there is no import), `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
+          'The editor of a document with several diagrams. The consumer keeps the document: `title` / `onTitleChange`, `diagrams` (`{ id, title, value, format }`), `activeId` / `onActiveChange`, `onDiagramChange(id, value, result, format)`, `onAdd(kind)`, `onImport({ title, value, result, format })` (a file picked in the Add menu or dropped on the workspace, read in the browser; without it there is no import), `onRename`, `onReorder(ids)`, `onDelete(id)`, and the save state (`saveState`, `savedAt`, `onRetrySave`). Each view’s `annotations` mark its elements in the drawing and `onAnnotationSelect(element, viewId)` makes their badges buttons. `actions` go at the end of the top bar; `height` sets how tall the whole workspace is on wide screens, the editor taking what is left (`calc(100svh - 7.5rem)` fills the window in AppShell). On a phone, the list of views is in a side sheet.',
       },
     },
   },
@@ -193,4 +210,28 @@ export const FullPage: Story = {
 export const Phone: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: () => <Demo />,
+}
+
+/**
+ * A view's `annotations`: the findings of a review against the code, as rings and badges on the
+ * open view's drawing. `onAnnotationSelect` gets the element and its view.
+ */
+export const Annotated: Story = {
+  render: function Render() {
+    const [picked, setPicked] = React.useState<string | null>(null)
+    return (
+      <div className="grid gap-3">
+        <Demo
+          views={ANNOTATED_VIEWS}
+          onAnnotationSelect={(element, viewId) => {
+            // The app opens the findings of that element beside the workspace.
+            setPicked(`${element} (${viewId})`)
+          }}
+        />
+        <p role="status" className="text-[13px] text-fg-secondary">
+          {picked ? `Showing the findings for ${picked}` : 'Press a badge to see its findings.'}
+        </p>
+      </div>
+    )
+  },
 }

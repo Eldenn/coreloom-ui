@@ -2163,6 +2163,30 @@
       }
     },
     {
+      "name": "finding-card",
+      "type": "registry:ui",
+      "title": "FindingCard",
+      "description": "One finding of a review (a diagram checked against the code, say): status and severity badges, a comment, evidence as file:line places that link out (http and https only), Show in diagram, and Mark as done / Ignore / Reopen with the resolution announced.",
+      "dependencies": ["lucide-react@^1"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/use-controllable-state",
+        "@coreloom/badge",
+        "@coreloom/button"
+      ],
+      "files": [
+        {
+          "path": "src/components/ui/finding-card.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "timeline",
       "type": "registry:ui",
       "title": "Timeline",
@@ -3287,6 +3311,7 @@
         "@coreloom/utils",
         "@coreloom/i18n",
         "@coreloom/uml",
+        "@coreloom/badge",
         "@coreloom/button",
         "@coreloom/input",
         "@coreloom/toolbar"
@@ -3314,6 +3339,10 @@
         },
         {
           "path": "src/components/ui/uml-diagram-tools.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/uml-diagram-annotations.tsx",
           "type": "registry:ui"
         },
         {
@@ -3499,6 +3528,7 @@
         "@coreloom/relative-time",
         "@coreloom/save-status",
         "@coreloom/suggestion-list",
+        "@coreloom/finding-card",
         "@coreloom/timeline",
         "@coreloom/tree-view",
         "@coreloom/diff-viewer",
@@ -4819,7 +4849,8 @@
         "@coreloom/popconfirm",
         "@coreloom/save-status",
         "@coreloom/sheet",
-        "@coreloom/sortable-list"
+        "@coreloom/sortable-list",
+        "@coreloom/uml-diagram"
       ],
       "files": [
         {

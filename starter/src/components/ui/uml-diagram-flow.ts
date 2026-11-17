@@ -4,6 +4,11 @@
 import type { EdgeChange, NodeChange } from '@xyflow/react'
 
 import {
+  ANNOTATION_RING,
+  type AnnotationLayer,
+  annotationText,
+} from '@/components/ui/uml-diagram-annotations'
+import {
   type DiagramFlowEdge,
   type DiagramFlowNode,
   nodeLabel,
@@ -18,6 +23,7 @@ import {
   relationIndexOf,
 } from '@/lib/uml-graph'
 import type { LayoutBox } from '@/lib/uml-layout'
+import { cn } from '@/lib/utils'
 
 type DiagramText = Messages['diagram']
 
@@ -62,11 +68,15 @@ function flowNodes(input: {
   editable: boolean
   connectable: boolean
   selected: ReadonlySet<string>
+  /** The statuses laid over the elements; each is said after the element's own words. */
+  layer?: AnnotationLayer
   t: DiagramText
 }): DiagramFlowNode[] {
-  const { graph, boxes, editable, connectable, selected, t } = input
+  const { graph, boxes, editable, connectable, selected, layer, t } = input
   return byDepth(graph.nodes).map((node) => {
     const box = boxes.get(node.id) ?? { x: 0, y: 0, width: node.width, height: node.height }
+    const annotation = layer?.marks.get(node.id)
+    const label = nodeLabel(node, t)
     return {
       id: node.id,
       type: NODE_TYPE[node.shape],
@@ -78,12 +88,15 @@ function flowNodes(input: {
       measured: { width: box.width, height: box.height },
       style: { width: box.width, height: box.height },
       ...(node.parent && boxes.has(node.parent) ? { parentId: node.parent } : {}),
-      data: { node, connectable },
-      ariaLabel: nodeLabel(node, t),
+      data: { node, connectable, annotation },
+      ariaLabel:
+        annotation && layer ? layer.t.described(label, annotationText(annotation, layer.t)) : label,
       draggable: editable,
       selected: selected.has(node.id),
-      className:
+      className: cn(
         'rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring [&.selected]:ring-2 [&.selected]:ring-primary',
+        annotation && ANNOTATION_RING[annotation.status],
+      ),
     }
   })
 }

@@ -24,6 +24,12 @@ import {
 import * as React from 'react'
 
 import { SequenceDiagramView } from '@/components/ui/sequence-diagram'
+import {
+  AnnotationContext,
+  type UmlAnnotation,
+  type UmlAnnotationStatus,
+  useAnnotationLayer,
+} from '@/components/ui/uml-diagram-annotations'
 import { flowEdges, flowNodes, movedLayout, nextSelection } from '@/components/ui/uml-diagram-flow'
 import {
   type DiagramFlowEdge,
@@ -88,6 +94,13 @@ interface UmlDiagramProps {
    * dropped on the canvas; gets the type and where it was dropped, in diagram coordinates.
    */
   onElementDrop?: (type: string, position: UmlPoint) => void
+  /**
+   * A status on some elements (the findings of a review against the code, say): a ring in the
+   * status colour and a badge on the element's corner. Ids that aren't in the diagram are skipped.
+   */
+  annotations?: readonly UmlAnnotation[]
+  /** Makes each badge a button that hands its element's id back (the app shows its findings). */
+  onAnnotationSelect?: (element: string) => void
   /** `toImage` draws the diagram as it shows now into an SVG or PNG data URL. */
   ref?: React.Ref<UmlDiagramHandle>
   className?: string
@@ -427,6 +440,8 @@ function DiagramCanvas({
   onDelete,
   onRename,
   onElementDrop,
+  annotations,
+  onAnnotationSelect,
   ref,
 }: Omit<UmlDiagramProps, 'diagram' | 'preview'> & {
   diagram: GraphDiagram
@@ -457,7 +472,8 @@ function DiagramCanvas({
   const [exporting, setExporting] = React.useState(false)
   const shown = exporting ? NOTHING : selection
   const selected = new Set(shown.elements)
-  const nodes = graph ? flowNodes({ graph, boxes, editable, connectable, selected, t }) : []
+  const layer = useAnnotationLayer({ annotations, onAnnotationSelect, exporting, preview })
+  const nodes = graph ? flowNodes({ graph, boxes, editable, connectable, selected, layer, t }) : []
   const pickedLines = new Set(shown.relations)
   const edges = graph ? flowEdges({ graph, markers, selected: pickedLines, t }) : []
 
@@ -481,7 +497,7 @@ function DiagramCanvas({
   const naming = canvasNaming(preview, label ?? t.kinds[diagram.kind], diagram.title)
 
   return (
-    <>
+    <AnnotationContext value={layer.scope}>
       <ReactFlow<DiagramFlowNode, DiagramFlowEdge>
         ref={canvas}
         tabIndex={-1}
@@ -549,7 +565,7 @@ function DiagramCanvas({
           {t.empty}
         </p>
       )}
-    </>
+    </AnnotationContext>
   )
 }
 
@@ -571,6 +587,8 @@ function SequencePane({
   selection,
   onSelectionChange,
   preview = false,
+  annotations,
+  onAnnotationSelect,
   fullscreen,
   frame,
   ref,
@@ -581,6 +599,7 @@ function SequencePane({
 }) {
   const root = React.useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = React.useState(false)
+  const layer = useAnnotationLayer({ annotations, onAnnotationSelect, exporting, preview })
   React.useImperativeHandle(ref, () => ({
     toImage: async (format) => {
       const el = root.current
@@ -618,6 +637,8 @@ function SequencePane({
         {...(classes.inner ? { className: classes.inner } : {})}
         {...(selection && !exporting ? { selected: selection.elements } : {})}
         {...(select && !preview ? { onSelect: select } : {})}
+        annotations={[...layer.marks.values()]}
+        onAnnotationSelect={layer.scope.onSelect}
         fit={preview}
       />
       {fullscreen && (
@@ -674,4 +695,10 @@ function UmlDiagram(props: UmlDiagramProps) {
   )
 }
 
-export { UmlDiagram, type UmlDiagramHandle, type UmlDiagramProps }
+export {
+  type UmlAnnotation,
+  type UmlAnnotationStatus,
+  UmlDiagram,
+  type UmlDiagramHandle,
+  type UmlDiagramProps,
+}
