@@ -8,6 +8,7 @@
 #       "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.8.0/{name}.json"
 #     The release is built from the commit the tag points at (or will point at: the one that set the
 #     version), never from whatever main holds now. A version with a release is left alone.
+#     Every attached file gets a build provenance attestation (`gh attestation verify`).
 #     A pre-release version (1.0.0-rc.0, while .changeset/pre.json exists) is released the same
 #     way and marked as a pre-release.
 # Tagging and releasing happen in this workflow on purpose: a tag pushed with the workflow's token
@@ -99,6 +100,10 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      # The build provenance attestation: a signed statement that this workflow, at this commit,
+      # built the attached files.
+      id-token: write
+      attestations: write
     env:
       TAG: ${{ needs.plan.outputs.tag }}
     steps:
@@ -115,6 +120,13 @@ jobs:
         run: node build/release-notes.mjs "$TAG" > release-notes.md
       - run: pnpm registry:build
       - run: pnpm tokens:dtcg
+      # Anyone can check that a downloaded item came from this repository's release workflow:
+      #   gh attestation verify button.json --repo Eldenn/coreloom-ui
+      - uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: |
+            public/r/*.json
+            public/tokens/*.json
       - name: Tag the release
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then

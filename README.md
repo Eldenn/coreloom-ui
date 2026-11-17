@@ -109,6 +109,14 @@ To stay on one version, point the namespace at its GitHub release:
 "registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/vX.Y.Z/{name}.json" }
 ```
 
+Every file attached to a release has a build provenance attestation: it proves the file was built by
+this repository's release workflow from the tagged commit. Check one you downloaded with the GitHub
+CLI:
+
+```bash
+gh attestation verify dialog.json --repo Eldenn/coreloom-ui
+```
+
 Review with `shadcn add … --diff` before `--overwrite`: installed files are yours.
 
 ### With AI assistants
@@ -255,6 +263,8 @@ starter:
 - **Install:** every item is added with `shadcn add` to a new Next.js app and to a new Vite app,
   each then type-checked and built. In Next.js every module is imported from a Server Component; in
   Vite, with the template's strict TypeScript settings.
+- **Security:** CodeQL on the code and the workflows (results under Security → Code scanning). Every
+  action is pinned to a commit SHA; Dependabot opens a weekly pull request to move the pins.
 
 `main` deploys to GitHub Pages only when everything passes. `build/build-site.sh` builds Storybook, the
 registry (`/r/`), the design tokens in the DTCG format (`/tokens/`), `llms.txt` and the starter demo
@@ -276,7 +286,8 @@ Releases are made with [Changesets](https://changesets.dev) by the **Release** w
    version, checks it against `package.json` and the CHANGELOG (`build/release-notes.mjs`), tags it
    `vx.y.z` (as `pnpm release` / `changeset git-tag` would) and publishes a GitHub release with that
    section as notes and the registry (`public/r/*.json`) and the tokens (`public/tokens/*.json`)
-   attached. A pushed tag doesn't start other workflows, so this happens in the same workflow.
+   attached, each with a build provenance attestation. A pushed tag doesn't start other workflows,
+   so this happens in the same workflow.
 
 The release only looks at `package.json`'s version on `main`: a version that is tagged but has no
 release (a failed run, a deleted release) is released again from its tag; a version with a release is

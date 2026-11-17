@@ -28,5 +28,19 @@ The components render content from users and models, so these matter most:
 - A registry item that installs something it shouldn't (files outside its paths, unexpected
   dependencies).
 
+## Checking what you install
+
+Every file attached to a GitHub release has a build provenance attestation. To confirm a file came
+from this repository's release workflow, and not from a copy:
+
+```bash
+gh attestation verify <file>.json --repo Eldenn/coreloom-ui
+```
+
+The workflows pin every action to a commit SHA (Dependabot updates the pins), and CodeQL analyses the
+code and the workflows on every pull request.
+
+## Out of scope
+
 Coreloom UI has no server and makes no network calls: what your app does with the callbacks it provides
 is your app's code.
