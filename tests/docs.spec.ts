@@ -1,4 +1,5 @@
-// The Guidelines pages (stories/guidelines/*.mdx): each renders its guide and its example story without errors.
+// The Guidelines pages (stories/guidelines/*.mdx) and the Getting started pages
+// (stories/getting-started/*.mdx): each renders its text, and its example story, without errors.
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -12,12 +13,13 @@ interface Entry {
 const index = JSON.parse(fs.readFileSync(path.resolve('public/storybook/index.json'), 'utf8')) as {
   entries: Record<string, Entry>
 }
-const pages = Object.values(index.entries).filter(
-  (e) => e.type === 'docs' && e.title.startsWith('Guidelines/'),
+const docs = Object.values(index.entries).filter((e) => e.type === 'docs')
+const pages = docs.filter(
+  (e) => e.title.startsWith('Guidelines/') || e.title.startsWith('Getting started/'),
 )
 
 test('every component has a guidelines page', () => {
-  expect(pages.length).toBeGreaterThan(80)
+  expect(docs.filter((e) => e.title.startsWith('Guidelines/')).length).toBeGreaterThan(80)
 })
 
 for (const pageEntry of pages) {

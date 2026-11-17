@@ -1,0 +1,160 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Getting started/Vite" />
+
+# Start with Vite
+
+From an empty folder to a Vite + React app that renders Coreloom components. These are the steps
+CI runs on every change (`build/check-install.sh vite`): every item is installed into a new app
+made this way, then type-checked with the template's strict settings and built.
+
+Prefer a whole app to start from? The starter is Vite with TanStack Router, Query and Form and
+every screen wired:
+
+```bash
+pnpm dlx degit Eldenn/coreloom-ui/starter my-app
+```
+
+## 1. Create the app
+
+```bash
+pnpm create vite@latest my-app --template react-ts
+cd my-app
+pnpm install
+pnpm add tailwindcss @tailwindcss/vite
+pnpm add -D @types/node
+```
+
+## 2. The `@/` alias
+
+Components import each other as `@/components/…` and `@/lib/…`. Add the alias to `compilerOptions`
+in both `tsconfig.json` and `tsconfig.app.json`:
+
+```json
+"paths": { "@/*": ["./src/*"] }
+```
+
+And to Vite, with the Tailwind plugin, in `vite.config.ts`:
+
+```ts
+import path from 'node:path'
+
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: { alias: { '@': path.resolve(import.meta.dirname, './src') } },
+})
+```
+
+Replace what's in `src/index.css` with `@import 'tailwindcss';` for now: step 5 fills it in.
+
+## 3. Set up shadcn on the Radix base
+
+```bash
+pnpm dlx shadcn@latest init --base radix
+```
+
+Coreloom is built on Radix. With a Base UI style (`base-*` in `components.json`), the CLI rewrites
+`asChild` as it installs the components and they stop compiling.
+
+## 4. Add the registry and install
+
+```bash
+pnpm dlx shadcn@latest registry add @coreloom=https://eldenn.github.io/coreloom-ui/r/{name}.json
+pnpm dlx shadcn@latest add @coreloom/all
+```
+
+`all` is the theme, the fonts, `cn` and every light component. Add `@coreloom/charts`,
+`@coreloom/editors` or `@coreloom/node-editor` for the parts built on large libraries, or a block
+(`@coreloom/app-shell`, `@coreloom/auth`, `@coreloom/ai-chat`…) for a whole screen. Each item pulls
+what it needs. **Getting started → Choose a component** says which one to reach for.
+
+## 5. The global CSS
+
+The theme installs into `src/styles/coreloom/`. Replace `src/index.css` with:
+
+```css
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './styles/coreloom/fonts.css';
+@import './styles/coreloom/tokens.css';
+@import './styles/coreloom/theme.css';
+@import './styles/coreloom/accents.css'; /* optional: accent presets */
+@import './styles/coreloom/surfaces.css'; /* optional: surface presets (mineral, bone) */
+```
+
+## 6. Providers at the root
+
+One `TooltipProvider` and one `Toaster` for the whole app, in `src/main.tsx`:
+
+```tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+
+import App from './App'
+import './index.css'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <TooltipProvider>
+      <App />
+      <Toaster />
+    </TooltipProvider>
+  </StrictMode>,
+)
+```
+
+- **Another language:** wrap it in `CoreloomI18nProvider` from `@/lib/i18n`: `locale="fr"` for French,
+  or `messages={es}` from `@/lib/i18n-es` (`@coreloom/i18n-es`) for Spanish. Without a provider
+  everything is English.
+- **A router:** blocks render plain `<a>` links until you hand them your router's link once with
+  `CoreloomLinkProvider` from `@/lib/link`. For TanStack Router, copy the starter's
+  [`router-link.tsx`](https://github.com/Eldenn/coreloom-ui/blob/main/starter/src/components/router-link.tsx).
+
+## 7. The theme before the first paint
+
+Coreloom is dark first: `data-theme="light"` on `<html>` switches to light. `ThemeMenu` and
+`AccentPicker` (`@coreloom/theme-toggle`) keep the choice in `localStorage`. To apply it before
+React loads, with no flash of the wrong theme, put this in the `<head>` of `index.html`:
+
+```html
+<script>
+  try {
+    var t = localStorage.getItem('theme')
+    if (t === 'light' || (t === 'system' && matchMedia('(prefers-color-scheme: light)').matches))
+      document.documentElement.dataset.theme = 'light'
+    var a = localStorage.getItem('accent')
+    if (a) document.documentElement.dataset.accent = a
+  } catch (e) {}
+</script>
+```
+
+## 8. Check it
+
+```tsx
+import { Button } from '@/components/ui/button'
+
+export default function App() {
+  return <Button>It works</Button>
+}
+```
+
+`pnpm dev` shows a cyan button on the dark background. `pnpm build` runs the template's strict type
+check (`verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUnusedLocals`): the components pass it.
+
+## Updating
+
+Installed files are your code: `shadcn add` never touches them without `--overwrite`. Before
+updating, read the release's **Upgrading** notes in the
+[changelog](https://github.com/Eldenn/coreloom-ui/blob/main/CHANGELOG.md), then see what would
+change:
+
+```bash
+pnpm dlx shadcn@latest add @coreloom/<item> --diff
+```

@@ -15,7 +15,14 @@
   <a href="https://eldenn.github.io/coreloom-ui/starter/">Starter demo</a> ·
   <a href="https://eldenn.github.io/coreloom-ui/r/registry.json">Registry</a> ·
   <a href="https://eldenn.github.io/coreloom-ui/tokens/coreloom.resolver.json">Design tokens</a> ·
-  <a href="./CHANGELOG.md">Changelog</a>
+  <a href="./CHANGELOG.md">Changelog</a> ·
+  <a href="./ROADMAP.md">Roadmap</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Eldenn/coreloom-ui/actions/workflows/registry.yml"><img src="https://github.com/Eldenn/coreloom-ui/actions/workflows/registry.yml/badge.svg?branch=main" alt="CI status"></a>
+  <a href="https://github.com/Eldenn/coreloom-ui/releases"><img src="https://img.shields.io/github/v/release/Eldenn/coreloom-ui?include_prereleases&amp;label=release" alt="Latest release"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/Eldenn/coreloom-ui" alt="MIT license"></a>
 </p>
 
 ---
@@ -44,6 +51,13 @@ Coreloom UI is built on Radix. In a new project, pick the Radix base when you se
 (`pnpm dlx shadcn@latest init --base radix`): with a Base UI style (`base-*` in `components.json`),
 the CLI rewrites the components as it installs them and they stop compiling.
 
+Step by step for a new app, the way CI checks it on every change:
+[Vite](https://eldenn.github.io/coreloom-ui/storybook/?path=/docs/getting-started-vite--docs) or
+[Next.js](https://eldenn.github.io/coreloom-ui/storybook/?path=/docs/getting-started-next-js--docs).
+Not sure which item you need? See
+[Choose a component](https://eldenn.github.io/coreloom-ui/storybook/?path=/docs/getting-started-choose-a-component--docs).
+Coming from 0.x: [Moving to 1.0](./MIGRATING.md).
+
 Add the registry to your project once:
 
 ```bash
@@ -59,16 +73,18 @@ pnpm dlx shadcn@latest add @coreloom/dialog      # or one at a time (pulls its d
 pnpm dlx shadcn@latest add @coreloom/app-shell   # or a whole screen: auth, settings, dashboard…
 ```
 
-At the top of your global CSS, replacing the colour block `shadcn init` wrote:
+The theme installs into `src/styles/coreloom/`. At the top of your global CSS (`src/index.css` with
+Vite; with Next.js, `src/app/globals.css`, where the paths start with `../styles/`), replacing the
+colour block `shadcn init` wrote:
 
 ```css
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import './coreloom/fonts.css';
-@import './coreloom/tokens.css';
-@import './coreloom/theme.css';
-@import './coreloom/accents.css'; /* optional: accent presets */
-@import './coreloom/surfaces.css'; /* optional: surface presets (mineral, bone) */
+@import './styles/coreloom/fonts.css';
+@import './styles/coreloom/tokens.css';
+@import './styles/coreloom/theme.css';
+@import './styles/coreloom/accents.css'; /* optional: accent presets */
+@import './styles/coreloom/surfaces.css'; /* optional: surface presets (mineral, bone) */
 ```
 
 Then wrap the app in `<TooltipProvider>` and render one `<Toaster />`. Using a router? Hand the blocks
@@ -188,6 +204,7 @@ Semantic Versioning, with the API it covers spelled out in [`VERSIONING.md`](./V
 names, exports, props, tokens and message keys. Items marked **experimental** (every block, and the heavier
 components: the rich text editor, UML diagrams, the node editor, the terminal, the form renderer)
 may still change in a minor release; their guides say so. Deprecated APIs keep working until the next major.
+Upgrading from 0.x: [`MIGRATING.md`](./MIGRATING.md). What comes next: [`ROADMAP.md`](./ROADMAP.md).
 
 ## Conventions
 
