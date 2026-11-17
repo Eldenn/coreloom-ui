@@ -10,7 +10,7 @@ The face of a spoken conversation with an AI: an animated avatar that shows whet
 
 - Hold to talk: press and hold the button, or hold Space or Enter while it has focus; letting go (or leaving the button) stops. In hands-free mode a tap starts and another stops; the button says "Stop talking" and is `aria-pressed`.
 - One polite live region announces the state ("Listening…") and each finished turn ("Ada: …"); partial words are shown, not read.
-- The status is always written under the avatar; an error says what to do ("The microphone is blocked…").
+- The status is always written under the avatar; an error says what to do ("The microphone is blocked…"), the avatar turns red and the talk button loses its accent, though it still works.
 - The level meter is decorative; it stops moving for reduced motion. Compute `level` from your audio (an `AnalyserNode`'s RMS), throttled to animation frames.
 - Ask for the microphone only when the person first presses the button, and say why.
 

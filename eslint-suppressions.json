@@ -62,7 +62,7 @@
       "count": 1
     },
     "max-lines-per-function": {
-      "count": 2
+      "count": 1
     },
     "no-nested-ternary": {
       "count": 3
@@ -421,11 +421,6 @@
       "count": 1
     }
   },
-  "src/components/ui/emoji-picker.tsx": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/components/ui/file-card.tsx": {
     "complexity": {
       "count": 1
@@ -662,9 +657,6 @@
     },
     "max-lines-per-function": {
       "count": 1
-    },
-    "no-nested-ternary": {
-      "count": 1
     }
   },
   "src/components/ui/rich-text-ai.tsx": {
@@ -863,7 +855,7 @@
       "count": 1
     },
     "max-lines-per-function": {
-      "count": 2
+      "count": 1
     },
     "no-nested-ternary": {
       "count": 3
@@ -1026,11 +1018,6 @@
   },
   "starter/src/components/ui/diff-viewer.tsx": {
     "complexity": {
-      "count": 1
-    }
-  },
-  "starter/src/components/ui/emoji-picker.tsx": {
-    "max-lines-per-function": {
       "count": 1
     }
   },
@@ -1269,9 +1256,6 @@
       "count": 1
     },
     "max-lines-per-function": {
-      "count": 1
-    },
-    "no-nested-ternary": {
       "count": 1
     }
   },

@@ -732,7 +732,13 @@ function Ide({
           const selected = path === active
           const dirty = file ? isDirty(file) : false
           const fileProblems = diagnostics[path] ?? []
-          const hasError = fileProblems.some((d) => d.severity === 'error')
+          const errors = fileProblems.filter((d) => d.severity === 'error').length
+          const warnings = fileProblems.filter((d) => d.severity === 'warning').length
+          const name = [
+            baseName(path),
+            ...(dirty ? [t.modified] : []),
+            ...(errors ? [t.problemsSummary(errors, warnings)] : []),
+          ].join(', ')
           return (
             <button
               key={path}
@@ -740,7 +746,9 @@ function Ide({
               role="tab"
               id={`${id}-tab-${path}`}
               aria-selected={selected}
-              aria-label={dirty ? `${baseName(path)}, ${t.modified}` : undefined}
+              aria-label={dirty || errors ? name : undefined}
+              // Delete closes the tab: the close mark below is for the pointer.
+              aria-keyshortcuts="Delete"
               aria-controls={`${id}-editor`}
               tabIndex={selected ? 0 : -1}
               title={path}
@@ -766,21 +774,27 @@ function Ide({
               }}
             >
               <FileTypeIcon path={path} />
-              <span className={cn('truncate', hasError && 'text-destructive')}>
+              <span className={cn('truncate', errors > 0 && 'text-destructive')}>
                 {baseName(path)}
               </span>
+              {errors > 0 && (
+                // The count, as well as the red name; the tab's label says it in words.
+                <span aria-hidden className="font-mono text-[11px] font-semibold text-destructive">
+                  {errors}
+                </span>
+              )}
               <span
                 data-slot="ide-tab-close"
                 aria-hidden
                 title={t.close(baseName(path))}
-                className="relative flex size-5 items-center justify-center rounded-sm hover:bg-background"
+                className="relative flex size-6 items-center justify-center rounded-sm hover:bg-background"
               >
                 {dirty ? (
                   <span className="size-2 rounded-full bg-foreground group-hover/tab:hidden" />
                 ) : null}
                 <CircleXIcon
                   className={cn(
-                    'opacity-0 group-hover/tab:opacity-100 group-data-[active]/tab:opacity-100',
+                    'opacity-0 group-hover/tab:opacity-100 group-focus-visible/tab:opacity-100 group-data-[active]/tab:opacity-100 pointer-coarse:opacity-100',
                     dirty && 'hidden group-hover/tab:block',
                   )}
                 />

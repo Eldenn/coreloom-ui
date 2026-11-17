@@ -43,6 +43,28 @@ function useControlled<T>(
   return [current, set]
 }
 
+/** Under this width two columns of code are unreadable: the diffs are shown unified. */
+const SPLIT_MIN_WIDTH = 640
+
+/** True while the element is narrower than `below` pixels. */
+function useNarrow(ref: React.RefObject<HTMLElement | null>, below: number) {
+  const [narrow, setNarrow] = React.useState(false)
+  // A layout effect: the first observation arrives before the paint, so a phone never shows the
+  // wide layout first.
+  React.useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const observer = new ResizeObserver(([entry]) => {
+      setNarrow(entry.contentRect.width < below)
+    })
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [ref, below])
+  return narrow
+}
+
 type CodeReviewProps = ReviewDiscussion & {
   files: ReviewFile[]
   /** Comment threads on the files' lines. Default none. */
@@ -51,7 +73,10 @@ type CodeReviewProps = ReviewDiscussion & {
   viewed?: string[]
   defaultViewed?: string[]
   onViewedChange?: (viewed: string[]) => void
-  /** Unified (one column) or split (before and after side by side). */
+  /**
+   * Unified (one column) or split (before and after side by side). A review narrower than 640 px
+   * shows unified diffs and hides the choice.
+   */
   layout?: ReviewLayout
   /** Default `unified`. */
   defaultLayout?: ReviewLayout
@@ -102,6 +127,8 @@ function CodeReview({
   const [viewedList, setViewedList] = useControlled(viewedProp, defaultViewed, onViewedChange)
   const viewed = React.useMemo(() => new Set(viewedList), [viewedList])
   const [layout, setLayout] = useControlled(layoutProp, defaultLayout, onLayoutChange)
+  const root = React.useRef<HTMLElement>(null)
+  const narrow = useNarrow(root, SPLIT_MIN_WIDTH)
   // Files the person opened or closed by hand; the others are open unless viewed.
   const [openState, setOpenState] = React.useState<Readonly<Record<string, boolean>>>({})
   const [active, setActive] = React.useState<string | null>(files.at(0)?.path ?? null)
@@ -130,6 +157,7 @@ function CodeReview({
 
   return (
     <section
+      ref={root}
       aria-label={ariaLabel ?? t.label}
       data-slot="code-review"
       className={cn('@container min-w-0 rounded-lg border border-border bg-background', className)}
@@ -157,18 +185,20 @@ function CodeReview({
           {t.viewedCount(files.filter((f) => viewed.has(f.path)).length, files.length)}
         </p>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <SegmentedControl
-            size="sm"
-            aria-label={t.layout}
-            value={layout}
-            onValueChange={(value) => {
-              setLayout(value === 'split' ? 'split' : 'unified')
-            }}
-            options={[
-              { value: 'unified', label: t.unified },
-              { value: 'split', label: t.split },
-            ]}
-          />
+          {narrow ? null : (
+            <SegmentedControl
+              size="sm"
+              aria-label={t.layout}
+              value={layout}
+              onValueChange={(value) => {
+                setLayout(value === 'split' ? 'split' : 'unified')
+              }}
+              options={[
+                { value: 'unified', label: t.unified },
+                { value: 'split', label: t.split },
+              ]}
+            />
+          )}
           {onSubmitReview ? <FinishReview onSubmit={onSubmitReview} /> : null}
         </div>
       </div>
@@ -205,7 +235,7 @@ function CodeReview({
               key={file.path}
               file={file}
               threads={threads}
-              layout={layout}
+              layout={narrow ? 'unified' : layout}
               wrap={wrap}
               viewed={viewed.has(file.path)}
               onViewedChange={(on) => {

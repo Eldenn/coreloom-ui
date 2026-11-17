@@ -110,7 +110,7 @@ function SortableCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id })
+  } = useSortable({ id: card.id, attributes: { roleDescription: t.roleDescription } })
   return (
     <li
       ref={setNodeRef}
@@ -152,6 +152,7 @@ function SortableCard({
             variant="ghost"
             size="icon-sm"
             aria-label={t.actions(card.title)}
+            data-card-actions={card.id}
             className="size-6 shrink-0"
           >
             <MoreHorizontalIcon />
@@ -247,6 +248,19 @@ function Column({
   )
 }
 
+/**
+ * A card moved from its menu is drawn again in its new column, and the menu button that had focus
+ * goes with the old one: focus the new one on the next frame, so the next move starts from there.
+ */
+function focusCardActions(board: HTMLElement | null, cardId: string) {
+  requestAnimationFrame(() => {
+    const buttons = board?.querySelectorAll<HTMLElement>('[data-card-actions]') ?? []
+    Array.from(buttons)
+      .find((b) => b.dataset.cardActions === cardId)
+      ?.focus()
+  })
+}
+
 function KanbanBoard({
   columns,
   cards,
@@ -270,6 +284,7 @@ function KanbanBoard({
   const [items, setItems] = React.useState(cards)
   const [activeId, setActiveId] = React.useState<UniqueIdentifier | null>(null)
   const [announcement, setAnnouncement] = React.useState('')
+  const boardRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the working copy from props when no drag is in progress
     if (activeId === null) setItems(cards)
@@ -357,15 +372,22 @@ function KanbanBoard({
   }
 
   const moveTo = (card: KanbanCard, columnId: string) => {
-    const rest = items.filter((c) => c.id !== card.id)
-    onCardsChange([...rest, { ...card, columnId }])
+    const next = [...items.filter((c) => c.id !== card.id), { ...card, columnId }]
+    // The working copy moves the card in this render, so it is there to take focus on the next frame.
+    setItems(next)
+    onCardsChange(next)
     setAnnouncement(t.moved(card.title, columnTitle(columnId)))
+    focusCardActions(boardRef.current, card.id)
   }
 
   const active = activeId !== null ? items.find((c) => c.id === activeId) : undefined
 
   return (
-    <div data-slot="kanban" className={cn('flex gap-3 overflow-x-auto pb-2', className)}>
+    <div
+      ref={boardRef}
+      data-slot="kanban"
+      className={cn('flex gap-3 overflow-x-auto pb-2', className)}
+    >
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}

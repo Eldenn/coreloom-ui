@@ -405,6 +405,11 @@ function FilterBar<T>({
           size="sm"
           onClick={() => {
             onSaveView(current)
+            // Once the view is stored this button goes away. If the focus went with it (and not
+            // into a dialog the app opened to ask for a name), it moves to "Add filter".
+            requestAnimationFrame(() => {
+              if (document.activeElement === document.body) addRef.current?.focus()
+            })
           }}
         >
           {t.saveView}

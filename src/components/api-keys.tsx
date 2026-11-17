@@ -217,6 +217,21 @@ function ApiKeys({
   const date = (d: Date) =>
     d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
   const scopeLabel = (v: string) => scopes.find((s) => s.value === v)?.label ?? v
+  const contentRef = React.useRef<HTMLDivElement>(null)
+
+  async function revoke(id: string) {
+    const buttons = [...(contentRef.current?.querySelectorAll<HTMLElement>('[data-revoke]') ?? [])]
+    const index = keys.findIndex((k) => k.id === id)
+    await onRevoke?.(id)
+    requestAnimationFrame(() => {
+      // Still there (the app kept the key), or the user has moved on: leave focus alone.
+      if (buttons.at(index)?.isConnected || document.activeElement !== document.body) return
+      // The row went with its button: focus the next key's (or the previous one's), else the card.
+      const next = buttons.at(index + 1) ?? (index > 0 ? buttons.at(index - 1) : undefined)
+      if (next?.isConnected) next.focus()
+      else contentRef.current?.focus()
+    })
+  }
 
   return (
     <Card className={cn('gap-0 p-0', className)}>
@@ -231,7 +246,7 @@ function ApiKeys({
           </CardAction>
         )}
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent ref={contentRef} tabIndex={-1} className="p-0 outline-none">
         {keys.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
             <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground [&_svg]:size-5">
@@ -290,6 +305,7 @@ function ApiKeys({
                         variant="ghost"
                         size="icon-sm"
                         aria-label={t.revoke(k.name)}
+                        data-revoke
                         className="max-sm:absolute max-sm:top-3 max-sm:right-3"
                       >
                         <Trash2Icon />
@@ -302,10 +318,7 @@ function ApiKeys({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>{messages.common.cancel}</AlertDialogCancel>
-                        <AlertDialogAction
-                          variant="destructive"
-                          onClick={() => void onRevoke(k.id)}
-                        >
+                        <AlertDialogAction variant="destructive" onClick={() => void revoke(k.id)}>
                           {t.revokeConfirm}
                         </AlertDialogAction>
                       </AlertDialogFooter>

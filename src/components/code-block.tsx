@@ -39,7 +39,7 @@ function CodeBlock({
         >
           <code>{children ?? code}</code>
         </pre>
-        {!title && <CopyButton value={code} className="absolute top-2.5 right-2.5" />}
+        {!title && <CopyButton value={code} className="absolute top-2.5 right-2.5 bg-inset" />}
       </div>
     </div>
   )

@@ -178,7 +178,15 @@ export const Overview: Story = {
           />
         </div>
         <ChartCard title="Recent deployments">
-          <Table>
+          {/* On a phone the table scrolls sideways: the region takes focus so arrow keys scroll it. */}
+          <Table
+            container={{
+              role: 'region',
+              'aria-label': 'Recent deployments',
+              tabIndex: 0,
+              className: 'outline-none focus-visible:ring-[3px] focus-visible:ring-ring',
+            }}
+          >
             <TableHeader>
               <TableRow>
                 <TableHead>Project</TableHead>

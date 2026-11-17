@@ -133,7 +133,7 @@ export const Default: Story = {
 /** Read only: move, select and copy. */
 export const ReadOnly: Story = { args: { readOnly: true } }
 
-/** A cell that isn't a number in a number column shows in red, and isn't summed. */
+/** A cell that isn't a number in a number column shows in red with a corner mark, and isn't summed. */
 export const InvalidNumber: Story = {
   args: {
     rows: rows.map((r) => (r.id === 'r3' ? { ...r, units: 'six' } : r)),

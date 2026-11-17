@@ -2011,7 +2011,8 @@
         "@coreloom/theme",
         "@coreloom/utils",
         "@coreloom/i18n",
-        "@coreloom/button"
+        "@coreloom/button",
+        "@coreloom/checkbox"
       ],
       "files": [
         {
@@ -2077,7 +2078,8 @@
         "@coreloom/chip-group",
         "@coreloom/date-picker",
         "@coreloom/native-select",
-        "@coreloom/number-input"
+        "@coreloom/number-input",
+        "@coreloom/radio-group"
       ],
       "files": [
         {

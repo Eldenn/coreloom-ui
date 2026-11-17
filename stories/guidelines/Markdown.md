@@ -11,6 +11,7 @@ A model's answer, rendered: headings, lists, tables, task lists, links, inline c
 - Raw HTML in the text is skipped, never rendered: model output is untrusted.
 - Links open in a new tab with `rel="noreferrer noopener"`; jumps within the answer (footnotes) stay in the page. Addresses go through react-markdown's safe-URL filter (`javascript:` and the like are dropped).
 - Code blocks are a figure captioned by their language, with Copy (it shows a tick once copied). A block whose lines don't fit scrolls sideways and then takes focus, so the keyboard can scroll it; one that fits isn't a tab stop.
+- A table wider than the answer scrolls sideways in its own box, which then takes a tab stop and a translated name ("Table, scrollable"); one that fits isn't a tab stop.
 - `codeBlocks` maps a fence language (lower case) to a renderer, which gets `code`, `language`, `streaming` and the plain code block as `children`; register renderers once for a whole chat with `<MarkdownCodeBlocksContext value={…}>` (`codeBlocks` adds to it and wins). Diagram Code Block draws `mermaid and `plantuml this way.
 - Footnotes (`[^1]`) are listed under a translated "Footnotes" label — a paragraph, not a heading, so the page's outline stays yours — with translated "Back to reference" links. Their ids are unique to each block.
 - Task-list checkboxes are read-only and named "Done" or "To do".

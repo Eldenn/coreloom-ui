@@ -7,6 +7,7 @@ Keyboard shortcuts for an app: running them (`useHotkeys`), drawing them (`Hotke
 - Single keys and sequences don't fire while someone types in a field; combinations with Ctrl, ⌘ or Alt do.
 - Open the list with "?" and from a help menu, so people who don't know the shortcut can find it.
 - Don't take the browser's or the screen reader's keys (⌘L, ⌘T, Ctrl+Tab, single letters while reading), and offer a way to turn single-key shortcuts off.
+- In the dialog, the search box filters by description and a polite status says how many shortcuts are left, or that none match. Group titles are paragraphs, not headings; a list too long for the dialog scrolls and then takes a tab stop.
 - Show a shortcut next to its action (menus, tooltips) with `Hotkey`, so people learn it.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/keyboard-shortcuts` and import from `@/components/ui/keyboard-shortcuts`.

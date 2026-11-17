@@ -23,5 +23,6 @@ type SegmentedOption = {}
 SegmentedOption.value: string
 SegmentedOption.label: React.ReactNode
 SegmentedOption.icon?: React.ReactNode
+SegmentedOption.aria-label?: string | undefined
 SegmentedOption.disabled?: boolean | undefined
 ```

@@ -804,26 +804,71 @@ function CaseDetail({
           {row.baseline.output === row.candidate.output ? (
             <>
               <span className="text-[12.5px] text-muted-foreground">{t.sameOutput}</span>
-              <Text>{row.candidate.output}</Text>
+              <Output>{row.candidate.output}</Output>
             </>
           ) : (
-            <DiffViewer
+            <OutputDiff
               before={row.baseline.output}
               after={row.candidate.output}
-              view="split"
-              wrap
-              context={20}
               beforeLabel={baseline.label}
               afterLabel={run.label}
             />
           )}
         </Block>
       ) : (
-        <Block label={t.output}>
-          <Text>{c.output}</Text>
-        </Block>
+        <SingleOutput result={c} />
       )}
     </>
+  )
+}
+
+/** One run's output. A case that failed before answering has its error, and no empty box here. */
+function SingleOutput({ result }: { result: EvalCaseResult }) {
+  const t = useCoreloomI18n().messages.ai.evals
+  if (!result.output && result.error !== undefined) return null
+  return (
+    <Block label={t.output}>
+      <Output>{result.output}</Output>
+    </Block>
+  )
+}
+
+/** An output's text; an empty one says so instead of drawing an empty box. */
+function Output({ children }: { children: string }) {
+  const t = useCoreloomI18n().messages.ai.evals
+  if (!children) return <p className="m-0 text-[13px] text-muted-foreground">{t.noOutput}</p>
+  return <Text>{children}</Text>
+}
+
+/** Under this width two columns leave a dozen characters per line: the diff is shown unified. */
+const SPLIT_MIN_WIDTH = 480
+
+/** Two runs' outputs compared: side by side, or in one column where there is no room for two. */
+function OutputDiff(props: {
+  before: string
+  after: string
+  beforeLabel: string
+  afterLabel: string
+}) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [narrow, setNarrow] = React.useState(false)
+  // A layout effect: the first observation arrives before the paint, so a phone never shows the
+  // two columns first.
+  React.useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const observer = new ResizeObserver(([entry]) => {
+      setNarrow(entry.contentRect.width < SPLIT_MIN_WIDTH)
+    })
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+  return (
+    <div ref={ref} className="min-w-0">
+      <DiffViewer view={narrow ? 'unified' : 'split'} wrap context={20} {...props} />
+    </div>
   )
 }
 

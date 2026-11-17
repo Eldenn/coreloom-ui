@@ -127,6 +127,16 @@ function shiftTask(
   return { start: task.start, end: next < task.start ? task.start : next }
 }
 
+/** True when a task starts before the one it waits for has ended. A milestone never makes one late. */
+const startsBeforeEnd = (from: GanttTask, fromDates: GanttRange, dates: GanttRange) =>
+  !from.milestone && dayDiff(fromDates.end, dates.start) <= 0
+
+/** What the arrow keys change: Alt moves the first day alone, Shift the last one. */
+function keyMode(e: { altKey: boolean; shiftKey: boolean }): Drag['mode'] {
+  if (e.altKey) return 'start'
+  return e.shiftKey ? 'end' : 'move'
+}
+
 const tones: Record<GanttTone, { bar: string; fill: string; diamond: string }> = {
   primary: {
     bar: 'border-primary/55 bg-primary-subtle',
@@ -252,7 +262,7 @@ function Gantt({
   }
 
   const scrollToToday = React.useCallback(
-    (behavior: ScrollBehavior = 'smooth') => {
+    (behavior: ScrollBehavior) => {
       const el = scroller.current
       if (!el) return
       const list = el.querySelector<HTMLElement>('[data-slot=gantt-corner]')?.offsetWidth ?? 0
@@ -274,8 +284,11 @@ function Gantt({
     ]
     if (task.progress !== undefined && !task.milestone)
       parts.push(t.progress(Math.round(task.progress)))
-    const after = (task.dependsOn ?? []).flatMap((id) => byId.get(id)?.name ?? [])
-    if (after.length) parts.push(t.dependsOn(after.join(', ')))
+    const waitsFor = (task.dependsOn ?? []).flatMap((id) => byId.get(id) ?? [])
+    if (waitsFor.length) parts.push(t.dependsOn(waitsFor.map((from) => from.name).join(', ')))
+    // The red, dashed arrow in words: the drawing is hidden from assistive technology.
+    const late = waitsFor.filter((from) => startsBeforeEnd(from, datesOf(from), dates))
+    if (late.length) parts.push(t.startsBefore(late.map((from) => from.name).join(', ')))
     return parts.join(', ')
   }
 
@@ -315,7 +328,7 @@ function Gantt({
     if (!onTaskChange || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
     e.preventDefault()
     const step = e.key === 'ArrowLeft' ? -1 : 1
-    commit(task, shiftTask(task, e.shiftKey && !task.milestone ? 'end' : 'move', step))
+    commit(task, shiftTask(task, task.milestone ? 'move' : keyMode(e), step))
   }
 
   const todayX = x(today)
@@ -337,7 +350,14 @@ function Gantt({
           {title ?? t.title}
         </p>
         {toolbar}
-        <Button variant="outline" size="sm" onClick={() => scrollToToday()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            scrollToToday(still ? 'auto' : 'smooth')
+          }}
+        >
           {t.today}
         </Button>
         <SegmentedControl
@@ -471,7 +491,7 @@ function Gantt({
                     const x2 = x(b.start) + (task.milestone ? dayWidth / 2 - 8 : 0)
                     const y1 = fromRow * ROW + ROW / 2
                     const y2 = toRow * ROW + ROW / 2
-                    const late = dayDiff(a.end, b.start) <= 0 && !from.milestone
+                    const late = startsBeforeEnd(from, a, b)
                     const d =
                       x2 - x1 >= 16
                         ? `M${x1},${y1} H${x1 + 8} V${y2} H${x2}`
@@ -484,6 +504,8 @@ function Gantt({
                         strokeWidth={1.25}
                         markerEnd={`url(#${markerId})`}
                         data-late={late || undefined}
+                        // Dashed as well as red: colour alone doesn't say it is late.
+                        strokeDasharray={late ? '4 3' : undefined}
                         className={late ? 'stroke-destructive' : 'stroke-muted-foreground/70'}
                       />,
                     ]
@@ -635,12 +657,14 @@ function Gantt({
                                 <span
                                   aria-hidden
                                   data-edge="start"
-                                  className="absolute inset-y-0 left-0 w-2 cursor-ew-resize rounded-l-md group-hover:bg-foreground/10"
+                                  // Drawn 8 px wide; the pseudo-element makes it 24 px to grab,
+                                  // outwards so a short bar can still be moved by its middle.
+                                  className="absolute inset-y-0 left-0 w-2 cursor-ew-resize rounded-l-md group-hover:bg-foreground/10 before:absolute before:inset-y-0 before:right-0 before:w-6"
                                 />
                                 <span
                                   aria-hidden
                                   data-edge="end"
-                                  className="absolute inset-y-0 right-0 w-2 cursor-ew-resize rounded-r-md group-hover:bg-foreground/10"
+                                  className="absolute inset-y-0 right-0 w-2 cursor-ew-resize rounded-r-md group-hover:bg-foreground/10 before:absolute before:inset-y-0 before:left-0 before:w-6"
                                 />
                               </>
                             )}

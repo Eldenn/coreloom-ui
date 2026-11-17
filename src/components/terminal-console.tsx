@@ -170,6 +170,10 @@ function TerminalConsole({
       if (next?.id === split) setSplit(undefined)
       if (next) document.getElementById(`${id}-tab-${next.id}`)?.focus()
       else document.getElementById(`${id}-new`)?.focus()
+    } else if (activeSession) {
+      // A split pane closed with its own button: the button goes too, so focus the terminal
+      // that stays.
+      document.getElementById(`${id}-tab-${activeSession.id}`)?.focus()
     }
   }
 

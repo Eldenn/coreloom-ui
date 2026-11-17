@@ -8,7 +8,7 @@ What agents did: `RunList`, a sortable table of runs (agent, status, trigger, st
 
 - Spans nest under their parent and are ordered as they ran; each is a button that says whether it is selected.
 - The first failed step is selected on open, so the cause is in view.
-- Details show input, output or the error, tokens and cost; changes are announced politely.
+- Details show input, output or the error, tokens and cost; picking a step announces its name and kind, not the whole pane.
 - Durations, tokens and costs follow the locale; costs keep fractions of a cent readable.
 - Shapes map to OpenTelemetry spans and to what tools like Langfuse or the AI SDK's telemetry record.
 

@@ -84,7 +84,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A roadmap on a timeline: bars with their progress, milestones, dependency arrows (red when a task starts before the one it waits for ends), groups and a today line, with a day / week / month zoom. Pass `onTaskChange` to let people move bars and drag their ends, with the mouse or the arrow keys (Shift moves the end); save the new dates in it. `onTaskClick` and `selectedId` open your own task panel.',
+          'A roadmap on a timeline: bars with their progress, milestones, dependency arrows (red and dashed when a task starts before the one it waits for ends), groups and a today line, with a day / week / month zoom. Pass `onTaskChange` to let people move bars and drag their ends, with the mouse or the arrow keys (Alt moves the start, Shift the end); save the new dates in it. `onTaskClick` and `selectedId` open your own task panel.',
       },
     },
   },
@@ -131,7 +131,7 @@ export const Months: Story = { args: { defaultZoom: 'month' } }
 /** By day, with weekends shaded. */
 export const Days: Story = { args: { defaultZoom: 'day' } }
 
-/** A dependency that is late: the arrow turns red. */
+/** A dependency that is late: the arrow turns red and dashed, and the bar's name says it. */
 export const LateDependency: Story = {
   args: {
     tasks: roadmap.map((t) => (t.id === 'qa' ? { ...t, start: day(11, 10) } : t)),

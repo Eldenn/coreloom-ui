@@ -15,6 +15,25 @@ const node = (page: Page, name: string, canvasName?: string) =>
 const panel = (page: Page) => page.getByRole('complementary', { name: 'Node settings' })
 const edges = (page: Page) => page.locator('.react-flow__edge')
 
+// The first view opens on the start of a long workflow at a readable zoom, which leaves the last
+// nodes on the edge of the canvas (under the settings panel, or where a drag pans the view). Tests
+// that point at those nodes show the whole workflow first, and wait for the fit's animation to end.
+async function openWhole(page: Page) {
+  await open(page, 'components-workflow-node-editor--default')
+  const viewport = page.locator('.react-flow__viewport')
+  let before = await viewport.getAttribute('style')
+  await page.getByRole('button', { name: 'Fit to view' }).click()
+  await expect(viewport).not.toHaveAttribute('style', before ?? '')
+  await expect
+    .poll(async () => {
+      const now = await viewport.getAttribute('style')
+      const still = now === before
+      before = now
+      return still
+    })
+    .toBe(true)
+}
+
 test.describe('Node editor (Components/Workflow/Node editor)', () => {
   test('adds a node from the list after the selected one, connected to it', async ({ page }) => {
     await open(page, 'components-workflow-node-editor--selected')
@@ -52,7 +71,7 @@ test.describe('Node editor (Components/Workflow/Node editor)', () => {
   })
 
   test('draws a connection from an output to an input with the pointer', async ({ page }) => {
-    await open(page, 'components-workflow-node-editor--default')
+    await openWhole(page)
     await expect(edges(page)).toHaveCount(4)
     const from = node(page, 'Welcome email').locator('.react-flow__handle.source')
     const to = node(page, 'Tell sales').locator('.react-flow__handle.target')
@@ -223,7 +242,7 @@ test.describe('Quick editing (Components/Workflow/Node editor)', () => {
   test('the “+” after an open output adds a connected node, and focus lands on it', async ({
     page,
   }) => {
-    await open(page, 'components-workflow-node-editor--default')
+    await openWhole(page)
     await expect(edges(page)).toHaveCount(4)
     await page.getByRole('button', { name: 'Add a node after Tell sales' }).click()
     await page.getByPlaceholder('Search nodes…').fill('wait')
@@ -264,7 +283,7 @@ test.describe('Quick editing (Components/Workflow/Node editor)', () => {
   })
 
   test('right-click a node to disable it; D turns it back on', async ({ page }) => {
-    await open(page, 'components-workflow-node-editor--default')
+    await openWhole(page)
     const sales = node(page, 'Tell sales')
     await sales.click({ button: 'right' })
     await page.getByRole('menuitem', { name: 'Disable' }).click()

@@ -103,7 +103,7 @@ function Entry({ entry }: { entry: ChangelogEntry }) {
           </h2>
           <a
             href={`#${entry.id}`}
-            className="mt-1.5 shrink-0 rounded-sm text-muted-foreground opacity-60 outline-none group-hover:opacity-100 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-sm text-fg-secondary outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring"
           >
             <LinkIcon aria-hidden className="size-4" />
             <span className="sr-only">{t.link}</span>

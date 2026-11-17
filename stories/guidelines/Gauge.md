@@ -11,8 +11,8 @@ One value against its range, as an open ring with the number in the middle: a qu
 - `higherIsBetter` — for uptime or a score: the zones then start at or below the thresholds;
 - `formatValue` (default: the locale's number format) and `size` (default 160).
 
-- It's a `meter` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax` and a value text ("86.5 % of 100, warning"); the label names it.
-- Colour is never the only sign: with thresholds, the status ("Normal", "Warning", "Critical") is written under the label, and tick marks show where the zones start.
+- It's a `meter` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax` and a value text ("86.5% of 100, warning"; the percent sign is spaced as the locale writes it); the label names it.
+- Colour is never the only sign: with thresholds, the status ("Normal", "Warning", "Critical") is written under the label, and notches on the track show where the zones ahead of the value start.
 - Values outside the range are clamped on the ring; the number in the middle stays the real one.
 - For a value inside a sentence or a table row, use `Progress`; for the context window of a chat, `ContextMeter`.
 

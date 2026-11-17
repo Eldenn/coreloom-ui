@@ -445,6 +445,22 @@ function ActiveSessions({
       Number(b.current ?? false) - Number(a.current ?? false) ||
       b.lastActiveAt.getTime() - a.lastActiveAt.getTime(),
   )
+  const listRef = React.useRef<HTMLUListElement>(null)
+
+  async function revoke(id: string) {
+    const buttons = [...(listRef.current?.querySelectorAll<HTMLElement>('[data-revoke]') ?? [])]
+    const index = sorted.filter((s) => !s.current).findIndex((s) => s.id === id)
+    await onRevoke?.(id)
+    requestAnimationFrame(() => {
+      // Still there (the app kept the session), or the user has moved on: leave focus alone.
+      if (buttons.at(index)?.isConnected || document.activeElement !== document.body) return
+      // The row went with its button: focus the next session's (or the previous one's), else the list.
+      const next = buttons.at(index + 1) ?? (index > 0 ? buttons.at(index - 1) : undefined)
+      if (next?.isConnected) next.focus()
+      else listRef.current?.focus()
+    })
+  }
+
   return (
     <Card className={cn('gap-0 p-0', className)}>
       <CardHeader className="border-b border-border px-5 py-4">
@@ -478,7 +494,7 @@ function ActiveSessions({
         )}
       </CardHeader>
       <CardContent className="p-0">
-        <ul className="m-0 list-none p-0">
+        <ul ref={listRef} tabIndex={-1} className="m-0 list-none p-0 outline-none">
           {sorted.map((s) => {
             const Icon = deviceIcon[s.device ?? 'laptop']
             return (
@@ -506,7 +522,8 @@ function ActiveSessions({
                     variant="ghost"
                     size="sm"
                     aria-label={t.revoke(s.name)}
-                    onClick={() => void onRevoke(s.id)}
+                    data-revoke
+                    onClick={() => void revoke(s.id)}
                   >
                     {t.revokeShort}
                   </Button>

@@ -21,6 +21,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type Header,
   type RowSelectionState,
   type SortingState,
   type Table as TanstackTable,
@@ -287,7 +288,7 @@ function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id} aria-rowindex={isVirtual ? 1 : undefined}>
               {group.headers.map((header) => (
-                <TableHead key={header.id} colSpan={header.colSpan}>
+                <TableHead key={header.id} colSpan={header.colSpan} aria-sort={ariaSort(header)}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(header.column.columnDef.header, header.getContext())}
@@ -378,6 +379,14 @@ function ServerSearch({ server, placeholder }: { server: DataTableServer; placeh
       />
     </div>
   )
+}
+
+/** The sort state a header cell exposes; nothing on a column that can't be sorted. */
+function ariaSort<TData>(header: Header<TData, unknown>): React.AriaAttributes['aria-sort'] {
+  if (header.isPlaceholder || !header.column.getCanSort()) return undefined
+  const sorted = header.column.getIsSorted()
+  if (!sorted) return 'none'
+  return sorted === 'asc' ? 'ascending' : 'descending'
 }
 
 /** Sortable column header: click cycles ascending → descending → off. */

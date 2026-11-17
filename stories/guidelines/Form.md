@@ -16,7 +16,8 @@ const form = useAppForm({
 </form>
 ```
 
-- Errors appear once a field has been left or the form submitted, then follow the typing. The control gets `aria-invalid` and `aria-describedby` (description + error); the `FieldError` is announced (`role="alert"`).
+- Errors appear once a field has been left or the form submitted, then follow the typing. The control gets `aria-invalid` and `aria-describedby` (description + error); so the error is read with the field. Errors are not alerts: a form with five mistakes must not interrupt five times.
+- When a submit of the `<form>` fails, focus moves to the first invalid field and `form.SubmitButton` says how many fields need attention in one polite status ("3 fields need attention."). Keep the button inside the `<form>`; a `form.handleSubmit()` you call from code doesn't move focus.
 - The submit button stays enabled so a click reveals every error; while submitting it is disabled with a `Spinner` and the `pendingLabel`.
 - Async checks go on the field: `validators={{ onChangeAsync, onChangeAsyncDebounceMs: 400 }}` ("acme is taken"). For your own field components, build on `useFieldContext()` and register them with `createFormHook` the same way.
 - The auth and settings blocks are built on it: read `login-form.tsx` for a complete example.

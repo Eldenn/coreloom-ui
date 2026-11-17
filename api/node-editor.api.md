@@ -313,6 +313,10 @@ NoteData.onText: (text: string) => void
 NoteData.onResizeStart: () => void
 NoteData.onResizeEnd: () => void
 type NoteNode = { id: string; position: import("@xyflow/react").XYPosition; data: NoteData; sourcePosition?: import("@xyflow/react").Position; targetPosition?: import("@xyflow/react").Position; hidden?: boolean; selected?: boolean; dragging?: boolean; draggable?: boolean; selectable?: boolean; connectable?: boolean; deletable?: boolean; dragHandle?: string; width?: number; height?: number; initialWidth?: number; initialHeight?: number; parentId?: string; zIndex?: number; extent?: 'parent' | import("@xyflow/react").CoordinateExtent | null; expandParent?: boolean; ariaLabel?: string; origin?: import("@xyflow/react").NodeOrigin; handles?: import("@xyflow/react").NodeHandle[]; measured?: { width?: number; height?: number; }; } & { type: 'note'; } & { style?: React.CSSProperties; className?: string; resizing?: boolean; focusable?: boolean; ariaRole?: React.AriaRole; domAttributes?: Omit<React.HTMLAttributes<HTMLDivElement>, 'id' | 'style' | 'className' | 'draggable' | 'role' | 'aria-label' | 'defaultValue' | 'dangerouslySetInnerHTML' | keyof React.DOMAttributes<HTMLDivElement>>; }
+const READABLE_ZOOM: 0.85
+function ReadableFirstFit
+ReadableFirstFit.padding: number
+function readableViewport(bounds: { x: number; y: number; width: number; height: number; }, pane: { width: number; height: number; }, zoom: number) => { x: number; y: number; zoom: number; }
 function refitGroups<W extends CanvasGraph>(before: CanvasGraph, after: W, sizes?: Sizes) => W
 function removeCanvasItems<W extends CanvasGraph>(wf: W, ids: readonly string[]) => W
 function updateGroup<W extends CanvasGraph>(wf: W, id: string, patch: Partial<Omit<WorkflowGroup, 'id'>>) => W

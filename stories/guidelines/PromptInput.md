@@ -12,6 +12,7 @@ The composer at the bottom of a chat: a text box that grows with its content, op
 - Enter sends, Shift + Enter breaks the line; Enter while composing with an input method (Japanese, Chinese…) never sends.
 - The shortcut is written out for screen readers and linked to the box with `aria-describedby`.
 - Empty or whitespace-only text never sends; the box clears after sending and keeps focus.
+- Removing an attachment is announced, and the focus moves to the next attachment, or to the box after the last one.
 - Keep the toolbar to a few compact controls; put settings in the agent, not the composer.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/prompt-input` and import from `@/components/ui/prompt-input`.

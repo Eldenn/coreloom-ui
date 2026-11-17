@@ -11,5 +11,8 @@ Folders and files to browse and organise: a drive, a media library, a project's 
 - The items are one listbox with several selection: click selects one, Ctrl/⌘-click adds, Shift-click selects a range; the keyboard moves with the arrows (rows of the grid with Up and Down), Space selects, Shift+arrows extends, Ctrl/⌘+A selects all, Escape clears, Enter opens, Backspace or Alt+Up goes to the parent folder, Delete deletes.
 - Drag selected items onto a folder or a crumb of the breadcrumb to move them. A folder can't go into itself or one of its subfolders. Everyone else uses **Move to** in the selection bar.
 - Selecting, opening a folder and moving are announced politely, in the reader's language.
+- Focus stays in the list: opening a folder, going back up, moving, deleting and clearing the selection put it on an item (on the empty state when the folder has none). If `onDelete` asks for confirmation first, give focus back to the list yourself once the items are gone.
+- On a touch screen every item shows its tick, in the grid and in the list, to select several without a keyboard.
+- In the list view the column buttons sort; the one in use says its direction.
 - Folders come first; names sort the way people count ("2" before "10"); sizes and dates follow the locale.
 - Don't use it for a single upload field: that's FileUpload. For a read-only hierarchy without files, TreeView.

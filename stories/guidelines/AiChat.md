@@ -33,13 +33,15 @@ onEdit={(id, text) => {
 
 **Versions (branches).** The AI SDK keeps one thread, so versions are yours to store: after Regenerate or an edit, keep the old message as a sibling instead of dropping it (a tree of messages, each parent remembering which child is shown). Pass `messages` as the path on screen and `branches` keyed by the id of each message shown: `{ index, count }`, `index` from 0. A message with `count` above 1 gets "‹ 2 / 3 ›" in its action row; Previous version and Next version call `onBranchChange(messageId, index)`, and you swap that message — and what follows it — for the chosen branch. Messages are keyed by id, so the swapped one starts fresh (its reasoning folded, no copied tick); focus stays on the arrow that was pressed. The same shape works for an answer's versions (after Regenerate) and a question's (after an edit). The Edit and branches story keeps such a tree in its own state.
 
-`ConversationList` takes `conversations` (id, title, updatedAt), `activeId`, `onSelect` or `href`, and optionally `onNew`, `onRename` and `onDelete`. It groups by Today, Yesterday, Previous 7 days and Older, and searches titles.
+`ConversationList` takes `conversations` (id, title, updatedAt), `activeId`, `onSelect` or `href`, and optionally `onNew`, `onRename` and `onDelete`. It groups by Today, Yesterday, Previous 7 days and Older, and searches titles; a search says how many conversations match, or that none does, in a polite status. Each row's menu shows on hover and focus, and always on touch screens.
 
 - The message list is a log: new messages are announced politely, without re-reading the whole thread.
 - It follows the newest message while you are at the bottom; scroll up and it stays put, with a "Scroll to the latest message" button.
-- Three dots (named "Waiting for the answer") show while waiting for the first token; Send becomes Stop while waiting and streaming.
+- Three dots show while waiting for the first token, and the log says "Waiting for the answer"; Send becomes Stop while waiting and streaming.
+- An error is one more line of the log, read once like a message; nothing in the log is a live region of its own.
 - Copy, Regenerate (last answer only) and feedback buttons are labelled and say when they are pressed.
-- Deleting a conversation asks first; renaming happens in place and Escape cancels.
+- Deleting a conversation asks first, then focus moves to the next conversation (or the previous one, or the list when none is left). Renaming happens in place: Enter saves, Escape cancels, and both put focus back on the conversation.
+- The day groups are named lists, not headings: the page keeps its own heading order.
 - Using the version arrows announces the new "Version 2 of 3" once, from a single polite status region beside the log (not one per message). The arrows stay focusable at either end (marked unavailable, not removed), so the cursor never drops.
 - Source chips link only `http`, `https` and `mailto` addresses; anything else shows the title without a link.
 - Keep one assistant voice per chat; switch agents with a new conversation.

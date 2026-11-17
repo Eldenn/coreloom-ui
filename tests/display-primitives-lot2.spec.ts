@@ -47,7 +47,7 @@ test('tour: steps move, spotlight follows, Escape ends it', async ({ page }) => 
   await open(page, 'components-overlays-tour--default')
   const card = page.getByRole('dialog', { name: 'Start a project' })
   await expect(card).toContainText('Step 2 of 4')
-  await expect(card.getByRole('heading', { name: 'Start a project' })).toBeFocused()
+  await expect(card.getByText('Start a project', { exact: true })).toBeFocused()
   await card.getByRole('button', { name: 'Next' }).click()
   const search = page.getByRole('dialog', { name: 'Find anything' })
   await expect(search).toContainText('Step 3 of 4')

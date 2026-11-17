@@ -210,7 +210,7 @@ function PhoneInput({
             disabled={disabled}
             aria-label={`${t.country}: ${regionNames.of(country.code) ?? country.code} (+${country.dial})`}
             data-slot="phone-input-country"
-            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-l-md border-r border-input pr-2 pl-[13px] font-mono text-[13px] text-foreground outline-none focus-visible:bg-accent disabled:cursor-not-allowed"
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-l-md border-r border-input pr-2 pl-[13px] font-mono text-[13px] text-foreground outline-none focus-visible:bg-accent focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed"
           >
             <span>{country.code}</span>
             <span className="text-muted-foreground">+{country.dial}</span>

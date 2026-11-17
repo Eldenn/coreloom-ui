@@ -69,10 +69,11 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<'span'>) {
 
 function AvatarGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
+    // A 4px overlap: more than that and the next avatar's ring cuts into two wide initials ("MC").
     <div
       data-slot="avatar-group"
       className={cn(
-        'group/avatar-group flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background',
+        'group/avatar-group flex -space-x-1 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background',
         className,
       )}
       {...props}

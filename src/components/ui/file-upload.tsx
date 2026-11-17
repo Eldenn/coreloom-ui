@@ -127,6 +127,7 @@ function FileUpload({
   const [errors, setErrors] = React.useState<string[]>([])
   const inputRef = React.useRef<HTMLInputElement>(null)
   const errorId = React.useId()
+  const [announcement, setAnnouncement] = React.useState('')
   const limit = multiple ? maxFiles : 1
 
   const commit = (next: File[]) => {
@@ -258,6 +259,7 @@ function FileUpload({
                   aria-label={t.remove(file.name)}
                   onClick={() => {
                     commit(files.filter((f) => fileKey(f) !== fileKey(file)))
+                    setAnnouncement(t.removed(file.name))
                     inputRef.current?.focus()
                   }}
                   className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none [&_svg]:size-4"
@@ -269,6 +271,9 @@ function FileUpload({
           })}
         </ul>
       )}
+      <span role="status" className="sr-only">
+        {announcement}
+      </span>
     </div>
   )
 }

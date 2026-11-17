@@ -45,6 +45,7 @@ function NotificationsMenu({
   const t = messages.notifications
   const [open, setOpen] = React.useState(false)
   const [tab, setTab] = React.useState<'all' | 'unread'>('all')
+  const contentRef = React.useRef<HTMLDivElement>(null)
   const unread = items.filter((i) => !i.read).length
   const shown = tab === 'unread' ? items.filter((i) => !i.read) : items
 
@@ -71,17 +72,25 @@ function NotificationsMenu({
       </PopoverTrigger>
       <PopoverContent
         align="end"
+        ref={contentRef}
         className="w-[min(380px,calc(100vw-2rem))] p-0"
         aria-label={t.title}
       >
         <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-          <h2 className="m-0 font-display text-[15px] font-semibold text-foreground">{t.title}</h2>
+          <p className="m-0 font-display text-[15px] font-semibold text-foreground">{t.title}</p>
           {onMarkAllRead && unread > 0 && (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-2 text-[12px]"
-              onClick={onMarkAllRead}
+              onClick={(e) => {
+                const button = e.currentTarget
+                onMarkAllRead()
+                // With nothing left unread the button goes: keep focus in the panel.
+                requestAnimationFrame(() => {
+                  if (!button.isConnected) contentRef.current?.focus()
+                })
+              }}
             >
               <CheckCheckIcon />
               {t.markAllRead}

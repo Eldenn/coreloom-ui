@@ -8,7 +8,7 @@ The documents agents search: `KnowledgeBase`, totals and a table of files with t
 
 - Statuses are text badges; processing shows its progress; a failure says why and what to do.
 - Removing a document asks first.
-- Scores are written as percentages, not only drawn as bars; results are announced.
+- Scores are written as percentages, not only drawn as bars; the number of passages found is announced, not the passages themselves.
 - Test retrieval with the questions users really ask before an agent relies on the knowledge.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/ai-knowledge`.

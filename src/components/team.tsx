@@ -150,6 +150,17 @@ function InviteDialog({
   )
 }
 
+/**
+ * After a row is removed its buttons are gone and focus falls to the page: put it on the first
+ * of these that is still there.
+ */
+function keepFocus(...targets: React.RefObject<HTMLElement | null>[]) {
+  requestAnimationFrame(() => {
+    if (document.activeElement && document.activeElement !== document.body) return
+    targets.find((target) => target.current)?.current?.focus()
+  })
+}
+
 function TeamMembers({
   members,
   roles,
@@ -180,6 +191,16 @@ function TeamMembers({
   const { messages, locale } = useCoreloomI18n()
   const t = messages.team
   const pendingId = React.useId()
+  const membersRef = React.useRef<HTMLUListElement>(null)
+  const invitesRef = React.useRef<HTMLUListElement>(null)
+  const remove = async (id: string) => {
+    await onRemove?.(id)
+    keepFocus(membersRef)
+  }
+  const revoke = async (id: string) => {
+    await onRevoke?.(id)
+    keepFocus(invitesRef, membersRef)
+  }
   const roleLabel = (v: string) => roles.find((r) => r.value === v)?.label ?? v
   const date = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
 
@@ -197,7 +218,12 @@ function TeamMembers({
         )}
       </CardHeader>
       <CardContent className="p-0">
-        <ul className="m-0 list-none p-0">
+        <ul
+          ref={membersRef}
+          tabIndex={-1}
+          aria-label={t.title}
+          className="m-0 list-none p-0 outline-none"
+        >
           {members.map((m) => {
             const you = m.id === currentUserId
             return (
@@ -210,58 +236,61 @@ function TeamMembers({
                   {m.avatar && <AvatarImage src={m.avatar} alt="" />}
                   <AvatarFallback>{initials(m.name)}</AvatarFallback>
                 </Avatar>
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-2 truncate text-[14px] font-medium text-foreground">
-                    {m.name}
+                <div className="flex min-w-0 flex-1 basis-48 flex-col">
+                  <span className="flex min-w-0 items-center gap-2 text-[14px] font-medium text-foreground">
+                    <span className="truncate">{m.name}</span>
                     {you && <Badge variant="secondary">{t.you}</Badge>}
                   </span>
                   <span className="truncate text-[13px] text-muted-foreground">{m.email}</span>
                 </div>
-                {onRoleChange && !you ? (
-                  <Select value={m.role} onValueChange={(v) => void onRoleChange(m.id, v)}>
-                    <SelectTrigger size="sm" className="w-36" aria-label={t.roleOf(m.name)}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="end">
-                      {roles.map((r) => (
-                        <SelectItem key={r.value} value={r.value}>
-                          {r.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span className="w-36 px-3 text-[13px] text-fg-secondary">
-                    {roleLabel(m.role)}
-                  </span>
-                )}
-                {onRemove &&
-                  (you ? (
-                    <span className="size-8" />
+                {/* One group: on a narrow card the role and Remove go under the name together. */}
+                <div className="ml-auto flex items-center gap-3">
+                  {onRoleChange && !you ? (
+                    <Select value={m.role} onValueChange={(v) => void onRoleChange(m.id, v)}>
+                      <SelectTrigger size="sm" className="w-36" aria-label={t.roleOf(m.name)}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="end">
+                        {roles.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>
+                            {r.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon-sm" aria-label={t.remove(m.name)}>
-                          <Trash2Icon />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{t.removeTitle(m.name)}</AlertDialogTitle>
-                          <AlertDialogDescription>{t.removeDescription}</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{messages.common.cancel}</AlertDialogCancel>
-                          <AlertDialogAction
-                            variant="destructive"
-                            onClick={() => void onRemove(m.id)}
-                          >
-                            {t.removeConfirm}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  ))}
+                    <span className="w-36 px-3 text-[13px] text-fg-secondary">
+                      {roleLabel(m.role)}
+                    </span>
+                  )}
+                  {onRemove &&
+                    (you ? (
+                      <span className="size-8" />
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon-sm" aria-label={t.remove(m.name)}>
+                            <Trash2Icon />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t.removeTitle(m.name)}</AlertDialogTitle>
+                            <AlertDialogDescription>{t.removeDescription}</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{messages.common.cancel}</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={() => void remove(m.id)}
+                            >
+                              {t.removeConfirm}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ))}
+                </div>
               </li>
             )
           })}
@@ -271,13 +300,18 @@ function TeamMembers({
             aria-labelledby={pendingId}
             className="border-t border-border bg-surface/40 px-5 py-3"
           >
-            <h3
+            <p
               id={pendingId}
               className="m-0 mb-2 font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase"
             >
               {t.pending}
-            </h3>
-            <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            </p>
+            <ul
+              ref={invitesRef}
+              tabIndex={-1}
+              aria-labelledby={pendingId}
+              className="m-0 flex list-none flex-col gap-2 p-0 outline-none"
+            >
               {invites.map((inv) => (
                 <li key={inv.id} className="flex items-center gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-dashed border-border-strong text-muted-foreground [&_svg]:size-4">
@@ -294,7 +328,7 @@ function TeamMembers({
                       variant="ghost"
                       size="sm"
                       aria-label={t.revoke(inv.email)}
-                      onClick={() => void onRevoke(inv.id)}
+                      onClick={() => void revoke(inv.id)}
                     >
                       {t.revokeShort}
                     </Button>

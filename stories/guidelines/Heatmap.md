@@ -13,8 +13,8 @@ For `CalendarHeatmap`: `data` — `{ date: 'YYYY-MM-DD', value }[]` (several ent
 
 - The grid is one tab stop. Arrow keys move between cells, Home / End go to the ends of a row, Ctrl+Home / Ctrl+End to the corners. Each cell is named with its row, column (or full date) and value: "Tuesday 14 October 2026: 3 deploys".
 - Hovering or focusing a cell shows the same text under the grid. Nothing is only in the color.
-- Steps are quarters of `max`: 0 is the empty well, any value above 0 is at least the lightest step. Pass a fixed `max` when two heatmaps must compare.
-- Dates are calendar days in UTC, so no time zone moves a day. Weeks start on Monday; the calendar scrolls to the latest weeks when it doesn't fit.
+- Steps are quarters of `max`: 0 is a faint neutral tint of the surface, any value above 0 is at least the lightest step. Pass a fixed `max` when two heatmaps must compare.
+- Dates are calendar days in UTC, so no time zone moves a day. Weeks start on Monday; the calendar scrolls to the latest weeks when it doesn't fit (a year at the default `cellSize` is about 800px wide: give it that room, or pass fewer `weeks`).
 - Use a heatmap for patterns (when, where), not exact numbers: give a table next to it when the numbers matter.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/heatmap` and import from `@/components/ui/heatmap`.

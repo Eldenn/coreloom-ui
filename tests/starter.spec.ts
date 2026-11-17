@@ -154,7 +154,9 @@ test('notifications: unread count, a link marks it read and goes there', async (
 
 test('members: invite through the API, already-invited addresses refused', async ({ page }) => {
   await signIn(page, '/settings?section=members')
-  await expect(page.getByRole('main').getByText('Ada Lovelace', { exact: true })).toBeVisible({
+  await expect(
+    page.getByRole('main').getByText('Ada Lovelace', { exact: true }).first(),
+  ).toBeVisible({
     timeout: 10_000,
   })
   await page.getByRole('button', { name: 'Invite', exact: true }).click()
