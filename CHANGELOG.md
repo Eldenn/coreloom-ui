@@ -15,8 +15,248 @@ pointing the namespace there in `components.json` (dependencies between items re
 the same namespace):
 
 ```json
-"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v0.11.0/{name}.json" }
+"registries": { "@coreloom": "https://github.com/Eldenn/coreloom-ui/releases/download/v1.0.0/{name}.json" }
 ```
+
+## [1.0.0] - 2026-11-19
+
+### Added
+
+- `@coreloom/use-controllable-state`: `useControllableState({ value, defaultValue, onChange })`, the hook behind the components below that can be owned by the app or keep their own state.
+- `onValueChange` on `CodeEditor` and `DiagramEditor`, the name every Coreloom field uses for its change callback.
+- `defaultValue` on `ModelList`, `FacetedFilter`, `CodeEditorLanguageSelect`, `ExpressionInput` and `StateEditor`. Their `value` and `onValueChange` are now optional.
+- `open` and `onOpenChange` on `AgentPlan`, `Reasoning` and `ToolCall`, to own whether they show. With `open`, `Reasoning` and `ToolCall` no longer fold or unfold by themselves.
+- `defaultOpen` on `ShareDialog`, `ImageLightbox`, `ShortcutsDialog` and `Tour`. Their `open` and `onOpenChange` are now optional.
+- `Gantt`: Alt + Left / Right move a task's start alone, as Shift does for its end.
+- `UmlDiagram`: `annotations` put a status (`ok`, `warning`, `error`, `unknown`) on elements, such
+  as the findings of a review against the code: a ring in the status colour and a badge with an
+  icon and a count on the element's corner, and the finding at the end of its accessible name. In
+  a sequence diagram they go on participants and messages (`step:…` ids). With
+  `onAnnotationSelect`, each badge is a button that hands the element's id back. Thumbnails keep
+  them as marks; images made with `toImage` leave them out. `SequenceDiagramView` takes the same
+  two props.
+- `DiagramEditor` passes `annotations` and `onAnnotationSelect` to its drawing, and
+  `DiagramViewer` takes `annotations` per view and `onAnnotationSelect(element, viewId)`.
+- `FindingCard` (`@coreloom/finding-card`, experimental): one finding of a review, with its status
+  and severity, a comment, `file:line` evidence that links out (http and https only), Show in
+  diagram, and Mark as done / Ignore / Reopen with the resolution announced.
+- `DiagramWorkspace`: each view takes `annotations` (statuses on its elements, such as the
+  findings of a review against the code), shown on the open view's drawing, and
+  `onAnnotationSelect(element, viewId)` turns their badges into buttons, as in `DiagramViewer`.
+- `SegmentedControl`: an option takes `aria-label`, its accessible name when `label` isn't a string.
+- i18n: `carousel.label`, `carousel.roleDescription`, `carousel.slide`, `fileUpload.removed`, `inputs.image.removed`, `inputs.editable.kept`, `inputs.emoji.jump` and `ai.prompt.removedFile`, in the four locales.
+
+### Changed
+
+- `ConversationList`: the day groups (Today, Yesterday…) are lists named by their label instead of
+  `h3` headings, so the list no longer changes the heading order of the page it is in.
+- `ChatWidget`: the panel and the greeting come in with the theme's `duration-base` instead of a
+  fixed 200 ms.
+- The node editor's field controls (`CodeControl`, `ConditionsControl`, `CredentialControl`, `KeyValueControl`) and the diagram editor's parts (`TextField`, `Choice`, `MemberList`) take `onValueChange` instead of `onChange`. Both items are experimental.
+- Every block is now **experimental**, and so is `RichTextEditor`: the 35 blocks that were stable
+  (app shell, auth, settings, dashboard, data list, kanban, inbox, file manager, the AI chat and
+  its siblings…) may still change in a minor release, with an **Upgrading** note when they do.
+  Nothing changes in their code. The components in `@coreloom/all` other than the rich text
+  editor stay stable. Their guides and `llms.txt` say which is which.
+- Inner labels are no longer headings, so they stay out of the host page's heading order: the step
+  list, step name and Error / Input / Output labels in `RunTrace`, the titles of `RetrievalTest`
+  and of each `Playground` variant, and the title of the `NotificationsMenu` panel. Their look and
+  the names of their regions are unchanged.
+- `FormBuilder`: the "Add a field", "Settings" and "Submitted values" labels are paragraphs, not
+  headings, so they no longer sit in the host page's heading outline.
+- `fileManager.sortedBy`, `kanban.roleDescription`, `formBuilder.dnd.instructions` and
+  `formBuilder.dnd.roleDescription` are new strings in the four locales.
+- `FieldError` is no longer `role="alert"` by default. A form with several mistakes fired one
+  assertive alert per field, and again while typing. The error is read with its control through
+  `aria-describedby` and `aria-invalid`, which every `Form` field already wires.
+- `Form`: when a submit of the `<form>` fails, focus moves to the first invalid field, and
+  `form.SubmitButton` announces how many fields need attention in one polite status
+  ("3 fields need attention."). `FormRenderer` does the same. A `form.handleSubmit()` called from
+  code doesn't move focus. `OTPField` now sets `aria-invalid` on its input.
+- `FormRenderer`: the form's title is a paragraph instead of an `<h2>`, so it no longer breaks the
+  page's heading order. It still names the form.
+- `ShortcutsDialog`: group titles are paragraphs instead of `<h3>`.
+- **1.0.** The API described in [`VERSIONING.md`](./VERSIONING.md) is now stable: the names, exports and props of stable items, the tokens and the message keys only change in a major release, after a deprecation. Items marked experimental (every block, and the heavier components) may still change in a minor release; their guides say so.
+- `Tour`: a step's title is a paragraph that names the card, not an `<h2>`, so it stays out of the page's heading order.
+- `Carousel` is named "Carousel" by default; `aria-label` or `aria-labelledby` still names it your way.
+
+### Deprecated
+
+- `onChange` on `CodeEditor` and `DiagramEditor`: use `onValueChange`. It keeps working until 2.0.
+
+### Fixed
+
+- `ConversationList`: renaming a conversation with Enter or Escape left focus on the page; it now
+  goes back to the conversation. After a delete, focus moves to the next conversation (or the
+  previous one, or the list when none is left) instead of being lost with the row.
+- `ConversationList`: the row menu (Rename, Delete) was only shown on hover and keyboard focus, so
+  it could not be found on a touch screen. It is now always shown there.
+- `ConversationList`: a search announces how many conversations match, or that none does, through
+  a polite status.
+- `ChatMessages`: the typing dots and the error no longer are live regions inside the log, which
+  could read them twice or not at all. The log itself says "Waiting for the answer" and reads the
+  error once.
+- `VoiceAgent`, `PushToTalkButton`: after an error (a blocked microphone) the talk button no longer
+  keeps its accent colour; it still works.
+- `AudioRecorder`: the elapsed time stayed at 0:00, and `maxDuration` never stopped the recording,
+  when the browser kept its audio context suspended (a machine without audio output, for one).
+  The time now comes from the page's clock.
+- Keyboard focus no longer drops to the page when a control removes itself:
+  - `ApiKeys` (Revoke), `ActiveSessions` (Sign out) and `KnowledgeBase` (Remove): focus moves to
+    the next row's button, the previous one's, or the list when it is empty. `KnowledgeBase` also
+    returns focus to the row's menu when the removal is cancelled.
+  - `FacetedFilter`: Enter on Clear now clears the filter (it toggled the highlighted option) and
+    focus moves to the panel's search box.
+  - `Playground`: removing a variant focuses the neighbouring variant's Remove button, or the model
+    picker of the last variant left.
+  - `TerminalConsole`: closing the second pane of a split with its own button focuses the tab that
+    stays.
+  - `DataListToolbar`, `DataListEmpty` and `FacetedFilter`: "Clear filters" hands focus to the
+    search box (the panel's own search box in `FacetedFilter`).
+  - `NotificationsMenu`: "Mark all as read" keeps focus in the panel.
+- `RunTrace` and `RetrievalTest` no longer read a whole pane or every passage aloud on each change:
+  a one-line status announces the step picked, or the number of passages found.
+- `SiteHeader`: the links show the focus ring, the phone menu marks the current page
+  (`aria-current`), and the two navigations have distinct, translated names. `SettingsLayout`: the
+  section navigation's name is translated.
+- `Changelog`: the entry's anchor link is a 24 px target and readable at rest.
+- `data-list`, `multi-select`: screen readers announce which options of the faceted filter and the multi-select are checked. The list used `aria-selected` for it, which cmdk overwrites with the keyboard highlight; picked options now carry `aria-checked`, and the faceted filter's list is `aria-multiselectable`.
+- `Gantt`: a task that starts before the one it waits for ends now says so in its name ("starts
+  before Checkout screens ends") and its arrow is dashed as well as red. Today no longer scrolls
+  smoothly when the system asks for reduced motion. The ends of a bar can be grabbed from 24 px.
+- `Spreadsheet`: a cell that isn't a number in a number column has a mark in its corner, not only
+  red text. The help read with the grid says that Tab moves along the row and leaves at either end.
+- `Ide`: a tab whose file has errors shows their count and is announced with it ("format.ts,
+  1 error, 0 warnings"). The close mark of a tab shows on keyboard focus and on touch screens, is
+  24 px wide, and the tab exposes Delete as its shortcut.
+- `EventCalendar`: the button that collapses a busy day is named "Show less" (it was "−"); the
+  month is announced through a status message instead of a live heading; in the phone agenda,
+  today's card says "Today" and day labels are no longer headings.
+- `StatusPage`: on phones, the uptime slider counts and steps through the 30 days shown, not the
+  hidden ones.
+- `DiagramEditor`: each problem under the text starts with "Error" or "Warning", and long ones wrap
+  instead of being cut.
+- `AgentBuilder`: a tool parameter's description shows under its field and is read with it; it was
+  a tooltip that the keyboard and touch couldn't reach.
+- `CodeEditor` and `RichTextEditor`, controlled: fast typing could lose or reorder characters
+  when the app handed `value` back a keystroke late (seen in Firefox). The editors now recognise
+  their own text coming back and leave what was typed since.
+- `UmlDiagram`: deleting the focused element or line from the keyboard could leave focus on the
+  page instead of the canvas, when the app handed the new diagram back after the next frame
+  (seen in Safari). Focus now moves to the canvas before the element goes.
+- `FileManager`: opening a folder (Enter, double-click, the breadcrumb, Open), going back up
+  (Backspace, Alt+Up), **Move to**, Delete and **Clear** left keyboard focus on the page. Focus
+  now lands on an item of the list, or on the empty state when the folder has none. The Delete key
+  clears the selection like the Delete button does.
+- `FileManager`: the sort buttons of the list view say the direction ("Sort by Name, sorted
+  ascending"). The tick on an item shows on touch screens, in the list view too, with a 24 px
+  target, so several items can be selected without a keyboard.
+- `KanbanBoard`: **Move to** in a card's menu left focus on the page; it now follows the card to
+  its new column.
+- `FormBuilder`: deleting a field or a section, or removing the last option of a field, left focus
+  on the page. Focus goes to the section, the form, or the option before.
+- `FormBuilder`: the drag instructions for screen readers were in English in every locale.
+  "Copied" and the JSON tab's error are each announced once.
+- `KanbanBoard` and `FormBuilder`: the drag handles' role description ("draggable") follows the
+  locale.
+- `DataTable`: sortable header cells carry `aria-sort` (`ascending`, `descending`, `none`).
+- Boxes that scroll can be reached and scrolled from the keyboard: `Table`'s frame, `DiffViewer`,
+  `ToolCall`'s input and output, tables in `Markdown`, code blocks in the editor's AI preview and
+  the list in `ShortcutsDialog` take a tab stop and a focus ring when their content overflows, and
+  only then. All but `Table`'s frame also get a name; name that one through `container`.
+- `ShortcutsDialog`: the search box's placeholder has enough contrast and the standard focus ring;
+  a polite status says how many shortcuts the search left, or that none match.
+- `Item` can be imported from a Server Component: its file now starts with `'use client'` (it
+  creates a context, which failed a Next.js build).
+- `VirtualList` and `LogViewer` compile in a Next.js app, whose React types let a key be a symbol
+  that TanStack Virtual's keys can't be.
+- `PipelineRun`: on a phone the page scrolled sideways once the job strip held more jobs than
+  fit. The strip now keeps its hidden status words inside itself.
+- `PlanCard`, `UsageMeters`, `PaymentMethod`, `InvoiceTable`, `ChartCard`, `ActivityFeed`: in a
+  grid, a wide table or chart stretched every card past the viewport. The cards can now shrink,
+  and the invoices table scrolls inside its card.
+- `ChartCard`: on a narrow card the `actions` go under the title instead of squeezing it.
+- `CodeReview`: narrower than 640 px, the diffs are shown unified and the layout choice is
+  hidden; the split layout only showed its "Before" half there. Nothing changes on wide screens.
+- `EvalRunReport`: the outputs of two runs are compared in one column when the detail panel is
+  narrower than 480 px. A case without output says "No output" instead of showing an empty box,
+  and a case with an error and no output shows only the error.
+- `Webhooks`: on a phone, a delivery's status sat under its duration and the event name
+  disappeared. The details and Redeliver now wrap to a second line.
+- `ProductDetail`: on a phone, "Add to cart" keeps its height under the quantity.
+- `TeamMembers`: on a narrow card the role and the remove button go under the name, which is no
+  longer cut. The "Pending invites" label is a paragraph, not a heading, so it no longer breaks
+  the page's heading order.
+- `TeamMembers`, `Webhooks`: after a member is removed, an invite revoked or an endpoint deleted,
+  focus moves to the list instead of being lost.
+- `EnvVars`: on a narrow card the Import and Add buttons go under the title and description.
+- `DiffViewer`: in the split layout on a narrow screen, the hidden "added" and "removed" words no
+  longer widen the page.
+- `CodeBlock`: without a title, a long line scrolls under the copy button instead of showing
+  through it.
+- Every npm dependency an item installs now names its major (`radix-ui@^1`, `lucide-react@^1`,
+  `class-variance-authority@^0.7`…). `shadcn add` used to install the latest version of 14 of
+  them, so a dependency's next major could have reached an app without a major release here.
+- `@coreloom/rules`: the global CSS step names the folder the theme really installs into,
+  `src/styles/coreloom/` (`./styles/coreloom/…` from `src/index.css`, `../styles/coreloom/…` from
+  `src/app/globals.css`). It used to say `./coreloom/…`, which doesn't resolve.
+- Focus no longer falls back to the page when the control just used goes away:
+  - `ImageInput`: Remove hands the focus to Upload.
+  - `PromptInput`: removing an attachment focuses the next one, or the text box after the last.
+  - `CommentThread`: sending or cancelling a reply returns the focus to the Reply button that opened it.
+  - `MultiSelect`: **Select all** and **Clear** stay in the footer, `aria-disabled` when they have nothing left to do. They also answer to Enter now (it used to toggle the highlighted option).
+  - `TransferList`: a move button with nothing to move is `aria-disabled` and stays focusable.
+  - `FilterBar`: once a view is saved, the focus moves from **Save view** to **Add filter**.
+- `EditableText`: leaving the field with Tab or a click no longer pulls the focus back to the text; Enter and Escape still do. With `required`, an emptied text is put back and screen readers are told.
+- `FileUpload`, `ImageInput` and `PromptInput` announce a removed file.
+- `EmojiPicker`: the category shortcuts can be reached from the keyboard (one tab stop, Left and Right between them) and show the focus ring.
+- `PhoneInput`: the country button shows its own focus ring.
+- `SaveStatus`, `SuggestionList`, `LoadMore` and `Tour` show the focus ring where they move the focus after a keyboard action.
+- `PromptInput`: the button that removes an attachment is 24 px, up from 20.
+- `Marquee`: the pause button no longer reads "Play, pressed"; its name alone says what a press does.
+- `Carousel`: a text field, a select, radios or a slider inside a slide keep their arrow keys; a vertical carousel pages with Up and Down. "carousel" and "slide" are announced in the current language.
+- `TransferList` and `RecurrenceInput` use the system's `Checkbox` and `RadioGroup` instead of the browser's own controls. The four move buttons of `TransferList` share one look.
+- `SegmentedControl`: in a container that stretches it (a `Field`), the options fill the width instead of leaving an empty track.
+- `NodeEditor`: a long workflow no longer opens shrunk until its text is a few pixels high. When fitting everything would draw the names under about 11px, the
+  canvas opens on the start of the graph (left, top) at a readable zoom; pan for the rest. The Fit
+  button, the minimap and zooming out still show everything.
+- `UmlDiagram`: a sequence diagram narrower than its box is centered, like the other kinds.
+- `Heatmap`, `CalendarHeatmap`: a cell with nothing in it is a faint neutral tint of the surface
+  under it instead of a dark well, and the steps are tints of that surface too, so the ramp runs
+  from faint to strong on a card and on the page, in dark and in light.
+- `AvatarGroup`: avatars overlap by 4px instead of 8px, so two wide initials ("MC") stay whole.
+- `Gauge`: the threshold marks are notches across the track, under the value, instead of lines
+  sticking out over it. With `unit="%"`, the sign is spaced as the locale writes it: "86%" in
+  English, "86 %" in French, Spanish and German.
+- `DonutChart`: every share in the legend has one decimal ("32.0%" under "53.6%").
+- `InputOTP`: the slots have the same outline as `Input`, so an empty slot reads as a field.
+- `Switch`: the thumb of a switch that is off uses a token (`fg-2`) instead of white: 5.5:1
+  against the track in dark, 7.2:1 in light, where the white thumb had almost none.
+- `NodeEditor`: the "add a node" buttons on a card and on an edge, and the button that removes a
+  chip, have a 24px hit area.
+- `AgentAvatar`, `AgentGraph`, `DonutChart`, `NodeEditor`, `NavigationMenu`: transitions use the
+  duration tokens (`duration-fast`, `duration-base`, `duration-slow`).
+- `JsonInput` compiles in a Vite app: the template's `erasableSyntaxOnly` setting rejected a
+  constructor parameter property in its file.
+
+### Upgrading
+
+- If you render the node editor's field controls or the diagram editor's parts yourself, rename their `onChange` prop to `onValueChange`.
+- `uml-diagram` now also installs `uml-diagram-annotations.tsx` and needs `@coreloom/badge`:
+  run `pnpm dlx shadcn@latest add @coreloom/uml-diagram --overwrite`.
+- `diagram-workspace` now needs `@coreloom/uml-diagram` (already installed with
+  `diagram-editor`): run `pnpm dlx shadcn@latest add @coreloom/diagram-workspace --overwrite`.
+- If you relied on `FieldError` announcing itself, pass `role="alert"` to it, or point the
+  control's `aria-describedby` at the error's `id` and move focus to the first invalid control
+  when the submit fails. Tests that looked errors up with `getByRole('alert')` should read the
+  control's accessible description instead.
+- Styles or tests that targeted the `<h2>` of a `FormRenderer` title, or the `<h3>` of a
+  `ShortcutsDialog` group, should target the form's name (`getByRole('form', { name })`) or the
+  text.
+- From 0.11, 1.0 asks for nothing more than the steps listed here. From an older version, follow the **Upgrading** section of each release you skipped, oldest first.
+- If you keep your own messages object for another language, add the eight keys above.
+- `transfer-list` now installs `checkbox`, and `recurrence-input` installs `radio-group`.
+- A test that looked for the tour title with `getByRole('heading')`, or for `aria-pressed` on the marquee button, needs the dialog's name or the button's name instead.
 
 ## [0.11.0] - 2026-11-09
 
@@ -1081,6 +1321,7 @@ Gauge: the number, label and status now sit on the ring's center and stay inside
   the blocks `app-shell`, `auth`, `settings`, `marketing` and `docs`.
 - Storybook with a theme switch and the accessibility panel, published on GitHub Pages.
 
+[1.0.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v1.0.0
 [0.11.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.11.0
 [0.10.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.10.0
 [0.9.0]: https://github.com/Eldenn/coreloom-ui/releases/tag/v0.9.0
