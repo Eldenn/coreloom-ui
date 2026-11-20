@@ -21,29 +21,42 @@
 
 <p align="center">
   <a href="https://github.com/Eldenn/coreloom-ui/actions/workflows/registry.yml"><img src="https://github.com/Eldenn/coreloom-ui/actions/workflows/registry.yml/badge.svg?branch=main" alt="CI status"></a>
-  <a href="https://github.com/Eldenn/coreloom-ui/releases"><img src="https://img.shields.io/github/v/release/Eldenn/coreloom-ui?include_prereleases&amp;label=release" alt="Latest release"></a>
+  <a href="https://github.com/Eldenn/coreloom-ui/releases"><img src="https://img.shields.io/github/v/release/Eldenn/coreloom-ui?label=release" alt="Latest release"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/Eldenn/coreloom-ui" alt="MIT license"></a>
 </p>
 
 ---
 
-- **70 components** on Radix and Tailwind CSS v4: forms, overlays, navigation, tables (sorting, server-driven
-  or virtual), date, money and phone inputs, a rich text editor with an optional AI panel, and AI pieces
-  (prompt, Markdown output with citations, reasoning, tool calls, tool forms, agent plans, model picker,
-  context meter).
-- **Blocks** for whole screens: app shell, auth, settings, dashboard, data list, pricing, onboarding, error
-  pages, notifications, team, billing, API keys, webhooks, security, audit log, integrations, kanban,
-  calendar, Gantt roadmap, status page, file manager, inbox, spreadsheet, marketing and docs; for a
-  public site, testimonials, a plan comparison table, a changelog, a blog, a newsletter or waitlist
-  sign-up, a cookie banner and a light shop (product page, cart, order summary).
-- **AI blocks**: chat with conversation history, edits and branches, a floating chat widget, agent
-  management, runs and traces, evaluations (run comparison, judge verdicts, regressions), a prompt
-  manager, a model playground, a knowledge base and a voice agent (push-to-talk, live transcript). They read the AI SDK's `UIMessage` as is, without
-  depending on it or on any API.
-- **Dark and light** themes, four accent presets, every pairing WCAG AA. Axe runs on every story in CI.
+- **180 components** on Radix and Tailwind CSS v4: forms and every kind of input (dates, money, phone,
+  masks, tags, colour, signature), overlays, navigation, tables (sorting, server-driven or virtual),
+  data display, charts on Recharts, a code editor (CodeMirror), a rich text editor (Tiptap) with an
+  optional AI panel, a workflow node editor (React Flow), UML and Mermaid / PlantUML diagrams, and
+  motion (reveals, text effects, marquee, the logo loader).
+- **AI pieces**: prompt input, Markdown output with citations, reasoning, tool calls and tool forms,
+  agent plans, model picker, context meter, agent avatars. They read the AI SDK's `UIMessage` as is,
+  without depending on it or on any API.
+- **65 blocks** for whole screens:
+  - **App:** app shell, auth, settings, team, billing, API keys, webhooks, security, notifications,
+    dashboard, data list, kanban, calendar, Gantt roadmap, inbox, file manager, spreadsheet,
+    onboarding, error pages.
+  - **AI:** chat with history, edits and branches, a floating chat widget, an artifact panel, agents,
+    agent teams and builder, runs and traces, replays, evaluations, a prompt manager, a playground, a
+    knowledge base and a voice agent.
+  - **Developer tools:** IDE, code review, API "Try it", SQL explorer, terminal, pipeline runs,
+    environment variables, feature flags, version history, workflow builder, diagram editor and
+    workspace, form builder.
+  - **Public site:** marketing, showcase, pricing, plan comparison, testimonials, changelog, blog,
+    newsletter, cookie banner, status page, docs, booking and a light shop.
+- **Dark and light** themes, cyan plus four accent presets and two surface presets, every pairing
+  WCAG AA. Axe runs on every story in CI.
 - **English, French, Spanish and German** for every built-in string.
-- **Forms** on TanStack Form with zod (or any Standard Schema).
+- **Forms** on TanStack Form with zod (or any Standard Schema), and a form builder that renders JSON.
+- **VS Code extensions:** `@coreloom/vscode` maps the theme onto the editor's colours in a webview
+  (light, dark, high contrast), with helpers for state and messages; [`examples/vscode-webview`](./examples/vscode-webview)
+  is a working extension.
 - **A starter** on Vite + TanStack Router, Query and Form, with every screen wired and no backend needed.
+- **A stable API** from 1.0: what [`VERSIONING.md`](./VERSIONING.md) covers only changes in a major
+  release. Every block and the heavier components are marked experimental while they settle.
 
 ## Quick start
 
@@ -99,7 +112,8 @@ pnpm dlx degit Eldenn/coreloom-ui/starter my-app && cd my-app && pnpm install &&
 ```
 
 A Vite + TanStack Router / Query / Form app with sign-in, sign-up, password reset, dashboard, projects,
-deployments, settings and error pages. Demo data is local; [`starter/README.md`](./starter/README.md) says
+deployments, settings, error pages, and AI screens (assistant, agents, runs, knowledge base,
+playground). Demo data is local; [`starter/README.md`](./starter/README.md) says
 where to plug in your API.
 
 What an item costs an app (its JavaScript and npm packages, gzipped, React excluded) is in
@@ -189,14 +203,16 @@ no setup on our side; they read the docs and code but can't install items:
 | `src/components/ui/` | The components. shadcn's code and APIs, Coreloom's look.                                                             |
 | `src/components/`    | Block parts, installed with their block (`auth` → `login-form.tsx`, `signup-form.tsx`…).                             |
 | `src/styles/`        | `tokens.css` (from the design system), `theme.css` (the shadcn mapping), `fonts.css`, `accents.css`, `surfaces.css`. |
-| `src/lib/`           | `i18n.tsx` (English and French), `i18n-es.tsx`, `i18n-de.tsx`, `link.tsx`, `utils.ts`.                               |
+| `src/lib/`           | `i18n.tsx` (English and French), `i18n-es.tsx`, `i18n-de.tsx`, `ai.ts`, `link.tsx`, `utils.ts`, the UML parsers.     |
 | `registry.json`      | The registry's items. `pnpm registry:build` writes `public/r/`.                                                      |
+| `api/`               | Every item's public API, written by `pnpm api:report` and checked in CI.                                             |
 | `starter/`           | The starter app. `pnpm starter:sync` refreshes its copies of the components.                                         |
 | `stories/`           | Storybook: a story per component and block, and a Guidelines page for each.                                          |
 | `tests/`, `unit/`    | Playwright (a11y, visual, interactions, guidelines, starter) and Vitest.                                             |
 | `brand/logo/`        | The Coreloom logo: symbol, lockups, tile, one-colour versions and usage rules.                                       |
 | `build/`             | Scripts: the design-system bundle, accent presets, DTCG tokens, release notes, starter sync.                         |
 | `design-system/`     | The design system's component cards and page templates (see its README).                                             |
+| `examples/`          | `vscode-webview`: a VS Code extension whose webview uses the components.                                             |
 
 ## Versioning
 
@@ -234,6 +250,8 @@ pnpm format             # Prettier (format:check in CI)
 pnpm lint               # ESLint, type-aware
 pnpm typecheck          # library, stories and tests
 pnpm test:unit          # Vitest
+pnpm docs:check         # guides match the props in the code
+pnpm api:report         # after changing what an item exports (api:check in CI)
 pnpm storybook:build    # then: pnpm test (Playwright)
 pnpm --dir starter build   # include the starter in pnpm test
 pnpm changeset          # describe a change for the CHANGELOG (see Release)
@@ -311,9 +329,10 @@ release (a failed run, a deleted release) is released again from its tag; a vers
 left alone; pending changesets don't change any of this. So **Run workflow** on `main` is always a safe
 retry.
 
-**Release candidates.** While `.changeset/pre.json` exists (`pnpm changeset pre enter rc`), the Version
-Packages pull request bumps to a pre-release (`1.0.0-rc.0`, then `rc.1`…) and merging it publishes a
-GitHub pre-release with its registry attached, to pin and try. The site's root and the `@coreloom`
+**Release candidates**, before a major (1.0 had them). While `.changeset/pre.json` exists
+(`pnpm changeset pre enter rc`), the Version Packages pull request bumps to a pre-release
+(`2.0.0-rc.0`, then `rc.1`…) and merging it publishes a GitHub pre-release with its registry
+attached, to pin and try. The site's root and the `@coreloom`
 namespace stay on the last stable release; `/next/` serves `main` as always. `pnpm changeset pre exit`,
 in a pull request, ends it: the next Version Packages pull request is the final version.
 
