@@ -144,6 +144,7 @@ RenameTarget.width: number
 function useFitDiagram() => (padding?: number) => void
 function useFullscreen(target: React.RefObject<HTMLElement | null>) => Fullscreen
 function useRename(input: { canvas: React.RefObject<HTMLDivElement | null>; graph: DiagramGraph | null; onRename: ((id: string, name: string) => void) | undefined; diagram: UmlSpec; }) => { target: RenameTarget | null; start: (id: string) => void; done: (value: string | null) => void; onKeyDown: (event: React.KeyboardEvent) => void; }
+function useViewAcrossFullscreen(fullscreen: Fullscreen | null) => void
 ```
 
 ## src/components/ui/uml-diagram-annotations.tsx
