@@ -18,7 +18,6 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
-  type Viewport,
   ViewportPortal,
 } from '@xyflow/react'
 import * as React from 'react'
@@ -45,8 +44,10 @@ import {
   type Fullscreen,
   FullscreenButton,
   RenameField,
+  useFitView,
   useFullscreen,
   useRename,
+  useViewAcrossFullscreen,
 } from '@/components/ui/uml-diagram-tools'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { SequenceDiagram, UmlLayout, UmlPoint, UmlSpec } from '@/lib/uml'
@@ -211,22 +212,16 @@ function usePositions(layout: UmlLayout | undefined, graph: DiagramGraph | null)
   return { fixed, boxes, setDragged }
 }
 
-/** The image handle, and fitting the view again when elements come or go. */
-function useCanvasEffects({
+/** The image handle: the drawing as an image, without the selection. */
+function useCanvasImage({
   ref,
   canvas,
   setExporting,
-  ids,
-  refit,
 }: {
   ref: React.Ref<UmlDiagramHandle> | undefined
   canvas: React.RefObject<HTMLDivElement | null>
   /** True while an image is made, so the selection isn't in it. */
   setExporting: (on: boolean) => void
-  /** The node ids, joined: a change means elements were added or removed. */
-  ids: string
-  /** Fit again whenever the box changes size (thumbnails, full screen). */
-  refit: boolean
 }) {
   const flow = useReactFlow()
   React.useImperativeHandle(ref, () => ({
@@ -240,47 +235,6 @@ function useCanvasEffects({
       }
     },
   }))
-  React.useEffect(() => {
-    // React Flow's fitView, which waits until new elements have their size.
-    const frame = requestAnimationFrame(() => void flow.fitView({ padding: 0.15, maxZoom: 1 }))
-    return () => {
-      cancelAnimationFrame(frame)
-    }
-  }, [ids, flow])
-  React.useEffect(() => {
-    const el = canvas.current
-    if (!refit || !el) return
-    let frame = 0
-    const observer = new ResizeObserver(() => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => void flow.fitView({ padding: 0.08, maxZoom: 1 }))
-    })
-    observer.observe(el)
-    return () => {
-      observer.disconnect()
-      cancelAnimationFrame(frame)
-    }
-  }, [refit, flow, canvas])
-}
-
-/**
- * Full screen fits the diagram to the screen; leaving it puts back the view from before, since
- * the screen-sized pan and zoom would leave the diagram off to the side of the smaller box.
- */
-function useViewAcrossFullscreen(fullscreen: Fullscreen | null) {
-  const active = fullscreen?.active ?? false
-  const flow = useReactFlow()
-  const before = React.useRef<Viewport | null>(null)
-  React.useEffect(() => {
-    if (active) {
-      before.current = flow.getViewport()
-      return
-    }
-    const view = before.current
-    if (!view) return
-    before.current = null
-    void flow.setViewport(view)
-  }, [active, flow])
 }
 
 /** What React Flow's own live region and descriptions say, in the reader's language. */
@@ -479,13 +433,8 @@ function DiagramCanvas({
 
   const flow = useReactFlow()
   const rename = useRename({ canvas, graph, onRename: editable ? onRename : undefined, diagram })
-  useCanvasEffects({
-    ref,
-    canvas,
-    setExporting,
-    ids: nodes.map((n) => n.id).join('\u0000'),
-    refit,
-  })
+  useCanvasImage({ ref, canvas, setExporting })
+  useFitView(canvas, nodes.map((n) => n.id).join('\u0000'), refit)
   useViewAcrossFullscreen(fullscreen)
 
   const toAlign = editable ? alignable(selection.elements, boxes, graph) : []

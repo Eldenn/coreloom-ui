@@ -13,6 +13,7 @@ Where a document of several diagrams is written: its name, whether it's saved, t
 - Reorder switches the list to a SortableList: drag by the handle or use the up and down buttons, then Done.
 - The editor is DiagramEditor, controlled: the text, the format switch, the drawing tools, Copy and Download all work, and each change calls `onDiagramChange`. Switching views opens that view's text with its own undo history.
 - To give the editor the whole window, put the workspace in `<AppShell fullWidth>` and set `height="calc(100svh - 7.5rem)"` (the window minus AppShell's header and gutters). A long list of views scrolls on its own. Below 1024px `height` is ignored: the panes stack at their own heights and the page scrolls.
+- The list of views sits beside the editor when the workspace is at least 56rem wide (its own width, not the screen's: with a side panel open next to it, the list moves into the "Views" sheet).
 - The open view's `annotations` (the findings of a review against the code, say) put a ring and a badge on their elements in the editor's drawing; the text stays editable. With `onAnnotationSelect`, a badge is a button that hands back the element and its view: show its findings beside the workspace. Annotations follow element ids, so the app updates or drops them when the text changes. Downloads leave them out.
 - On a phone the list moves into a side sheet opened by "Views (3)"; picking a view closes it.
 - The save state is announced politely when it settles, not each time it passes through Saving…
