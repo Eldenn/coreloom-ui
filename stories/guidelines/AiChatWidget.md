@@ -11,7 +11,10 @@ The support bubble in a page's corner: a round launcher with an unread count and
 - `unread` — the badge on the launcher; reset it in `onOpenChange` when the chat opens;
 - `greeting` and `onGreetingDismiss` — remember the dismissal (a cookie, the user's settings) so the greeting shows only once;
 - `onClose` for the header's Close button (end the conversation); Minimise only hides it;
-- `side` (`right` or `left`), `offset` (px from the corner), `zIndex` and `fullScreen` (default: below 640px).
+- `side` (`right` or `left`), `offset` (px from the corner), `zIndex` and `fullScreen` (default: below 640px);
+- `children` — the app's own conversation UI, shown in the card instead of the Chat (the Chat's props are then optional and ignored). It fills the card's body, a flex column: give its message list `min-h-0 flex-1` and put a `PromptInput` in it, so opening still puts the cursor there;
+- `headerActions` — controls in the header, before Minimise (a conversation switcher, "New conversation"); the title truncates to make room;
+- `resizable` (default `false`) — a header button that enlarges the card to 720 × 820px (still clamped to the window) and back; `size` and `onSizeChange` to control it, or `defaultSize` (`default` or `expanded`, default `default`). It isn't shown in the full-screen sheet, which already takes the whole screen.
 
 - Not modal on a desktop: the page stays usable behind the card. On a phone the sheet covers the page, keeps Tab inside it and stops the page behind from scrolling.
 - Opening puts the cursor in the composer, whoever opens it (the launcher, or the app through `open` — an "Ask AI" command). Closing gives focus back to the launcher when it was in the panel, and leaves it alone otherwise. A chat that starts open (`defaultOpen`) doesn't move focus.

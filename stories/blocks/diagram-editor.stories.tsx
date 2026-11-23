@@ -20,6 +20,7 @@ import {
   deploymentText,
   fromMermaid,
   packageText,
+  regionsText,
   sequenceText,
   usecaseText,
 } from '../components/uml-data'
@@ -189,6 +190,15 @@ export const SequenceSteps: Story = {
       </div>
     )
   },
+}
+
+/**
+ * Concurrent regions of a composite state: select a state inside it and the properties show the
+ * region it sits in, to move it to another or to a new one. `highlighted` points out elements of
+ * the drawing (the active states of a simulation, say) and leaves the text and selection alone.
+ */
+export const ConcurrentRegions: Story = {
+  args: { defaultValue: regionsText, highlighted: ['Playing', 'Loud'] },
 }
 
 export const Phone: Story = { parameters: { viewport: { defaultViewport: 'mobile1' } } }

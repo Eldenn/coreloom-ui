@@ -6,10 +6,10 @@ Stability: stable. Written by `pnpm api:report` from the code; don't edit it by 
 
 ```ts
 function Badge
-Badge.variant?: 'success' | 'warning' | 'default' | 'destructive' | 'secondary' | 'outline' | null | undefined
+Badge.variant?: 'success' | 'default' | 'warning' | 'destructive' | 'secondary' | 'outline' | null | undefined
 Badge.asChild?: boolean | undefined
 Badge.*: react
 function BadgeDot
 BadgeDot.*: react
-function badgeVariants(props?: ({ variant?: 'success' | 'warning' | 'default' | 'destructive' | 'secondary' | 'outline' | null | undefined; } & import("class-variance-authority/types").ClassProp) | undefined) => string
+function badgeVariants(props?: ({ variant?: 'success' | 'default' | 'warning' | 'destructive' | 'secondary' | 'outline' | null | undefined; } & import("class-variance-authority/types").ClassProp) | undefined) => string
 ```

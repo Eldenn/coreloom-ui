@@ -15,9 +15,11 @@ import type {
   UmlDirection,
   UmlNote,
   UmlSpec,
+  UmlState,
 } from '@/lib/uml'
 import { c4ToMermaid } from '@/lib/uml-mermaid-c4'
 import { erRelationMarks } from '@/lib/uml-mermaid-er'
+import { stateRegions } from '@/lib/uml-mermaid-state'
 import { activityToPlantUml } from '@/lib/uml-plantuml-activity'
 import { deploymentToPlantUml, usecaseToPlantUml, wrap } from '@/lib/uml-plantuml-elements'
 import { componentToPlantUml, packageToPlantUml } from '@/lib/uml-plantuml-structure'
@@ -114,20 +116,23 @@ function classToPlantUml(d: ClassDiagram): string {
 
 function stateToPlantUml(d: StateDiagram): string {
   const scope = (parent: string | undefined, pad: string): string[] => {
-    const states = d.states.filter((s) => s.parent === parent)
-    const lines = states.flatMap((s) => {
+    const state = (s: UmlState): string[] => {
       const name = s.label ? `${q(s.label)} as ${s.id}` : s.id
       if (s.kind && s.kind !== 'state') return [`${pad}state ${s.id} <<${s.kind}>>`]
       const inner = scope(s.id, `${pad}  `)
       const head = `${pad}state ${name}`
       const desc = s.description ? [`${pad}${s.id} : ${flat(s.description)}`] : []
       return inner.length ? [`${head} {`, ...inner, `${pad}}`, ...desc] : [head, ...desc]
-    })
+    }
     // Only `[*]` needs its composite state around it; other transitions can name nested states.
-    const transitions = d.transitions
-      .filter((t) => t.parent === parent)
-      .map((t) => `${pad}${t.from} --> ${t.to}${t.label ? ` : ${flat(t.label)}` : ''}`)
-    return [...lines, ...transitions]
+    const transitions = d.transitions.filter((t) => t.parent === parent)
+    return stateRegions(d, parent, transitions).flatMap((r, i) => [
+      ...(i ? [`${pad}--`] : []),
+      ...r.states.flatMap(state),
+      ...r.transitions.map(
+        (t) => `${pad}${t.from} --> ${t.to}${t.label ? ` : ${flat(t.label)}` : ''}`,
+      ),
+    ])
   }
   return wrap(d.title, [...direction(d.direction), ...scope(undefined, ''), ...notes(d.notes)])
 }

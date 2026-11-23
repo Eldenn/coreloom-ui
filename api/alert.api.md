@@ -6,7 +6,7 @@ Stability: stable. Written by `pnpm api:report` from the code; don't edit it by 
 
 ```ts
 function Alert
-Alert.variant?: 'success' | 'warning' | 'default' | 'destructive' | null | undefined
+Alert.variant?: 'success' | 'default' | 'warning' | 'destructive' | null | undefined
 Alert.*: react
 function AlertDescription
 AlertDescription.*: react

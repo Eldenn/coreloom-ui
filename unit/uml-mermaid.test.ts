@@ -187,15 +187,15 @@ describe('parseMermaid · state diagrams', () => {
     roundTripState(read(text, 'state'))
   })
 
-  it('reads multi-line notes and flags concurrent regions', () => {
+  it('reads multi-line notes and concurrent regions', () => {
     const result = parseMermaid(
       'stateDiagram\n  note left of A\n    first\n    second\n  end note\n  state B {\n    C\n    --\n    D\n  }',
     )
     const d = result.diagram as StateDiagram
     expect(d.notes).toEqual([{ for: 'A', text: 'first\nsecond' }])
-    expect(result.problems).toEqual([
-      { line: 8, severity: 'warning', code: 'unsupported', text: '--' },
-    ])
+    expect(result.problems).toEqual([])
+    expect(d.states.find((s) => s.id === 'C')?.region).toBeUndefined()
+    expect(d.states.find((s) => s.id === 'D')?.region).toBe(1)
   })
 })
 
