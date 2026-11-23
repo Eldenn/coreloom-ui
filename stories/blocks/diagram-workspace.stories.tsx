@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { NetworkIcon, Share2Icon } from 'lucide-react'
+import { MessageSquarePlusIcon, NetworkIcon, Share2Icon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { AppShell } from '@/components/app-shell'
 import { DIAGRAM_TEMPLATES } from '@/components/diagram-editor'
 import {
+  type DiagramContextTarget,
   DiagramWorkspace,
   type DiagramWorkspaceImport,
   type DiagramWorkspaceItem,
+  type DiagramWorkspaceProps,
 } from '@/components/diagram-workspace'
 import { Button } from '@/components/ui/button'
 import type { SaveState } from '@/components/ui/save-status'
@@ -53,12 +55,14 @@ function Demo({
   initialState = 'saved',
   height,
   onAnnotationSelect,
+  contextActions,
 }: {
   views?: DiagramWorkspaceItem[]
   failSaves?: boolean
   initialState?: SaveState
   height?: string
   onAnnotationSelect?: (element: string, viewId: string) => void
+  contextActions?: DiagramWorkspaceProps['contextActions']
 }) {
   const kinds = useCoreloomI18n().messages.diagram.kinds
   const [title, setTitle] = React.useState('Checkout architecture')
@@ -130,6 +134,7 @@ function Demo({
       actions={share}
       height={height}
       onAnnotationSelect={onAnnotationSelect}
+      contextActions={contextActions}
     />
   )
 }
@@ -231,6 +236,66 @@ export const Annotated: Story = {
         <p role="status" className="text-[13px] text-fg-secondary">
           {picked ? `Showing the findings for ${picked}` : 'Press a badge to see its findings.'}
         </p>
+      </div>
+    )
+  },
+}
+
+/**
+ * `contextActions`: a right-click (a long press, or the context-menu key or Shift+F10 on a
+ * focused view or element) on a view of the list, or on an element, a member, a relation or a
+ * sequence step of the open view, opens a menu: the workspace's own entries, then the app's. Here
+ * the app's entry adds what was clicked to an assistant's context, shown as chips below.
+ */
+export const ContextMenu: Story = {
+  render: function Render() {
+    const [context, setContext] = React.useState<DiagramContextTarget[]>([])
+    const key = (target: DiagramContextTarget) => `${target.viewId}:${target.type}:${target.label}`
+    return (
+      <div className="grid gap-3">
+        <Demo
+          contextActions={(target) => [
+            {
+              label: 'Add to the assistant’s context',
+              icon: <MessageSquarePlusIcon aria-hidden />,
+              disabled: context.some((t) => key(t) === key(target)),
+              onSelect: () => {
+                setContext((all) => [...all, target])
+              },
+            },
+          ]}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="m-0 text-[13px] text-fg-secondary">Assistant’s context:</p>
+          {context.length === 0 && (
+            <p className="m-0 text-[13px] text-muted-foreground">
+              Right-click a view, or a part of the drawing.
+            </p>
+          )}
+          <ul aria-label="Assistant’s context" className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+            {context.map((target) => (
+              <li
+                key={key(target)}
+                data-type={target.type}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-secondary py-0.5 pr-0.5 pl-2 text-[12.5px] text-secondary-foreground"
+              >
+                <span className="font-mono text-[11px] text-fg-secondary">{target.type}</span>
+                {target.label}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove ${target.label}`}
+                  onClick={() => {
+                    setContext((all) => all.filter((t) => key(t) !== key(target)))
+                  }}
+                >
+                  <XIcon aria-hidden />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     )
   },

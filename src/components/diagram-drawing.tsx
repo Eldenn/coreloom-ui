@@ -11,6 +11,7 @@ import { DiagramProperties } from '@/components/diagram-properties'
 import { SequenceOutline } from '@/components/diagram-sequence'
 import { DiagramTools } from '@/components/diagram-tools'
 import {
+  type UmlContextActions,
   UmlDiagram,
   type UmlDiagramHandle,
   type UmlDiagramProps,
@@ -112,9 +113,11 @@ function Drawing({
   editing,
   directions,
   notes = true,
+  highlighted,
   imageRef,
   onLayoutChange,
   review = {},
+  contextActions,
 }: {
   diagram: UmlSpec | null
   label: string
@@ -129,9 +132,13 @@ function Drawing({
   directions: readonly UmlDirection[]
   /** The text's format keeps notes (a Mermaid flowchart has none). Default: true. */
   notes?: boolean
+  /** Element ids to point out on the drawing, beside the selection. */
+  highlighted?: readonly string[] | undefined
   imageRef: React.Ref<UmlDiagramHandle>
   /** The app's annotations on the elements, and what a badge does. */
   review?: Pick<UmlDiagramProps, 'annotations' | 'onAnnotationSelect'>
+  /** The app's entries in the drawing's context menu, after the editor's own. */
+  contextActions?: UmlContextActions | undefined
 }) {
   const empty = useCoreloomI18n().messages.diagram.empty
   const locked = problems || readOnly
@@ -155,6 +162,8 @@ function Drawing({
         onDelete: editing.remove,
         onRename: editing.rename,
         onElementDrop: drop,
+        onDuplicate: editing.duplicateOf,
+        onMemberDelete: editing.removeMember,
       }
   return (
     // The keys are shortcuts for tools in the toolbar, which stay the way to reach them.
@@ -198,8 +207,10 @@ function Drawing({
               onLayoutChange={problems ? onLayoutChange : editing.move}
               selection={editing.selection}
               onSelectionChange={editing.select}
+              {...(highlighted ? { highlighted } : {})}
               {...editable}
               {...review}
+              {...(contextActions ? { contextActions } : {})}
               height="100%"
               label={label}
               className="h-full"

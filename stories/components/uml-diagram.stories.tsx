@@ -17,6 +17,7 @@ import {
   fromMermaid,
   fromPlantUml,
   packageText,
+  regionsText,
   sequenceText,
   stateText,
   usecaseText,
@@ -239,6 +240,20 @@ const CLASS_FINDINGS: UmlAnnotation[] = [
 ]
 
 /**
+ * A composite state with concurrent regions (`--` in Mermaid and PlantUML): each region is laid
+ * out on its own, with its own start, and a dashed line parts them.
+ */
+export const ConcurrentRegions: Story = { args: { diagram: fromMermaid(regionsText) } }
+
+/**
+ * `highlighted`: elements pointed out without being selected, here the active state of each
+ * region while an app simulates the machine. The outline sits outside the selection ring.
+ */
+export const Highlighted: Story = {
+  args: { diagram: fromMermaid(regionsText), highlighted: ['Playing', 'Muted'] },
+}
+
+/**
  * `annotations`: a status on some elements, drawn as a ring in its colour and a badge on the
  * corner. With `onAnnotationSelect`, each badge is a button that hands the element's id back.
  */
@@ -275,6 +290,35 @@ export const AnnotatedSequence: Story = {
     onAnnotationSelect: () => {
       // The app shows the findings of that participant or step.
     },
+  },
+}
+
+/**
+ * `contextActions` on a drawing to read: a right-click on an element, a member, a relation (or the
+ * context-menu key on a focused one) opens a menu with the app's entries only, since nothing can
+ * be edited. The target's `label` is one line made from the diagram.
+ */
+export const ContextMenu: Story = {
+  render: function Render(args) {
+    const [said, setSaid] = React.useState<string | null>(null)
+    return (
+      <div className="grid gap-3">
+        <UmlDiagram
+          {...args}
+          contextActions={(target) => [
+            {
+              label: 'Show its label',
+              onSelect: () => {
+                setSaid(`${target.type}: ${target.label}`)
+              },
+            },
+          ]}
+        />
+        <p role="status" className="text-[13px] text-fg-secondary">
+          {said ?? 'Right-click an element, a member or a relation.'}
+        </p>
+      </div>
+    )
   },
 }
 

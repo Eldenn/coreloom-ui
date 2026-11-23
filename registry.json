@@ -3313,12 +3313,21 @@
         "@coreloom/uml",
         "@coreloom/badge",
         "@coreloom/button",
+        "@coreloom/context-menu",
         "@coreloom/input",
         "@coreloom/toolbar"
       ],
       "files": [
         {
           "path": "src/components/ui/uml-diagram.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/uml-diagram-context.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/components/ui/uml-diagram-labels.ts",
           "type": "registry:ui"
         },
         {
@@ -4855,6 +4864,10 @@
       "files": [
         {
           "path": "src/components/diagram-workspace.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/diagram-workspace-menu.tsx",
           "type": "registry:component"
         }
       ],

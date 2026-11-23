@@ -5,12 +5,20 @@ Stability: experimental. Written by `pnpm api:report` from the code; don't edit 
 ## src/components/ui/uml-diagram.tsx
 
 ```ts
+type DiagramContextAction = {}
+DiagramContextAction.label: string
+DiagramContextAction.icon?: React.ReactNode
+DiagramContextAction.destructive?: boolean | undefined
+DiagramContextAction.disabled?: boolean | undefined
+DiagramContextAction.onSelect: () => void
 type UmlAnnotation = {}
 UmlAnnotation.element: string
 UmlAnnotation.status: UmlAnnotationStatus
 UmlAnnotation.count?: number | undefined
 UmlAnnotation.label?: string | undefined
 type UmlAnnotationStatus = 'error' | 'warning' | 'ok' | 'unknown'
+type UmlContextActions = (target: UmlContextTarget) => readonly DiagramContextAction[]
+type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
 function UmlDiagram
 UmlDiagram.diagram: UmlSpec
 UmlDiagram.editable?: boolean | undefined
@@ -21,12 +29,16 @@ UmlDiagram.preview?: boolean | undefined
 UmlDiagram.label?: string | undefined
 UmlDiagram.selection?: UmlSelection | undefined
 UmlDiagram.onSelectionChange?: ((selection: UmlSelection) => void) | undefined
+UmlDiagram.highlighted?: readonly string[] | undefined
 UmlDiagram.onConnect?: ((from: string, to: string) => void) | undefined
 UmlDiagram.onDelete?: ((selection: UmlSelection) => void) | undefined
 UmlDiagram.onRename?: ((id: string, name: string) => void) | undefined
 UmlDiagram.onElementDrop?: ((type: string, position: UmlPoint) => void) | undefined
 UmlDiagram.annotations?: readonly UmlAnnotation[] | undefined
 UmlDiagram.onAnnotationSelect?: ((element: string) => void) | undefined
+UmlDiagram.contextActions?: UmlContextActions | undefined
+UmlDiagram.onDuplicate?: ((selection: UmlSelection) => void) | undefined
+UmlDiagram.onMemberDelete?: ((element: string, index: number) => void) | undefined
 UmlDiagram.ref?: React.Ref<UmlDiagramHandle> | undefined
 UmlDiagram.className?: string | undefined
 type UmlDiagramHandle = {}
@@ -41,14 +53,64 @@ UmlDiagramProps.preview?: boolean | undefined
 UmlDiagramProps.label?: string | undefined
 UmlDiagramProps.selection?: UmlSelection | undefined
 UmlDiagramProps.onSelectionChange?: ((selection: UmlSelection) => void) | undefined
+UmlDiagramProps.highlighted?: readonly string[] | undefined
 UmlDiagramProps.onConnect?: ((from: string, to: string) => void) | undefined
 UmlDiagramProps.onDelete?: ((selection: UmlSelection) => void) | undefined
 UmlDiagramProps.onRename?: ((id: string, name: string) => void) | undefined
 UmlDiagramProps.onElementDrop?: ((type: string, position: UmlPoint) => void) | undefined
 UmlDiagramProps.annotations?: readonly UmlAnnotation[] | undefined
 UmlDiagramProps.onAnnotationSelect?: ((element: string) => void) | undefined
+UmlDiagramProps.contextActions?: UmlContextActions | undefined
+UmlDiagramProps.onDuplicate?: ((selection: UmlSelection) => void) | undefined
+UmlDiagramProps.onMemberDelete?: ((element: string, index: number) => void) | undefined
 UmlDiagramProps.ref?: React.Ref<UmlDiagramHandle> | undefined
 UmlDiagramProps.className?: string | undefined
+```
+
+## src/components/ui/uml-diagram-context.tsx
+
+```ts
+function canvasMenu(input: DrawingMenuInput & { graph: DiagramGraph | null; rename: { start: (id: string) => void; }; }) => { enabled: boolean; resolve: (element: Element) => UmlContextTarget | null; lists: (target: UmlContextTarget) => { own: DiagramContextAction[]; app: readonly DiagramContextAction[]; }; onOpen: (target: UmlContextTarget) => void; }
+type DiagramContextAction = {}
+DiagramContextAction.label: string
+DiagramContextAction.icon?: React.ReactNode
+DiagramContextAction.destructive?: boolean | undefined
+DiagramContextAction.disabled?: boolean | undefined
+DiagramContextAction.onSelect: () => void
+type DiagramContextLists = {}
+DiagramContextLists.own: readonly DiagramContextAction[]
+DiagramContextLists.app: readonly DiagramContextAction[]
+function DiagramContextMenu
+DiagramContextMenu.enabled: boolean
+DiagramContextMenu.resolve: (element: Element) => T | null
+DiagramContextMenu.lists: (target: T) => DiagramContextLists
+DiagramContextMenu.onOpen?: ((target: T) => void) | undefined
+DiagramContextMenu.children: React.ReactElement<unknown, string | React.JSXElementConstructor<any>>
+function drawingActions(diagram: UmlSpec, target: UmlContextTarget, edits: DrawingEdits, t: Messages['diagramTools']) => DiagramContextAction[]
+type DrawingEdits = {}
+DrawingEdits.rename?: ((id: string) => void) | undefined
+DrawingEdits.onDuplicate?: ((selection: UmlSelection) => void) | undefined
+DrawingEdits.onDelete?: ((selection: UmlSelection) => void) | undefined
+DrawingEdits.onMemberDelete?: ((element: string, index: number) => void) | undefined
+function sequenceMenu(input: DrawingMenuInput & { diagram: SequenceDiagram; }) => { enabled: boolean; resolve: (element: Element) => UmlContextTarget | null; lists: (target: UmlContextTarget) => { own: DiagramContextAction[]; app: readonly DiagramContextAction[]; }; onOpen: (target: UmlContextTarget) => void; }
+type UmlContextActions = (target: UmlContextTarget) => readonly DiagramContextAction[]
+type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+```
+
+## src/components/ui/uml-diagram-labels.ts
+
+```ts
+function elementLabel(node: DiagramNode, role: string) => string
+type GraphHit = {}
+GraphHit.edge?: string | undefined
+GraphHit.node?: string | undefined
+GraphHit.member?: number | undefined
+function graphTarget(graph: DiagramGraph, hit: GraphHit, role: (node: DiagramNode) => string) => UmlContextTarget | null
+function memberLabel(node: DiagramNode, row: DiagramRow, role: string) => string
+function relationLabel(edge: DiagramEdge, name: (id: string) => string) => string
+function sequenceTarget(diagram: SequenceDiagram, id: string) => UmlContextTarget | null
+function stepLabel(step: SequenceStep, name: (id: string) => string) => string
+type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
 ```
 
 ## src/components/ui/uml-diagram-parts.tsx
@@ -106,7 +168,7 @@ DiagramMarkers.prefix: string
 
 ```ts
 function flowEdges(input: { graph: DiagramGraph; markers: string; selected: ReadonlySet<number>; t: DiagramText; }) => DiagramFlowEdge[]
-function flowNodes(input: { graph: DiagramGraph; boxes: Map<string, LayoutBox>; editable: boolean; connectable: boolean; selected: ReadonlySet<string>; layer?: AnnotationLayer; t: DiagramText; }) => DiagramFlowNode[]
+function flowNodes(input: { graph: DiagramGraph; boxes: Map<string, LayoutBox>; editable: boolean; connectable: boolean; selected: ReadonlySet<string>; highlighted?: readonly string[] | undefined; exporting?: boolean; layer?: AnnotationLayer; t: DiagramText; }) => DiagramFlowNode[]
 function movedLayout(changes: NodeChange<DiagramFlowNode>[], current: UmlLayout) => UmlLayout | null
 function nextSelection(current: UmlSelection, changes: (NodeChange<DiagramFlowNode> | EdgeChange<DiagramFlowEdge>)[], kind: 'elements' | 'relations') => UmlSelection | null
 ```
@@ -195,6 +257,7 @@ SequenceDiagramView.onSelect?: ((id: string | null, additive: boolean) => void) 
 SequenceDiagramView.annotations?: readonly UmlAnnotation[] | undefined
 SequenceDiagramView.onAnnotationSelect?: ((element: string) => void) | undefined
 SequenceDiagramView.fit?: boolean | undefined
+SequenceDiagramView.contextActions?: UmlContextActions | undefined
 SequenceDiagramView.ref?: React.Ref<HTMLDivElement> | undefined
 SequenceDiagramView.className?: string | undefined
 type SequenceDiagramViewProps = {}
@@ -206,6 +269,7 @@ SequenceDiagramViewProps.onSelect?: ((id: string | null, additive: boolean) => v
 SequenceDiagramViewProps.annotations?: readonly UmlAnnotation[] | undefined
 SequenceDiagramViewProps.onAnnotationSelect?: ((element: string) => void) | undefined
 SequenceDiagramViewProps.fit?: boolean | undefined
+SequenceDiagramViewProps.contextActions?: UmlContextActions | undefined
 SequenceDiagramViewProps.ref?: React.Ref<HTMLDivElement> | undefined
 SequenceDiagramViewProps.className?: string | undefined
 ```

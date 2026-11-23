@@ -41,6 +41,7 @@ import {
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import type { UmlDirection } from '@/lib/uml'
 import type { DiagramEdge, DiagramNode, DiagramRow } from '@/lib/uml-graph'
+import type { RegionLines } from '@/lib/uml-layout'
 import { cn } from '@/lib/utils'
 
 /** `connectable`: the node shows a dot to drag a new line from; `annotation`: its badge. */
@@ -48,6 +49,8 @@ interface NodeData extends Record<string, unknown> {
   node: DiagramNode
   connectable?: boolean
   annotation?: UmlAnnotation | undefined
+  /** A frame with concurrent regions: the dashed lines between them. */
+  regions?: RegionLines
 }
 type BoxNodeType = Node<NodeData, 'box'>
 type PseudoNodeType = Node<NodeData, 'pseudo'>
@@ -133,9 +136,20 @@ function nodeLabel(node: DiagramNode, t: DiagramText): string {
   return parts.filter(Boolean).join(', ')
 }
 
-function Row({ row, keyed }: { row: DiagramRow; keyed: boolean }) {
+/** How many rows come before each compartment of a box. */
+function rowsBefore(node: DiagramNode): number[] {
+  return (node.compartments ?? []).map((_, i, all) =>
+    all.slice(0, i).reduce((n, rows) => n + rows.length, 0),
+  )
+}
+
+/** `member`: the row's place across the box's compartments, which a context menu reads back. */
+function Row({ row, keyed, member }: { row: DiagramRow; keyed: boolean; member: number }) {
   return (
-    <div className="flex h-5 items-center gap-2 font-mono text-[12px] leading-5">
+    <div
+      data-member={member}
+      className="flex h-5 items-center gap-2 font-mono text-[12px] leading-5"
+    >
       {(row.prefix ?? keyed) && (
         <span className={cn('shrink-0 text-fg-secondary', keyed ? 'w-[3.2em]' : 'w-[1ch]')}>
           {row.prefix}
@@ -177,6 +191,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
   const top = eyebrow(node, t)
   const keyed = node.role === 'entity' && Boolean(node.compartments?.[0]?.some((r) => r.prefix))
   const Icon = node.variant ? VARIANT_ICONS[node.variant] : ListOrderedIcon
+  const before = rowsBefore(node)
   if (node.shape === 'note') {
     return (
       <div className="size-full overflow-hidden rounded-sm border border-border-strong bg-warning-subtle px-3 py-3 text-[12px] leading-[17px] whitespace-pre-line text-foreground">
@@ -224,7 +239,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
         >
           {rows.map((row, j) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- rows may repeat
-            <Row key={j} row={row} keyed={keyed} />
+            <Row key={j} row={row} keyed={keyed} member={(before[i] ?? 0) + j} />
           ))}
           {!rows.length && <div className="h-5" />}
         </div>
@@ -308,6 +323,18 @@ function FrameNode(props: NodeProps<FrameNodeType>) {
           {top && <p className="truncate font-mono text-[10.5px] text-fg-secondary">{top}</p>}
         </div>
       </div>
+      {/* Concurrent regions: a dashed line between each two, under the name. */}
+      {data.regions?.at.map((at) => (
+        <div
+          key={at}
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute border-dashed border-border-strong',
+            data.regions?.axis === 'x' ? 'top-10 bottom-0 border-l' : 'inset-x-0 border-t',
+          )}
+          style={data.regions?.axis === 'x' ? { left: at } : { top: at }}
+        />
+      ))}
     </>
   )
 }
