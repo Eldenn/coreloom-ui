@@ -1,19 +1,20 @@
 // Coreloom UI — UML properties. What a properties panel shows and changes for one element or one
 // relation of a diagram: its name, stereotype, members, attributes, description, technology, the
 // kind of line and its labels. Renaming an element renames it everywhere it's used.
-import type {
-  C4Diagram,
-  ClassDiagram,
-  ClassMember,
-  ErAttribute,
-  ErCardinality,
-  ErDiagram,
-  SequenceDiagram,
-  SequenceStep,
-  StateDiagram,
-  UmlLayout,
-  UmlNote,
-  UmlSpec,
+import {
+  type C4Diagram,
+  type ClassDiagram,
+  type ClassMember,
+  type ErAttribute,
+  type ErCardinality,
+  type ErDiagram,
+  type SequenceDiagram,
+  type SequenceStep,
+  STATE_REGIONS_MAX,
+  type StateDiagram,
+  type UmlLayout,
+  type UmlNote,
+  type UmlSpec,
 } from '@/lib/uml'
 import {
   type EditResult,
@@ -49,6 +50,8 @@ interface UmlElementFields {
   attributes?: string
   /** States and C4 elements. */
   description?: string
+  /** States inside a composite one: the concurrent region they sit in (see `stateRegionChoices`). */
+  region?: number
   /** C4 containers and components. */
   technology?: string
   /** C4 people and systems: outside what the diagram is about. */
@@ -316,8 +319,33 @@ function stateFields(d: StateDiagram, id: string): UmlElementFields | null {
   const s = d.states.find((x) => x.id === id)
   if (!s) return null
   const name = s.label ?? s.id
-  return (s.kind ?? 'state') === 'state' ? { name, description: s.description ?? '' } : { name }
+  const region = s.parent ? { region: s.region ?? 0 } : {}
+  return (s.kind ?? 'state') === 'state'
+    ? { name, description: s.description ?? '', ...region }
+    : { name, ...region }
 }
+
+/**
+ * The regions a state can be moved to: those its composite already has, in order, and the number
+ * of a new one (null when there's no number left, or the state is alone in its region already).
+ * Null for anything that isn't a state inside a composite.
+ */
+function stateRegionChoices(
+  diagram: UmlSpec,
+  id: string,
+): { regions: number[]; next: number | null } | null {
+  if (diagram.kind !== 'state') return null
+  const s = diagram.states.find((x) => x.id === id)
+  if (!s?.parent) return null
+  const siblings = diagram.states.filter((x) => x.parent === s.parent)
+  const regions = [...new Set(siblings.map((x) => x.region ?? 0))].sort((a, b) => a - b)
+  const alone = siblings.filter((x) => (x.region ?? 0) === (s.region ?? 0)).length === 1
+  const next = Math.max(...regions) + 1
+  return { regions, next: alone || next > STATE_REGIONS_MAX ? null : next }
+}
+
+/** A region number the schema takes, or 0. */
+const validRegion = (n: number) => (Number.isInteger(n) && n > 0 && n <= STATE_REGIONS_MAX ? n : 0)
 
 function erFields(d: ErDiagram, id: string): UmlElementFields | null {
   const e = d.entities.find((x) => x.id === id)
@@ -381,9 +409,15 @@ function applyFields(d: UmlSpec, id: string, f: UmlElementFields): UmlSpec {
     }
     case 'state': {
       const states = d.states.map((s) => {
-        if (s.id !== id || f.description === undefined) return s
-        const { description: _d, ...rest } = s
-        return { ...rest, ...optional('description', f.description) }
+        if (s.id !== id) return s
+        const { description: _d, region: _r, ...rest } = s
+        // Region 0 is the default: it isn't written. Outside a composite there are no regions.
+        const region = s.parent ? validRegion(f.region ?? s.region ?? 0) : 0
+        return {
+          ...rest,
+          ...optional('description', f.description ?? s.description),
+          ...(region ? { region } : {}),
+        }
       })
       return { ...d, states }
     }
@@ -603,6 +637,7 @@ export {
   reverseRelation,
   setElementFields,
   setRelationFields,
+  stateRegionChoices,
   type UmlElementFields,
   type UmlRelationFields,
 }

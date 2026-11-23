@@ -112,6 +112,7 @@ function Drawing({
   editing,
   directions,
   notes = true,
+  highlighted,
   imageRef,
   onLayoutChange,
   review = {},
@@ -129,6 +130,8 @@ function Drawing({
   directions: readonly UmlDirection[]
   /** The text's format keeps notes (a Mermaid flowchart has none). Default: true. */
   notes?: boolean
+  /** Element ids to point out on the drawing, beside the selection. */
+  highlighted?: readonly string[] | undefined
   imageRef: React.Ref<UmlDiagramHandle>
   /** The app's annotations on the elements, and what a badge does. */
   review?: Pick<UmlDiagramProps, 'annotations' | 'onAnnotationSelect'>
@@ -198,6 +201,7 @@ function Drawing({
               onLayoutChange={problems ? onLayoutChange : editing.move}
               selection={editing.selection}
               onSelectionChange={editing.select}
+              {...(highlighted ? { highlighted } : {})}
               {...editable}
               {...review}
               height="100%"

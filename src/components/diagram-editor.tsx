@@ -80,6 +80,11 @@ interface DiagramEditorProps {
    */
   readOnly?: boolean
   /**
+   * Element ids to point out on the drawing without selecting them (the active states of a
+   * simulation, say). The text and the selection are left alone.
+   */
+  highlighted?: readonly string[]
+  /**
    * A status on some elements, by id (the findings of a review against the code): a ring and a
    * badge on each. They follow the ids, so an element renamed in the text loses its badge.
    */
@@ -470,6 +475,7 @@ function DiagramEditor({
   autoFocus = false,
   actions,
   readOnly = false,
+  highlighted,
   annotations,
   onAnnotationSelect,
   className,
@@ -609,6 +615,7 @@ function DiagramEditor({
             editing={editing}
             directions={keptDirections(diagram, format)}
             notes={keepsNotes(diagram, format)}
+            {...(highlighted ? { highlighted } : {})}
             imageRef={image}
             onLayoutChange={setLayout}
             review={{

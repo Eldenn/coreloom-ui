@@ -1,15 +1,16 @@
 // Coreloom UI — Mermaid state diagrams. Reads `stateDiagram-v2` text into a StateDiagram and writes
 // one back: states with names and descriptions, composite states, `[*]` start and end, choice, fork
-// and join, labelled transitions, notes and the direction. Concurrent regions (`--`) and styling
-// are set aside with a warning.
-import type {
-  StateDiagram,
-  StateKind,
-  StateTransition,
-  UmlDirection,
-  UmlNote,
-  UmlProblem,
-  UmlState,
+// and join, labelled transitions, notes, the direction and the concurrent regions of a composite
+// state (`--`). Styling is set aside with a warning.
+import {
+  STATE_REGIONS_MAX,
+  type StateDiagram,
+  type StateKind,
+  type StateTransition,
+  type UmlDirection,
+  type UmlNote,
+  type UmlProblem,
+  type UmlState,
 } from '@/lib/uml'
 import {
   type Groups,
@@ -41,8 +42,8 @@ interface StateParse {
   transitions: StateTransition[]
   notes: UmlNote[]
   problems: UmlProblem[]
-  /** The composite states we're inside, innermost last. */
-  stack: { id: string; line: SourceLine }[]
+  /** The composite states we're inside, innermost last, each with the region being read. */
+  stack: { id: string; line: SourceLine; region: number }[]
   /** A multi-line note being read. */
   note?: { for: string; lines: string[] }
   direction?: UmlDirection
@@ -56,8 +57,9 @@ function ensureState(p: StateParse, id: string): UmlState {
   let state = p.states.get(id)
   if (!state) {
     state = { id }
-    const parent = scopeOf(p)
-    if (parent) state.parent = parent
+    const scope = p.stack.at(-1)
+    if (scope) state.parent = scope.id
+    if (scope?.region) state.region = scope.region
     p.states.set(id, state)
   }
   return state
@@ -78,13 +80,13 @@ function readTransition(p: StateParse, m: Groups) {
 
 function openComposite(p: StateParse, id: string, line: SourceLine) {
   ensureState(p, id)
-  p.stack.push({ id, line })
+  p.stack.push({ id, line, region: 0 })
 }
 
 function readAlias(p: StateParse, m: Groups, line: SourceLine) {
   const [, label = '', id = '', open] = m
   ensureState(p, id).label = unquote(`"${label}"`)
-  if (open) p.stack.push({ id, line })
+  if (open) p.stack.push({ id, line, region: 0 })
 }
 
 function readNoteLine(p: StateParse, note: NonNullable<StateParse['note']>, line: SourceLine) {
@@ -130,6 +132,12 @@ const STATEMENTS: readonly [RegExp, Reader][] = [
 
 /** One line. Returns false when nothing understood it. */
 function readStatement(p: StateParse, line: SourceLine): boolean {
+  // `--` starts the next concurrent region of the composite being read.
+  const scope = p.stack.at(-1)
+  if (line.text === '--' && scope && scope.region < STATE_REGIONS_MAX) {
+    scope.region++
+    return true
+  }
   for (const [re, read] of STATEMENTS) {
     const m = match(re, line.text)
     if (m) {
@@ -184,20 +192,40 @@ function stateDecl(s: UmlState, composite: boolean): string[] {
   return out
 }
 
-function scopeLines(diagram: StateDiagram, scope: string | undefined, indent: string): string[] {
+interface StateRegion {
+  states: UmlState[]
+  transitions: StateTransition[]
+}
+
+/**
+ * The states of `scope` grouped by concurrent region, in region order, each with the `transitions`
+ * written in it: a `[*]` start or end goes with the state at its other end, a transition between
+ * two regions with the later one (both its states are declared by then). Empty regions are
+ * skipped, so their numbers close up; outside a composite there is a single region.
+ */
+function stateRegions(
+  diagram: StateDiagram,
+  scope: string | undefined,
+  transitions: readonly StateTransition[],
+): StateRegion[] {
   const children = diagram.states.filter((s) => s.parent === scope)
-  const isComposite = (id: string) => diagram.states.some((s) => s.parent === id)
-  const out: string[] = []
-  for (const s of children) {
-    out.push(...stateDecl(s, isComposite(s.id)).map((l) => indent + l))
-    if (isComposite(s.id)) {
-      out.push(
-        `${indent}state ${s.id} {`,
-        ...scopeLines(diagram, s.id, `${indent}  `),
-        `${indent}}`,
-      )
-    }
+  const regionOf = (s: UmlState) => (scope === undefined ? 0 : (s.region ?? 0))
+  const numbers = [...new Set(children.map(regionOf))].sort((a, b) => a - b)
+  if (!numbers.length) numbers.push(0)
+  const regions = numbers.map((n) => ({
+    states: children.filter((s) => regionOf(s) === n),
+    transitions: [] as StateTransition[],
+  }))
+  for (const t of transitions) {
+    const ends = children.filter((s) => s.id === t.from || s.id === t.to)
+    const index = Math.max(0, ...ends.map((s) => numbers.indexOf(regionOf(s))))
+    regions[index]?.transitions.push(t)
   }
+  return regions
+}
+
+function scopeLines(diagram: StateDiagram, scope: string | undefined, indent: string): string[] {
+  const isComposite = (id: string) => diagram.states.some((s) => s.parent === id)
   const parentOf = (id: string) => diagram.states.find((s) => s.id === id)?.parent
   // A transition between two states of the same composite is written inside it.
   const home = (t: StateTransition) => {
@@ -206,12 +234,19 @@ function scopeLines(diagram: StateDiagram, scope: string | undefined, indent: st
     return parent === parentOf(t.to) ? parent : undefined
   }
   const inScope = (t: StateTransition) => home(t) === scope
-  for (const t of diagram.transitions.filter(inScope)) {
-    out.push(
-      `${indent}${t.from} --> ${t.to}${t.label ? ` : ${t.label.replace(/\r?\n/g, ' ')}` : ''}`,
-    )
-  }
-  return out
+  return stateRegions(diagram, scope, diagram.transitions.filter(inScope)).flatMap((r, i) => [
+    ...(i ? [`${indent}--`] : []),
+    ...r.states.flatMap((s) => [
+      ...stateDecl(s, isComposite(s.id)).map((l) => indent + l),
+      ...(isComposite(s.id)
+        ? [`${indent}state ${s.id} {`, ...scopeLines(diagram, s.id, `${indent}  `), `${indent}}`]
+        : []),
+    ]),
+    ...r.transitions.map(
+      (t) =>
+        `${indent}${t.from} --> ${t.to}${t.label ? ` : ${t.label.replace(/\r?\n/g, ' ')}` : ''}`,
+    ),
+  ])
 }
 
 /** The diagram as Mermaid `stateDiagram-v2` text. */
@@ -228,4 +263,4 @@ function stateToMermaid(diagram: StateDiagram): string {
   return out.join('\n')
 }
 
-export { parseStateDiagram, stateToMermaid }
+export { parseStateDiagram, stateRegions, stateToMermaid }

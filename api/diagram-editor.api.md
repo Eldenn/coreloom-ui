@@ -25,6 +25,7 @@ DiagramEditor.defaultView?: DiagramEditorView | undefined
 DiagramEditor.onViewChange?: ((view: DiagramEditorView) => void) | undefined
 DiagramEditor.actions?: React.ReactNode
 DiagramEditor.readOnly?: boolean | undefined
+DiagramEditor.highlighted?: readonly string[] | undefined
 DiagramEditor.annotations?: readonly UmlAnnotation[] | undefined
 DiagramEditor.onAnnotationSelect?: ((element: string) => void) | undefined
 DiagramEditor.className?: string | undefined
@@ -46,6 +47,7 @@ DiagramEditorProps.defaultView?: DiagramEditorView | undefined
 DiagramEditorProps.onViewChange?: ((view: DiagramEditorView) => void) | undefined
 DiagramEditorProps.actions?: React.ReactNode
 DiagramEditorProps.readOnly?: boolean | undefined
+DiagramEditorProps.highlighted?: readonly string[] | undefined
 DiagramEditorProps.annotations?: readonly UmlAnnotation[] | undefined
 DiagramEditorProps.onAnnotationSelect?: ((element: string) => void) | undefined
 DiagramEditorProps.className?: string | undefined
@@ -311,6 +313,7 @@ Drawing.editing.add: (type: UmlElementType, at?: import("@/lib/uml").UmlPoint) =
 Drawing.onLayoutChange: (layout: UmlLayout) => void
 Drawing.directions: readonly UmlDirection[]
 Drawing.notes?: boolean | undefined
+Drawing.highlighted?: readonly string[] | undefined
 Drawing.imageRef: React.Ref<UmlDiagramHandle>
 Drawing.review?: Pick<UmlDiagramProps, 'annotations' | 'onAnnotationSelect'> | undefined
 ```
@@ -519,6 +522,9 @@ SequenceOutline.t.properties.members: string
 SequenceOutline.t.properties.attributes: string
 SequenceOutline.t.properties.attributesHint: string
 SequenceOutline.t.properties.description: string
+SequenceOutline.t.properties.region: string
+SequenceOutline.t.properties.regionNumber: (n: number) => string
+SequenceOutline.t.properties.newRegion: string
 SequenceOutline.t.properties.technology: string
 SequenceOutline.t.properties.external: string
 SequenceOutline.t.properties.kind: string
@@ -706,6 +712,9 @@ StepForm.t.properties.members: string
 StepForm.t.properties.attributes: string
 StepForm.t.properties.attributesHint: string
 StepForm.t.properties.description: string
+StepForm.t.properties.region: string
+StepForm.t.properties.regionNumber: (n: number) => string
+StepForm.t.properties.newRegion: string
 StepForm.t.properties.technology: string
 StepForm.t.properties.external: string
 StepForm.t.properties.kind: string
@@ -893,6 +902,9 @@ StepFormProps.t.properties.members: string
 StepFormProps.t.properties.attributes: string
 StepFormProps.t.properties.attributesHint: string
 StepFormProps.t.properties.description: string
+StepFormProps.t.properties.region: string
+StepFormProps.t.properties.regionNumber: (n: number) => string
+StepFormProps.t.properties.newRegion: string
 StepFormProps.t.properties.technology: string
 StepFormProps.t.properties.external: string
 StepFormProps.t.properties.kind: string

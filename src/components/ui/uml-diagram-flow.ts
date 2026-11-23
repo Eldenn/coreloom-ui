@@ -22,7 +22,7 @@ import {
   type DiagramNode,
   relationIndexOf,
 } from '@/lib/uml-graph'
-import type { LayoutBox } from '@/lib/uml-layout'
+import { type LayoutBox, regionLines } from '@/lib/uml-layout'
 import { cn } from '@/lib/utils'
 
 type DiagramText = Messages['diagram']
@@ -68,15 +68,24 @@ function flowNodes(input: {
   editable: boolean
   connectable: boolean
   selected: ReadonlySet<string>
+  /** Boxes pointed out (see `UmlDiagramProps.highlighted`): an outline around the selection ring. */
+  highlighted?: readonly string[] | undefined
+  /** An image is being made: nothing is drawn as pointed out. */
+  exporting?: boolean
   /** The statuses laid over the elements; each is said after the element's own words. */
   layer?: AnnotationLayer
   t: DiagramText
 }): DiagramFlowNode[] {
-  const { graph, boxes, editable, connectable, selected, layer, t } = input
+  const { graph, boxes, editable, connectable, selected, highlighted, exporting, layer, t } = input
+  const lines = regionLines(graph.nodes, boxes, graph.direction)
+  const pointedOut = new Set(exporting ? [] : highlighted)
   return byDepth(graph.nodes).map((node) => {
     const box = boxes.get(node.id) ?? { x: 0, y: 0, width: node.width, height: node.height }
     const annotation = layer?.marks.get(node.id)
-    const label = nodeLabel(node, t)
+    const regions = lines.get(node.id)
+    const pointed = pointedOut.has(node.id)
+    // The outline is only seen: the words say it too.
+    const label = pointed ? t.highlighted(nodeLabel(node, t)) : nodeLabel(node, t)
     return {
       id: node.id,
       type: NODE_TYPE[node.shape],
@@ -88,7 +97,7 @@ function flowNodes(input: {
       measured: { width: box.width, height: box.height },
       style: { width: box.width, height: box.height },
       ...(node.parent && boxes.has(node.parent) ? { parentId: node.parent } : {}),
-      data: { node, connectable, annotation },
+      data: { node, connectable, annotation, ...(regions ? { regions } : {}) },
       ariaLabel:
         annotation && layer ? layer.t.described(label, annotationText(annotation, layer.t)) : label,
       draggable: editable,
@@ -96,6 +105,8 @@ function flowNodes(input: {
       className: cn(
         'rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring [&.selected]:ring-2 [&.selected]:ring-primary',
         annotation && ANNOTATION_RING[annotation.status],
+        // Outside the rings, so a box can be selected or annotated and pointed out at once.
+        pointed && 'outline-[3px] outline-offset-4 outline-success outline-solid',
       ),
     }
   })

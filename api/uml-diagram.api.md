@@ -21,6 +21,7 @@ UmlDiagram.preview?: boolean | undefined
 UmlDiagram.label?: string | undefined
 UmlDiagram.selection?: UmlSelection | undefined
 UmlDiagram.onSelectionChange?: ((selection: UmlSelection) => void) | undefined
+UmlDiagram.highlighted?: readonly string[] | undefined
 UmlDiagram.onConnect?: ((from: string, to: string) => void) | undefined
 UmlDiagram.onDelete?: ((selection: UmlSelection) => void) | undefined
 UmlDiagram.onRename?: ((id: string, name: string) => void) | undefined
@@ -41,6 +42,7 @@ UmlDiagramProps.preview?: boolean | undefined
 UmlDiagramProps.label?: string | undefined
 UmlDiagramProps.selection?: UmlSelection | undefined
 UmlDiagramProps.onSelectionChange?: ((selection: UmlSelection) => void) | undefined
+UmlDiagramProps.highlighted?: readonly string[] | undefined
 UmlDiagramProps.onConnect?: ((from: string, to: string) => void) | undefined
 UmlDiagramProps.onDelete?: ((selection: UmlSelection) => void) | undefined
 UmlDiagramProps.onRename?: ((id: string, name: string) => void) | undefined
@@ -106,7 +108,7 @@ DiagramMarkers.prefix: string
 
 ```ts
 function flowEdges(input: { graph: DiagramGraph; markers: string; selected: ReadonlySet<number>; t: DiagramText; }) => DiagramFlowEdge[]
-function flowNodes(input: { graph: DiagramGraph; boxes: Map<string, LayoutBox>; editable: boolean; connectable: boolean; selected: ReadonlySet<string>; layer?: AnnotationLayer; t: DiagramText; }) => DiagramFlowNode[]
+function flowNodes(input: { graph: DiagramGraph; boxes: Map<string, LayoutBox>; editable: boolean; connectable: boolean; selected: ReadonlySet<string>; highlighted?: readonly string[] | undefined; exporting?: boolean; layer?: AnnotationLayer; t: DiagramText; }) => DiagramFlowNode[]
 function movedLayout(changes: NodeChange<DiagramFlowNode>[], current: UmlLayout) => UmlLayout | null
 function nextSelection(current: UmlSelection, changes: (NodeChange<DiagramFlowNode> | EdgeChange<DiagramFlowEdge>)[], kind: 'elements' | 'relations') => UmlSelection | null
 ```

@@ -130,6 +130,7 @@ SequenceParticipant.id: string
 SequenceParticipant.label?: string | undefined
 SequenceParticipant.kind?: 'actor' | 'participant' | undefined
 type SequenceStep = { type: 'message'; from: string; to: string; text: string; arrow: SequenceArrow; activate?: boolean; deactivate?: boolean; } | { type: 'note'; position: 'left' | 'right' | 'over'; participants: string[]; text: string; } | { type: 'activation'; participant: string; active: boolean; } | { type: 'block'; kind: SequenceBlockKind; sections: { label: string; steps: SequenceStep[]; }[]; }
+const STATE_REGIONS_MAX: 31
 type StateDiagram = {}
 StateDiagram.kind: 'state'
 StateDiagram.title?: string | undefined
@@ -176,6 +177,7 @@ UmlState.label?: string | undefined
 UmlState.kind?: StateKind | undefined
 UmlState.description?: string | undefined
 UmlState.parent?: string | undefined
+UmlState.region?: number | undefined
 type UseCaseDiagram = {}
 UseCaseDiagram.kind: 'usecase'
 UseCaseDiagram.title?: string | undefined
@@ -359,6 +361,7 @@ function parseMember(input: string) => ClassMember
 
 ```ts
 function parseStateDiagram(lines: readonly SourceLine[], title?: string) => { diagram: StateDiagram; problems: UmlProblem[]; }
+function stateRegions(diagram: StateDiagram, scope: string | undefined, transitions: readonly StateTransition[]) => StateRegion[]
 function stateToMermaid(diagram: StateDiagram) => string
 ```
 
@@ -481,6 +484,7 @@ type DiagramNode = {}
 DiagramNode.id: string
 DiagramNode.parent?: string | undefined
 DiagramNode.border?: boolean | undefined
+DiagramNode.region?: number | undefined
 DiagramNode.shape: DiagramShape
 DiagramNode.role: DiagramRole
 DiagramNode.title: string
@@ -504,7 +508,7 @@ DiagramRow.italic?: boolean | undefined
 type DiagramShape = 'end' | 'ellipse' | 'frame' | 'note' | 'start' | 'decision' | 'flowEnd' | 'port' | 'actor' | 'person' | 'choice' | 'box' | 'rounded' | 'bar' | 'node3d' | 'lollipop' | 'folder'
 type DiagramTone = 'primary' | 'default' | 'external'
 function noteNodes(notes: readonly UmlNote[] | undefined, parentOf: (id: string) => string | undefined) => { nodes: DiagramNode[]; edges: DiagramEdge[]; }
-function sizeBox(node: Omit<DiagramNode, 'width' | 'height'>, minWidth?: number) => { width: number; height: number; shape: DiagramShape; body?: string | undefined; title: string; id: string; parent?: string | undefined; stereotype?: string | undefined; border?: boolean | undefined; role: DiagramRole; technology?: string | undefined; variant?: 'database' | 'queue' | 'artifact' | 'component' | 'cloud' | undefined; italicTitle?: boolean | undefined; compartments?: DiagramRow[][] | undefined; tone?: DiagramTone | undefined; }
+function sizeBox(node: Omit<DiagramNode, 'width' | 'height'>, minWidth?: number) => { width: number; height: number; shape: DiagramShape; body?: string | undefined; title: string; id: string; region?: number | undefined; parent?: string | undefined; stereotype?: string | undefined; border?: boolean | undefined; role: DiagramRole; technology?: string | undefined; variant?: 'database' | 'queue' | 'artifact' | 'component' | 'cloud' | undefined; italicTitle?: boolean | undefined; compartments?: DiagramRow[][] | undefined; tone?: DiagramTone | undefined; }
 function textWidth(text: string, char?: number) => number
 function wrappedLines(text: string, width: number) => number
 ```
@@ -536,6 +540,7 @@ type DiagramNode = {}
 DiagramNode.id: string
 DiagramNode.parent?: string | undefined
 DiagramNode.border?: boolean | undefined
+DiagramNode.region?: number | undefined
 DiagramNode.shape: DiagramShape
 DiagramNode.role: DiagramRole
 DiagramNode.title: string
@@ -586,8 +591,13 @@ type LayoutNode = {}
 LayoutNode.id: string
 LayoutNode.parent?: string | undefined
 LayoutNode.border?: boolean | undefined
+LayoutNode.region?: number | undefined
 LayoutNode.width: number
 LayoutNode.height: number
+type RegionLines = {}
+RegionLines.axis: 'x' | 'y'
+RegionLines.at: number[]
+function regionLines(nodes: readonly LayoutNode[], boxes: ReadonlyMap<string, LayoutBox>, direction?: UmlDirection) => Map<string, RegionLines>
 ```
 
 ## src/lib/uml-sequence.ts
@@ -656,12 +666,14 @@ function renameElement(diagram: UmlSpec, id: string, name: string) => EditResult
 function reverseRelation(diagram: UmlSpec, index: number) => UmlSpec
 function setElementFields(diagram: UmlSpec, id: string, fields: UmlElementFields) => EditResult
 function setRelationFields(diagram: UmlSpec, index: number, f: UmlRelationFields) => UmlSpec
+function stateRegionChoices(diagram: UmlSpec, id: string) => { regions: number[]; next: number | null; } | null
 type UmlElementFields = {}
 UmlElementFields.name: string
 UmlElementFields.stereotype?: string | undefined
 UmlElementFields.members?: ClassMember[] | undefined
 UmlElementFields.attributes?: string | undefined
 UmlElementFields.description?: string | undefined
+UmlElementFields.region?: number | undefined
 UmlElementFields.technology?: string | undefined
 UmlElementFields.external?: boolean | undefined
 UmlElementFields.actor?: boolean | undefined

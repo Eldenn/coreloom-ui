@@ -2970,6 +2970,7 @@ export const de: Messages = {
       merge: (from, to) => `${from} verschmilzt ${to}`,
     },
     labelled: (relation, label) => `${relation}: ${label}`,
+    highlighted: (label) => `${label}, hervorgehoben`,
     named: (role, name) => `${role}: ${name}`,
     withTechnology: (kind, technology) => `${kind}: ${technology}`,
     cardinality: {
@@ -3450,6 +3451,9 @@ export const de: Messages = {
       attributes: 'Attribute',
       attributesHint: 'Eines pro Zeile: Typ Name, dann PK, FK oder UK',
       description: 'Beschreibung',
+      region: 'Region',
+      regionNumber: (n) => `Region ${n}`,
+      newRegion: 'Neue Region',
       technology: 'Technologie',
       external: 'Außerhalb des Systems',
       kind: 'Art',

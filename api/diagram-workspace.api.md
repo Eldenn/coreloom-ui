@@ -23,6 +23,7 @@ DiagramWorkspace.onRetrySave?: (() => void) | undefined
 DiagramWorkspace.actions?: React.ReactNode
 DiagramWorkspace.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspace.height?: string | undefined
+DiagramWorkspace.highlighted?: readonly string[] | undefined
 DiagramWorkspace.className?: string | undefined
 type DiagramWorkspaceImport = {}
 DiagramWorkspaceImport.title: string
@@ -53,5 +54,6 @@ DiagramWorkspaceProps.onRetrySave?: (() => void) | undefined
 DiagramWorkspaceProps.actions?: React.ReactNode
 DiagramWorkspaceProps.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspaceProps.height?: string | undefined
+DiagramWorkspaceProps.highlighted?: readonly string[] | undefined
 DiagramWorkspaceProps.className?: string | undefined
 ```

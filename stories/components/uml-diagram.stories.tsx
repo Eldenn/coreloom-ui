@@ -17,6 +17,7 @@ import {
   fromMermaid,
   fromPlantUml,
   packageText,
+  regionsText,
   sequenceText,
   stateText,
   usecaseText,
@@ -237,6 +238,20 @@ const CLASS_FINDINGS: UmlAnnotation[] = [
   { element: 'OrderRepository', status: 'error', label: 'Missing from the code' },
   { element: 'LineItem', status: 'unknown' },
 ]
+
+/**
+ * A composite state with concurrent regions (`--` in Mermaid and PlantUML): each region is laid
+ * out on its own, with its own start, and a dashed line parts them.
+ */
+export const ConcurrentRegions: Story = { args: { diagram: fromMermaid(regionsText) } }
+
+/**
+ * `highlighted`: elements pointed out without being selected, here the active state of each
+ * region while an app simulates the machine. The outline sits outside the selection ring.
+ */
+export const Highlighted: Story = {
+  args: { diagram: fromMermaid(regionsText), highlighted: ['Playing', 'Muted'] },
+}
 
 /**
  * `annotations`: a status on some elements, drawn as a ring in its colour and a badge on the

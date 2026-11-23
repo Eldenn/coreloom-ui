@@ -2946,6 +2946,7 @@ export const es: Messages = {
       merge: (from, to) => `${from} fusiona ${to}`,
     },
     labelled: (relation, label) => `${relation}: ${label}`,
+    highlighted: (label) => `${label}, resaltado`,
     named: (role, name) => `${role}: ${name}`,
     withTechnology: (kind, technology) => `${kind}: ${technology}`,
     cardinality: {
@@ -3427,6 +3428,9 @@ export const es: Messages = {
       attributes: 'Atributos',
       attributesHint: 'Uno por línea: tipo nombre, y luego PK, FK o UK',
       description: 'Descripción',
+      region: 'Región',
+      regionNumber: (n) => `Región ${n}`,
+      newRegion: 'Nueva región',
       technology: 'Tecnología',
       external: 'Fuera del sistema',
       kind: 'Tipo',

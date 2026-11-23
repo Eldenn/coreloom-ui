@@ -86,6 +86,20 @@ export const stateText = `stateDiagram-v2
   Rejected --> [*]
   note right of Draft : Only the author sees it`
 
+/** A composite state whose two regions (`--`) run side by side. */
+export const regionsText = `stateDiagram-v2
+  [*] --> Active
+  state Active {
+    [*] --> Playing
+    Playing --> Paused : pause
+    Paused --> Playing
+    --
+    [*] --> Loud
+    Loud --> Muted : mute
+    Muted --> Loud
+  }
+  Active --> [*] : stop`
+
 export const erText = `erDiagram
   CUSTOMER ||--o{ ORDER : places
   ORDER ||--|{ LINE_ITEM : contains
