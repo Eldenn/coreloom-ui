@@ -15,6 +15,12 @@ const menu = (page: Page) => page.getByRole('menu')
 const chips = (page: Page) =>
   page.getByRole('list', { name: 'Assistant’s context' }).getByRole('listitem')
 
+/**
+ * The key that adds a click to a canvas's selection. React Flow picks it from the platform the
+ * browser reports, and Playwright's WebKit reports macOS on every machine.
+ */
+const also = (browserName: string) => (browserName === 'webkit' ? 'Meta' : 'ControlOrMeta')
+
 /** Picks the app's entry of the open menu, and checks the chip it adds. */
 async function addToContext(page: Page, type: string, label: string) {
   await menu(page).getByRole('menuitem', { name: ADD }).click()
@@ -110,14 +116,17 @@ test.describe('Diagram workspace context menu (Blocks/Diagrams/Diagram workspace
     await expect(canvas(page)).toBeFocused()
   })
 
-  test('on one of several selected elements, the menu is about all of them', async ({ page }) => {
+  test('on one of several selected elements, the menu is about all of them', async ({
+    page,
+    browserName,
+  }) => {
     await open(page, WORKSPACE)
     const title = (name: string) =>
       canvas(page)
         .getByRole('group', { name: new RegExp(`^Class: ${name}`) })
         .locator('p', { hasText: new RegExp(`^${name}$`) })
     await title('Payment').click()
-    await title('CardPayment').click({ modifiers: ['ControlOrMeta'] })
+    await title('CardPayment').click({ modifiers: [also(browserName)] })
     await title('Payment').click({ button: 'right' })
     await expect(menu(page)).toHaveAccessibleName('2 selected')
     const add = 'Add 2 to the assistant’s context'
@@ -138,8 +147,7 @@ test.describe('Diagram workspace context menu (Blocks/Diagrams/Diagram workspace
       .click()
     const svg = page.getByRole('region', { name: 'Checkout' }).locator('svg')
     await svg.getByText('Charge card').click()
-    const steps = svg.locator('[data-id^="step:"]')
-    await steps.first().click({ modifiers: ['ControlOrMeta'] })
+    await svg.getByText('POST /orders/42/pay').click({ modifiers: ['Shift'] })
     await svg.getByText('Charge card').click({ button: 'right' })
     await expect(menu(page)).toHaveAccessibleName('2 selected')
     await expect(menu(page).getByRole('menuitem')).toHaveText([
@@ -154,14 +162,14 @@ test.describe('Diagram workspace context menu (Blocks/Diagrams/Diagram workspace
     await expect(chips(page).first()).toHaveAttribute('data-type', 'step')
   })
 
-  test('a right-click outside a selection lets it go', async ({ page }) => {
+  test('a right-click outside a selection lets it go', async ({ page, browserName }) => {
     await open(page, WORKSPACE)
     const title = (name: string) =>
       canvas(page)
         .getByRole('group', { name: new RegExp(`^Class: ${name}`) })
         .locator('p', { hasText: new RegExp(`^${name}$`) })
     await title('Payment').click()
-    await title('CardPayment').click({ modifiers: ['ControlOrMeta'] })
+    await title('CardPayment').click({ modifiers: [also(browserName)] })
     await title('Customer').click({ button: 'right' })
     await expect(menu(page)).toHaveAccessibleName('Customer')
     await expect(menu(page).getByRole('menuitem')).toHaveText([
