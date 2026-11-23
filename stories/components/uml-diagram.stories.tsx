@@ -8,6 +8,7 @@ import { renameElement } from '@/lib/uml-edit-fields'
 
 import {
   activityText,
+  c4BusyText,
   c4ContainerText,
   c4ContextText,
   classText,
@@ -67,6 +68,9 @@ export const C4Context: Story = { args: { diagram: fromMermaid(c4ContextText) } 
 export const C4Container: Story = { args: { diagram: fromMermaid(c4ContainerText), height: 600 } }
 
 /** Use cases (PlantUML): actors, the system's boundary, «include» and «extend». */
+/** Lines go round the boxes, side by side where they share a corridor; labels cover no box. */
+export const Busy: Story = { args: { diagram: fromMermaid(c4BusyText), height: 900 } }
+
 export const UseCase: Story = { args: { diagram: fromPlantUml(usecaseText), height: 560 } }
 
 /** An activity (a Mermaid flowchart): start, actions in partitions, a decision with guards, fork and join. */

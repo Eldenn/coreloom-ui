@@ -152,6 +152,67 @@ export const c4ContainerText = `C4Container
   Rel(api, events, "Publishes to")
   Rel(api, core, "Uses", "XML/HTTPS")`
 
+/** Many boxes and many lines: what the routing of lines is for. */
+export const c4BusyText = `C4Container
+  title Diagram workspace: containers
+  Person(dev, "Developer")
+  Person(reader, "Reader")
+  Person(admin, "Administrator")
+  System_Ext(agent, "Coding agent")
+  System_Boundary(app, "Diagram workspace") {
+    Container(cli, "CLI", "Node", "pull, status, check, map push")
+    Container(reviews, "Reviews", "", "Reviews of the code against the model")
+    Container(rules, "Agent rules", "", "Rules, roles and generated files")
+    Container(maps, "Code maps", "", "Imports and follows a repository")
+    Container(palette, "Command palette", "", "Sends a request to the assistant")
+    Container(simulation, "State simulation", "", "Events and guards on a state diagram")
+    Container(xstate, "XState export", "", "A state diagram as a machine")
+    Container(assistant, "Assistant", "", "Proposes views and actions")
+    Container(views, "Views", "", "Drawing, order and conversion")
+    Container(auth, "Sign-in and account", "", "Sign-up, e-mail, password")
+    Container(projects, "Projects", "", "Creation, copy and deletion")
+    Container(sharing, "Sharing", "", "Link, access code, public reading")
+    Container(skills, "Skills catalogue", "", "Browse the skills")
+    Container(models, "Model connections", "", "Providers and subscriptions")
+    Container(mcp, "MCP server", "", "Views read by an agent")
+    Container(keys, "API keys", "", "For the MCP server and the CLI")
+    Container(flags, "Feature flags", "", "Gradual activation")
+  }
+  System_Ext(github, "GitHub")
+  System_Ext(sandbox, "Sandbox")
+  System_Ext(llm, "Model providers")
+  Rel(dev, cli, "Runs locally or in CI")
+  Rel(dev, reviews, "Starts")
+  Rel(dev, rules, "Writes")
+  Rel(dev, maps, "Imports and follows")
+  Rel(dev, palette, "Opens")
+  Rel(dev, simulation, "Simulates")
+  Rel(dev, xstate, "Exports")
+  Rel(dev, assistant, "Talks to")
+  Rel(dev, views, "Draws")
+  Rel(dev, auth, "Manages the account")
+  Rel(dev, projects, "Organises")
+  Rel(dev, sharing, "Shares")
+  Rel(dev, skills, "Browses")
+  Rel(dev, models, "Connects")
+  Rel(dev, keys, "Manages")
+  Rel(reader, sharing, "Reads a shared view")
+  Rel(admin, flags, "Turns on and sets")
+  Rel(admin, github, "Sets up the App")
+  Rel(agent, mcp, "Reads and changes views")
+  Rel(cli, rules, "Gets the last generation")
+  Rel(cli, reviews, "Checks conformance")
+  Rel(cli, maps, "Sends the map of the repository")
+  Rel(palette, assistant, "Ask AI")
+  Rel(maps, assistant, "Opens a conversation")
+  Rel(simulation, views, "Reads the state diagram")
+  Rel(xstate, views, "Reads the state diagram")
+  Rel(assistant, views, "Proposes changes")
+  Rel(rules, sandbox, "Searches the web")
+  Rel(assistant, sandbox, "Clones the repository")
+  Rel(maps, github, "Clones")
+  Rel(models, llm, "Calls")`
+
 export const activityText = `flowchart TB
   start@{ shape: sm-circ }
   subgraph Shop
