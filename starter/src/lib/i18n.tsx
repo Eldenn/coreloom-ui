@@ -3165,6 +3165,7 @@ const en = {
     download: 'Download',
     svg: 'SVG image',
     png: 'PNG image',
+    pdf: 'PDF (print)…',
     imageFailed: 'The image couldn’t be made.',
     position: (index: number, total: number, title: string) =>
       `View ${index} of ${total}: ${title}`,
@@ -3208,6 +3209,7 @@ const en = {
     downloadText: (ext: string) => `Text (.${ext})`,
     downloadSvg: 'SVG image',
     downloadPng: 'PNG image',
+    downloadPdf: 'PDF (print)…',
     imageFailed: 'The image couldn’t be made.',
     problems: (n: number) => {
       if (n === 0) return 'No problems'
@@ -6663,6 +6665,7 @@ const fr: Messages = {
     download: 'Télécharger',
     svg: 'Image SVG',
     png: 'Image PNG',
+    pdf: 'PDF (imprimer)…',
     imageFailed: 'L’image n’a pas pu être créée.',
     position: (index: number, total: number, title: string) =>
       `Vue ${index} sur ${total} : ${title}`,
@@ -6706,6 +6709,7 @@ const fr: Messages = {
     downloadText: (ext) => `Texte (.${ext})`,
     downloadSvg: 'Image SVG',
     downloadPng: 'Image PNG',
+    downloadPdf: 'PDF (imprimer)…',
     imageFailed: 'L’image n’a pas pu être créée.',
     problems: (n) => {
       if (n === 0) return 'Aucun problème'
