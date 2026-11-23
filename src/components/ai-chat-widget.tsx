@@ -8,9 +8,19 @@
 //   <ChatWidget title="Chat with Coreloom" greeting="Hi! Questions about deploys?" unread={unread}
 //     messages={messages} status={status} onSend={({ text, files }) => sendMessage({ text, files })} onStop={stop} />
 //
+// An app with its own conversation UI passes it as children instead of the Chat's props, and can add
+// controls to the header (headerActions) and let the reader enlarge the card (resizable).
+//
 // Not modal on a desktop: the page stays usable behind the card. Escape (or Minimise) folds it back
 // into the launcher and gives focus back to it; opening puts the cursor in the composer.
-import { MessageCircleIcon, MinusIcon, SparklesIcon, XIcon } from 'lucide-react'
+import {
+  Maximize2Icon,
+  MessageCircleIcon,
+  Minimize2Icon,
+  MinusIcon,
+  SparklesIcon,
+  XIcon,
+} from 'lucide-react'
 import * as React from 'react'
 
 import { Chat } from '@/components/ai-chat'
@@ -21,10 +31,22 @@ import { cn } from '@/lib/utils'
 
 type ChatWidgetPresence = 'online' | 'away' | 'offline'
 
-type ChatWidgetProps = Omit<
+type ChatWidgetSize = 'default' | 'expanded'
+
+type ChatWidgetChatProps = Omit<
   React.ComponentProps<typeof Chat>,
   'className' | 'header' | 'autoFocus'
-> & {
+>
+
+/** The card's body: the built-in Chat (its props), or the app's own UI as children (the Chat's props are then ignored). */
+type ChatWidgetBody =
+  | (ChatWidgetChatProps & { children?: undefined })
+  | (Partial<ChatWidgetChatProps> & {
+      /** The app's own conversation UI, shown in the card instead of the Chat. Give it a PromptInput so opening focuses its composer. */
+      children: React.ReactNode
+    })
+
+type ChatWidgetProps = ChatWidgetBody & {
   /** Controlled open state (with onOpenChange); or leave it out and use defaultOpen. */
   open?: boolean
   defaultOpen?: boolean
@@ -53,7 +75,28 @@ type ChatWidgetProps = Omit<
   zIndex?: number
   /** Full-screen sheet instead of a card. Default: below 640px wide. */
   fullScreen?: boolean
+  /** Controls in the header, before Minimise (a conversation switcher, "New conversation"). */
+  headerActions?: React.ReactNode
+  /** Shows a header button that enlarges the card (720 × 820px). Default false. Not shown in the full-screen sheet. */
+  resizable?: boolean
+  /** Controlled size (with onSizeChange); or leave it out and use defaultSize. */
+  size?: ChatWidgetSize
+  /** Default "default" (400 × 600px). */
+  defaultSize?: ChatWidgetSize
+  onSizeChange?: (size: ChatWidgetSize) => void
   className?: string
+}
+
+function isCustomBody(
+  body: ChatWidgetBody,
+): body is Extract<ChatWidgetBody, { children: React.ReactNode }> {
+  return body.children !== undefined
+}
+
+const PRESENCE_DOT: Record<ChatWidgetPresence, string> = {
+  online: 'bg-success',
+  away: 'bg-warning',
+  offline: 'bg-muted-foreground',
 }
 
 const PHONE = '(max-width: 639px)'
@@ -100,8 +143,13 @@ function ChatWidget({
   offset = 24,
   zIndex = 1200,
   fullScreen,
+  headerActions,
+  resizable = false,
+  size: sizeProp,
+  defaultSize = 'default',
+  onSizeChange,
   className,
-  ...chat
+  ...body
 }: ChatWidgetProps) {
   const t = useCoreloomI18n().messages.ai.widget
   const { formatNumber } = useCoreloomI18n()
@@ -110,6 +158,12 @@ function ChatWidget({
   const [greetingGone, setGreetingGone] = React.useState(defaultOpen)
   const narrow = useNarrow()
   const sheet = fullScreen ?? narrow
+  const [innerSize, setInnerSize] = React.useState(defaultSize)
+  const size = sizeProp ?? innerSize
+  const setSize = (next: ChatWidgetSize) => {
+    if (sizeProp === undefined) setInnerSize(next)
+    onSizeChange?.(next)
+  }
 
   const panelId = React.useId()
   const titleId = React.useId()
@@ -225,24 +279,6 @@ function ChatWidget({
     }
   }
 
-  const headerButton = (label: string, onClick: () => void, icon: React.ReactNode) => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={label}
-          onClick={onClick}
-          className="text-muted-foreground"
-        >
-          {icon}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-
   return (
     <div
       data-slot="chat-widget"
@@ -260,6 +296,7 @@ function ChatWidget({
         ref={panel}
         id={panelId}
         data-slot="chat-widget-panel"
+        data-size={size}
         role="dialog"
         aria-modal={sheet || undefined}
         aria-labelledby={titleId}
@@ -272,7 +309,8 @@ function ChatWidget({
           sheet
             ? 'fixed inset-0 motion-safe:slide-in-from-bottom-6'
             : cn(
-                'h-[600px] w-[400px] rounded-xl border border-border shadow-xl motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2',
+                size === 'expanded' ? 'h-[820px] w-[720px]' : 'h-[600px] w-[400px]',
+                'rounded-xl border border-border shadow-xl motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2',
                 side === 'right' ? 'origin-bottom-right' : 'origin-bottom-left',
               ),
           !open && 'hidden',
@@ -286,69 +324,51 @@ function ChatWidget({
               }
         }
       >
-        <div
-          data-slot="chat-widget-header"
-          className="flex shrink-0 items-center gap-3 border-b border-border-subtle px-4 py-3"
+        <ChatWidgetHeader
+          avatar={avatar}
+          presence={presence}
+          title={titleText}
+          subtitle={subtitle ?? t.subtitle}
+          titleId={titleId}
+          subtitleId={subtitleId}
         >
-          <div className="relative shrink-0">
-            {avatar ?? (
-              <div
-                aria-hidden
-                className="flex size-9 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
-              >
-                <SparklesIcon className="size-4" />
-              </div>
-            )}
-            <span
-              aria-hidden
-              className={cn(
-                'absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-surface',
-                presence === 'online'
-                  ? 'bg-success'
-                  : presence === 'away'
-                    ? 'bg-warning'
-                    : 'bg-muted-foreground',
-              )}
+          {headerActions}
+          {resizable && !sheet && (
+            <HeaderButton
+              label={size === 'expanded' ? t.shrink : t.expand}
+              onClick={() => {
+                setSize(size === 'expanded' ? 'default' : 'expanded')
+              }}
+              icon={size === 'expanded' ? <Minimize2Icon /> : <Maximize2Icon />}
             />
+          )}
+          <HeaderButton
+            label={t.minimise}
+            onClick={() => {
+              setOpen(false)
+            }}
+            icon={<MinusIcon />}
+          />
+          <HeaderButton
+            label={t.close}
+            onClick={() => {
+              setOpen(false)
+              onClose?.()
+            }}
+            icon={<XIcon />}
+          />
+        </ChatWidgetHeader>
+        {isCustomBody(body) ? (
+          <div data-slot="chat-widget-body" className="flex min-h-0 flex-1 flex-col">
+            {body.children}
           </div>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <p
-              id={titleId}
-              className="m-0 truncate text-[14.5px] leading-snug font-semibold text-foreground"
-            >
-              {titleText}
-            </p>
-            <p
-              id={subtitleId}
-              className="m-0 truncate text-[12.5px] leading-snug text-muted-foreground"
-            >
-              <span className="sr-only">{t.presence[presence]}. </span>
-              {subtitle ?? t.subtitle}
-            </p>
-          </div>
-          <div className="-mr-1.5 flex shrink-0 items-center gap-0.5">
-            {headerButton(
-              t.minimise,
-              () => {
-                setOpen(false)
-              },
-              <MinusIcon />,
-            )}
-            {headerButton(
-              t.close,
-              () => {
-                setOpen(false)
-                onClose?.()
-              },
-              <XIcon />,
-            )}
-          </div>
-        </div>
-        <Chat
-          {...chat}
-          autoFocus={false}
-          className="min-h-0 flex-1 [&_[data-slot=chat-empty]]:py-6 [&_[data-slot=chat-empty]_h2]:text-[18px] [&_[data-slot=chat-empty]_ul]:grid-cols-1! [&>div:last-child]:px-3 [&>div:last-child]:pb-3"
-        />
+        ) : (
+          <Chat
+            {...body}
+            autoFocus={false}
+            className="min-h-0 flex-1 [&_[data-slot=chat-empty]]:py-6 [&_[data-slot=chat-empty]_h2]:text-[18px] [&_[data-slot=chat-empty]_ul]:grid-cols-1! [&>div:last-child]:px-3 [&>div:last-child]:pb-3"
+          />
+        )}
       </div>
 
       <div
@@ -423,4 +443,93 @@ function ChatWidget({
   )
 }
 
-export { ChatWidget, type ChatWidgetPresence, type ChatWidgetProps }
+function HeaderButton({
+  label,
+  onClick,
+  icon,
+}: {
+  label: string
+  onClick: () => void
+  icon: React.ReactNode
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          onClick={onClick}
+          className="text-muted-foreground"
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+/** Who answers, the title and the subtitle; the buttons (children) on the right. */
+function ChatWidgetHeader({
+  avatar,
+  presence,
+  title,
+  subtitle,
+  titleId,
+  subtitleId,
+  children,
+}: {
+  avatar: React.ReactNode
+  presence: ChatWidgetPresence
+  title: React.ReactNode
+  subtitle: React.ReactNode
+  titleId: string
+  subtitleId: string
+  children: React.ReactNode
+}) {
+  const t = useCoreloomI18n().messages.ai.widget
+  return (
+    <div
+      data-slot="chat-widget-header"
+      className="flex shrink-0 items-center gap-3 border-b border-border-subtle px-4 py-3"
+    >
+      <div className="relative shrink-0">
+        {avatar ?? (
+          <div
+            aria-hidden
+            className="flex size-9 items-center justify-center rounded-full bg-primary-subtle text-primary-text"
+          >
+            <SparklesIcon className="size-4" />
+          </div>
+        )}
+        <span
+          aria-hidden
+          className={cn(
+            'absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-surface',
+            PRESENCE_DOT[presence],
+          )}
+        />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p
+          id={titleId}
+          className="m-0 truncate text-[14.5px] leading-snug font-semibold text-foreground"
+        >
+          {title}
+        </p>
+        <p
+          id={subtitleId}
+          className="m-0 truncate text-[12.5px] leading-snug text-muted-foreground"
+        >
+          <span className="sr-only">{t.presence[presence]}. </span>
+          {subtitle}
+        </p>
+      </div>
+      <div className="-mr-1.5 flex shrink-0 items-center gap-0.5">{children}</div>
+    </div>
+  )
+}
+
+export { ChatWidget, type ChatWidgetPresence, type ChatWidgetProps, type ChatWidgetSize }

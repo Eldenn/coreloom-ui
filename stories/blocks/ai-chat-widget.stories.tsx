@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { SquarePenIcon } from 'lucide-react'
 import * as React from 'react'
 
 import { ChatWidget } from '@/components/ai-chat-widget'
+import { Button } from '@/components/ui/button'
+import { PromptInput } from '@/components/ui/prompt-input'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { AiChatStatus, AiMessage } from '@/lib/ai'
 import { cn } from '@/lib/utils'
 
@@ -14,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The support bubble in a page's corner: a round launcher with an unread count and an optional greeting, opening the `Chat` in a card above it (a full-screen sheet below 640px). It takes the Chat's props as they are (`messages`, `status`, `onSend`, `onStop`, `suggestions`…), plus `open` / `defaultOpen` / `onOpenChange`, `title`, `subtitle`, `avatar`, `presence`, `unread`, `greeting`, `side`, `offset` and `zIndex`. Not modal on a desktop; Escape folds it back into the launcher.",
+          "The support bubble in a page's corner: a round launcher with an unread count and an optional greeting, opening the `Chat` in a card above it (a full-screen sheet below 640px). It takes the Chat's props as they are (`messages`, `status`, `onSend`, `onStop`, `suggestions`…), plus `open` / `defaultOpen` / `onOpenChange`, `title`, `subtitle`, `avatar`, `presence`, `unread`, `greeting`, `side`, `offset` and `zIndex`. An app with its own conversation UI passes it as `children` instead, adds controls with `headerActions`, and lets the reader enlarge the card with `resizable`. Not modal on a desktop; Escape folds it back into the launcher.",
       },
     },
   },
@@ -37,6 +41,8 @@ const meta = {
     zIndex: { control: 'number' },
     defaultOpen: { control: 'boolean' },
     fullScreen: { control: 'boolean' },
+    resizable: { control: 'boolean' },
+    defaultSize: { control: 'inline-radio', options: ['default', 'expanded'] },
     messages: { control: false },
     onSend: { control: false },
   },
@@ -46,11 +52,21 @@ type Story = StoryObj<typeof meta>
 
 /** A placeholder page behind the widget. `transform` makes it the widget's containing block, so the
  *  fixed launcher stays inside the frame (and inside each example on the docs page). */
-function Page({ phone, children }: { phone?: boolean; children: React.ReactNode }) {
+function Page({
+  phone,
+  tall,
+  children,
+}: {
+  phone?: boolean
+  /** Room for the expanded card (820px). */
+  tall?: boolean
+  children: React.ReactNode
+}) {
   return (
     <div
       className={cn(
-        'relative h-[760px] [transform:translateZ(0)] overflow-hidden bg-background',
+        'relative [transform:translateZ(0)] overflow-hidden bg-background',
+        tall ? 'h-[960px]' : 'h-[760px]',
         phone && 'mx-auto w-[390px] border-x border-border-subtle',
       )}
     >
@@ -367,4 +383,80 @@ export const Controlled: Story = {
       </Page>
     )
   },
+}
+
+/** The app's own conversation UI in the card: children replace the Chat (the Chat's props are then
+ *  ignored), and `headerActions` puts a "New conversation" button before Minimise. Opening still puts
+ *  the cursor in the PromptInput. */
+function Notes(args: React.ComponentProps<typeof ChatWidget>) {
+  const [notes, setNotes] = React.useState(['Check the failed build on feat/billing'])
+  return (
+    <ChatWidget
+      {...args}
+      headerActions={
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="New conversation"
+              className="text-muted-foreground"
+              onClick={() => {
+                setNotes([])
+              }}
+            >
+              <SquarePenIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>New conversation</TooltipContent>
+        </Tooltip>
+      }
+    >
+      <ul
+        aria-label="Notes"
+        className="m-0 flex min-h-0 flex-1 list-none flex-col gap-2 overflow-y-auto p-4"
+      >
+        {notes.map((note, i) => (
+          <li
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- append-only list; the same note can be added twice.
+            key={i}
+            className="rounded-lg border border-border bg-card px-3 py-2 text-[13.5px] text-foreground"
+          >
+            {note}
+          </li>
+        ))}
+      </ul>
+      <div className="p-3">
+        <PromptInput
+          placeholder="Add a note"
+          onSubmit={({ text }) => {
+            setNotes((n) => [...n, text])
+          }}
+        />
+      </div>
+    </ChatWidget>
+  )
+}
+
+/** Its own UI in the card, with a header action. */
+export const CustomBody: Story = {
+  name: 'Custom body',
+  args: { defaultOpen: true, subtitle: 'Your notes on this page' },
+  render: (args) => (
+    <Page>
+      <Notes {...args} />
+    </Page>
+  ),
+}
+
+/** `resizable` adds Expand / Shrink to the header; this one starts expanded (720 × 820px, clamped to
+ *  the window). The button isn't shown in the full-screen sheet. */
+export const Resizable: Story = {
+  args: { defaultOpen: true, resizable: true, defaultSize: 'expanded' },
+  render: (args) => (
+    <Page tall>
+      <Demo {...args} initial={conversation} />
+    </Page>
+  ),
 }

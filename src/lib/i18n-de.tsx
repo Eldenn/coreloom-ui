@@ -979,6 +979,8 @@ export const de: Messages = {
       minimise: 'Chat minimieren',
       close: 'Chat schließen',
       dismissGreeting: 'Nachricht ausblenden',
+      expand: 'Chat vergrößern',
+      shrink: 'Chat verkleinern',
     },
     artifact: {
       kinds: { markdown: 'Dokument', code: 'Code', text: 'Text' },

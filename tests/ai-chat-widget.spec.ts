@@ -161,6 +161,45 @@ test.describe('AI chat widget', () => {
     await expect(ask).toBeFocused()
   })
 
+  test("a custom body shows instead of the Chat, with the header's actions; opening focuses its composer", async ({
+    page,
+  }) => {
+    await open(page, `${WIDGET}custom-body`)
+    const panel = page.getByRole('dialog', { name: 'Chat with Coreloom' })
+    await expect(panel.getByRole('list', { name: 'Notes' })).toBeVisible()
+    await expect(panel.getByRole('log', { name: 'Conversation' })).toHaveCount(0)
+    await panel.getByRole('textbox', { name: 'Message' }).fill('Rotate the API key')
+    await page.keyboard.press('Enter')
+    await expect(panel.getByRole('listitem')).toHaveText([
+      'Check the failed build on feat/billing',
+      'Rotate the API key',
+    ])
+    await panel.getByRole('button', { name: 'New conversation' }).click()
+    await expect(panel.getByRole('listitem')).toHaveCount(0)
+    await panel.getByRole('button', { name: 'Minimise chat' }).click()
+    await expect(panel).toBeHidden()
+    await page.getByRole('button', { name: /^Chat/ }).click()
+    await expect(panel.getByRole('textbox', { name: 'Message' })).toBeFocused()
+  })
+
+  test('the expand button switches the size and its name', async ({ page }) => {
+    await open(page, `${WIDGET}resizable`)
+    const panel = page.getByRole('dialog', { name: 'Chat with Coreloom' })
+    await expect(panel).toHaveAttribute('data-size', 'expanded')
+    await panel.getByRole('button', { name: 'Shrink chat' }).click()
+    await expect(panel).toHaveAttribute('data-size', 'default')
+    await panel.getByRole('button', { name: 'Expand chat' }).click()
+    await expect(panel).toHaveAttribute('data-size', 'expanded')
+    await expect(panel.getByRole('button', { name: 'Shrink chat' })).toBeVisible()
+  })
+
+  test('without resizable there is no expand button', async ({ page }) => {
+    await open(page, `${WIDGET}open`)
+    const panel = page.getByRole('dialog', { name: 'Chat with Coreloom' })
+    await expect(panel.getByRole('button', { name: 'Expand chat' })).toHaveCount(0)
+    await expect(panel).toHaveAttribute('data-size', 'default')
+  })
+
   test("on a phone the page behind the sheet doesn't scroll while it's open", async ({ page }) => {
     await open(page, `${WIDGET}on-phone`)
     const overflow = () => page.evaluate(() => document.body.style.overflow)
