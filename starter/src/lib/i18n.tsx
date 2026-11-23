@@ -994,6 +994,8 @@ const en = {
       minimise: 'Minimise chat',
       close: 'Close chat',
       dismissGreeting: 'Dismiss message',
+      expand: 'Expand chat',
+      shrink: 'Shrink chat',
     },
     artifact: {
       kinds: { markdown: 'Document', code: 'Code', text: 'Text' },
@@ -4401,6 +4403,8 @@ const fr: Messages = {
       minimise: 'Réduire le chat',
       close: 'Fermer le chat',
       dismissGreeting: 'Ignorer le message',
+      expand: 'Agrandir le chat',
+      shrink: 'Rétrécir le chat',
     },
     artifact: {
       kinds: { markdown: 'Document', code: 'Code', text: 'Texte' },
