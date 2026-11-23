@@ -28,6 +28,7 @@ DiagramEditor.readOnly?: boolean | undefined
 DiagramEditor.highlighted?: readonly string[] | undefined
 DiagramEditor.annotations?: readonly UmlAnnotation[] | undefined
 DiagramEditor.onAnnotationSelect?: ((element: string) => void) | undefined
+DiagramEditor.contextActions?: UmlContextActions | undefined
 DiagramEditor.className?: string | undefined
 type DiagramEditorProps = {}
 DiagramEditorProps.value?: string | undefined
@@ -50,6 +51,7 @@ DiagramEditorProps.readOnly?: boolean | undefined
 DiagramEditorProps.highlighted?: readonly string[] | undefined
 DiagramEditorProps.annotations?: readonly UmlAnnotation[] | undefined
 DiagramEditorProps.onAnnotationSelect?: ((element: string) => void) | undefined
+DiagramEditorProps.contextActions?: UmlContextActions | undefined
 DiagramEditorProps.className?: string | undefined
 type DiagramEditorView = 'text' | 'split' | 'drawing'
 type DiagramFormat = 'json' | 'mermaid' | 'plantuml'
@@ -288,6 +290,7 @@ Drawing.editing.copy: () => boolean
 Drawing.editing.cut: () => void
 Drawing.editing.paste: () => void
 Drawing.editing.duplicate: () => void
+Drawing.editing.duplicateOf: (what: import("@/lib/uml-edit").UmlSelection) => void
 Drawing.editing.changeStep: (id: string, step: import("@/lib/uml").SequenceStep) => void
 Drawing.editing.moveStep: (id: string, delta: -1 | 1) => void
 Drawing.editing.addSection: (id: string) => void
@@ -295,6 +298,7 @@ Drawing.editing.removeSection: (id: string, index: number) => void
 Drawing.editing.connect: (input: import("@/lib/uml-edit").AddRelationInput) => void
 Drawing.editing.connectDragged: (from: string, to: string) => void
 Drawing.editing.remove: (what?: import("@/lib/uml-edit").UmlSelection) => void
+Drawing.editing.removeMember: (id: string, index: number) => void
 Drawing.editing.changeElement: (id: string, fields: import("../lib/uml-edit-fields").UmlElementFields) => void
 Drawing.editing.rename: (id: string, name: string) => void
 Drawing.editing.changeRelation: (index: number, fields: import("../lib/uml-edit-fields").UmlRelationFields) => void
@@ -316,13 +320,14 @@ Drawing.notes?: boolean | undefined
 Drawing.highlighted?: readonly string[] | undefined
 Drawing.imageRef: React.Ref<UmlDiagramHandle>
 Drawing.review?: Pick<UmlDiagramProps, 'annotations' | 'onAnnotationSelect'> | undefined
+Drawing.contextActions?: UmlContextActions | undefined
 ```
 
 ## src/components/diagram-commands.ts
 
 ```ts
-function clipboardCommands({ diagram, selection, apply, t }: CommandInput, clip: UmlClip | null, setClip: (clip: UmlClip) => void, say: (message: string) => void) => { canCopy: boolean; canPaste: boolean; copy: () => boolean; cut: () => void; paste: () => void; duplicate: () => void; }
-function editCommands({ diagram, selection, apply, t }: CommandInput, lastType: UmlRelationType | null, setLastType: (type: UmlRelationType) => void) => { connect: (input: AddRelationInput) => void; connectDragged: (from: string, to: string) => void; remove: (what?: UmlSelection) => void; changeElement: (id: string, fields: UmlElementFields) => void; rename: (id: string, name: string) => void; changeRelation: (index: number, fields: UmlRelationFields) => void; reverse: (index: number) => void; }
+function clipboardCommands({ diagram, selection, apply, t }: CommandInput, clip: UmlClip | null, setClip: (clip: UmlClip) => void, say: (message: string) => void) => { canCopy: boolean; canPaste: boolean; copy: () => boolean; cut: () => void; paste: () => void; duplicate: () => void; duplicateOf: (what: UmlSelection) => void; }
+function editCommands({ diagram, selection, apply, t }: CommandInput, lastType: UmlRelationType | null, setLastType: (type: UmlRelationType) => void) => { connect: (input: AddRelationInput) => void; connectDragged: (from: string, to: string) => void; remove: (what?: UmlSelection) => void; removeMember: (id: string, index: number) => void; changeElement: (id: string, fields: UmlElementFields) => void; rename: (id: string, name: string) => void; changeRelation: (index: number, fields: UmlRelationFields) => void; reverse: (index: number) => void; }
 function layoutCommands({ diagram, selection, apply, t }: CommandInput) => { direction: UmlDirection | null; move: (layout: UmlLayout) => void; arrange: () => void; turn: (direction: UmlDirection) => void; }
 function relationCount(d: UmlSpec) => number
 function stepCommands({ diagram, selection, apply, t }: CommandInput) => { changeStep: (id: string, step: SequenceStep) => void; moveStep: (id: string, delta: -1 | 1) => void; addSection: (id: string) => void; removeSection: (id: string, index: number) => void; }
@@ -379,6 +384,7 @@ SequenceOutline.t.redo: string
 SequenceOutline.t.copy: string
 SequenceOutline.t.paste: string
 SequenceOutline.t.duplicate: string
+SequenceOutline.t.rename: string
 SequenceOutline.t.layout: string
 SequenceOutline.t.arrange: string
 SequenceOutline.t.flow: string
@@ -569,6 +575,7 @@ StepForm.t.redo: string
 StepForm.t.copy: string
 StepForm.t.paste: string
 StepForm.t.duplicate: string
+StepForm.t.rename: string
 StepForm.t.layout: string
 StepForm.t.arrange: string
 StepForm.t.flow: string
@@ -759,6 +766,7 @@ StepFormProps.t.redo: string
 StepFormProps.t.copy: string
 StepFormProps.t.paste: string
 StepFormProps.t.duplicate: string
+StepFormProps.t.rename: string
 StepFormProps.t.layout: string
 StepFormProps.t.arrange: string
 StepFormProps.t.flow: string
@@ -936,5 +944,5 @@ function stepSummary(step: SequenceStep, name: (id: string) => string, t: Summar
 ## src/components/use-diagram-editing.ts
 
 ```ts
-function useDiagramEditing({ diagram, text, layout, write, setText, setLayout, t, }: { diagram: UmlSpec | null; text: string; layout: UmlLayout | null; write: (diagram: UmlSpec) => string; setText: (text: string) => void; setLayout: (layout: UmlLayout | null) => void; t: Messages['diagramTools']; }) => { reset: () => void; direction: import("@/lib/uml").UmlDirection | null; move: (layout: UmlLayout) => void; arrange: () => void; turn: (direction: import("@/lib/uml").UmlDirection) => void; canCopy: boolean; canPaste: boolean; copy: () => boolean; cut: () => void; paste: () => void; duplicate: () => void; changeStep: (id: string, step: import("@/lib/uml").SequenceStep) => void; moveStep: (id: string, delta: -1 | 1) => void; addSection: (id: string) => void; removeSection: (id: string, index: number) => void; connect: (input: import("@/lib/uml-edit").AddRelationInput) => void; connectDragged: (from: string, to: string) => void; remove: (what?: UmlSelection) => void; changeElement: (id: string, fields: import("@/lib/uml-edit-fields").UmlElementFields) => void; rename: (id: string, name: string) => void; changeRelation: (index: number, fields: import("@/lib/uml-edit-fields").UmlRelationFields) => void; reverse: (index: number) => void; selection: UmlSelection; select: React.Dispatch<React.SetStateAction<UmlSelection>>; notice: string | null; nameRef: React.RefObject<NameField | null>; stepButtons: React.RefObject<Map<string, HTMLButtonElement>>; canUndo: boolean; canRedo: boolean; canDelete: boolean; undo: () => void; redo: () => void; add: (type: UmlElementType, at?: UmlPoint) => void; }
+function useDiagramEditing({ diagram, text, layout, write, setText, setLayout, t, }: { diagram: UmlSpec | null; text: string; layout: UmlLayout | null; write: (diagram: UmlSpec) => string; setText: (text: string) => void; setLayout: (layout: UmlLayout | null) => void; t: Messages['diagramTools']; }) => { reset: () => void; direction: import("@/lib/uml").UmlDirection | null; move: (layout: UmlLayout) => void; arrange: () => void; turn: (direction: import("@/lib/uml").UmlDirection) => void; canCopy: boolean; canPaste: boolean; copy: () => boolean; cut: () => void; paste: () => void; duplicate: () => void; duplicateOf: (what: UmlSelection) => void; changeStep: (id: string, step: import("@/lib/uml").SequenceStep) => void; moveStep: (id: string, delta: -1 | 1) => void; addSection: (id: string) => void; removeSection: (id: string, index: number) => void; connect: (input: import("@/lib/uml-edit").AddRelationInput) => void; connectDragged: (from: string, to: string) => void; remove: (what?: UmlSelection) => void; removeMember: (id: string, index: number) => void; changeElement: (id: string, fields: import("@/lib/uml-edit-fields").UmlElementFields) => void; rename: (id: string, name: string) => void; changeRelation: (index: number, fields: import("@/lib/uml-edit-fields").UmlRelationFields) => void; reverse: (index: number) => void; selection: UmlSelection; select: React.Dispatch<React.SetStateAction<UmlSelection>>; notice: string | null; nameRef: React.RefObject<NameField | null>; stepButtons: React.RefObject<Map<string, HTMLButtonElement>>; canUndo: boolean; canRedo: boolean; canDelete: boolean; undo: () => void; redo: () => void; add: (type: UmlElementType, at?: UmlPoint) => void; }
 ```

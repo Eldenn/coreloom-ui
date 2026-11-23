@@ -3306,6 +3306,7 @@ export const de: Messages = {
     copy: 'Kopieren',
     paste: 'Einfügen',
     duplicate: 'Duplizieren',
+    rename: 'Umbenennen',
     layout: 'Anordnung',
     arrange: 'Automatisch anordnen',
     flow: 'Richtung',

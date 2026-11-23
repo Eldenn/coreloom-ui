@@ -5,6 +5,13 @@ Stability: experimental. Written by `pnpm api:report` from the code; don't edit 
 ## src/components/diagram-workspace.tsx
 
 ```ts
+type DiagramContextAction = {}
+DiagramContextAction.label: string
+DiagramContextAction.icon?: React.ReactNode
+DiagramContextAction.destructive?: boolean | undefined
+DiagramContextAction.disabled?: boolean | undefined
+DiagramContextAction.onSelect: () => void
+type DiagramContextTarget = { type: 'view'; viewId: string; label: string; } | (UmlContextTarget & { viewId: string; })
 function DiagramWorkspace
 DiagramWorkspace.title: string
 DiagramWorkspace.onTitleChange: (title: string) => void
@@ -24,6 +31,7 @@ DiagramWorkspace.actions?: React.ReactNode
 DiagramWorkspace.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspace.height?: string | undefined
 DiagramWorkspace.highlighted?: readonly string[] | undefined
+DiagramWorkspace.contextActions?: WorkspaceContextActions | undefined
 DiagramWorkspace.className?: string | undefined
 type DiagramWorkspaceImport = {}
 DiagramWorkspaceImport.title: string
@@ -55,5 +63,15 @@ DiagramWorkspaceProps.actions?: React.ReactNode
 DiagramWorkspaceProps.onAnnotationSelect?: ((element: string, viewId: string) => void) | undefined
 DiagramWorkspaceProps.height?: string | undefined
 DiagramWorkspaceProps.highlighted?: readonly string[] | undefined
+DiagramWorkspaceProps.contextActions?: WorkspaceContextActions | undefined
 DiagramWorkspaceProps.className?: string | undefined
+```
+
+## src/components/diagram-workspace-menu.tsx
+
+```ts
+type DiagramContextTarget = { type: 'view'; viewId: string; label: string; } | (UmlContextTarget & { viewId: string; })
+function forView(contextActions: WorkspaceContextActions | undefined, viewId: string) => { contextActions?: undefined; } | { contextActions: (target: UmlContextTarget) => readonly DiagramContextAction[]; }
+function viewMenu(input: { diagrams: readonly { id: string; title: string; }[]; contextActions: WorkspaceContextActions | undefined; tools: Messages['diagramTools']; onRename: (id: string) => void; onDelete: (id: string) => void; }) => { enabled: boolean; resolve: (element: Element) => ViewTarget | null; lists: (target: ViewTarget) => { own: ({ label: string; icon: import("react").JSX.Element; onSelect: () => void; destructive?: undefined; disabled?: undefined; } | { label: string; icon: import("react").JSX.Element; destructive: boolean; disabled: boolean; onSelect: () => void; })[]; app: readonly DiagramContextAction[]; }; }
+type WorkspaceContextActions = (target: DiagramContextTarget) => readonly DiagramContextAction[]
 ```

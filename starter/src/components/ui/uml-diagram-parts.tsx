@@ -136,9 +136,20 @@ function nodeLabel(node: DiagramNode, t: DiagramText): string {
   return parts.filter(Boolean).join(', ')
 }
 
-function Row({ row, keyed }: { row: DiagramRow; keyed: boolean }) {
+/** How many rows come before each compartment of a box. */
+function rowsBefore(node: DiagramNode): number[] {
+  return (node.compartments ?? []).map((_, i, all) =>
+    all.slice(0, i).reduce((n, rows) => n + rows.length, 0),
+  )
+}
+
+/** `member`: the row's place across the box's compartments, which a context menu reads back. */
+function Row({ row, keyed, member }: { row: DiagramRow; keyed: boolean; member: number }) {
   return (
-    <div className="flex h-5 items-center gap-2 font-mono text-[12px] leading-5">
+    <div
+      data-member={member}
+      className="flex h-5 items-center gap-2 font-mono text-[12px] leading-5"
+    >
       {(row.prefix ?? keyed) && (
         <span className={cn('shrink-0 text-fg-secondary', keyed ? 'w-[3.2em]' : 'w-[1ch]')}>
           {row.prefix}
@@ -180,6 +191,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
   const top = eyebrow(node, t)
   const keyed = node.role === 'entity' && Boolean(node.compartments?.[0]?.some((r) => r.prefix))
   const Icon = node.variant ? VARIANT_ICONS[node.variant] : ListOrderedIcon
+  const before = rowsBefore(node)
   if (node.shape === 'note') {
     return (
       <div className="size-full overflow-hidden rounded-sm border border-border-strong bg-warning-subtle px-3 py-3 text-[12px] leading-[17px] whitespace-pre-line text-foreground">
@@ -227,7 +239,7 @@ function BoxShape({ node }: { node: DiagramNode }) {
         >
           {rows.map((row, j) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- rows may repeat
-            <Row key={j} row={row} keyed={keyed} />
+            <Row key={j} row={row} keyed={keyed} member={(before[i] ?? 0) + j} />
           ))}
           {!rows.length && <div className="h-5" />}
         </div>

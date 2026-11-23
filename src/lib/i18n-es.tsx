@@ -3283,6 +3283,7 @@ export const es: Messages = {
     copy: 'Copiar',
     paste: 'Pegar',
     duplicate: 'Duplicar',
+    rename: 'Cambiar nombre',
     layout: 'Disposición',
     arrange: 'Ordenar automáticamente',
     flow: 'Sentido',
