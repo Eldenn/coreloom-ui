@@ -23,7 +23,11 @@ import {
 } from '@/components/diagram-file-tools'
 import { sniffFormat, useFileImport } from '@/components/diagram-import'
 import { CodeEditor, type CodeEditorDiagnostic } from '@/components/ui/code-editor'
-import type { UmlAnnotation, UmlDiagramHandle } from '@/components/ui/uml-diagram'
+import type {
+  UmlAnnotation,
+  UmlContextActions,
+  UmlDiagramHandle,
+} from '@/components/ui/uml-diagram'
 import { useDiagramEditing } from '@/components/use-diagram-editing'
 import { type Messages, useCoreloomI18n } from '@/lib/i18n'
 import {
@@ -91,6 +95,12 @@ interface DiagramEditorProps {
   annotations?: readonly UmlAnnotation[]
   /** Makes each badge a button that hands its element's id back (the app shows its findings). */
   onAnnotationSelect?: (element: string) => void
+  /**
+   * The app's entries in the menu a right-click, a long press or the context-menu key opens on
+   * the drawing's elements, members, relations and sequence steps, after the editor's own (Rename,
+   * Duplicate, Delete, while the text can be changed). Without it, no menu.
+   */
+  contextActions?: UmlContextActions
   className?: string
 }
 
@@ -478,6 +488,7 @@ function DiagramEditor({
   highlighted,
   annotations,
   onAnnotationSelect,
+  contextActions,
   className,
   ...owned
 }: DiagramEditorProps) {
@@ -622,6 +633,7 @@ function DiagramEditor({
               ...(annotations ? { annotations } : {}),
               ...(onAnnotationSelect ? { onAnnotationSelect } : {}),
             }}
+            contextActions={contextActions}
           />
         )}
       </div>

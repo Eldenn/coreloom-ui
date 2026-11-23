@@ -293,6 +293,35 @@ export const AnnotatedSequence: Story = {
   },
 }
 
+/**
+ * `contextActions` on a drawing to read: a right-click on an element, a member, a relation (or the
+ * context-menu key on a focused one) opens a menu with the app's entries only, since nothing can
+ * be edited. The target's `label` is one line made from the diagram.
+ */
+export const ContextMenu: Story = {
+  render: function Render(args) {
+    const [said, setSaid] = React.useState<string | null>(null)
+    return (
+      <div className="grid gap-3">
+        <UmlDiagram
+          {...args}
+          contextActions={(target) => [
+            {
+              label: 'Show its label',
+              onSelect: () => {
+                setSaid(`${target.type}: ${target.label}`)
+              },
+            },
+          ]}
+        />
+        <p role="status" className="text-[13px] text-fg-secondary">
+          {said ?? 'Right-click an element, a member or a relation.'}
+        </p>
+      </div>
+    )
+  },
+}
+
 /** A thumbnail keeps the rings and badges, as marks only. */
 export const AnnotatedPreview: Story = {
   args: { preview: true, height: 220, label: 'Orders', annotations: CLASS_FINDINGS },
