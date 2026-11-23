@@ -4,5 +4,5 @@
 
 ### Fixed
 
-- **UmlDiagram**: `RouteSide` (`@/lib/uml-route`) lists its sides as `'left' | 'right' | 'top' |
-'bottom'`, the order the other items' types use. Nothing to do in an app.
+- **UmlDiagram**: the `RouteSide` type of `@/lib/uml-route` lists its sides in the order the other
+  items' types use (left, right, top, bottom). Nothing to do in an app.
