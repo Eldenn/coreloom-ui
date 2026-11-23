@@ -110,6 +110,68 @@ test.describe('Diagram workspace context menu (Blocks/Diagrams/Diagram workspace
     await expect(canvas(page)).toBeFocused()
   })
 
+  test('on one of several selected elements, the menu is about all of them', async ({ page }) => {
+    await open(page, WORKSPACE)
+    const title = (name: string) =>
+      canvas(page)
+        .getByRole('group', { name: new RegExp(`^Class: ${name}`) })
+        .locator('p', { hasText: new RegExp(`^${name}$`) })
+    await title('Payment').click()
+    await title('CardPayment').click({ modifiers: ['ControlOrMeta'] })
+    await title('Payment').click({ button: 'right' })
+    await expect(menu(page)).toHaveAccessibleName('2 selected')
+    const add = 'Add 2 to the assistant’s context'
+    await expect(menu(page).getByRole('menuitem')).toHaveText(['Duplicate', 'Delete', add])
+    await menu(page).getByRole('menuitem', { name: add }).click()
+    await expect(chips(page)).toHaveText([/Payment/, /CardPayment/])
+    // Both are still selected, and Delete takes both.
+    await title('Payment').click({ button: 'right' })
+    await menu(page).getByRole('menuitem', { name: 'Delete' }).click()
+    await expect(canvas(page).getByRole('group', { name: /^Class: (Card)?Payment/ })).toHaveCount(0)
+  })
+
+  test('on one of several selected sequence steps, all of them', async ({ page }) => {
+    await open(page, WORKSPACE)
+    await page
+      .getByRole('navigation', { name: 'Views' })
+      .getByRole('button', { name: 'Checkout', exact: true })
+      .click()
+    const svg = page.getByRole('region', { name: 'Checkout' }).locator('svg')
+    await svg.getByText('Charge card').click()
+    const steps = svg.locator('[data-id^="step:"]')
+    await steps.first().click({ modifiers: ['ControlOrMeta'] })
+    await svg.getByText('Charge card').click({ button: 'right' })
+    await expect(menu(page)).toHaveAccessibleName('2 selected')
+    await expect(menu(page).getByRole('menuitem')).toHaveText([
+      'Duplicate',
+      'Delete',
+      'Add 2 to the assistant’s context',
+    ])
+    await menu(page)
+      .getByRole('menuitem', { name: /^Add 2/ })
+      .click()
+    await expect(chips(page)).toHaveCount(2)
+    await expect(chips(page).first()).toHaveAttribute('data-type', 'step')
+  })
+
+  test('a right-click outside a selection lets it go', async ({ page }) => {
+    await open(page, WORKSPACE)
+    const title = (name: string) =>
+      canvas(page)
+        .getByRole('group', { name: new RegExp(`^Class: ${name}`) })
+        .locator('p', { hasText: new RegExp(`^${name}$`) })
+    await title('Payment').click()
+    await title('CardPayment').click({ modifiers: ['ControlOrMeta'] })
+    await title('Customer').click({ button: 'right' })
+    await expect(menu(page)).toHaveAccessibleName('Customer')
+    await expect(menu(page).getByRole('menuitem')).toHaveText([
+      'Rename',
+      'Duplicate',
+      'Delete',
+      ADD,
+    ])
+  })
+
   test('Escape closes the menu and gives focus back to the element', async ({ page }) => {
     await open(page, WORKSPACE)
     const order = canvas(page).getByRole('group', { name: /^Class: Order,/ })

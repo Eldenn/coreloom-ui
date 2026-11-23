@@ -18,7 +18,8 @@ UmlAnnotation.count?: number | undefined
 UmlAnnotation.label?: string | undefined
 type UmlAnnotationStatus = 'error' | 'warning' | 'ok' | 'unknown'
 type UmlContextActions = (target: UmlContextTarget) => readonly DiagramContextAction[]
-type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextPart = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextTarget = UmlContextPart | { type: 'selection'; selection: UmlSelection; targets: readonly UmlContextPart[]; label: string; }
 function UmlDiagram
 UmlDiagram.diagram: UmlSpec
 UmlDiagram.editable?: boolean | undefined
@@ -94,7 +95,8 @@ DrawingEdits.onDelete?: ((selection: UmlSelection) => void) | undefined
 DrawingEdits.onMemberDelete?: ((element: string, index: number) => void) | undefined
 function sequenceMenu(input: DrawingMenuInput & { diagram: SequenceDiagram; }) => { enabled: boolean; resolve: (element: Element) => UmlContextTarget | null; lists: (target: UmlContextTarget) => { own: DiagramContextAction[]; app: readonly DiagramContextAction[]; }; onOpen: (target: UmlContextTarget) => void; }
 type UmlContextActions = (target: UmlContextTarget) => readonly DiagramContextAction[]
-type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextPart = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextTarget = UmlContextPart | { type: 'selection'; selection: UmlSelection; targets: readonly UmlContextPart[]; label: string; }
 ```
 
 ## src/components/ui/uml-diagram-labels.ts
@@ -105,12 +107,13 @@ type GraphHit = {}
 GraphHit.edge?: string | undefined
 GraphHit.node?: string | undefined
 GraphHit.member?: number | undefined
-function graphTarget(graph: DiagramGraph, hit: GraphHit, role: (node: DiagramNode) => string) => UmlContextTarget | null
+function graphTarget(graph: DiagramGraph, hit: GraphHit, role: (node: DiagramNode) => string) => UmlContextPart | null
 function memberLabel(node: DiagramNode, row: DiagramRow, role: string) => string
 function relationLabel(edge: DiagramEdge, name: (id: string) => string) => string
-function sequenceTarget(diagram: SequenceDiagram, id: string) => UmlContextTarget | null
+function sequenceTarget(diagram: SequenceDiagram, id: string) => UmlContextPart | null
 function stepLabel(step: SequenceStep, name: (id: string) => string) => string
-type UmlContextTarget = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextPart = { type: 'element'; id: string; label: string; } | { type: 'relation'; index: number; label: string; } | { type: 'member'; element: string; index: number; label: string; } | { type: 'step'; id: string; label: string; }
+type UmlContextTarget = UmlContextPart | { type: 'selection'; selection: UmlSelection; targets: readonly UmlContextPart[]; label: string; }
 ```
 
 ## src/components/ui/uml-diagram-parts.tsx

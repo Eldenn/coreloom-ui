@@ -245,7 +245,9 @@ export const Annotated: Story = {
  * `contextActions`: a right-click (a long press, or the context-menu key or Shift+F10 on a
  * focused view or element) on a view of the list, or on an element, a member, a relation or a
  * sequence step of the open view, opens a menu: the workspace's own entries, then the app's. Here
- * the app's entry adds what was clicked to an assistant's context, shown as chips below.
+ * the app's entry adds what was clicked to an assistant's context, shown as chips below. With
+ * several parts selected (Ctrl or Cmd-click, or Select area), the menu on one of them is about all
+ * of them: `target.type` is `selection` and `target.targets` lists them.
  */
 export const ContextMenu: Story = {
   render: function Render() {
@@ -254,16 +256,26 @@ export const ContextMenu: Story = {
     return (
       <div className="grid gap-3">
         <Demo
-          contextActions={(target) => [
-            {
-              label: 'Add to the assistant’s context',
-              icon: <MessageSquarePlusIcon aria-hidden />,
-              disabled: context.some((t) => key(t) === key(target)),
-              onSelect: () => {
-                setContext((all) => [...all, target])
+          contextActions={(target) => {
+            const parts: DiagramContextTarget[] =
+              target.type === 'selection'
+                ? target.targets.map((part) => ({ ...part, viewId: target.viewId }))
+                : [target]
+            const missing = parts.filter((part) => !context.some((t) => key(t) === key(part)))
+            return [
+              {
+                label:
+                  parts.length > 1
+                    ? `Add ${String(parts.length)} to the assistant’s context`
+                    : 'Add to the assistant’s context',
+                icon: <MessageSquarePlusIcon aria-hidden />,
+                disabled: missing.length === 0,
+                onSelect: () => {
+                  setContext((all) => [...all, ...missing])
+                },
               },
-            },
-          ]}
+            ]
+          }}
         />
         <div className="flex flex-wrap items-center gap-2">
           <p className="m-0 text-[13px] text-fg-secondary">Assistant’s context:</p>

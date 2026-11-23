@@ -3311,6 +3311,7 @@ export const de: Messages = {
     paste: 'Einfügen',
     duplicate: 'Duplizieren',
     rename: 'Umbenennen',
+    selected: (n) => `${n} ausgewählt`,
     layout: 'Anordnung',
     arrange: 'Automatisch anordnen',
     flow: 'Richtung',
