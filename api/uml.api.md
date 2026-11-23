@@ -600,6 +600,31 @@ RegionLines.at: number[]
 function regionLines(nodes: readonly LayoutNode[], boxes: ReadonlyMap<string, LayoutBox>, direction?: UmlDirection) => Map<string, RegionLines>
 ```
 
+## src/lib/uml-route.ts
+
+```ts
+function labelSize(text: string) => Size
+function roundedPath(points: readonly UmlPoint[], radius?: number) => string
+type Route = {}
+Route.points: UmlPoint[]
+Route.label: UmlPoint
+Route.sides: [RouteSide, RouteSide]
+type RouteBox = {}
+RouteBox.id: string
+RouteBox.parent?: string | undefined
+RouteBox.width: number
+RouteBox.height: number
+RouteBox.x: number
+RouteBox.y: number
+type RouteEdge = {}
+RouteEdge.id: string
+RouteEdge.source: string
+RouteEdge.target: string
+RouteEdge.label?: Size | undefined
+function routeEdges(boxes: readonly RouteBox[], edges: readonly RouteEdge[]) => Map<string, Route>
+type RouteSide = 'top' | 'right' | 'bottom' | 'left'
+```
+
 ## src/lib/uml-sequence.ts
 
 ```ts
@@ -771,5 +796,5 @@ function canAlign(how: UmlAlignment, count: number) => boolean
 function clearLayout(diagram: UmlSpec) => UmlSpec
 const DIRECTIONS: readonly UmlDirection[]
 function setDirection(diagram: UmlSpec, direction: UmlDirection) => UmlSpec
-type UmlAlignment = 'center' | 'left' | 'right' | 'top' | 'middle' | 'bottom' | 'distributeHorizontally' | 'distributeVertically'
+type UmlAlignment = 'center' | 'top' | 'right' | 'bottom' | 'left' | 'middle' | 'distributeHorizontally' | 'distributeVertically'
 ```

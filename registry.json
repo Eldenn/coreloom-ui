@@ -239,6 +239,10 @@
           "type": "registry:lib"
         },
         {
+          "path": "src/lib/uml-route.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/lib/uml-sequence.ts",
           "type": "registry:lib"
         },
