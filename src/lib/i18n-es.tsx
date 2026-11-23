@@ -3288,6 +3288,7 @@ export const es: Messages = {
     paste: 'Pegar',
     duplicate: 'Duplicar',
     rename: 'Cambiar nombre',
+    selected: (n) => `${n} seleccionados`,
     layout: 'Disposición',
     arrange: 'Ordenar automáticamente',
     flow: 'Sentido',

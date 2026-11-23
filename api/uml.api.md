@@ -34,7 +34,7 @@ C4Element.label: string
 C4Element.description?: string | undefined
 C4Element.technology?: string | undefined
 C4Element.external?: boolean | undefined
-C4Element.shape?: 'database' | 'box' | 'queue' | undefined
+C4Element.shape?: 'database' | 'queue' | 'box' | undefined
 C4Element.boundary?: string | undefined
 type C4ElementKind = 'system' | 'component' | 'person' | 'container'
 type C4Level = 'component' | 'container' | 'context'
@@ -497,8 +497,8 @@ DiagramNode.compartments?: DiagramRow[][] | undefined
 DiagramNode.tone?: DiagramTone | undefined
 DiagramNode.width: number
 DiagramNode.height: number
-type DiagramRelation = 'note' | 'merge' | 'provide' | 'require' | 'assembly' | 'delegate' | 'deploy' | 'import' | 'include' | 'extend' | 'generalization' | ClassRelationKind | 'er' | 'c4' | 'transition' | 'flow'
-type DiagramRole = 'end' | 'note' | 'start' | 'action' | 'decision' | 'merge' | 'flowEnd' | 'fork' | 'join' | 'partition' | 'interface' | 'port' | 'node' | 'device' | 'environment' | 'artifact' | 'database' | 'cloud' | 'package' | 'class' | 'actor' | 'usecase' | C4ElementKind | 'state' | 'choice' | 'namespace' | 'composite' | 'entity' | 'boundary' | 'subject'
+type DiagramRelation = 'note' | 'merge' | 'provide' | 'require' | 'assembly' | 'delegate' | 'deploy' | 'import' | 'include' | 'extend' | 'generalization' | ClassRelationKind | 'er' | 'c4' | 'flow' | 'transition'
+type DiagramRole = 'end' | 'note' | 'start' | 'action' | 'decision' | 'merge' | 'flowEnd' | 'fork' | 'join' | 'partition' | 'interface' | 'port' | 'node' | 'device' | 'environment' | 'artifact' | 'database' | 'cloud' | 'package' | 'class' | 'actor' | 'usecase' | C4ElementKind | 'state' | 'choice' | 'subject' | 'entity' | 'boundary' | 'namespace' | 'composite'
 type DiagramRow = {}
 DiagramRow.text: string
 DiagramRow.prefix?: string | undefined
@@ -553,8 +553,8 @@ DiagramNode.compartments?: DiagramRow[][] | undefined
 DiagramNode.tone?: DiagramTone | undefined
 DiagramNode.width: number
 DiagramNode.height: number
-type DiagramRelation = 'note' | 'merge' | 'provide' | 'require' | 'assembly' | 'delegate' | 'deploy' | 'import' | 'include' | 'extend' | 'generalization' | ClassRelationKind | 'er' | 'c4' | 'transition' | 'flow'
-type DiagramRole = 'end' | 'note' | 'start' | 'action' | 'decision' | 'merge' | 'flowEnd' | 'fork' | 'join' | 'partition' | 'interface' | 'port' | 'node' | 'device' | 'environment' | 'artifact' | 'database' | 'cloud' | 'package' | 'class' | 'actor' | 'usecase' | C4ElementKind | 'state' | 'choice' | 'namespace' | 'composite' | 'entity' | 'boundary' | 'subject'
+type DiagramRelation = 'note' | 'merge' | 'provide' | 'require' | 'assembly' | 'delegate' | 'deploy' | 'import' | 'include' | 'extend' | 'generalization' | ClassRelationKind | 'er' | 'c4' | 'flow' | 'transition'
+type DiagramRole = 'end' | 'note' | 'start' | 'action' | 'decision' | 'merge' | 'flowEnd' | 'fork' | 'join' | 'partition' | 'interface' | 'port' | 'node' | 'device' | 'environment' | 'artifact' | 'database' | 'cloud' | 'package' | 'class' | 'actor' | 'usecase' | C4ElementKind | 'state' | 'choice' | 'subject' | 'entity' | 'boundary' | 'namespace' | 'composite'
 type DiagramRow = {}
 DiagramRow.text: string
 DiagramRow.prefix?: string | undefined
@@ -648,8 +648,8 @@ const START_END: '[*]'
 function takenIds(diagram: UmlSpec) => Set<string>
 function toIdentifier(name: string, fallback?: string) => string
 const UML_DRAG_TYPE: 'application/x-coreloom-uml-element'
-type UmlElementType = 'note' | 'system' | 'person' | 'container' | SequenceBlockKind | 'state' | 'choice' | 'entity' | 'boundary' | ElementTypeOfKinds | 'abstract' | 'enumeration' | 'participant' | 'externalPerson' | 'externalSystem' | 'queue'
-type UmlRelationType = 'reply' | 'uses' | 'inheritance' | 'realization' | 'composition' | 'aggregation' | 'sync' | 'async' | 'transition' | RelationTypeOfKinds | 'oneToOne' | 'oneToMany' | 'manyToMany' | 'usesBoth'
+type UmlElementType = 'note' | 'system' | 'person' | 'container' | SequenceBlockKind | 'state' | 'choice' | ElementTypeOfKinds | 'abstract' | 'enumeration' | 'entity' | 'participant' | 'externalPerson' | 'externalSystem' | 'queue' | 'boundary'
+type UmlRelationType = 'reply' | 'uses' | 'inheritance' | 'realization' | 'composition' | 'aggregation' | 'sync' | 'async' | RelationTypeOfKinds | 'transition' | 'oneToOne' | 'oneToMany' | 'manyToMany' | 'usesBoth'
 type UmlSelection = {}
 UmlSelection.elements: readonly string[]
 UmlSelection.relations: readonly number[]

@@ -387,6 +387,7 @@ SequenceOutline.t.copy: string
 SequenceOutline.t.paste: string
 SequenceOutline.t.duplicate: string
 SequenceOutline.t.rename: string
+SequenceOutline.t.selected: (n: number) => string
 SequenceOutline.t.layout: string
 SequenceOutline.t.arrange: string
 SequenceOutline.t.flow: string
@@ -578,6 +579,7 @@ StepForm.t.copy: string
 StepForm.t.paste: string
 StepForm.t.duplicate: string
 StepForm.t.rename: string
+StepForm.t.selected: (n: number) => string
 StepForm.t.layout: string
 StepForm.t.arrange: string
 StepForm.t.flow: string
@@ -769,6 +771,7 @@ StepFormProps.t.copy: string
 StepFormProps.t.paste: string
 StepFormProps.t.duplicate: string
 StepFormProps.t.rename: string
+StepFormProps.t.selected: (n: number) => string
 StepFormProps.t.layout: string
 StepFormProps.t.arrange: string
 StepFormProps.t.flow: string
