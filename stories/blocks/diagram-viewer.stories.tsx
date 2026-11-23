@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 import {
   activityText,
+  c4BusyText,
   c4ContainerText,
   c4ContextText,
   classText,
@@ -30,6 +31,7 @@ const views: DiagramViewerItem[] = [
 const manyViews: DiagramViewerItem[] = [
   ...views,
   { id: 'containers', title: 'Containers', diagram: fromMermaid(c4ContainerText) },
+  { id: 'workspace', title: 'Workspace', diagram: fromMermaid(c4BusyText) },
   { id: 'data', title: 'Data model', diagram: fromMermaid(erText) },
   { id: 'returns', title: 'Returns flow', diagram: fromMermaid(activityText) },
   { id: 'use-cases', title: 'Use cases', diagram: fromPlantUml(usecaseText) },

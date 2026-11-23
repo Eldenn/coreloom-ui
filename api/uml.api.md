@@ -622,7 +622,7 @@ RouteEdge.source: string
 RouteEdge.target: string
 RouteEdge.label?: Size | undefined
 function routeEdges(boxes: readonly RouteBox[], edges: readonly RouteEdge[]) => Map<string, Route>
-type RouteSide = 'top' | 'right' | 'bottom' | 'left'
+type RouteSide = 'left' | 'right' | 'top' | 'bottom'
 ```
 
 ## src/lib/uml-sequence.ts
@@ -796,5 +796,5 @@ function canAlign(how: UmlAlignment, count: number) => boolean
 function clearLayout(diagram: UmlSpec) => UmlSpec
 const DIRECTIONS: readonly UmlDirection[]
 function setDirection(diagram: UmlSpec, direction: UmlDirection) => UmlSpec
-type UmlAlignment = 'center' | 'top' | 'right' | 'bottom' | 'left' | 'middle' | 'distributeHorizontally' | 'distributeVertically'
+type UmlAlignment = 'center' | 'left' | 'right' | 'top' | 'bottom' | 'middle' | 'distributeHorizontally' | 'distributeVertically'
 ```
