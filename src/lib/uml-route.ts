@@ -29,7 +29,7 @@ interface RouteEdge {
   label?: Size
 }
 
-type RouteSide = 'top' | 'right' | 'bottom' | 'left'
+type RouteSide = 'left' | 'right' | 'top' | 'bottom'
 
 interface Route {
   /** The corners of the line, from the source's side to the target's. */

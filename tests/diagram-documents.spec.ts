@@ -58,7 +58,7 @@ test.describe('Diagram viewer (Blocks/Diagrams/Diagram viewer)', () => {
     await open(page, 'blocks-diagrams-diagram-viewer--many-views')
     const tabs = page.getByRole('tablist', { name: 'Views' })
     await expect(tabs).toHaveAttribute('aria-orientation', 'vertical')
-    await expect(tabs.getByRole('tab')).toHaveCount(9)
+    await expect(tabs.getByRole('tab')).toHaveCount(10)
     await expect(tabs.getByRole('tab', { name: 'Data model' })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -93,14 +93,17 @@ test.describe('Diagram viewer (Blocks/Diagrams/Diagram viewer)', () => {
   })
 
   test('the image holds the lines and labels that go around the boxes', async ({ page }) => {
-    await open(page, 'blocks-diagrams-diagram-viewer--default')
-    const panel = page.getByRole('tabpanel', { name: 'System context' })
+    await open(page, 'blocks-diagrams-diagram-viewer--many-views')
+    await page.getByRole('tab', { name: 'Workspace' }).click()
+    const panel = page.getByRole('tabpanel', { name: 'Workspace' })
     await expect(panel.locator('.react-flow__node').first()).toBeVisible()
-    // How wide the boxes and the labels are together, at the drawing's real size.
+    // How wide the boxes, the lines and the labels are together, at the drawing's real size.
     const drawn = await panel.locator('.react-flow__viewport').evaluate((viewport) => {
       const zoom = new DOMMatrix(getComputedStyle(viewport).transform).a
       const rects = [
-        ...viewport.querySelectorAll('.react-flow__node, .react-flow__edgelabel-renderer > *'),
+        ...viewport.querySelectorAll(
+          '.react-flow__node, .react-flow__edge-path, .react-flow__edgelabel-renderer > *',
+        ),
       ].map((el) => el.getBoundingClientRect())
       const boxes = [...viewport.querySelectorAll('.react-flow__node')].map((el) =>
         el.getBoundingClientRect(),
@@ -112,7 +115,8 @@ test.describe('Diagram viewer (Blocks/Diagrams/Diagram viewer)', () => {
           (Math.max(...boxes.map((r) => r.right)) - Math.min(...boxes.map((r) => r.left))) / zoom,
       }
     })
-    // This view has a label outside the boxes: without it the check below would prove nothing.
+    // This view has lines that go round the outside of the boxes: without them the check below
+    // would prove nothing.
     expect(drawn.all).toBeGreaterThan(drawn.boxes)
     await page.getByRole('button', { name: 'Download' }).click()
     const download = page.waitForEvent('download')
