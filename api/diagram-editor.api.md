@@ -86,6 +86,7 @@ FileTools.t.download: string
 FileTools.t.downloadText: (ext: string) => string
 FileTools.t.downloadSvg: string
 FileTools.t.downloadPng: string
+FileTools.t.downloadPdf: string
 FileTools.t.imageFailed: string
 FileTools.t.problems: (n: number) => string
 FileTools.t.line: (n: number) => string
@@ -108,7 +109,7 @@ FileTools.onTemplate: (text: string) => void
 FileTools.onImport: (file: File) => void
 FileTools.onCopy: () => void
 FileTools.copied: boolean
-FileTools.onDownload: (what: DiagramFormat | UmlImageFormat) => void
+FileTools.onDownload: (what: DiagramFormat | UmlDownloadFormat) => void
 FileTools.drawn: boolean
 FileTools.templates: readonly { kind: UmlDiagramKind; label?: string; text: string; }[]
 FileTools.status: string
@@ -153,6 +154,7 @@ ProblemList.t.download: string
 ProblemList.t.downloadText: (ext: string) => string
 ProblemList.t.downloadSvg: string
 ProblemList.t.downloadPng: string
+ProblemList.t.downloadPdf: string
 ProblemList.t.imageFailed: string
 ProblemList.t.problems: (n: number) => string
 ProblemList.t.line: (n: number) => string

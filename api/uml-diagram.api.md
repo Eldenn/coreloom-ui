@@ -30,7 +30,7 @@ UmlDiagram.onAnnotationSelect?: ((element: string) => void) | undefined
 UmlDiagram.ref?: React.Ref<UmlDiagramHandle> | undefined
 UmlDiagram.className?: string | undefined
 type UmlDiagramHandle = {}
-UmlDiagramHandle.toImage: (format: UmlImageFormat) => Promise<string>
+UmlDiagramHandle.toImage: (format: UmlImageFormat, options?: UmlImageOptions) => Promise<string>
 type UmlDiagramProps = {}
 UmlDiagramProps.diagram: UmlSpec
 UmlDiagramProps.editable?: boolean | undefined
@@ -213,10 +213,14 @@ SequenceDiagramViewProps.className?: string | undefined
 ## src/lib/uml-image.ts
 
 ```ts
+function canvasImage(root: HTMLElement | null, { format, light }: { format: UmlImageFormat; light?: boolean; }) => Promise<string>
 function elementImage(node: HTMLElement, format: UmlImageFormat, area: ImageArea) => Promise<string>
 type ImageArea = {}
 ImageArea.width: number
 ImageArea.height: number
 ImageArea.style?: Partial<CSSStyleDeclaration> | undefined
+ImageArea.light?: boolean | undefined
+function printImage(url: string, title: string) => Promise<void>
+type UmlDownloadFormat = UmlImageFormat | 'pdf'
 type UmlImageFormat = 'svg' | 'png'
 ```

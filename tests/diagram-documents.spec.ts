@@ -1,6 +1,8 @@
 // DiagramViewer and DiagramWorkspace: views in tabs, a side list or a menu, keys that change the
 // view, downloads; the list of views (open, rename, delete, add, reorder), the editor and the save
 // state, and the phone sheet. Runs on the built Storybook.
+import { readFile } from 'node:fs/promises'
+
 import { expect, type Page, test } from '@playwright/test'
 
 import { openStory } from './stories'
@@ -80,7 +82,79 @@ test.describe('Diagram viewer (Blocks/Diagrams/Diagram viewer)', () => {
     await page.getByRole('button', { name: 'Download' }).click()
     const download = page.waitForEvent('download')
     await page.getByRole('menuitem', { name: 'SVG image' }).click()
-    expect((await download).suggestedFilename()).toBe('checkout-architecture-orders.svg')
+    const file = await download
+    expect(file.suggestedFilename()).toBe('checkout-architecture-orders.svg')
+    // The background is painted behind the whole image, before the drawing.
+    const svg = await readFile(await file.path(), 'utf8')
+    expect(svg.indexOf('<rect width="100%" height="100%"')).toBeGreaterThan(0)
+    expect(svg.indexOf('<rect width="100%" height="100%"')).toBeLessThan(
+      svg.indexOf('<foreignObject'),
+    )
+  })
+
+  test('the image holds the lines and labels that go around the boxes', async ({ page }) => {
+    await open(page, 'blocks-diagrams-diagram-viewer--default')
+    const panel = page.getByRole('tabpanel', { name: 'System context' })
+    await expect(panel.locator('.react-flow__node').first()).toBeVisible()
+    // How wide the boxes and the labels are together, at the drawing's real size.
+    const drawn = await panel.locator('.react-flow__viewport').evaluate((viewport) => {
+      const zoom = new DOMMatrix(getComputedStyle(viewport).transform).a
+      const rects = [
+        ...viewport.querySelectorAll('.react-flow__node, .react-flow__edgelabel-renderer > *'),
+      ].map((el) => el.getBoundingClientRect())
+      const boxes = [...viewport.querySelectorAll('.react-flow__node')].map((el) =>
+        el.getBoundingClientRect(),
+      )
+      return {
+        all:
+          (Math.max(...rects.map((r) => r.right)) - Math.min(...rects.map((r) => r.left))) / zoom,
+        boxes:
+          (Math.max(...boxes.map((r) => r.right)) - Math.min(...boxes.map((r) => r.left))) / zoom,
+      }
+    })
+    // This view has a label outside the boxes: without it the check below would prove nothing.
+    expect(drawn.all).toBeGreaterThan(drawn.boxes)
+    await page.getByRole('button', { name: 'Download' }).click()
+    const download = page.waitForEvent('download')
+    await page.getByRole('menuitem', { name: 'SVG image' }).click()
+    const svg = await readFile(await (await download).path(), 'utf8')
+    const width = Number(/^<svg[^>]* width="(\d+)"/.exec(svg)?.[1])
+    expect(width).toBeGreaterThanOrEqual(Math.floor(drawn.all))
+  })
+
+  test('prints the view alone, in the light theme, on a page of its size, for a PDF', async ({
+    page,
+  }) => {
+    // The print dialog can't be driven: note what would be printed instead.
+    await page.addInitScript(() => {
+      window.print = () => {
+        const image = document.querySelector('img')
+        window.parent.document.body.dataset.printed = JSON.stringify({
+          title: document.title,
+          page: document.querySelector('style')?.textContent ?? '',
+          size: image ? [image.naturalWidth, image.naturalHeight] : [],
+          svg: image ? decodeURIComponent(image.src) : '',
+        })
+      }
+    })
+    await open(page, 'blocks-diagrams-diagram-viewer--default')
+    await page.getByRole('tab', { name: 'Orders' }).click()
+    await page.getByRole('button', { name: 'Download' }).click()
+    await page.getByRole('menuitem', { name: 'PDF (print)…' }).click()
+    await expect(page.locator('body')).toHaveAttribute('data-printed', /.+/)
+    const printed = JSON.parse(
+      (await page.locator('body').getAttribute('data-printed')) ?? '{}',
+    ) as { title: string; page: string; size: number[]; svg: string }
+    expect(printed.title).toBe('checkout-architecture-orders')
+    const [width, height] = printed.size
+    expect(width).toBeGreaterThan(0)
+    expect(printed.page).toContain(`size: ${String(width)}px ${String(height)}px`)
+    // Light paper under a story shown in the dark theme, and the screen is dark again afterwards.
+    expect(printed.svg).toContain('fill="rgb(255, 255, 255)"')
+    await expect(page.locator('[data-slot="uml-diagram"]:visible')).not.toHaveAttribute(
+      'data-theme',
+      'light',
+    )
   })
 
   test('French', async ({ page }) => {

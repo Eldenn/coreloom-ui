@@ -2,7 +2,7 @@
 
 > **Experimental.** This item may still change in a minor release, with an **Upgrading** note in the changelog. See [VERSIONING.md](https://github.com/Eldenn/coreloom-ui/blob/main/VERSIONING.md).
 
-A document of several diagrams to read, not edit: what a shared link opens. Its title, description and date on top, the views in tabs, the diagram with zoom and full screen, and SVG or PNG downloads. There are no editing tools.
+A document of several diagrams to read, not edit: what a shared link opens. Its title, description and date on top, the views in tabs, the diagram with zoom and full screen, and SVG, PNG or PDF downloads. There are no editing tools.
 
 **The consumer provides** `title`, `diagrams` (`{ id, title, diagram, layout?, annotations? }[]`: a `UmlSpec` per view, the positions people placed for drawn diagrams, and statuses on its elements, see UML Diagram), and optionally `description`, `updatedAt` (a Date: "Updated 2 hours ago"), `activeId` / `defaultActiveId` / `onActiveChange` (the view shown; the first one by default), `banner` (above the title: who shared it, a read-only notice), `fileName` (downloads are named `<fileName>-<view>.svg`; the view's name alone by default), `onAnnotationSelect(element, viewId)` and `className`.
 
@@ -11,6 +11,7 @@ A document of several diagrams to read, not edit: what a shared link opens. Its 
 - The diagram keeps its zoom, fit and full screen buttons. Nothing can be dragged or changed.
 - A view's `annotations` (the findings of a review against the code, say) put a ring and a badge on their elements. With `onAnnotationSelect`, a badge is a button that hands back the element and its view: show its findings beside the viewer. Downloads leave the annotations out.
 - Download makes an SVG or a PNG of the view as it shows now. If it can't be made, the viewer says so.
+- PDF opens the browser's print dialog on the view alone, in the light theme, on a page of the drawing's size: the reader picks "Save as PDF" there. Nothing is downloaded by the viewer itself.
 - The title is the page's `h1`: the viewer is a page of its own.
 
 **In an app:** `pnpm dlx shadcn@latest add @coreloom/diagram-viewer`.

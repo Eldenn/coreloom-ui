@@ -3232,6 +3232,7 @@ export const de: Messages = {
     download: 'Herunterladen',
     svg: 'SVG-Bild',
     png: 'PNG-Bild',
+    pdf: 'PDF (drucken)…',
     imageFailed: 'Das Bild konnte nicht erstellt werden.',
     position: (index: number, total: number, title: string) =>
       `Ansicht ${index} von ${total}: ${title}`,
@@ -3275,6 +3276,7 @@ export const de: Messages = {
     downloadText: (ext) => `Text (.${ext})`,
     downloadSvg: 'SVG-Bild',
     downloadPng: 'PNG-Bild',
+    downloadPdf: 'PDF (drucken)…',
     imageFailed: 'Das Bild konnte nicht erstellt werden.',
     problems: (n) => {
       if (n === 0) return 'Keine Probleme'

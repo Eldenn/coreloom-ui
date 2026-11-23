@@ -3208,6 +3208,7 @@ export const es: Messages = {
     download: 'Descargar',
     svg: 'Imagen SVG',
     png: 'Imagen PNG',
+    pdf: 'PDF (imprimir)…',
     imageFailed: 'No se pudo crear la imagen.',
     position: (index: number, total: number, title: string) =>
       `Vista ${index} de ${total}: ${title}`,
@@ -3251,6 +3252,7 @@ export const es: Messages = {
     downloadText: (ext) => `Texto (.${ext})`,
     downloadSvg: 'Imagen SVG',
     downloadPng: 'Imagen PNG',
+    downloadPdf: 'PDF (imprimir)…',
     imageFailed: 'No se pudo crear la imagen.',
     problems: (n) => {
       if (n === 0) return 'Sin problemas'
