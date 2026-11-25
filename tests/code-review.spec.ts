@@ -139,6 +139,30 @@ test.describe('Code review (Blocks/Developer/Code review)', () => {
     ).toBeFocused()
   })
 
+  test('with fill, going to a file scrolls the files only, never the boxes around the review', async ({
+    page,
+  }) => {
+    // Lower than the review's 480 px box: the page around it can scroll, as a dialog can.
+    await page.setViewportSize({ width: 1280, height: 320 })
+    await open(page, 'fill-with-file-meta')
+    await page.getByRole('treeitem', { name: /pricing\.md/ }).click()
+    const header = file(page, 'docs/pricing.md').getByRole('button', { name: /docs\/pricing\.md/ })
+    await expect(header).toBeFocused()
+    await expect(header).toBeInViewport()
+    expect(await page.evaluate(() => document.scrollingElement?.scrollTop)).toBe(0)
+  })
+
+  test('with fill on a narrow review, going to a file scrolls its body only', async ({ page }) => {
+    await page.setViewportSize({ width: 600, height: 320 })
+    await open(page, 'fill-with-file-meta')
+    await page.getByRole('button', { name: 'Files' }).click()
+    await page.getByRole('treeitem', { name: /pricing\.md/ }).click()
+    const header = file(page, 'docs/pricing.md').getByRole('button', { name: /docs\/pricing\.md/ })
+    await expect(header).toBeFocused()
+    await expect(header).toBeInViewport()
+    expect(await page.evaluate(() => document.scrollingElement?.scrollTop)).toBe(0)
+  })
+
   test('an empty review says there is nothing to review', async ({ page }) => {
     await open(page, 'empty')
     await expect(page.getByText('No changes to review.')).toBeVisible()
