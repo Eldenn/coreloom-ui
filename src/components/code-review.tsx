@@ -85,6 +85,16 @@ type CodeReviewProps = ReviewDiscussion & {
   onSubmitReview?: (review: ReviewSubmission) => void | Promise<void>
   /** Long lines wrap instead of scrolling sideways. */
   wrap?: boolean
+  /**
+   * Takes the height of its parent (a dialog, a pane) instead of growing with the files: the
+   * header stays, and the tree and the files scroll on their own.
+   */
+  fill?: boolean
+  /**
+   * The app's own marks for a file, such as a warning or a count, shown in its header and in the
+   * tree. Keep them short: the tree is 240 px wide.
+   */
+  renderFileMeta?: (file: ReviewFile) => React.ReactNode
   className?: string
   'aria-label'?: string
 }
@@ -107,6 +117,72 @@ function useGoToFile(fileIds: Map<string, string>) {
   }
 }
 
+/** The bar above the files: the tree's toggle on a narrow review, the totals, the layout and "Finish review". */
+function ReviewHeader({
+  treeId,
+  treeOpen,
+  onTreeOpenChange,
+  stats,
+  viewedCount,
+  layout,
+  onLayoutChange,
+  onSubmitReview,
+}: {
+  treeId: string
+  treeOpen: boolean
+  onTreeOpenChange: (open: boolean) => void
+  stats: ReturnType<typeof reviewStats>
+  viewedCount: number
+  /** Null hides the choice (a narrow review shows unified diffs). */
+  layout: ReviewLayout | null
+  onLayoutChange: (layout: ReviewLayout) => void
+  onSubmitReview: CodeReviewProps['onSubmitReview']
+}) {
+  const t = useCoreloomI18n().messages.codeReview
+  return (
+    <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-3 py-2">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        aria-expanded={treeOpen}
+        aria-controls={treeId}
+        className="@3xl:hidden"
+        onClick={() => {
+          onTreeOpenChange(!treeOpen)
+        }}
+      >
+        <FolderTreeIcon aria-hidden />
+        {t.files}
+      </Button>
+      <p className="m-0 flex flex-wrap items-center gap-x-2 text-[13px] text-foreground">
+        {t.filesChanged(stats.files)}
+        <LineCounts added={stats.added} removed={stats.removed} />
+      </p>
+      <p className="m-0 text-[13px] text-muted-foreground">
+        {t.viewedCount(viewedCount, stats.files)}
+      </p>
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        {layout === null ? null : (
+          <SegmentedControl
+            size="sm"
+            aria-label={t.layout}
+            value={layout}
+            onValueChange={(value) => {
+              onLayoutChange(value === 'split' ? 'split' : 'unified')
+            }}
+            options={[
+              { value: 'unified', label: t.unified },
+              { value: 'split', label: t.split },
+            ]}
+          />
+        )}
+        {onSubmitReview ? <FinishReview onSubmit={onSubmitReview} /> : null}
+      </div>
+    </div>
+  )
+}
+
 function CodeReview({
   files,
   threads = [],
@@ -118,6 +194,8 @@ function CodeReview({
   onLayoutChange,
   onSubmitReview,
   wrap,
+  fill = false,
+  renderFileMeta,
   className,
   'aria-label': ariaLabel,
   ...discussion
@@ -160,53 +238,35 @@ function CodeReview({
       ref={root}
       aria-label={ariaLabel ?? t.label}
       data-slot="code-review"
-      className={cn('@container min-w-0 rounded-lg border border-border bg-background', className)}
+      data-fill={fill ? '' : undefined}
+      className={cn(
+        // `fill`: the classes below that start with group-data-fill read data-fill on this root.
+        'group/review @container min-w-0 rounded-lg border border-border bg-background data-fill:flex data-fill:h-full data-fill:min-h-0 data-fill:flex-col',
+        className,
+      )}
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-3 py-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-expanded={treeOpen}
-          aria-controls={`${id}-tree`}
-          className="@3xl:hidden"
-          onClick={() => {
-            setTreeOpen((value) => !value)
-          }}
-        >
-          <FolderTreeIcon aria-hidden />
-          {t.files}
-        </Button>
-        <p className="m-0 flex flex-wrap items-center gap-x-2 text-[13px] text-foreground">
-          {t.filesChanged(stats.files)}
-          <LineCounts added={stats.added} removed={stats.removed} />
-        </p>
-        <p className="m-0 text-[13px] text-muted-foreground">
-          {t.viewedCount(files.filter((f) => viewed.has(f.path)).length, files.length)}
-        </p>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          {narrow ? null : (
-            <SegmentedControl
-              size="sm"
-              aria-label={t.layout}
-              value={layout}
-              onValueChange={(value) => {
-                setLayout(value === 'split' ? 'split' : 'unified')
-              }}
-              options={[
-                { value: 'unified', label: t.unified },
-                { value: 'split', label: t.split },
-              ]}
-            />
-          )}
-          {onSubmitReview ? <FinishReview onSubmit={onSubmitReview} /> : null}
-        </div>
-      </div>
-      <div className="grid min-w-0 grid-cols-1 @3xl:grid-cols-[240px_minmax(0,1fr)]">
+      <ReviewHeader
+        treeId={`${id}-tree`}
+        treeOpen={treeOpen}
+        onTreeOpenChange={setTreeOpen}
+        stats={stats}
+        viewedCount={files.filter((f) => viewed.has(f.path)).length}
+        layout={narrow ? null : layout}
+        onLayoutChange={setLayout}
+        onSubmitReview={onSubmitReview}
+      />
+      <div
+        className={cn(
+          'grid min-w-0 grid-cols-1 @3xl:grid-cols-[240px_minmax(0,1fr)]',
+          // One scroll for both on a narrow review (the tree folds above the files), one each beside.
+          'group-data-fill/review:min-h-0 group-data-fill/review:flex-1 group-data-fill/review:overflow-y-auto @3xl:group-data-fill/review:grid-rows-[minmax(0,1fr)] @3xl:group-data-fill/review:overflow-hidden',
+        )}
+      >
         <div
           id={`${id}-tree`}
           className={cn(
             'min-w-0 border-b border-border p-2 @3xl:block @3xl:border-r @3xl:border-b-0',
+            '@3xl:group-data-fill/review:overflow-y-auto',
             !treeOpen && 'hidden',
           )}
         >
@@ -224,9 +284,10 @@ function CodeReview({
             labelledBy={`${id}-files`}
             onSelectFile={setActive}
             onOpenFile={openFile}
+            renderFileMeta={renderFileMeta}
           />
         </div>
-        <div className="flex min-w-0 flex-col gap-3 p-3">
+        <div className="flex min-w-0 flex-col gap-3 p-3 *:shrink-0 @3xl:group-data-fill/review:overflow-y-auto">
           {files.length === 0 ? (
             <p className="m-0 p-4 text-[13.5px] text-muted-foreground">{t.noChanges}</p>
           ) : null}
@@ -247,6 +308,7 @@ function CodeReview({
               }}
               toggleId={fileIds.get(file.path) ?? ''}
               discussion={discussion}
+              meta={renderFileMeta?.(file)}
             />
           ))}
         </div>

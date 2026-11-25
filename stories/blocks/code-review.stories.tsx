@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { TriangleAlertIcon } from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -223,4 +224,28 @@ export const French: Story = {
 
 export const Phone: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
+}
+
+/**
+ * In a box of fixed height, such as a dialog: `fill` keeps the header in place while the tree and
+ * the files scroll on their own. `renderFileMeta` adds the app's own mark to a file, here a count
+ * of findings from a scan, in its header and in the tree.
+ */
+export const FillWithFileMeta: Story = {
+  args: {
+    threads: [],
+    fill: true,
+    renderFileMeta: (file) =>
+      file.path.endsWith('.ts') ? (
+        <span className="inline-flex items-center gap-0.5 font-mono text-[12px] text-warning">
+          <TriangleAlertIcon aria-hidden className="size-3.5" />1
+          <span className="sr-only">finding</span>
+        </span>
+      ) : null,
+  },
+  render: (args) => (
+    <div className="h-[480px]">
+      <Demo {...args} />
+    </div>
+  ),
 }
