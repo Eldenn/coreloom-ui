@@ -22,9 +22,11 @@ CodeReview.defaultLayout?: ReviewLayout | undefined
 CodeReview.onLayoutChange?: ((layout: ReviewLayout) => void) | undefined
 CodeReview.onSubmitReview?: ((review: ReviewSubmission) => void | Promise<void>) | undefined
 CodeReview.wrap?: boolean | undefined
+CodeReview.fill?: boolean | undefined
+CodeReview.renderFileMeta?: ((file: ReviewFile) => React.ReactNode) | undefined
 CodeReview.className?: string | undefined
 CodeReview.aria-label?: string | undefined
-type CodeReviewProps = ReviewDiscussion & { files: ReviewFile[]; threads?: ReviewThread[]; viewed?: string[]; defaultViewed?: string[]; onViewedChange?: (viewed: string[]) => void; layout?: ReviewLayout; defaultLayout?: ReviewLayout; onLayoutChange?: (layout: ReviewLayout) => void; onSubmitReview?: (review: ReviewSubmission) => void | Promise<void>; wrap?: boolean; className?: string; 'aria-label'?: string; }
+type CodeReviewProps = ReviewDiscussion & { files: ReviewFile[]; threads?: ReviewThread[]; viewed?: string[]; defaultViewed?: string[]; onViewedChange?: (viewed: string[]) => void; layout?: ReviewLayout; defaultLayout?: ReviewLayout; onLayoutChange?: (layout: ReviewLayout) => void; onSubmitReview?: (review: ReviewSubmission) => void | Promise<void>; wrap?: boolean; fill?: boolean; renderFileMeta?: (file: ReviewFile) => React.ReactNode; className?: string; 'aria-label'?: string; }
 function diffStats(lines: readonly DiffLine[]) => DiffStats
 function fileStats(file: ReviewFile) => DiffStats
 function lineAnchor(line: DiffLine) => { side: ReviewSide; line: number; }
@@ -132,6 +134,7 @@ ReviewFileView.open: boolean
 ReviewFileView.onOpenChange: (open: boolean) => void
 ReviewFileView.toggleId: string
 ReviewFileView.discussion: ReviewDiscussion
+ReviewFileView.meta?: React.ReactNode
 function StatusMark
 StatusMark.status: ReviewFileStatus
 StatusMark.className?: string | undefined
@@ -148,6 +151,7 @@ ReviewFileTree.active: string | null
 ReviewFileTree.onSelectFile: (path: string) => void
 ReviewFileTree.onOpenFile: (path: string) => void
 ReviewFileTree.labelledBy: string
+ReviewFileTree.renderFileMeta?: ((file: ReviewFile) => React.ReactNode) | undefined
 ```
 
 ## src/components/code-review-submit.tsx

@@ -211,6 +211,8 @@ interface ReviewFileViewProps {
   /** The id of the button that opens and closes the file: the tree moves focus to it. */
   toggleId: string
   discussion: ReviewDiscussion
+  /** The app's own marks for the file (`renderFileMeta`), after its line counts. */
+  meta?: React.ReactNode
 }
 
 function ReviewFileView({
@@ -224,6 +226,7 @@ function ReviewFileView({
   onOpenChange,
   toggleId,
   discussion,
+  meta,
 }: ReviewFileViewProps) {
   const t = useCoreloomI18n().messages.codeReview
   const lines = React.useMemo(() => diffLines(file.before, file.after), [file.before, file.after])
@@ -315,6 +318,7 @@ function ReviewFileView({
           <span className="min-w-0 [overflow-wrap:anywhere]">{file.path}</span>
         </button>
         <LineCounts added={stats.added} removed={stats.removed} />
+        {meta}
         {count ? (
           <span className="text-[12.5px] text-muted-foreground">{t.comments(count)}</span>
         ) : null}

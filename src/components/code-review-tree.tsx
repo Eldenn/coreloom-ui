@@ -16,11 +16,20 @@ import {
 import { branchIds, TreeView, type TreeViewNode } from '@/components/ui/tree-view'
 import { useCoreloomI18n } from '@/lib/i18n'
 
-function FileMeta({ comments, viewed }: { comments: number; viewed: boolean }) {
+function FileMeta({
+  comments,
+  viewed,
+  extra,
+}: {
+  comments: number
+  viewed: boolean
+  extra: React.ReactNode
+}) {
   const t = useCoreloomI18n().messages.codeReview
-  if (!comments && !viewed) return null
+  if (!comments && !viewed && extra == null) return null
   return (
     <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+      {extra}
       {comments ? (
         <span className="inline-flex items-center gap-0.5 tabular-nums">
           <MessageSquareIcon aria-hidden className="size-3" />
@@ -46,6 +55,7 @@ function ReviewFileTree({
   onSelectFile,
   onOpenFile,
   labelledBy,
+  renderFileMeta,
 }: {
   files: readonly ReviewFile[]
   threads: readonly ReviewThread[]
@@ -56,6 +66,7 @@ function ReviewFileTree({
   /** Enter or a click: go to the file, focus on its header. */
   onOpenFile: (path: string) => void
   labelledBy: string
+  renderFileMeta?: (file: ReviewFile) => React.ReactNode
 }) {
   const byPath = React.useMemo(() => new Map(files.map((f) => [f.path, f])), [files])
   const counts = React.useMemo(() => {
@@ -77,7 +88,13 @@ function ReviewFileTree({
       id: node.id,
       label: node.name,
       icon: <StatusMark status={file.status} className="size-4 text-[9.5px]" />,
-      meta: <FileMeta comments={counts.get(file.path) ?? 0} viewed={viewed.has(file.path)} />,
+      meta: (
+        <FileMeta
+          comments={counts.get(file.path) ?? 0}
+          viewed={viewed.has(file.path)}
+          extra={renderFileMeta?.(file)}
+        />
+      ),
     }
   }
   const nodes = tree.map(toNode)
