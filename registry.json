@@ -4162,6 +4162,35 @@
       }
     },
     {
+      "name": "background-tasks",
+      "type": "registry:block",
+      "title": "Background tasks",
+      "description": "A header button that spins while long jobs run, and a popover of queued, running and just-finished tasks, each outcome announced.",
+      "categories": ["application"],
+      "dependencies": ["lucide-react@^1"],
+      "registryDependencies": [
+        "@coreloom/theme",
+        "@coreloom/utils",
+        "@coreloom/i18n",
+        "@coreloom/button",
+        "@coreloom/notification-badge",
+        "@coreloom/popover",
+        "@coreloom/progress",
+        "@coreloom/relative-time",
+        "@coreloom/scroll-area",
+        "@coreloom/spinner"
+      ],
+      "files": [
+        {
+          "path": "src/components/background-tasks.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "meta": {
+        "stability": "experimental"
+      }
+    },
+    {
       "name": "team",
       "type": "registry:block",
       "title": "Team",
