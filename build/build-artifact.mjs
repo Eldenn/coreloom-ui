@@ -255,6 +255,7 @@ const COMPONENTS = [
   'RemoteCursors',
   'ImageCrop',
   'NotificationPreferences',
+  'BackgroundTasks',
   'EnvVars',
   'FeatureFlags',
   'VersionHistory',

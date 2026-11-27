@@ -1,0 +1,38 @@
+<!-- @dsCard group="Blocks" width=1280 height=560 subtitle="background-tasks block · running · queued · done · failed" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  html,body{margin:0}
+  body{background:var(--bg-1);color:var(--fg-1);font-family:var(--font-sans);}
+  #root{padding:24px 32px}
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    function render() {
+      const UI = window.CoreloomUIDesignSystem_ff5f32;
+      if (!UI || !UI.BackgroundTasks || !window.ReactDOM) return setTimeout(render, 50);
+      const h = React.createElement;
+
+      const { BackgroundTasks, TooltipProvider } = UI;
+      const ago = (min) => new Date(Date.now() - min * 60000);
+      const tasks0 = [
+        { id: 't1', label: 'Catalog search', status: 'running', detail: 'skills-refresh queue', startedAt: ago(3) },
+        { id: 't2', label: 'Skill scans', status: 'running', detail: '12 of 40 copies', startedAt: ago(8), progress: 30 },
+        { id: 't3', label: 'Import from GitHub', status: 'queued', startedAt: ago(1) },
+        { id: 't4', label: 'Code map of coreloom-api', status: 'done', startedAt: ago(30), finishedAt: ago(19) },
+        { id: 't5', label: 'Skill tags', status: 'failed', detail: 'attempt 3 of 3', startedAt: ago(110), finishedAt: ago(108), error: 'The embedding model could not be downloaded.' }];
+      function Demo() {
+        const [tasks, setTasks] = React.useState(tasks0);
+        return h('div', { className: 'flex justify-end', style: { maxWidth: 760, margin: '0 auto' } },
+          h(BackgroundTasks, { tasks, defaultOpen: true, onDismiss: (id) => setTasks((l) => l.filter((t) => t.id !== id)) }));
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(h(TooltipProvider, null, h(Demo)));
+    }
+    render();
+  </script>
+</body>
+</html>
